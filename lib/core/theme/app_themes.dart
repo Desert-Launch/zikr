@@ -1,0 +1,119 @@
+import 'package:quran/core/theme/app_colors.dart';
+import 'package:flutter/material.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:google_fonts/google_fonts.dart';
+import 'package:quran/core/responsive/responsive_extensions.dart';
+
+class AppThemes {
+  static ThemeData get light => ThemeData(
+    // Use Tajawal as the default font for the entire app (matching Board app)
+    textTheme: GoogleFonts.tajawalTextTheme(),
+    brightness: Brightness.light,
+    highlightColor: Colors.transparent,
+    splashColor: Colors.transparent,
+    scaffoldBackgroundColor: AppColors.lightBackground,
+    progressIndicatorTheme: const ProgressIndicatorThemeData(
+      color: AppColors.brandMain,
+      circularTrackColor: AppColors.lightBorderDefault,
+      linearTrackColor: AppColors.lightBorderDefault,
+    ),
+    bottomSheetTheme: const BottomSheetThemeData(backgroundColor: AppColors.lightForeground),
+    inputDecorationTheme: InputDecorationTheme(
+      fillColor: AppColors.lightForeground,
+      filled: true,
+      contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 16),
+      hintStyle: GoogleFonts.tajawal(
+        color: AppColors.textBodyLight,
+        fontSize: 18.sp,
+        fontWeight: FontWeight.w400,
+        height: 1.1,
+      ),
+      errorStyle: GoogleFonts.tajawal(
+        color: AppColors.semanticDanger,
+        fontSize: 18.sp,
+        fontWeight: FontWeight.w700,
+        height: 1.1,
+      ),
+      border: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(16.rCapped(18)),
+        borderSide: BorderSide(color: AppColors.brandMain, width: 1.w),
+      ),
+      focusedBorder: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(16.rCapped(18)),
+        borderSide: BorderSide(color: AppColors.brandMain, width: 1.w),
+      ),
+      enabledBorder: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(16.rCapped(18)),
+        borderSide: BorderSide(color: AppColors.brandMain, width: 1.w),
+      ),
+      disabledBorder: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(16.rCapped(18)),
+        borderSide: BorderSide(color: AppColors.black300, width: 1.w),
+      ),
+      focusedErrorBorder: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(16.rCapped(18)),
+        borderSide: BorderSide(color: AppColors.semanticDanger, width: 1.w),
+      ),
+      errorBorder: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(16.rCapped(18)),
+        borderSide: BorderSide(color: AppColors.semanticDanger, width: 1.w),
+      ),
+    ),
+  );
+
+  static ThemeData get dark => ThemeData(
+    // Use Tajawal as the default font for the entire app (matching Board app)
+    textTheme: GoogleFonts.tajawalTextTheme(ThemeData.dark().textTheme),
+    brightness: Brightness.dark,
+    highlightColor: Colors.transparent,
+    splashColor: Colors.transparent,
+    scaffoldBackgroundColor: AppColors.darkBackground,
+    progressIndicatorTheme: const ProgressIndicatorThemeData(
+      color: AppColors.brandMain,
+      circularTrackColor: AppColors.darkBorderDefault,
+      linearTrackColor: AppColors.darkBorderDefault,
+    ),
+    bottomSheetTheme: const BottomSheetThemeData(backgroundColor: AppColors.darkForeground),
+    inputDecorationTheme: InputDecorationTheme(
+      fillColor: AppColors.darkForeground,
+      filled: true,
+      contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 16),
+      hintStyle: GoogleFonts.tajawal(
+        color: AppColors.textBodyDark,
+        fontSize: 18.sp,
+        fontWeight: FontWeight.w400,
+        height: 1.1,
+      ),
+      errorStyle: GoogleFonts.tajawal(
+        color: AppColors.semanticDanger,
+        fontSize: 18.sp,
+        fontWeight: FontWeight.w700,
+        height: 1.1,
+      ),
+      border: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(16.rCapped(18)),
+        borderSide: BorderSide(color: AppColors.brandMain, width: 1.w),
+      ),
+      focusedBorder: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(16.rCapped(18)),
+        borderSide: BorderSide(color: AppColors.brandMain, width: 1.w),
+      ),
+      enabledBorder: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(16.rCapped(18)),
+        borderSide: BorderSide(color: AppColors.darkBorderDefault, width: 1.w),
+      ),
+      disabledBorder: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(16.rCapped(18)),
+        borderSide: BorderSide(color: AppColors.darkBorderDefault, width: 1.w),
+      ),
+      focusedErrorBorder: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(16.rCapped(18)),
+        borderSide: BorderSide(color: AppColors.semanticDanger, width: 1.w),
+      ),
+      errorBorder: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(16.rCapped(18)),
+        borderSide: BorderSide(color: AppColors.semanticDanger, width: 1.w),
+      ),
+    ),
+  );
+}

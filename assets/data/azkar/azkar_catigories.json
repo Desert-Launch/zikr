@@ -1,0 +1,51 @@
+[
+    {
+        "id": 4,
+        "arName": "أذكار الصباح",
+        "enName": "Morning",
+        "filename": "morning_new.json",
+        "image": "morning.jpg"
+    },
+    {
+        "id": 2,
+        "arName": "أذكار المساء",
+        "enName": "Evening",
+        "filename": "evening_new.json",
+        "image": "evening.jpg"
+    },
+    {
+        "id": 6,
+        "arName": "أذكار الاستيقاظ",
+        "enName": "Waking Up",
+        "filename": "wakeing_up_new.json",
+        "image": "wakeing_up.jpg"
+    },
+    {
+        "id": 5,
+        "arName": "أذكار النوم",
+        "enName": "Sleeping",
+        "filename": "sleeping_new.json",
+        "image": "sleeping.jpg"
+    },
+    {
+        "id": 1,
+        "arName": "أذكار بعد الصلاة",
+        "enName": "After Prayer",
+        "filename": "after_pray_new.json",
+        "image": "after_pray.jpg"
+    },
+    {
+        "id": 3,
+        "arName": "أذكار المسجد",
+        "enName": "Masged",
+        "filename": "masged_new.json",
+        "image": "masged.jpg"
+    },
+    {
+        "id": 7,
+        "arName": "اذكار اضافية",
+        "enName": "Other Azkar",
+        "filename": "other_azkar.json",
+        "image": "other_azkar.jpg"
+    }
+]

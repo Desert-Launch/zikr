@@ -1,0 +1,138 @@
+[
+  {
+    "id": "alafasy",
+    "name": "Mishary Rashid Al-Afasy",
+    "arabic": "مشاري بن راشد العفاسي",
+    "style": "murattal",
+    "folder": "Alafasy_128kbps",
+    "bitrate": 128,
+    "estimatedSizeMb": 1024,
+    "isDefault": true
+  },
+  {
+    "id": "abdulbasit_murattal",
+    "name": "Abdul Basit Abdus-Samad (Murattal)",
+    "arabic": "عبد الباسط عبد الصمد (مرتل)",
+    "style": "murattal",
+    "folder": "Abdul_Basit_Murattal_64kbps",
+    "bitrate": 64,
+    "estimatedSizeMb": 350
+  },
+  {
+    "id": "abdulbasit_mujawwad",
+    "name": "Abdul Basit Abdus-Samad (Mujawwad)",
+    "arabic": "عبد الباسط عبد الصمد (مجود)",
+    "style": "mujawwad",
+    "folder": "Abdul_Basit_Mujawwad_128kbps",
+    "bitrate": 128,
+    "estimatedSizeMb": 3200
+  },
+  {
+    "id": "husary",
+    "name": "Mahmoud Khalil Al-Husary",
+    "arabic": "محمود خليل الحصري",
+    "style": "murattal",
+    "folder": "Husary_128kbps",
+    "bitrate": 128,
+    "estimatedSizeMb": 1024
+  },
+  {
+    "id": "husary_mujawwad",
+    "name": "Mahmoud Khalil Al-Husary (Mujawwad)",
+    "arabic": "محمود خليل الحصري (مجود)",
+    "style": "mujawwad",
+    "folder": "Husary_Mujawwad_64kbps",
+    "bitrate": 64,
+    "estimatedSizeMb": 700
+  },
+  {
+    "id": "minshawi_murattal",
+    "name": "Muhammad Siddiq Al-Minshawi",
+    "arabic": "محمد صديق المنشاوي",
+    "style": "murattal",
+    "folder": "Minshawy_Murattal_128kbps",
+    "bitrate": 128,
+    "estimatedSizeMb": 1100
+  },
+  {
+    "id": "minshawi_mujawwad",
+    "name": "Muhammad Siddiq Al-Minshawi (Mujawwad)",
+    "arabic": "محمد صديق المنشاوي (مجود)",
+    "style": "mujawwad",
+    "folder": "Minshawy_Mujawwad_64kbps",
+    "bitrate": 64,
+    "estimatedSizeMb": 1500
+  },
+  {
+    "id": "mustafa_ismail",
+    "name": "Mustafa Ismail",
+    "arabic": "مصطفى إسماعيل",
+    "style": "mujawwad",
+    "folder": "Mustafa_Ismail_48kbps",
+    "bitrate": 48,
+    "estimatedSizeMb": 600
+  },
+  {
+    "id": "maher",
+    "name": "Maher Al-Muaiqly",
+    "arabic": "ماهر المعيقلي",
+    "style": "murattal",
+    "folder": "MaherAlMuaiqly128kbps",
+    "bitrate": 128,
+    "estimatedSizeMb": 1100
+  },
+  {
+    "id": "sudais",
+    "name": "Abdul Rahman Al-Sudais",
+    "arabic": "عبد الرحمن السديس",
+    "style": "murattal",
+    "folder": "Abdurrahmaan_As-Sudais_192kbps",
+    "bitrate": 192,
+    "estimatedSizeMb": 1500
+  },
+  {
+    "id": "shuraim",
+    "name": "Saud Al-Shuraim",
+    "arabic": "سعود الشريم",
+    "style": "murattal",
+    "folder": "Saood_ash-Shuraym_128kbps",
+    "bitrate": 128,
+    "estimatedSizeMb": 1024
+  },
+  {
+    "id": "ghamdi",
+    "name": "Saad Al-Ghamdi",
+    "arabic": "سعد الغامدي",
+    "style": "murattal",
+    "folder": "Ghamadi_40kbps",
+    "bitrate": 40,
+    "estimatedSizeMb": 500
+  },
+  {
+    "id": "ajmi",
+    "name": "Ahmed Al-Ajmi",
+    "arabic": "أحمد العجمي",
+    "style": "murattal",
+    "folder": "ahmed_ibn_ali_al_ajamy_128kbps",
+    "bitrate": 128,
+    "estimatedSizeMb": 1024
+  },
+  {
+    "id": "dosari",
+    "name": "Yasser Al-Dosari",
+    "arabic": "ياسر الدوسري",
+    "style": "murattal",
+    "folder": "Yasser_Ad-Dussary_128kbps",
+    "bitrate": 128,
+    "estimatedSizeMb": 1024
+  },
+  {
+    "id": "jibreel",
+    "name": "Muhammad Jibreel",
+    "arabic": "محمد جبريل",
+    "style": "murattal",
+    "folder": "Muhammad_Jibreel_128kbps",
+    "bitrate": 128,
+    "estimatedSizeMb": 1024
+  }
+]

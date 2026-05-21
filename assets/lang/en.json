@@ -1,0 +1,53 @@
+{
+  "app_name": "Holy Quran",
+  "common_loading": "Loading...",
+  "common_retry": "Retry",
+  "common_error": "Something went wrong",
+  "common_continue": "Continue",
+  "common_cancel": "Cancel",
+  "common_done": "Done",
+  "common_close": "Close",
+  "common_delete": "Delete",
+  "common_pause": "Pause",
+  "common_resume": "Resume",
+  "common_search": "Search",
+  "common_all": "All",
+
+  "surah_list_title": "Surahs",
+  "surah_list_continue": "Continue reading",
+  "surah_list_filter_makki": "Meccan",
+  "surah_list_filter_madani": "Medinan",
+  "surah_list_juz": "Juz",
+  "surah_list_meccan": "Meccan",
+  "surah_list_medinan": "Medinan",
+  "surah_list_ayah_count": "{{count}} verses",
+
+  "reader_play": "Play",
+  "reader_pause": "Pause",
+  "reader_repeat": "Repeat",
+  "reader_repeat_range": "Repeat range",
+  "reader_bookmark": "Bookmark",
+  "reader_copy": "Copy",
+  "reader_share": "Share",
+  "reader_settings": "Settings",
+
+  "reciter_picker_title": "Choose reciter",
+  "reciter_picker_preview": "Preview",
+  "reciter_picker_set_default": "Set as default",
+  "reciter_picker_downloaded": "Downloaded",
+
+  "downloads_title": "Downloads",
+  "downloads_available": "Available",
+  "downloads_downloaded": "Downloaded",
+  "downloads_by_surah": "By surah",
+  "downloads_by_juz": "By juz",
+  "downloads_low_storage": "Low storage",
+
+  "bookmarks_title": "Bookmarks",
+  "bookmarks_empty": "No bookmarks yet",
+  "bookmarks_add_note": "Add a note",
+
+  "search_title": "Search the Quran",
+  "search_hint": "Search for a verse or word...",
+  "search_no_results": "No results found"
+}

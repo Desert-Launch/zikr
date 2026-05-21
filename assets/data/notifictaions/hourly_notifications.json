@@ -1,0 +1,54 @@
+{
+    "hourly_azkar": [
+        {
+            "id": 1,
+            "text_ar": "سبحان الله",
+            "text_en": "Glory be to Allah"
+        },
+        {
+            "id": 2,
+            "text_ar": "الحمد لله",
+            "text_en": "Praise be to Allah"
+        },
+        {
+            "id": 3,
+            "text_ar": "الله أكبر",
+            "text_en": "Allah is the Greatest"
+        },
+        {
+            "id": 4,
+            "text_ar": "لا إله إلا الله",
+            "text_en": "There is no god but Allah"
+        },
+        {
+            "id": 5,
+            "text_ar": "سبحان الله وبحمده",
+            "text_en": "Glory and praise be to Allah"
+        },
+        {
+            "id": 6,
+            "text_ar": "سبحان الله العظيم",
+            "text_en": "Glory be to Allah, the Almighty"
+        },
+        {
+            "id": 7,
+            "text_ar": "أستغفر الله العظيم",
+            "text_en": "I seek forgiveness from Allah, the Almighty"
+        },
+        {
+            "id": 8,
+            "text_ar": "لا حول ولا قوة إلا بالله",
+            "text_en": "There is no power or strength except with Allah"
+        },
+        {
+            "id": 9,
+            "text_ar": "اللهم صلِّ وسلم على محمد وآله وصحبه",
+            "text_en": "O Allah, send blessings and peace upon Muhammad and his family"
+        },
+        {
+            "id": 10,
+            "text_ar": "حسبي الله و نعم الوكيل",
+            "text_en": "Allah is sufficient for me, and He is the best Disposer of affairs"
+        }
+    ]
+}

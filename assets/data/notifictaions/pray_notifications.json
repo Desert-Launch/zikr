@@ -1,0 +1,199 @@
+{
+    "version": "1.0",
+    "timezone": "Africa/Cairo",
+    "default_locale": "ar",
+    "notifications": [
+        {
+            "id": "prayer_fajr",
+            "type": "prayer",
+            "enabled": true,
+            "schedule": {
+                "type": "prayer",
+                "prayer": "fajr",
+                "offset_minutes": 0
+            },
+            "content": {
+                "title": {
+                    "ar": "🕌 صلاة الفجر",
+                    "en": "🕌 Fajr Prayer"
+                },
+                "body": {
+                    "ar": "حان وقت صلاة الفجر، قم إلى الصلاة فهي خير من النوم.",
+                    "en": "It is time for Fajr prayer — rise to prayer, for it is better than sleep."
+                },
+                "sound": "adhan",
+                "channel_id": "prayer_channel"
+            },
+            "payload": {
+                "action": "navigate",
+                "route": "/",
+                "params": {
+                    "name": "fajr"
+                }
+            },
+            "meta": {
+                "category": "prayer"
+            }
+        },
+        {
+            "id": "prayer_sunrise",
+            "type": "prayer",
+            "enabled": true,
+            "schedule": {
+                "type": "prayer",
+                "prayer": "sunrise",
+                "offset_minutes": 0
+            },
+            "content": {
+                "title": {
+                    "ar": "🕌 صلاة الشروق",
+                    "en": "🕌 Sunrise Prayer"
+                },
+                "body": {
+                    "ar": "حان وقت صلاة الشروق، اجعل يومك يبدأ بالنور والبركة.",
+                    "en": "It is time for Sunrise prayer — begin your day with light and blessings."
+                },
+                "sound": "adhan",
+                "channel_id": "prayer_channel"
+            },
+            "payload": {
+                "action": "navigate",
+                "route": "/",
+                "params": {
+                    "name": "sunrise"
+                }
+            },
+            "meta": {
+                "category": "prayer"
+            }
+        },
+        {
+            "id": "prayer_dhuhr",
+            "type": "prayer",
+            "enabled": true,
+            "schedule": {
+                "type": "prayer",
+                "prayer": "dhuhr",
+                "offset_minutes": 0
+            },
+            "content": {
+                "title": {
+                    "ar": "🕌 صلاة الظهر",
+                    "en": "🕌 Dhuhr Prayer"
+                },
+                "body": {
+                    "ar": "حان وقت صلاة الظهر، استعن بالله وسط يومك.",
+                    "en": "It is time for Dhuhr prayer — seek strength from Allah in the middle of your day."
+                },
+                "sound": "adhan",
+                "channel_id": "prayer_channel"
+            },
+            "payload": {
+                "action": "navigate",
+                "route": "/",
+                "params": {
+                    "name": "dhuhr"
+                }
+            },
+            "meta": {
+                "category": "prayer"
+            }
+        },
+        {
+            "id": "prayer_asr",
+            "type": "prayer",
+            "enabled": true,
+            "schedule": {
+                "type": "prayer",
+                "prayer": "asr",
+                "offset_minutes": 0
+            },
+            "content": {
+                "title": {
+                    "ar": "🕌 صلاة العصر",
+                    "en": "🕌 Asr Prayer"
+                },
+                "body": {
+                    "ar": "حان وقت صلاة العصر، لا تفوّت ذكر الله في وقت العمل.",
+                    "en": "It is time for Asr prayer — don't miss Allah's remembrance during your busy hours."
+                },
+                "sound": "adhan",
+                "channel_id": "prayer_channel"
+            },
+            "payload": {
+                "action": "navigate",
+                "route": "/",
+                "params": {
+                    "name": "asr"
+                }
+            },
+            "meta": {
+                "category": "prayer"
+            }
+        },
+        {
+            "id": "prayer_maghrib",
+            "type": "prayer",
+            "enabled": true,
+            "schedule": {
+                "type": "prayer",
+                "prayer": "maghrib",
+                "offset_minutes": 0
+            },
+            "content": {
+                "title": {
+                    "ar": "🕌 صلاة المغرب",
+                    "en": "🕌 Maghrib Prayer"
+                },
+                "body": {
+                    "ar": "حان وقت صلاة المغرب، افتتح ليلك بالصلاة والذكر.",
+                    "en": "It is time for Maghrib prayer — begin your evening with prayer and remembrance."
+                },
+                "sound": "adhan",
+                "channel_id": "prayer_channel"
+            },
+            "payload": {
+                "action": "navigate",
+                "route": "/",
+                "params": {
+                    "name": "maghrib"
+                }
+            },
+            "meta": {
+                "category": "prayer"
+            }
+        },
+        {
+            "id": "prayer_isha",
+            "type": "prayer",
+            "enabled": true,
+            "schedule": {
+                "type": "prayer",
+                "prayer": "isha",
+                "offset_minutes": 0
+            },
+            "content": {
+                "title": {
+                    "ar": "🕌 صلاة العشاء",
+                    "en": "🕌 Isha Prayer"
+                },
+                "body": {
+                    "ar": "حان وقت صلاة العشاء، اختم يومك بالقرب من الله.",
+                    "en": "It is time for Isha prayer — end your day close to Allah."
+                },
+                "sound": "adhan",
+                "channel_id": "prayer_channel"
+            },
+            "payload": {
+                "action": "navigate",
+                "route": "/",
+                "params": {
+                    "name": "isha"
+                }
+            },
+            "meta": {
+                "category": "prayer"
+            }
+        }
+    ]
+}

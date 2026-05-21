@@ -1,0 +1,53 @@
+{
+  "app_name": "القرآن الكريم",
+  "common_loading": "جارٍ التحميل...",
+  "common_retry": "إعادة المحاولة",
+  "common_error": "حدث خطأ",
+  "common_continue": "متابعة",
+  "common_cancel": "إلغاء",
+  "common_done": "تم",
+  "common_close": "إغلاق",
+  "common_delete": "حذف",
+  "common_pause": "إيقاف مؤقت",
+  "common_resume": "استئناف",
+  "common_search": "بحث",
+  "common_all": "الكل",
+
+  "surah_list_title": "السور",
+  "surah_list_continue": "متابعة القراءة",
+  "surah_list_filter_makki": "مكية",
+  "surah_list_filter_madani": "مدنية",
+  "surah_list_juz": "الجزء",
+  "surah_list_meccan": "مكية",
+  "surah_list_medinan": "مدنية",
+  "surah_list_ayah_count": "{{count}} آية",
+
+  "reader_play": "تشغيل",
+  "reader_pause": "إيقاف",
+  "reader_repeat": "تكرار",
+  "reader_repeat_range": "تكرار المقطع",
+  "reader_bookmark": "حفظ علامة",
+  "reader_copy": "نسخ",
+  "reader_share": "مشاركة",
+  "reader_settings": "الإعدادات",
+
+  "reciter_picker_title": "اختر القارئ",
+  "reciter_picker_preview": "معاينة",
+  "reciter_picker_set_default": "تعيين كافتراضي",
+  "reciter_picker_downloaded": "تم تنزيله",
+
+  "downloads_title": "التنزيلات",
+  "downloads_available": "المتاح",
+  "downloads_downloaded": "تم التنزيل",
+  "downloads_by_surah": "حسب السورة",
+  "downloads_by_juz": "حسب الجزء",
+  "downloads_low_storage": "مساحة التخزين منخفضة",
+
+  "bookmarks_title": "العلامات المرجعية",
+  "bookmarks_empty": "لا توجد علامات مرجعية بعد",
+  "bookmarks_add_note": "إضافة ملاحظة",
+
+  "search_title": "بحث في القرآن",
+  "search_hint": "ابحث عن آية أو كلمة...",
+  "search_no_results": "لا توجد نتائج"
+}

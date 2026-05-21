@@ -1,0 +1,89 @@
+name: quran
+description: "قرآن — Quran companion mobile app (Mushaf reader + per-ayah audio + downloads + azkar)."
+publish_to: 'none'
+
+version: 1.0.0+1
+
+environment:
+  sdk: ^3.9.2
+
+dependencies:
+  flutter:
+    sdk: flutter
+
+  cupertino_icons: ^1.0.8
+
+  # State management
+  flutter_bloc: ^9.1.1
+  bloc: ^9.0.0
+
+  # DI + Routing
+  flutter_modular: ^6.3.4
+
+  # Local storage (per CLAUDE.md: hive_ce)
+  hive_ce: ^2.10.1
+  hive_ce_flutter: ^2.0.1
+
+  # Audio
+  just_audio: ^0.9.40
+  just_audio_background: ^0.0.1-beta.13
+  audio_session: ^0.1.21
+
+  # Networking + downloads
+  dio: ^5.7.0
+  flutter_cache_manager: ^3.4.1
+
+  # File system
+  path_provider: ^2.1.5
+  path: ^1.9.0
+
+  # Utilities
+  dartz: ^0.10.1
+  equatable: ^2.0.5
+  freezed_annotation: ^2.4.4
+  rxdart: ^0.28.0
+  collection: ^1.18.0
+  uuid: ^4.5.1
+
+  # Share / clipboard
+  share_plus: ^10.1.2
+
+  # UI helpers
+  flutter_screenutil: ^5.9.3
+  google_fonts: ^6.2.1
+  flutter_svg: ^2.0.10+1
+  cached_network_image: ^3.4.1
+  toastification: ^2.3.0
+
+  # i18n
+  localize_and_translate: ^6.0.8
+  intl: ^0.20.2
+
+  # Logging / diagnostics
+  talker: ^4.4.1
+  talker_flutter: ^4.4.1
+  talker_dio_logger: ^4.4.1
+
+  # Platform utils
+  package_info_plus: ^8.1.2
+  connectivity_plus: ^6.1.0
+  url_launcher: ^6.3.1
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+
+  flutter_lints: ^5.0.0
+  build_runner: ^2.4.13
+  freezed: ^2.5.7
+  hive_ce_generator: ^1.7.2
+  json_serializable: ^6.8.0
+
+flutter:
+  uses-material-design: true
+
+  assets:
+    - assets/data/
+    - assets/data/mushaf_pages/
+    - assets/fonts/qpc/
+    - assets/lang/

@@ -1,0 +1,203 @@
+{
+    "version": "1.0",
+    "timezone": "Africa/Cairo",
+    "default_locale": "ar",
+    "notifications": [
+        {
+            "id": "azkar_morning",
+            "type": "azkar",
+            "enabled": true,
+            "schedule": {
+                "type": "daily",
+                "time": "08:00"
+            },
+            "content": {
+                "title": {
+                    "ar": "🌅 أذكار الصباح",
+                    "en": "🌅 Morning Azkar"
+                },
+                "body": {
+                    "ar": "ابدأ يومك بذكر الله، فالذكر نور للقلب وطمأنينة للنفس.\nاضغط للقراءة",
+                    "en": "Start your morning with Allah's remembrance — it brings light to the heart and peace to the soul.\nTap to read"
+                },
+                "sound": "default",
+                "channel_id": "azkar_channel"
+            },
+            "payload": {
+                "action": "navigate",
+                "route": "/azkar/zekr/4",
+                "params": {
+                    "category": "morning"
+                }
+            },
+            "meta": {
+                "category": "morning",
+                "source": "hisn_almuslim"
+            }
+        },
+        {
+            "id": "azkar_evening",
+            "type": "azkar",
+            "enabled": true,
+            "schedule": {
+                "type": "daily",
+                "time": "18:00"
+            },
+            "content": {
+                "title": {
+                    "ar": "🌇 أذكار المساء",
+                    "en": "🌇 Evening Azkar"
+                },
+                "body": {
+                    "ar": "اختم يومك بذكر الله، فهو حصنٌ من الهموم وراحةٌ للروح.\nاضغط للقراءة",
+                    "en": "End your day with Allah's remembrance — a shield from worries and comfort for the soul.\nTap to read"
+                },
+                "sound": "default",
+                "channel_id": "azkar_channel"
+            },
+            "payload": {
+                "action": "navigate",
+                "route": "/azkar/zekr/2",
+                "params": {
+                    "category": "evening"
+                }
+            },
+            "meta": {
+                "category": "evening",
+                "source": "hisn_almuslim"
+            }
+        },
+        {
+            "id": "azkar_sleep",
+            "type": "azkar",
+            "enabled": true,
+            "schedule": {
+                "type": "daily",
+                "time": "22:00"
+            },
+            "content": {
+                "title": {
+                    "ar": "🌙 أذكار النوم",
+                    "en": "🌙 Sleep Azkar"
+                },
+                "body": {
+                    "ar": "نم على ذكر الله، فهو أمانٌ للقلب وسكينةٌ للنفس.\nاضغط للقراءة",
+                    "en": "Sleep with Allah's remembrance — it brings safety to the heart and serenity to the soul.\nTap to read"
+                },
+                "sound": "default",
+                "channel_id": "azkar_channel"
+            },
+            "payload": {
+                "action": "navigate",
+                "route": "/azkar/zekr/5",
+                "params": {
+                    "category": "sleep"
+                }
+            },
+            "meta": {
+                "category": "sleep",
+                "source": "hisn_almuslim"
+            }
+        },
+        {
+            "id": "quran_almulk",
+            "type": "quran",
+            "enabled": true,
+            "schedule": {
+                "type": "daily",
+                "time": "22:00"
+            },
+            "content": {
+                "title": {
+                    "ar": "سورة الملك",
+                    "en": "Surah Al-Mulk"
+                },
+                "body": {
+                    "ar": "لا تنسَ قراءة سورة الملك قبل النوم، فهي المنجية من عذاب القبر.\nاضغط للقراءة",
+                    "en": "Remember to recite Surah Al-Mulk before sleeping — it protects from the punishment of the grave.\nTap to read"
+                },
+                "sound": "default",
+                "channel_id": "al_muslim_local_notifications"
+            },
+            "payload": {
+                "action": "navigate",
+                "route": "/quran",
+                "params": {
+                    "surah": "al_mulk",
+                    "surahNumber": 67
+                }
+            },
+            "meta": {
+                "category": "quran",
+                "surah_number": 67
+            }
+        },
+        {
+            "id": "quran_albaqara",
+            "type": "quran",
+            "enabled": true,
+            "schedule": {
+                "type": "daily",
+                "time": "20:00"
+            },
+            "content": {
+                "title": {
+                    "ar": "سورة البقرة",
+                    "en": "Surah Al-Baqara"
+                },
+                "body": {
+                    "ar": "قراءة سورة البقرة (إن لكل شيء سناما، وإن سنام القرآن البقرة، وإن من قرأها في بيته ليلة لم يدخله الشيطان 3 ليال)\nاضغط للقراءة",
+                    "en": "Reciting Surah Al-Baqara brings blessings; neglecting it brings regret and falsehood cannot overcome it.\nTap to read"
+                },
+                "sound": "default",
+                "channel_id": "al_muslim_local_notifications"
+            },
+            "payload": {
+                "action": "navigate",
+                "route": "/quran",
+                "params": {
+                    "surah": "al_baqara",
+                    "surahNumber": 2
+                }
+            },
+            "meta": {
+                "category": "quran",
+                "surah_number": 2
+            }
+        },
+        {
+            "id": "quran_alkahf",
+            "type": "quran",
+            "enabled": true,
+            "schedule": {
+                "type": "weekly",
+                "day": "friday",
+                "time": "10:00"
+            },
+            "content": {
+                "title": {
+                    "ar": "سورة الكهف",
+                    "en": "Surah Al-Kahf"
+                },
+                "body": {
+                    "ar": "من قرأ سورة الكهف يوم الجمعة أضاء له من النور ما بين الجمعتين.\nاضغط للقراءة",
+                    "en": "Whoever recites Surah Al-Kahf on Friday will have light between the two Fridays.\nTap to read"
+                },
+                "sound": "default",
+                "channel_id": "al_muslim_local_notifications"
+            },
+            "payload": {
+                "action": "navigate",
+                "route": "/quran",
+                "params": {
+                    "surah": "al_kahf",
+                    "surahNumber": 18
+                }
+            },
+            "meta": {
+                "category": "quran",
+                "surah_number": 18
+            }
+        }
+    ]
+}
