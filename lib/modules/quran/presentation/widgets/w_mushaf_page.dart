@@ -65,6 +65,27 @@ class _WMushafPageState extends State<WMushafPage> {
           bloc: Modular.get<CBAudioPlayer>(),
           selector: (s) => s.currentAyah,
           builder: (context, playing) {
+            final lineWidgets = widget.layout.lines.map((line) {
+              switch (line.type) {
+                case LineType.surahHeader:
+                  return WSurahHeader(title: line.text);
+                case LineType.basmala:
+                  return WBasmalaLine(fontSize: 28.sp * view.scale);
+                case LineType.spacer:
+                  return SizedBox(height: 8.h);
+                case LineType.text:
+                  return _renderTextLine(
+                    line,
+                    cubit: cubit,
+                    selected: view.selected,
+                    playing: playing,
+                    fontFamily: pageFamily,
+                    scale: view.scale,
+                    color: fg,
+                  );
+              }
+            }).toList(growable: false);
+
             return Container(
               color: _bgFor(view.theme),
               padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 8.h),
@@ -72,29 +93,15 @@ class _WMushafPageState extends State<WMushafPage> {
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
                   Expanded(
-                    child: Column(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      crossAxisAlignment: CrossAxisAlignment.stretch,
-                      children: widget.layout.lines.map((line) {
-                        switch (line.type) {
-                          case LineType.surahHeader:
-                            return WSurahHeader(title: line.text);
-                          case LineType.basmala:
-                            return const WBasmalaLine();
-                          case LineType.spacer:
-                            return SizedBox(height: 8.h);
-                          case LineType.text:
-                            return _renderTextLine(
-                              line,
-                              cubit: cubit,
-                              selected: view.selected,
-                              playing: playing,
-                              fontFamily: pageFamily,
-                              scale: view.scale,
-                              color: fg,
-                            );
-                        }
-                      }).toList(growable: false),
+                    child: Center(
+                      child: SingleChildScrollView(
+                        physics: const ClampingScrollPhysics(),
+                        child: Column(
+                          mainAxisSize: MainAxisSize.min,
+                          crossAxisAlignment: CrossAxisAlignment.stretch,
+                          children: lineWidgets,
+                        ),
+                      ),
                     ),
                   ),
                   SizedBox(height: 4.h),
@@ -156,9 +163,9 @@ class _WMushafPageState extends State<WMushafPage> {
         recognizer: _recogniser(group.ref, cubit),
         style: TextStyle(
           fontFamily: fontFamily,
-          fontSize: 24.sp * scale,
+          fontSize: 26.sp * scale,
           color: isPlaying ? AppColors.progressMasteryGold : color,
-          height: 1.85,
+          height: 1.4,
           backgroundColor: isSelected
               ? AppColors.surfaceLightGreen
               : (isPlaying ? AppColors.accentGoldAmber.withValues(alpha: 0.15) : null),
@@ -173,7 +180,7 @@ class _WMushafPageState extends State<WMushafPage> {
     }
 
     return Padding(
-      padding: EdgeInsets.symmetric(vertical: 2.h),
+      padding: EdgeInsets.symmetric(vertical: 1.h),
       child: RichText(
         textAlign: TextAlign.center,
         textDirection: TextDirection.rtl,
