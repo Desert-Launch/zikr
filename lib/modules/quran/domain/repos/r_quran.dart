@@ -4,6 +4,12 @@ import 'package:quran/modules/quran/data/models/m_page_layout.dart';
 import 'package:quran/modules/quran/data/models/m_surah.dart';
 import 'package:quran/modules/quran/domain/entities/param_ayah_ref.dart';
 
+class QuranSearchHit {
+  const QuranSearchHit({required this.ref, required this.snippet});
+  final ParamAyahRef ref;
+  final String snippet;
+}
+
 abstract class RQuran {
   Future<Either<Failure, List<MSurah>>> getSurahs();
   Future<Either<Failure, MSurah>> getSurah(int number);
@@ -17,4 +23,8 @@ abstract class RQuran {
 
   /// Returns all ayah refs of [juz] (1..30) in document order.
   Future<Either<Failure, List<ParamAyahRef>>> ayatOfJuz(int juz);
+
+  /// Diacritics-tolerant Uthmani text search across all 6236 ayat.
+  /// Returns hits in canonical order (surah, ayah), capped at [limit].
+  Future<Either<Failure, List<QuranSearchHit>>> search(String query, {int limit});
 }

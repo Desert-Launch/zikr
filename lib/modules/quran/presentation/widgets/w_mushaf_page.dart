@@ -86,6 +86,19 @@ class _WMushafPageState extends State<WMushafPage> {
               }
             }).toList(growable: false);
 
+            // Regular Mushaf pages have ~15 lines and should fill the page
+            // top-to-bottom. Short pages (Fatihah, Baqarah opening, last few)
+            // have fewer lines and should be centered as a block inside the
+            // available space.
+            final isFullPage = widget.layout.lines.length >= 12;
+            final wrappedLines = lineWidgets
+                .map((w) => FittedBox(
+                      fit: BoxFit.scaleDown,
+                      alignment: Alignment.center,
+                      child: w,
+                    ))
+                .toList(growable: false);
+
             return Container(
               color: _bgFor(view.theme),
               padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 8.h),
@@ -93,15 +106,12 @@ class _WMushafPageState extends State<WMushafPage> {
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
                   Expanded(
-                    child: Center(
-                      child: SingleChildScrollView(
-                        physics: const ClampingScrollPhysics(),
-                        child: Column(
-                          mainAxisSize: MainAxisSize.min,
-                          crossAxisAlignment: CrossAxisAlignment.stretch,
-                          children: lineWidgets,
-                        ),
-                      ),
+                    child: Column(
+                      mainAxisAlignment: isFullPage
+                          ? MainAxisAlignment.spaceEvenly
+                          : MainAxisAlignment.center,
+                      crossAxisAlignment: CrossAxisAlignment.stretch,
+                      children: wrappedLines,
                     ),
                   ),
                   SizedBox(height: 4.h),
@@ -163,9 +173,9 @@ class _WMushafPageState extends State<WMushafPage> {
         recognizer: _recogniser(group.ref, cubit),
         style: TextStyle(
           fontFamily: fontFamily,
-          fontSize: 26.sp * scale,
+          fontSize: 28.sp * scale,
           color: isPlaying ? AppColors.progressMasteryGold : color,
-          height: 1.4,
+          height: 1.0,
           backgroundColor: isSelected
               ? AppColors.surfaceLightGreen
               : (isPlaying ? AppColors.accentGoldAmber.withValues(alpha: 0.15) : null),

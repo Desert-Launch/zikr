@@ -54,16 +54,17 @@ class DSQpcFontLoader {
     }
   }
 
+  /// Loads the typography we use for every basmala line.
+  ///
+  /// QCF_BSML.TTF is intentionally NOT used — its cmap is missing the
+  /// `U+0670` (superscript alef) glyph, which renders the standard basmala
+  /// text as tofu boxes. Instead, every basmala line is drawn using
+  /// Al-Fatihah's basmala glyphs (`ﭑ ﭒ ﭓ ﭔ`) and the page-1 font, which
+  /// always exists in any QPC V1 set.
   Future<void> loadBasmala() async {
     if (_basmalaLoaded) return;
-    try {
-      final loader = FontLoader(basmalaFamily);
-      loader.addFont(rootBundle.load('assets/fonts/qpc/QCF_BSML.TTF'));
-      await loader.load();
-      _basmalaLoaded = true;
-    } catch (e, st) {
-      AppLogger.error('Failed loading QCF_BSML', error: e, stackTrace: st);
-    }
+    await loadPage(1);
+    _basmalaLoaded = true;
   }
 
   /// Preload the visible page + a window of neighbours. Returns the [center]

@@ -14,12 +14,15 @@ class SearchHit extends Equatable {
 
 class UCSearchQuran {
   UCSearchQuran(this.repo);
-  // ignore: public_member_api_docs — used by Phase 12 implementation.
   final RQuran repo;
 
-  Future<Either<Failure, List<SearchHit>>> call(String query) async {
-    // Placeholder — Phase 12 wires the actual normalized text index over `repo`.
-    if (query.trim().isEmpty) return const Right([]);
-    return const Right([]);
+  Future<Either<Failure, List<SearchHit>>> call(String query, {int limit = 200}) async {
+    if (query.trim().length < 2) return const Right([]);
+    final res = await repo.search(query, limit: limit);
+    return res.map(
+      (hits) => hits
+          .map((h) => SearchHit(ref: h.ref, snippet: h.snippet))
+          .toList(growable: false),
+    );
   }
 }

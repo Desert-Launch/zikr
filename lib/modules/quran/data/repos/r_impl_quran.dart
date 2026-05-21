@@ -80,6 +80,29 @@ class RImplQuran implements RQuran {
   ];
 
   @override
+  Future<Either<Failure, List<QuranSearchHit>>> search(String query, {int limit = 200}) async {
+    final q = query.trim();
+    if (q.isEmpty) return const Right([]);
+    try {
+      final normalised = DSLocalQuran.normaliseForSearch(q);
+      if (normalised.isEmpty) return const Right([]);
+      final raw = await _local.searchNormalised(normalised, limit: limit);
+      // Sort by (surah, ayah) ascending — matches the surface order users expect.
+      final hits = raw
+          .map((e) => QuranSearchHit(ref: e.ref, snippet: e.snippet))
+          .toList()
+        ..sort((a, b) {
+          final s = a.ref.surah.compareTo(b.ref.surah);
+          return s != 0 ? s : a.ref.ayah.compareTo(b.ref.ayah);
+        });
+      return Right(hits);
+    } catch (e, st) {
+      ErrorHelper.printDebugError(name: 'RImplQuran.search', error: e, stackTrace: st);
+      return Left(Failure.unexpectedFailure(message: e.toString()));
+    }
+  }
+
+  @override
   Future<Either<Failure, List<ParamAyahRef>>> ayatOfJuz(int juz) async {
     if (juz < 1 || juz > 30) {
       return Left(Failure.validationFailure(message: 'Juz must be 1..30'));

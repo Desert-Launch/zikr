@@ -104,13 +104,15 @@ class RImplAudio implements RAudio {
     }
   }
 
-  /// Generates the AlQuran.cloud fallback URL for a specific reciter/ayah,
-  /// or null if no fallback exists.
-  String? fallbackUrlFor(String reciterId, int surah, int ayah, {int bitrate = 128}) {
+  @override
+  String? fallbackUrlFor({
+    required String reciterId,
+    required int surah,
+    required int ayah,
+  }) {
     return _remote.fallbackUrl(
       reciterId: reciterId,
       ayahNumber: _sequentialAyahNumber(surah, ayah),
-      bitrate: bitrate,
     );
   }
 }

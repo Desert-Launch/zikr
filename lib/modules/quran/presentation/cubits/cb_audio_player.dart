@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import 'package:audio_session/audio_session.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:just_audio/just_audio.dart';
 import 'package:just_audio_background/just_audio_background.dart';
@@ -35,10 +36,20 @@ class CBAudioPlayer extends Cubit<SAudioPlayer> {
   String? _activeReciterId;
   String? _activeReciterName;
 
+  /// Indices in the current concatenating playlist where we have already
+  /// swapped in the AlQuran.cloud fallback URL. Prevents an infinite retry
+  /// loop if the fallback also errors.
+  final Set<int> _fallbackAttempted = <int>{};
+  bool _resumeAfterInterruption = false;
+
   StreamSubscription<PlayerState>? _stateSub;
   StreamSubscription<Duration>? _posSub;
   StreamSubscription<Duration?>? _durSub;
   StreamSubscription<int?>? _idxSub;
+  StreamSubscription<PlaybackEvent>? _errSub;
+  StreamSubscription<void>? _noisySub;
+  StreamSubscription<AudioInterruptionEvent>? _interruptSub;
+  ConcatenatingAudioSource? _playlist;
 
   Future<void> _hydrate() async {
     final res = await _reciters.active();
@@ -77,6 +88,108 @@ class CBAudioPlayer extends Cubit<SAudioPlayer> {
       if (idx < 0 || idx >= q.length) return;
       emit(state.copyWith(queueIndex: idx, currentAyah: q[idx]));
     });
+    // just_audio 0.9.x surfaces playback errors through `playbackEventStream`'s
+    // error channel — there is no dedicated `errorStream` until 0.10.x.
+    _errSub = _player.playbackEventStream.listen(
+      (_) {},
+      onError: (Object e, StackTrace st) {
+        if (e is PlayerException) {
+          unawaited(_handlePlaybackError(e));
+        } else {
+          AppLogger.warning('Playback stream error: $e', tag: 'CBAudioPlayer');
+        }
+      },
+    );
+
+    unawaited(_configureSession());
+  }
+
+  Future<void> _configureSession() async {
+    try {
+      final session = await AudioSession.instance;
+      await session.configure(const AudioSessionConfiguration.speech());
+      _noisySub = session.becomingNoisyEventStream.listen((_) async {
+        // Headphone unplugged / Bluetooth disconnect → always pause.
+        if (_player.playing) {
+          AppLogger.info('Audio becoming noisy → pause', tag: 'CBAudioPlayer');
+          await _player.pause();
+        }
+      });
+      _interruptSub = session.interruptionEventStream.listen(_onInterruption);
+    } catch (e, st) {
+      AppLogger.warning('audio_session configure failed: $e',
+          tag: 'CBAudioPlayer');
+      AppLogger.error('audio_session configure',
+          error: e, stackTrace: st, tag: 'CBAudioPlayer');
+    }
+  }
+
+  Future<void> _onInterruption(AudioInterruptionEvent event) async {
+    if (event.begin) {
+      _resumeAfterInterruption = _player.playing;
+      if (_resumeAfterInterruption) {
+        await _player.pause();
+      }
+      return;
+    }
+    // Interruption ended.
+    if (event.type == AudioInterruptionType.pause && _resumeAfterInterruption) {
+      _resumeAfterInterruption = false;
+      await _player.play();
+    } else {
+      _resumeAfterInterruption = false;
+    }
+  }
+
+  /// Called when just_audio fails to load/play the current source.
+  /// We try to swap the current item for its AlQuran.cloud fallback URL once;
+  /// if that also fails (or no fallback exists), we skip to the next ayah.
+  Future<void> _handlePlaybackError(PlayerException error) async {
+    final playlist = _playlist;
+    final idx = _player.currentIndex;
+    AppLogger.warning(
+      'Audio playback error: ${error.message} (idx=$idx)',
+      tag: 'CBAudioPlayer',
+    );
+    if (playlist == null || idx == null || idx < 0 || idx >= state.queue.length) {
+      emit(state.copyWith(status: PlayerStatus.error, error: error.message));
+      return;
+    }
+    final ayah = state.queue[idx];
+    if (_fallbackAttempted.contains(idx)) {
+      // Already tried fallback at this index — skip ahead.
+      await _player.seekToNext();
+      return;
+    }
+    final fallback = _audio.fallbackUrlFor(
+      reciterId: _activeReciterId ?? 'alafasy',
+      surah: ayah.surah,
+      ayah: ayah.ayah,
+    );
+    if (fallback == null) {
+      await _player.seekToNext();
+      return;
+    }
+    try {
+      _fallbackAttempted.add(idx);
+      final tag = MediaItem(
+        id: '${ayah.surah}_${ayah.ayah}',
+        album: 'القرآن الكريم${_activeReciterName != null ? ' - $_activeReciterName' : ''}',
+        title: '${'سورة'} ${ayah.surah} - الآية ${ayah.ayah}',
+        artist: _activeReciterName ?? '',
+      );
+      final replacement = LockCachingAudioSource(Uri.parse(fallback), tag: tag);
+      await playlist.removeAt(idx);
+      await playlist.insert(idx, replacement);
+      await _player.seek(Duration.zero, index: idx);
+      await _player.play();
+      AppLogger.info('Swapped to fallback for ${ayah.key}',
+          tag: 'CBAudioPlayer');
+    } catch (e, st) {
+      AppLogger.error('Fallback swap failed',
+          error: e, stackTrace: st, tag: 'CBAudioPlayer');
+      await _player.seekToNext();
+    }
   }
 
   Future<void> setReciter(String reciterId) async {
@@ -131,6 +244,8 @@ class CBAudioPlayer extends Cubit<SAudioPlayer> {
       }
 
       final playlist = ConcatenatingAudioSource(children: sources);
+      _playlist = playlist;
+      _fallbackAttempted.clear();
       await _player.setAudioSource(playlist, initialIndex: 0);
       await _player.setSpeed(state.options.speed);
       _applyLoopMode();
@@ -222,6 +337,9 @@ class CBAudioPlayer extends Cubit<SAudioPlayer> {
     await _posSub?.cancel();
     await _durSub?.cancel();
     await _idxSub?.cancel();
+    await _errSub?.cancel();
+    await _noisySub?.cancel();
+    await _interruptSub?.cancel();
     await _player.dispose();
     return super.close();
   }

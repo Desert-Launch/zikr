@@ -9,6 +9,14 @@ abstract class RAudio {
     required int ayah,
   });
 
+  /// Returns the AlQuran.cloud fallback URL for this ayah, or null when no
+  /// known mapping exists for [reciterId]. Used when the primary CDN 404s.
+  String? fallbackUrlFor({
+    required String reciterId,
+    required int surah,
+    required int ayah,
+  });
+
   /// Resolve a contiguous range of ayat; the list is ordered (surah, ayah) ascending.
   Future<Either<Failure, List<String>>> resolveRange({
     required String reciterId,

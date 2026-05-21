@@ -49,5 +49,24 @@
 
   "search_title": "Search the Quran",
   "search_hint": "Search for a verse or word...",
-  "search_no_results": "No results found"
+  "search_no_results": "No results found",
+  "search_results_count": "{{count}} result(s)",
+  "search_min_chars": "Type at least 2 characters",
+
+  "player_now_playing": "Now playing",
+  "player_surah_label": "Surah",
+  "player_ayah_label": "Ayah",
+  "player_repeat": "Repeat",
+  "player_repeat_off": "Off",
+  "player_repeat_single": "Ayah",
+  "player_repeat_range": "Range",
+  "player_speed": "Speed",
+  "player_range_title": "Play range",
+  "player_range_surah": "Surah",
+  "player_range_surah_hint": "Select a surah",
+  "player_range_from": "From",
+  "player_range_to": "To",
+  "player_range_play": "Play range",
+  "audio_offline_warning": "Airplane mode — only downloaded ayat will play",
+  "audio_fallback_used": "Switched to backup audio source"
 }

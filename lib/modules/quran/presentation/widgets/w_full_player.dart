@@ -165,7 +165,7 @@ class _Scrubber extends StatelessWidget {
     return BlocBuilder<CBAudioPlayer, SAudioPlayer>(
       buildWhen: (a, b) => a.position != b.position || a.duration != b.duration,
       builder: (context, state) {
-        final cubit = context.read<CBAudioPlayer>();
+        final cubit = BlocProvider.of<CBAudioPlayer>(context);
         final maxMs = state.duration.inMilliseconds;
         final posMs = state.position.inMilliseconds.clamp(0, maxMs);
         final sliderMax = maxMs <= 0 ? 1.0 : maxMs.toDouble();
@@ -222,7 +222,7 @@ class _Transport extends StatelessWidget {
       buildWhen: (a, b) =>
           a.status != b.status || a.queueIndex != b.queueIndex || a.queue.length != b.queue.length,
       builder: (context, state) {
-        final cubit = context.read<CBAudioPlayer>();
+        final cubit = BlocProvider.of<CBAudioPlayer>(context);
         final isPlaying = state.isPlaying;
         final isLoading = state.isLoadingLike;
         return Row(
@@ -293,7 +293,7 @@ class _RepeatRow extends StatelessWidget {
     return BlocBuilder<CBAudioPlayer, SAudioPlayer>(
       buildWhen: (a, b) => a.options.repeatMode != b.options.repeatMode,
       builder: (context, state) {
-        final cubit = context.read<CBAudioPlayer>();
+        final cubit = BlocProvider.of<CBAudioPlayer>(context);
         final mode = state.options.repeatMode;
         return Padding(
           padding: EdgeInsets.symmetric(horizontal: 4.w),
@@ -346,7 +346,7 @@ class _SpeedRow extends StatelessWidget {
     return BlocBuilder<CBAudioPlayer, SAudioPlayer>(
       buildWhen: (a, b) => a.options.speed != b.options.speed,
       builder: (context, state) {
-        final cubit = context.read<CBAudioPlayer>();
+        final cubit = BlocProvider.of<CBAudioPlayer>(context);
         final speed = state.options.speed.clamp(0.5, 2.0);
         return Column(
           children: [

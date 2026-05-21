@@ -49,5 +49,24 @@
 
   "search_title": "بحث في القرآن",
   "search_hint": "ابحث عن آية أو كلمة...",
-  "search_no_results": "لا توجد نتائج"
+  "search_no_results": "لا توجد نتائج",
+  "search_results_count": "{{count}} نتيجة",
+  "search_min_chars": "اكتب حرفين على الأقل",
+
+  "player_now_playing": "قيد التشغيل",
+  "player_surah_label": "سورة",
+  "player_ayah_label": "الآية",
+  "player_repeat": "تكرار",
+  "player_repeat_off": "إيقاف",
+  "player_repeat_single": "آية",
+  "player_repeat_range": "مقطع",
+  "player_speed": "السرعة",
+  "player_range_title": "تشغيل مقطع",
+  "player_range_surah": "السورة",
+  "player_range_surah_hint": "اختر السورة",
+  "player_range_from": "من",
+  "player_range_to": "إلى",
+  "player_range_play": "تشغيل المقطع",
+  "audio_offline_warning": "وضع الطيران — لا يمكن تشغيل ما لم يُنزَّل",
+  "audio_fallback_used": "تم التبديل إلى مصدر بديل"
 }

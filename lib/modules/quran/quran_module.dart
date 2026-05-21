@@ -41,6 +41,7 @@ import 'package:quran/modules/quran/presentation/cubits/cb_audio_player.dart';
 import 'package:quran/modules/quran/presentation/cubits/cb_bookmarks.dart';
 import 'package:quran/modules/quran/presentation/cubits/cb_downloads.dart';
 import 'package:quran/modules/quran/presentation/cubits/cb_mushaf_reader.dart';
+import 'package:quran/modules/quran/presentation/cubits/cb_quran_search.dart';
 import 'package:quran/modules/quran/presentation/cubits/cb_reciter.dart';
 import 'package:quran/modules/quran/presentation/cubits/cb_surah_list.dart';
 import 'package:quran/modules/quran/presentation/screens/sn_bookmarks.dart';
@@ -147,6 +148,7 @@ class QuranModule extends Module {
     i.add<CBBookmarks>(
       () => CBBookmarks(i.get<UCGetBookmarks>(), i.get<UCSaveBookmark>()),
     );
+    i.add<CBQuranSearch>(() => CBQuranSearch(i.get<UCSearchQuran>()));
   }
 
   /// Eagerly opens the Hive boxes the module needs. Call from a screen `initState`
