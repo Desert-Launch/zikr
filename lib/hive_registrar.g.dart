@@ -3,25 +3,46 @@
 // Check in to version control
 
 import 'package:hive_ce/hive.dart';
+import 'package:quran/core/data/models/m_app_settings.dart';
+import 'package:quran/modules/adhan/data/models/m_adhan_preference.dart';
+import 'package:quran/modules/auth/data/models/m_auth_token.dart';
+import 'package:quran/modules/auth/data/models/m_user.dart';
+import 'package:quran/modules/prayer/data/models/m_prayer_cache.dart';
+import 'package:quran/modules/prayer/data/models/m_prayer_settings.dart';
 import 'package:quran/modules/quran/data/models/m_bookmark.dart';
 import 'package:quran/modules/quran/data/models/m_download_task.dart';
 import 'package:quran/modules/quran/data/models/m_last_read.dart';
 import 'package:quran/modules/quran/data/models/m_reciter_pref.dart';
+import 'package:quran/modules/settings/data/models/m_theme_pref.dart';
 
 extension HiveRegistrar on HiveInterface {
   void registerAdapters() {
+    registerAdapter(MAdhanPreferenceAdapter());
+    registerAdapter(MAppSettingsAdapter());
+    registerAdapter(MAuthTokenAdapter());
     registerAdapter(MBookmarkAdapter());
     registerAdapter(MDownloadTaskAdapter());
     registerAdapter(MLastReadAdapter());
+    registerAdapter(MPrayerCacheAdapter());
+    registerAdapter(MPrayerSettingsAdapter());
     registerAdapter(MReciterPrefAdapter());
+    registerAdapter(MThemePrefAdapter());
+    registerAdapter(MUserAdapter());
   }
 }
 
 extension IsolatedHiveRegistrar on IsolatedHiveInterface {
   void registerAdapters() {
+    registerAdapter(MAdhanPreferenceAdapter());
+    registerAdapter(MAppSettingsAdapter());
+    registerAdapter(MAuthTokenAdapter());
     registerAdapter(MBookmarkAdapter());
     registerAdapter(MDownloadTaskAdapter());
     registerAdapter(MLastReadAdapter());
+    registerAdapter(MPrayerCacheAdapter());
+    registerAdapter(MPrayerSettingsAdapter());
     registerAdapter(MReciterPrefAdapter());
+    registerAdapter(MThemePrefAdapter());
+    registerAdapter(MUserAdapter());
   }
 }

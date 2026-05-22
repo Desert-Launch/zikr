@@ -1,19 +1,30 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_modular/flutter_modular.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:hive_ce_flutter/hive_flutter.dart';
 import 'package:just_audio_background/just_audio_background.dart';
 import 'package:localize_and_translate/localize_and_translate.dart';
+import 'package:quran/core/cubits/cb_theme.dart';
+import 'package:quran/core/cubits/s_theme.dart';
+import 'package:quran/core/data/models/m_app_settings.dart';
 import 'package:quran/core/services/logging/app_logger.dart';
+import 'package:quran/core/services/notifications/notifications_service.dart';
 import 'package:quran/core/services/routes/app_module.dart';
 import 'package:quran/core/theme/app_themes.dart';
-import 'package:quran/core/theme/theme_manager.dart';
+import 'package:quran/modules/auth/data/models/m_auth_token.dart';
+import 'package:quran/modules/auth/data/models/m_user.dart';
+import 'package:quran/modules/auth/presentation/cubits/cb_auth.dart';
+import 'package:quran/modules/adhan/data/models/m_adhan_preference.dart';
+import 'package:quran/modules/prayer/data/models/m_prayer_cache.dart';
+import 'package:quran/modules/prayer/data/models/m_prayer_settings.dart';
 import 'package:quran/modules/quran/data/models/m_bookmark.dart';
 import 'package:quran/modules/quran/data/models/m_download_task.dart';
 import 'package:quran/modules/quran/data/models/m_last_read.dart';
 import 'package:quran/modules/quran/data/models/m_reciter_pref.dart';
 import 'package:quran/modules/quran/data/sources/local/quran_hive_registrar.dart';
+import 'package:quran/modules/settings/data/models/m_theme_pref.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -32,17 +43,21 @@ Future<void> main() async {
     assetLoader: const AssetLoaderRootBundleJson('assets/lang/'),
   );
 
-  // localize_and_translate initialises the *legacy* hive_flutter — that's a
-  // different instance from hive_ce. We must initialise hive_ce separately
-  // before opening any of our own boxes.
   await Hive.initFlutter();
   QuranHiveRegistrar.registerAdapters();
 
-  // Eagerly open Hive boxes so the first reads in cubits aren't async.
+  // Open every persisted box before runApp so cubit reads are synchronous.
   await Hive.openBox<MBookmark>('quran_bookmarks');
   await Hive.openBox<MLastRead>('quran_last_read');
   await Hive.openBox<MReciterPref>('quran_reciter_pref');
   await Hive.openBox<MDownloadTask>('quran_download_tasks');
+  await Hive.openBox<MThemePref>('app_theme_pref');
+  await Hive.openBox<MAppSettings>('app_settings');
+  await Hive.openBox<MUser>('app_user');
+  await Hive.openBox<MAuthToken>('app_auth_token');
+  await Hive.openBox<MPrayerSettings>('prayer_settings');
+  await Hive.openBox<MPrayerCache>('prayer_cache');
+  await Hive.openBox<MAdhanPreference>('adhan_preference');
 
   await JustAudioBackground.init(
     androidNotificationChannelId: 'com.app.quran.audio',
@@ -56,8 +71,23 @@ Future<void> main() async {
   );
 }
 
-class _Root extends StatelessWidget {
+class _Root extends StatefulWidget {
   const _Root();
+
+  @override
+  State<_Root> createState() => _RootState();
+}
+
+class _RootState extends State<_Root> {
+  @override
+  void initState() {
+    super.initState();
+    // Load theme + auth state in parallel before the first frame paints.
+    Modular.get<CBTheme>().load();
+    Modular.get<CBAuth>().bootstrap();
+    // Wire notification channels + tap router (silent if not granted yet).
+    Modular.get<NotificationsService>().init();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -66,16 +96,15 @@ class _Root extends StatelessWidget {
       minTextAdapt: true,
       splitScreenMode: true,
       builder: (context, _) {
-        return AnimatedBuilder(
-          animation: Modular.get<ThemeManager>(),
-          builder: (context, _) {
-            final themeManager = Modular.get<ThemeManager>();
+        return BlocBuilder<CBTheme, STheme>(
+          bloc: Modular.get<CBTheme>(),
+          builder: (_, __) {
             return MaterialApp.router(
               title: 'قرآن',
               debugShowCheckedModeBanner: false,
-              theme: AppThemes.light,
-              darkTheme: AppThemes.dark,
-              themeMode: themeManager.themeMode,
+              theme: buildLightTheme(),
+              darkTheme: buildDarkTheme(),
+              themeMode: Modular.get<CBTheme>().toMaterialMode(),
               routerConfig: Modular.routerConfig,
               localizationsDelegates: LocalizeAndTranslate.delegates,
               supportedLocales: LocalizeAndTranslate.getLocals(),

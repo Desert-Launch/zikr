@@ -1,0 +1,115 @@
+[
+  {
+    "id": "adhan_makkah",
+    "name_ar": "أذان مكة المكرمة",
+    "name_en": "Makkah Adhan",
+    "muezzin_ar": "الشيخ علي أحمد ملا",
+    "muezzin_en": "Sheikh Ali Ahmad Mulla",
+    "style": "hijazi",
+    "asset": "assets/audio/adhan/adhan_01_makkah.mp3",
+    "is_fajr_default": false,
+    "duration_seconds": 158
+  },
+  {
+    "id": "adhan_madinah",
+    "name_ar": "أذان المدينة المنورة",
+    "name_en": "Madinah Adhan",
+    "muezzin_ar": "الشيخ عصام بخاري",
+    "muezzin_en": "Sheikh Essam Bukhari",
+    "style": "hijazi",
+    "asset": "assets/audio/adhan/adhan_02_madinah.mp3",
+    "is_fajr_default": false,
+    "duration_seconds": 165
+  },
+  {
+    "id": "adhan_egypt_rifat",
+    "name_ar": "أذان مصر — الشيخ محمد رفعت",
+    "name_en": "Egypt — Sheikh Mohamed Rifat",
+    "muezzin_ar": "الشيخ محمد رفعت",
+    "muezzin_en": "Sheikh Mohamed Rifat",
+    "style": "egyptian_classical",
+    "asset": "assets/audio/adhan/adhan_03_egypt_rifat.mp3",
+    "is_fajr_default": false,
+    "default_for_locales": ["ar-EG"],
+    "duration_seconds": 174
+  },
+  {
+    "id": "adhan_alafasy",
+    "name_ar": "أذان الشيخ مشاري العفاسي",
+    "name_en": "Sheikh Mishary Al-Afasy",
+    "muezzin_ar": "الشيخ مشاري راشد العفاسي",
+    "muezzin_en": "Sheikh Mishary Rashid Al-Afasy",
+    "style": "modern",
+    "asset": "assets/audio/adhan/adhan_04_alafasy.mp3",
+    "is_fajr_default": false,
+    "duration_seconds": 162
+  },
+  {
+    "id": "adhan_qatami",
+    "name_ar": "أذان ناصر القطامي",
+    "name_en": "Naseer Al-Qatami",
+    "muezzin_ar": "الشيخ ناصر القطامي",
+    "muezzin_en": "Sheikh Naseer Al-Qatami",
+    "style": "modern",
+    "asset": "assets/audio/adhan/adhan_05_qatami.mp3",
+    "is_fajr_default": false,
+    "duration_seconds": 168
+  },
+  {
+    "id": "adhan_islam_sobhi",
+    "name_ar": "أذان إسلام صبحي",
+    "name_en": "Islam Sobhi",
+    "muezzin_ar": "إسلام صبحي",
+    "muezzin_en": "Islam Sobhi",
+    "style": "egyptian_modern",
+    "asset": "assets/audio/adhan/adhan_06_islam_sobhi.mp3",
+    "is_fajr_default": false,
+    "duration_seconds": 156
+  },
+  {
+    "id": "adhan_ozcan",
+    "name_ar": "أذان حافظ مصطفى أوزجان (تركيا)",
+    "name_en": "Hafiz Mustafa Özcan (Turkey)",
+    "muezzin_ar": "حافظ مصطفى أوزجان",
+    "muezzin_en": "Hafiz Mustafa Özcan",
+    "style": "ottoman",
+    "asset": "assets/audio/adhan/adhan_07_ozcan_turkey.mp3",
+    "is_fajr_default": false,
+    "duration_seconds": 180
+  },
+  {
+    "id": "adhan_aqsa",
+    "name_ar": "أذان المسجد الأقصى",
+    "name_en": "Al-Aqsa Adhan",
+    "muezzin_ar": "إمام المسجد الأقصى",
+    "muezzin_en": "Imam of Al-Aqsa Mosque",
+    "style": "levantine",
+    "asset": "assets/audio/adhan/adhan_08_aqsa.mp3",
+    "is_fajr_default": false,
+    "duration_seconds": 170
+  },
+  {
+    "id": "adhan_abdul_basit",
+    "name_ar": "أذان الشيخ عبد الباسط عبد الصمد",
+    "name_en": "Sheikh Abdul Basit Abdus-Samad",
+    "muezzin_ar": "الشيخ عبد الباسط عبد الصمد",
+    "muezzin_en": "Sheikh Abdul Basit Abdus-Samad",
+    "style": "egyptian_classical",
+    "asset": "assets/audio/adhan/adhan_09_abdul_basit.mp3",
+    "is_fajr_default": false,
+    "duration_seconds": 188
+  },
+  {
+    "id": "adhan_fajr_husary",
+    "name_ar": "أذان الفجر — الشيخ الحصري",
+    "name_en": "Fajr Adhan — Sheikh Al-Husary",
+    "muezzin_ar": "الشيخ محمود خليل الحصري",
+    "muezzin_en": "Sheikh Mahmoud Khalil Al-Husary",
+    "style": "egyptian_classical",
+    "asset": "assets/audio/adhan/adhan_10_fajr_husary.mp3",
+    "is_fajr_default": true,
+    "duration_seconds": 195,
+    "note_ar": "يحتوي على الصلاة خير من النوم",
+    "note_en": "Includes 'Prayer is better than sleep'"
+  }
+]

@@ -45,5 +45,14 @@
 	<true/>
 	<key>UIApplicationSupportsIndirectInputEvents</key>
 	<true/>
+	<key>NSLocationWhenInUseUsageDescription</key>
+	<string>تحديد موقعك يُستخدم لحساب مواقيت الصلاة وعرض المساجد القريبة. Your location is used to calculate prayer times and show nearby mosques.</string>
+	<key>NSLocationAlwaysAndWhenInUseUsageDescription</key>
+	<string>تحديد موقعك يُستخدم لحساب مواقيت الصلاة وعرض المساجد القريبة. Your location is used to calculate prayer times and show nearby mosques.</string>
+	<key>UIBackgroundModes</key>
+	<array>
+		<string>audio</string>
+		<string>fetch</string>
+	</array>
 </dict>
 </plist>

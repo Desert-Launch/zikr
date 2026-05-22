@@ -4,6 +4,67 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:quran/core/responsive/responsive_extensions.dart';
 
+/// Builds the v2 green/gold light theme. Used as `MaterialApp.theme`.
+ThemeData buildLightTheme() {
+  return ThemeData(
+    useMaterial3: true,
+    brightness: Brightness.light,
+    scaffoldBackgroundColor: AppColorsLight.background,
+    colorScheme: const ColorScheme.light(
+      primary: AppColorsLight.primary,
+      onPrimary: AppColorsLight.onPrimary,
+      secondary: AppColorsLight.accent,
+      onSecondary: AppColorsLight.onPrimary,
+      surface: AppColorsLight.surface,
+      onSurface: AppColorsLight.onSurface,
+      error: AppColorsLight.error,
+      onError: AppColorsLight.onPrimary,
+    ),
+    textTheme: GoogleFonts.tajawalTextTheme(ThemeData.light().textTheme),
+    appBarTheme: AppBarTheme(
+      backgroundColor: AppColorsLight.surface,
+      foregroundColor: AppColorsLight.onSurface,
+      elevation: 0,
+      titleTextStyle: GoogleFonts.tajawal(
+        color: AppColorsLight.onSurface, fontSize: 18.sp, fontWeight: FontWeight.w700,
+      ),
+    ),
+    dividerColor: AppColorsLight.border,
+  );
+}
+
+/// Builds the v2 green/gold dark theme. Used as `MaterialApp.darkTheme`.
+ThemeData buildDarkTheme() {
+  return ThemeData(
+    useMaterial3: true,
+    brightness: Brightness.dark,
+    scaffoldBackgroundColor: AppColorsDark.background,
+    colorScheme: const ColorScheme.dark(
+      primary: AppColorsDark.primary,
+      onPrimary: AppColorsDark.onPrimary,
+      secondary: AppColorsDark.accent,
+      onSecondary: Colors.black,
+      surface: AppColorsDark.surface,
+      onSurface: AppColorsDark.onSurface,
+      error: AppColorsDark.error,
+      onError: AppColorsDark.onPrimary,
+    ),
+    textTheme: GoogleFonts.tajawalTextTheme(ThemeData.dark().textTheme),
+    appBarTheme: AppBarTheme(
+      backgroundColor: AppColorsDark.surface,
+      foregroundColor: AppColorsDark.onSurface,
+      elevation: 0,
+      titleTextStyle: GoogleFonts.tajawal(
+        color: AppColorsDark.onSurface, fontSize: 18.sp, fontWeight: FontWeight.w700,
+      ),
+    ),
+    dividerColor: AppColorsDark.border,
+  );
+}
+
+/// Legacy purple themes preserved for screens that still reference them
+/// directly. New screens go through [buildLightTheme]/[buildDarkTheme]
+/// and `Theme.of(context).colorScheme`.
 class AppThemes {
   static ThemeData get light => ThemeData(
     // Use Tajawal as the default font for the entire app (matching Board app)

@@ -395,3 +395,40 @@ class AppColors {
   static const Color purple500 = subjectChemistry;
   static const Color green300 = Color(0xFF8BC48A);
 }
+
+/// Green/gold palette for the v2 brand (per All_Modules_Plan §3).
+///
+/// Coexists with the existing purple tokens in [AppColors] so screens migrate
+/// at their own pace. New screens should pull from here; existing Quran-module
+/// screens stay on [AppColors] until they're refreshed.
+class AppColorsLight {
+  AppColorsLight._();
+  static const Color primary = Color(0xFF0E6B47);
+  static const Color primaryDark = Color(0xFF0A5639);
+  static const Color accent = Color(0xFFC9A227);
+  static const Color background = Color(0xFFF8F8F8);
+  static const Color surface = Color(0xFFFFFFFF);
+  static const Color onPrimary = Color(0xFFFFFFFF);
+  static const Color onBackground = Color(0xFF1A1A1A);
+  static const Color onSurface = Color(0xFF1A1A1A);
+  static const Color muted = Color(0xFF6B6B6B);
+  static const Color border = Color(0xFFE0E0E0);
+  static const Color error = Color(0xFFD32F2F);
+  static const Color success = Color(0xFF2E7D32);
+}
+
+class AppColorsDark {
+  AppColorsDark._();
+  static const Color primary = Color(0xFF2A9D6B);
+  static const Color primaryDark = Color(0xFF0E6B47);
+  static const Color accent = Color(0xFFE0BD4A);
+  static const Color background = Color(0xFF0F1411);
+  static const Color surface = Color(0xFF1A211D);
+  static const Color onPrimary = Color(0xFFFFFFFF);
+  static const Color onBackground = Color(0xFFEDEDED);
+  static const Color onSurface = Color(0xFFEDEDED);
+  static const Color muted = Color(0xFF9A9A9A);
+  static const Color border = Color(0xFF2A3530);
+  static const Color error = Color(0xFFEF5350);
+  static const Color success = Color(0xFF66BB6A);
+}
