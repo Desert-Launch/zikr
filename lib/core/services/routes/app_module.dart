@@ -23,16 +23,35 @@ import 'package:quran/modules/auth/domain/usecases/uc_get_current_user.dart';
 import 'package:quran/modules/auth/domain/usecases/uc_is_logged_in.dart';
 import 'package:quran/modules/auth/domain/usecases/uc_logout.dart';
 import 'package:quran/modules/auth/presentation/cubits/cb_auth.dart';
+import 'package:quran/modules/azkar/azkar_module.dart';
+import 'package:quran/modules/azkar/data/datasources/local/ds_local_azkar.dart';
+import 'package:quran/modules/azkar/data/sources/local/box_azkar_favorite.dart';
+import 'package:quran/modules/azkar/data/sources/local/box_azkar_progress.dart';
 import 'package:quran/modules/home/home_module.dart';
+import 'package:quran/modules/khatma/data/sources/local/box_khatma_completion.dart';
+import 'package:quran/modules/khatma/data/sources/local/box_khatma_day.dart';
+import 'package:quran/modules/khatma/data/sources/local/box_khatma_plan.dart';
+import 'package:quran/modules/khatma/khatma_module.dart';
+import 'package:quran/modules/khatma/presentation/cubits/cb_khatma.dart';
+import 'package:quran/modules/legal/legal_module.dart';
 import 'package:quran/modules/onboarding/onboarding_module.dart';
 import 'package:quran/modules/prayer/data/datasources/local/ds_location.dart';
 import 'package:quran/modules/prayer/data/sources/local/box_prayer_cache.dart';
 import 'package:quran/modules/prayer/data/sources/local/box_prayer_settings.dart';
 import 'package:quran/modules/prayer/prayer_module.dart';
 import 'package:quran/modules/prayer/presentation/cubits/cb_prayer_times.dart';
+import 'package:quran/modules/qibla/qibla_module.dart';
 import 'package:quran/modules/quran/quran_module.dart';
+import 'package:quran/modules/reminders/data/sources/local/box_reminders.dart';
+import 'package:quran/modules/reminders/presentation/cubits/cb_reminders.dart';
+import 'package:quran/modules/reminders/reminders_module.dart';
 import 'package:quran/modules/settings/data/sources/local/box_theme_pref.dart';
 import 'package:quran/modules/settings/settings_module.dart';
+import 'package:quran/modules/tasbih/data/datasources/local/ds_hourly_tasbih.dart';
+import 'package:quran/modules/tasbih/data/sources/local/box_tasbih_counter.dart';
+import 'package:quran/modules/tasbih/data/sources/local/box_tasbih_history.dart';
+import 'package:quran/modules/tasbih/presentation/cubits/cb_tasbih.dart';
+import 'package:quran/modules/tasbih/tasbih_module.dart';
 import 'package:quran/presentation/sn_splash.dart';
 
 /// Root [Module]. Hosts app-wide singletons and mounts all feature modules.
@@ -52,6 +71,22 @@ class AppModule extends Module {
     i.addSingleton<BoxPrayerSettings>(BoxPrayerSettings.new);
     i.addSingleton<BoxPrayerCache>(BoxPrayerCache.new);
     i.addSingleton<BoxAdhanPreference>(BoxAdhanPreference.new);
+    i.addSingleton<BoxAzkarFavorite>(BoxAzkarFavorite.new);
+    i.addSingleton<BoxAzkarProgress>(BoxAzkarProgress.new);
+    i.addSingleton<BoxTasbihCounter>(BoxTasbihCounter.new);
+    i.addSingleton<BoxTasbihHistory>(BoxTasbihHistory.new);
+    i.addSingleton<BoxReminders>(BoxReminders.new);
+    i.addSingleton<BoxKhatmaPlan>(BoxKhatmaPlan.new);
+    i.addSingleton<BoxKhatmaDay>(BoxKhatmaDay.new);
+    i.addSingleton<BoxKhatmaCompletion>(BoxKhatmaCompletion.new);
+
+    // Azkar data source
+    i.addSingleton<DSLocalAzkar>(DSLocalAzkar.new);
+
+    // Hourly tasbih scheduler — depends on the notifications service below.
+    i.addSingleton<DSHourlyTasbih>(
+      () => DSHourlyTasbih(i.get<NotificationsService>()),
+    );
 
     // Adhan
     i.addSingleton<DSLocalAdhan>(DSLocalAdhan.new);
@@ -110,6 +145,26 @@ class AppModule extends Module {
         localeTag: 'ar-EG',
       ),
     );
+    i.addSingleton<CBTasbih>(
+      () => CBTasbih(
+        counterBox: i.get<BoxTasbihCounter>(),
+        historyBox: i.get<BoxTasbihHistory>(),
+        hourly: i.get<DSHourlyTasbih>(),
+      ),
+    );
+    i.addSingleton<CBReminders>(
+      () => CBReminders(
+        box: i.get<BoxReminders>(),
+        notifications: i.get<NotificationsService>(),
+      ),
+    );
+    i.addSingleton<CBKhatma>(
+      () => CBKhatma(
+        planBox: i.get<BoxKhatmaPlan>(),
+        dayBox: i.get<BoxKhatmaDay>(),
+        completionBox: i.get<BoxKhatmaCompletion>(),
+      ),
+    );
   }
 
   @override
@@ -125,6 +180,12 @@ class AppModule extends Module {
     r.module(RoutesNames.quranBase, module: QuranModule());
     r.module(RoutesNames.prayerBase, module: PrayerModule());
     r.module(RoutesNames.adhanBase, module: AdhanModule());
+    r.module(RoutesNames.azkarBase, module: AzkarModule());
+    r.module(RoutesNames.tasbihBase, module: TasbihModule());
+    r.module(RoutesNames.remindersBase, module: RemindersModule());
+    r.module(RoutesNames.qiblaBase, module: QiblaModule());
+    r.module(RoutesNames.khatmaBase, module: KhatmaModule());
+    r.module(RoutesNames.legalBase, module: LegalModule());
     r.module(RoutesNames.settingsBase, module: SettingsModule());
   }
 }

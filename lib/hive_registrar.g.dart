@@ -7,25 +7,41 @@ import 'package:quran/core/data/models/m_app_settings.dart';
 import 'package:quran/modules/adhan/data/models/m_adhan_preference.dart';
 import 'package:quran/modules/auth/data/models/m_auth_token.dart';
 import 'package:quran/modules/auth/data/models/m_user.dart';
+import 'package:quran/modules/azkar/data/models/m_azkar_favorite.dart';
+import 'package:quran/modules/azkar/data/models/m_azkar_progress.dart';
+import 'package:quran/modules/khatma/data/models/m_khatma_completion.dart';
+import 'package:quran/modules/khatma/data/models/m_khatma_day.dart';
+import 'package:quran/modules/khatma/data/models/m_khatma_plan.dart';
 import 'package:quran/modules/prayer/data/models/m_prayer_cache.dart';
 import 'package:quran/modules/prayer/data/models/m_prayer_settings.dart';
 import 'package:quran/modules/quran/data/models/m_bookmark.dart';
 import 'package:quran/modules/quran/data/models/m_download_task.dart';
 import 'package:quran/modules/quran/data/models/m_last_read.dart';
 import 'package:quran/modules/quran/data/models/m_reciter_pref.dart';
+import 'package:quran/modules/reminders/data/models/m_reminder.dart';
 import 'package:quran/modules/settings/data/models/m_theme_pref.dart';
+import 'package:quran/modules/tasbih/data/models/m_tasbih_counter.dart';
+import 'package:quran/modules/tasbih/data/models/m_tasbih_history.dart';
 
 extension HiveRegistrar on HiveInterface {
   void registerAdapters() {
     registerAdapter(MAdhanPreferenceAdapter());
     registerAdapter(MAppSettingsAdapter());
     registerAdapter(MAuthTokenAdapter());
+    registerAdapter(MAzkarFavoriteAdapter());
+    registerAdapter(MAzkarProgressAdapter());
     registerAdapter(MBookmarkAdapter());
     registerAdapter(MDownloadTaskAdapter());
+    registerAdapter(MKhatmaCompletionAdapter());
+    registerAdapter(MKhatmaDayAdapter());
+    registerAdapter(MKhatmaPlanAdapter());
     registerAdapter(MLastReadAdapter());
     registerAdapter(MPrayerCacheAdapter());
     registerAdapter(MPrayerSettingsAdapter());
     registerAdapter(MReciterPrefAdapter());
+    registerAdapter(MReminderAdapter());
+    registerAdapter(MTasbihCounterAdapter());
+    registerAdapter(MTasbihHistoryAdapter());
     registerAdapter(MThemePrefAdapter());
     registerAdapter(MUserAdapter());
   }
@@ -36,12 +52,20 @@ extension IsolatedHiveRegistrar on IsolatedHiveInterface {
     registerAdapter(MAdhanPreferenceAdapter());
     registerAdapter(MAppSettingsAdapter());
     registerAdapter(MAuthTokenAdapter());
+    registerAdapter(MAzkarFavoriteAdapter());
+    registerAdapter(MAzkarProgressAdapter());
     registerAdapter(MBookmarkAdapter());
     registerAdapter(MDownloadTaskAdapter());
+    registerAdapter(MKhatmaCompletionAdapter());
+    registerAdapter(MKhatmaDayAdapter());
+    registerAdapter(MKhatmaPlanAdapter());
     registerAdapter(MLastReadAdapter());
     registerAdapter(MPrayerCacheAdapter());
     registerAdapter(MPrayerSettingsAdapter());
     registerAdapter(MReciterPrefAdapter());
+    registerAdapter(MReminderAdapter());
+    registerAdapter(MTasbihCounterAdapter());
+    registerAdapter(MTasbihHistoryAdapter());
     registerAdapter(MThemePrefAdapter());
     registerAdapter(MUserAdapter());
   }

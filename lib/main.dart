@@ -17,6 +17,11 @@ import 'package:quran/modules/auth/data/models/m_auth_token.dart';
 import 'package:quran/modules/auth/data/models/m_user.dart';
 import 'package:quran/modules/auth/presentation/cubits/cb_auth.dart';
 import 'package:quran/modules/adhan/data/models/m_adhan_preference.dart';
+import 'package:quran/modules/azkar/data/models/m_azkar_favorite.dart';
+import 'package:quran/modules/azkar/data/models/m_azkar_progress.dart';
+import 'package:quran/modules/khatma/data/models/m_khatma_completion.dart';
+import 'package:quran/modules/khatma/data/models/m_khatma_day.dart';
+import 'package:quran/modules/khatma/data/models/m_khatma_plan.dart';
 import 'package:quran/modules/prayer/data/models/m_prayer_cache.dart';
 import 'package:quran/modules/prayer/data/models/m_prayer_settings.dart';
 import 'package:quran/modules/quran/data/models/m_bookmark.dart';
@@ -24,7 +29,10 @@ import 'package:quran/modules/quran/data/models/m_download_task.dart';
 import 'package:quran/modules/quran/data/models/m_last_read.dart';
 import 'package:quran/modules/quran/data/models/m_reciter_pref.dart';
 import 'package:quran/modules/quran/data/sources/local/quran_hive_registrar.dart';
+import 'package:quran/modules/reminders/data/models/m_reminder.dart';
 import 'package:quran/modules/settings/data/models/m_theme_pref.dart';
+import 'package:quran/modules/tasbih/data/models/m_tasbih_counter.dart';
+import 'package:quran/modules/tasbih/data/models/m_tasbih_history.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -58,6 +66,14 @@ Future<void> main() async {
   await Hive.openBox<MPrayerSettings>('prayer_settings');
   await Hive.openBox<MPrayerCache>('prayer_cache');
   await Hive.openBox<MAdhanPreference>('adhan_preference');
+  await Hive.openBox<MAzkarFavorite>('azkar_favorites');
+  await Hive.openBox<MAzkarProgress>('azkar_progress');
+  await Hive.openBox<MTasbihCounter>('tasbih_counter');
+  await Hive.openBox<MTasbihHistory>('tasbih_history');
+  await Hive.openBox<MReminder>('reminders');
+  await Hive.openBox<MKhatmaPlan>('khatma_plan');
+  await Hive.openBox<MKhatmaDay>('khatma_days');
+  await Hive.openBox<MKhatmaCompletion>('khatma_completions');
 
   await JustAudioBackground.init(
     androidNotificationChannelId: 'com.app.quran.audio',

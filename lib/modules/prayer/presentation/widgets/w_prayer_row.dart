@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:localize_and_translate/localize_and_translate.dart';
 import 'package:quran/core/theme/app_colors.dart';
+import 'package:quran/core/theme/brand_colors.dart';
 import 'package:quran/modules/prayer/domain/entities/e_prayer.dart';
 
 class WPrayerRow extends StatelessWidget {
@@ -31,7 +32,7 @@ class WPrayerRow extends StatelessWidget {
             : cs.surface,
         borderRadius: BorderRadius.circular(12.r),
         border: Border.all(
-          color: highlight ? AppColorsLight.primary : AppColorsLight.border,
+          color: highlight ? AppColorsLight.primary : context.brand.border,
           width: highlight ? 1.4 : 1,
         ),
       ),
@@ -61,7 +62,7 @@ class WPrayerRow extends StatelessWidget {
                   Text('prayer_current_window'.tr(),
                       style: TextStyle(
                         fontSize: 11.sp,
-                        color: AppColorsLight.muted,
+                        color: context.brand.muted,
                       )),
                 if (isNext)
                   Text('prayer_next_label'.tr(),

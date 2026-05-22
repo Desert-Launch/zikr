@@ -6,6 +6,7 @@ import 'package:localize_and_translate/localize_and_translate.dart';
 import 'package:package_info_plus/package_info_plus.dart';
 import 'package:quran/core/services/routes/routes_names.dart';
 import 'package:quran/core/theme/app_colors.dart';
+import 'package:quran/core/theme/brand_colors.dart';
 import 'package:quran/modules/auth/presentation/cubits/cb_auth.dart';
 import 'package:quran/modules/auth/presentation/cubits/s_auth.dart';
 import 'package:quran/modules/settings/presentation/widgets/w_language_picker.dart';
@@ -55,12 +56,33 @@ class _SNSettingsState extends State<SNSettings> {
             child: Column(
               children: [
                 ListTile(
+                  leading: const Icon(Icons.privacy_tip_outlined),
+                  title: Text('legal_privacy'.tr()),
+                  trailing: const Icon(Icons.chevron_right_rounded),
+                  onTap: () =>
+                      Modular.to.pushNamed(LegalRoutes.fullPrivacy()),
+                ),
+                ListTile(
+                  leading: const Icon(Icons.gavel_rounded),
+                  title: Text('legal_terms'.tr()),
+                  trailing: const Icon(Icons.chevron_right_rounded),
+                  onTap: () =>
+                      Modular.to.pushNamed(LegalRoutes.fullTerms()),
+                ),
+                ListTile(
                   leading: const Icon(Icons.info_outline_rounded),
+                  title: Text('legal_about'.tr()),
+                  trailing: const Icon(Icons.chevron_right_rounded),
+                  onTap: () =>
+                      Modular.to.pushNamed(LegalRoutes.fullAbout()),
+                ),
+                ListTile(
+                  leading: const Icon(Icons.tag_rounded),
                   title: Text('settings_version'.tr()),
                   trailing: Text(
                     _version,
                     style: TextStyle(
-                      fontSize: 12.sp, color: AppColorsLight.muted,
+                      fontSize: 12.sp, color: context.brand.muted,
                     ),
                   ),
                 ),
@@ -137,7 +159,7 @@ class _Section extends StatelessWidget {
               style: TextStyle(
                 fontSize: 12.sp,
                 fontWeight: FontWeight.w700,
-                color: AppColorsLight.muted,
+                color: context.brand.muted,
               ),
             ),
           ),
@@ -199,7 +221,7 @@ class _ProfileCard extends StatelessWidget {
                         SizedBox(height: 2.h),
                         Text(user.email,
                             style: TextStyle(
-                              fontSize: 12.sp, color: AppColorsLight.muted,
+                              fontSize: 12.sp, color: context.brand.muted,
                             )),
                       ],
                     ),

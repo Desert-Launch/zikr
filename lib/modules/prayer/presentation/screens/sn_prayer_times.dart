@@ -7,6 +7,7 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:localize_and_translate/localize_and_translate.dart';
 import 'package:quran/core/theme/app_colors.dart';
+import 'package:quran/core/theme/brand_colors.dart';
 import 'package:quran/modules/prayer/domain/entities/e_prayer.dart';
 import 'package:quran/modules/prayer/presentation/cubits/cb_prayer_times.dart';
 import 'package:quran/modules/prayer/presentation/cubits/s_prayer_times.dart';
@@ -90,7 +91,7 @@ class _SNPrayerTimesState extends State<SNPrayerTimes> {
                           : '${state.latitude!.toStringAsFixed(3)}, '
                               '${state.longitude!.toStringAsFixed(3)}',
                       style: TextStyle(
-                          fontSize: 11.sp, color: AppColorsLight.muted),
+                          fontSize: 11.sp, color: context.brand.muted),
                       textAlign: TextAlign.center,
                     ),
                   ),
@@ -210,7 +211,7 @@ class _PermissionDenied extends StatelessWidget {
           mainAxisSize: MainAxisSize.min,
           children: [
             Icon(Icons.location_off_rounded,
-                size: 64.r, color: AppColorsLight.muted),
+                size: 64.r, color: context.brand.muted),
             SizedBox(height: 12.h),
             Text('prayer_permission_title'.tr(),
                 style: TextStyle(fontSize: 16.sp, fontWeight: FontWeight.w700)),
@@ -218,7 +219,7 @@ class _PermissionDenied extends StatelessWidget {
             Text(
               error ?? 'prayer_permission_body'.tr(),
               textAlign: TextAlign.center,
-              style: TextStyle(fontSize: 13.sp, color: AppColorsLight.muted),
+              style: TextStyle(fontSize: 13.sp, color: context.brand.muted),
             ),
             SizedBox(height: 16.h),
             FilledButton.icon(
@@ -247,11 +248,11 @@ class _ErrorView extends StatelessWidget {
           mainAxisSize: MainAxisSize.min,
           children: [
             Icon(Icons.error_outline_rounded,
-                size: 64.r, color: AppColorsLight.muted),
+                size: 64.r, color: context.brand.muted),
             SizedBox(height: 12.h),
             Text(error ?? 'common_error'.tr(),
                 textAlign: TextAlign.center,
-                style: TextStyle(fontSize: 13.sp, color: AppColorsLight.muted)),
+                style: TextStyle(fontSize: 13.sp, color: context.brand.muted)),
             SizedBox(height: 16.h),
             FilledButton.icon(
               icon: const Icon(Icons.refresh_rounded),

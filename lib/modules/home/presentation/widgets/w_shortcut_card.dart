@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
-import 'package:quran/core/theme/app_colors.dart';
+import 'package:quran/core/theme/brand_colors.dart';
 
 /// One square tile in the home shortcuts grid. Each tile is an icon-on-a
 /// tinted-background card with a label below.
@@ -30,9 +30,9 @@ class WShortcutCard extends StatelessWidget {
         child: Container(
           padding: EdgeInsets.symmetric(vertical: 10.h, horizontal: 4.w),
           decoration: BoxDecoration(
-            color: AppColorsLight.surface,
+            color: context.brand.surface,
             borderRadius: BorderRadius.circular(16.r),
-            border: Border.all(color: AppColorsLight.border),
+            border: Border.all(color: context.brand.border),
           ),
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,

@@ -31,42 +31,42 @@ class SNHome extends StatelessWidget {
         labelKey: 'shortcut_azkar',
         color: const Color(0xFF8B5CF6),
         route: RoutesNames.azkarBase,
-        enabled: false,
+
       ),
       _Shortcut(
         icon: Icons.circle_outlined,
         labelKey: 'shortcut_tasbih',
         color: const Color(0xFF3B82F6),
         route: RoutesNames.tasbihBase,
-        enabled: false,
+
       ),
       _Shortcut(
         icon: Icons.explore_rounded,
         labelKey: 'shortcut_qibla',
         color: const Color(0xFFEF4444),
         route: RoutesNames.qiblaBase,
-        enabled: false,
+
       ),
       _Shortcut(
         icon: Icons.event_note_rounded,
         labelKey: 'shortcut_khatma',
         color: const Color(0xFF10B981),
         route: RoutesNames.khatmaBase,
-        enabled: false,
+
       ),
       _Shortcut(
         icon: Icons.location_city_rounded,
         labelKey: 'shortcut_mosques',
         color: const Color(0xFFF59E0B),
         route: RoutesNames.mosquesBase,
-        enabled: false,
+
       ),
       _Shortcut(
         icon: Icons.notifications_active_outlined,
         labelKey: 'shortcut_reminders',
         color: const Color(0xFFEC4899),
         route: RoutesNames.remindersBase,
-        enabled: false,
+
       ),
     ];
 
@@ -108,7 +108,6 @@ class SNHome extends StatelessWidget {
                     icon: s.icon,
                     label: s.labelKey.tr(),
                     color: s.color,
-                    enabled: s.enabled,
                     onTap: () => Modular.to.pushNamed(s.route),
                   );
                 },
@@ -128,13 +127,11 @@ class _Shortcut {
     required this.labelKey,
     required this.color,
     required this.route,
-    this.enabled = true,
   });
   final IconData icon;
   final String labelKey;
   final Color color;
   final String route;
-  final bool enabled;
 }
 
 class _ContinueReadingCard extends StatelessWidget {

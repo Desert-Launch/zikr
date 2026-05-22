@@ -4,6 +4,7 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:localize_and_translate/localize_and_translate.dart';
 import 'package:quran/core/services/routes/routes_names.dart';
 import 'package:quran/core/theme/app_colors.dart';
+import 'package:quran/core/theme/brand_colors.dart';
 
 class SNRegisterSuccess extends StatelessWidget {
   const SNRegisterSuccess({super.key});
@@ -39,7 +40,7 @@ class SNRegisterSuccess extends StatelessWidget {
                   'auth_register_success_body'.tr(),
                   style: TextStyle(
                     fontSize: 14.sp,
-                    color: AppColorsLight.muted,
+                    color: context.brand.muted,
                   ),
                   textAlign: TextAlign.center,
                 ),

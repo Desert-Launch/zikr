@@ -6,6 +6,7 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:localize_and_translate/localize_and_translate.dart';
 import 'package:quran/core/services/routes/routes_names.dart';
 import 'package:quran/core/theme/app_colors.dart';
+import 'package:quran/core/theme/brand_colors.dart';
 import 'package:quran/modules/auth/presentation/cubits/cb_otp_form.dart';
 import 'package:quran/modules/auth/presentation/cubits/s_otp_form.dart';
 import 'package:quran/modules/auth/presentation/widgets/w_auth_header.dart';
@@ -108,7 +109,7 @@ class _SNVerifyOtpState extends State<SNVerifyOtp> {
                           'auth_demo_otp_hint'.tr(),
                           style: TextStyle(
                             fontSize: 12.sp,
-                            color: AppColorsLight.muted,
+                            color: context.brand.muted,
                           ),
                         ),
                       ],

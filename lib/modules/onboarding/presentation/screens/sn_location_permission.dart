@@ -5,6 +5,7 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:localize_and_translate/localize_and_translate.dart';
 import 'package:quran/core/services/routes/routes_names.dart';
 import 'package:quran/core/theme/app_colors.dart';
+import 'package:quran/core/theme/brand_colors.dart';
 import 'package:quran/modules/onboarding/presentation/cubits/cb_onboarding.dart';
 
 /// Final onboarding step. We don't request the OS permission here — that
@@ -57,7 +58,7 @@ class SNLocationPermission extends StatelessWidget {
                   'onboarding_location_body'.tr(),
                   textAlign: TextAlign.center,
                   style: TextStyle(
-                    fontSize: 13.sp, color: AppColorsLight.muted, height: 1.5,
+                    fontSize: 13.sp, color: context.brand.muted, height: 1.5,
                   ),
                 ),
                 const Spacer(),

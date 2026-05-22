@@ -3,12 +3,14 @@ import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:quran/core/responsive/responsive_extensions.dart';
+import 'package:quran/core/theme/brand_colors.dart';
 
 /// Builds the v2 green/gold light theme. Used as `MaterialApp.theme`.
 ThemeData buildLightTheme() {
   return ThemeData(
     useMaterial3: true,
     brightness: Brightness.light,
+    extensions: const [BrandColors.light],
     scaffoldBackgroundColor: AppColorsLight.background,
     colorScheme: const ColorScheme.light(
       primary: AppColorsLight.primary,
@@ -38,6 +40,7 @@ ThemeData buildDarkTheme() {
   return ThemeData(
     useMaterial3: true,
     brightness: Brightness.dark,
+    extensions: const [BrandColors.dark],
     scaffoldBackgroundColor: AppColorsDark.background,
     colorScheme: const ColorScheme.dark(
       primary: AppColorsDark.primary,

@@ -4,6 +4,7 @@ import 'package:flutter_modular/flutter_modular.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:localize_and_translate/localize_and_translate.dart';
 import 'package:quran/core/theme/app_colors.dart';
+import 'package:quran/core/theme/brand_colors.dart';
 import 'package:quran/modules/adhan/data/models/m_adhan.dart';
 import 'package:quran/modules/adhan/presentation/cubits/cb_adhan_player.dart';
 import 'package:quran/modules/adhan/presentation/cubits/s_adhan_player.dart';
@@ -85,7 +86,7 @@ class _SectionHeader extends StatelessWidget {
         style: TextStyle(
           fontSize: 12.sp,
           fontWeight: FontWeight.w700,
-          color: AppColorsLight.muted,
+          color: context.brand.muted,
         ),
       ),
     );
@@ -149,7 +150,7 @@ class _AdhanRow extends StatelessWidget {
             border: Border.all(
               color: selected
                   ? AppColorsLight.primary
-                  : AppColorsLight.border,
+                  : context.brand.border,
               width: selected ? 1.4 : 1,
             ),
             borderRadius: BorderRadius.circular(12.r),
@@ -160,7 +161,7 @@ class _AdhanRow extends StatelessWidget {
                 selected
                     ? Icons.radio_button_checked_rounded
                     : Icons.radio_button_unchecked_rounded,
-                color: selected ? AppColorsLight.primary : AppColorsLight.muted,
+                color: selected ? AppColorsLight.primary : context.brand.muted,
               ),
               SizedBox(width: 10.w),
               Expanded(
@@ -197,7 +198,7 @@ class _AdhanRow extends StatelessWidget {
                     Text(adhan.muezzinAr,
                         style: TextStyle(
                           fontSize: 11.sp,
-                          color: AppColorsLight.muted,
+                          color: context.brand.muted,
                         )),
                   ],
                 ),

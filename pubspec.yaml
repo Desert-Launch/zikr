@@ -78,6 +78,13 @@ dependencies:
   geolocator: ^13.0.1
   adhan: ^2.0.0-nullsafety.2
 
+  # Qibla compass + tasbih haptics
+  flutter_compass: ^0.8.1
+  vibration: ^3.1.3
+
+  # Markdown rendering for legal pages
+  flutter_markdown: ^0.7.4+1
+
 dev_dependencies:
   flutter_test:
     sdk: flutter
@@ -94,6 +101,8 @@ flutter:
   assets:
     - assets/data/
     - assets/data/mushaf_pages/
+    - assets/data/azkar/
     - assets/fonts/qpc/
     - assets/lang/
     - assets/mock/
+    - assets/legal/

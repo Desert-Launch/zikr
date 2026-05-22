@@ -6,6 +6,7 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:localize_and_translate/localize_and_translate.dart';
 import 'package:quran/core/services/routes/routes_names.dart';
 import 'package:quran/core/theme/app_colors.dart';
+import 'package:quran/core/theme/brand_colors.dart';
 import 'package:quran/modules/onboarding/presentation/cubits/cb_onboarding.dart';
 import 'package:quran/modules/onboarding/presentation/cubits/s_onboarding.dart';
 
@@ -93,7 +94,7 @@ class _SNOnboardingPagerState extends State<SNOnboardingPager> {
                         decoration: BoxDecoration(
                           color: i == state.pageIndex
                               ? AppColorsLight.primary
-                              : AppColorsLight.border,
+                              : context.brand.border,
                           borderRadius: BorderRadius.circular(4.r),
                         ),
                       ),
@@ -184,7 +185,7 @@ class _Slide extends StatelessWidget {
             textAlign: TextAlign.center,
             style: TextStyle(
               fontSize: 14.sp,
-              color: AppColorsLight.muted,
+              color: context.brand.muted,
               height: 1.6,
             ),
           ),

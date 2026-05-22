@@ -45,6 +45,76 @@ class QuranRoutes {
   static String fullSearch() => '${RoutesNames.quranBase}search';
 }
 
+class AzkarRoutes {
+  AzkarRoutes._();
+
+  static const String home = '/';
+  static const String player = '/player';
+  static const String favorites = '/favorites';
+
+  static String fullHome() => RoutesNames.azkarBase;
+  static String fullPlayer(String categoryId) =>
+      '${RoutesNames.azkarBase}player?category=$categoryId';
+  static String fullFavorites() => '${RoutesNames.azkarBase}favorites';
+}
+
+class TasbihRoutes {
+  TasbihRoutes._();
+
+  static const String counter = '/';
+  static const String history = '/history';
+  static const String hourly = '/hourly';
+
+  static String fullCounter() => RoutesNames.tasbihBase;
+  static String fullHistory() => '${RoutesNames.tasbihBase}history';
+  static String fullHourly() => '${RoutesNames.tasbihBase}hourly';
+}
+
+class RemindersRoutes {
+  RemindersRoutes._();
+
+  static const String list = '/';
+  static const String form = '/form';
+
+  static String fullList() => RoutesNames.remindersBase;
+  static String fullForm({String? id}) =>
+      '${RoutesNames.remindersBase}form${id != null ? '?id=$id' : ''}';
+}
+
+class QiblaRoutes {
+  QiblaRoutes._();
+
+  static const String compass = '/';
+
+  static String fullCompass() => RoutesNames.qiblaBase;
+}
+
+class KhatmaRoutes {
+  KhatmaRoutes._();
+
+  static const String plans = '/';
+  static const String tracker = '/tracker';
+  static const String completed = '/completed';
+  static const String history = '/history';
+
+  static String fullPlans() => RoutesNames.khatmaBase;
+  static String fullTracker() => '${RoutesNames.khatmaBase}tracker';
+  static String fullCompleted() => '${RoutesNames.khatmaBase}completed';
+  static String fullHistory() => '${RoutesNames.khatmaBase}history';
+}
+
+class LegalRoutes {
+  LegalRoutes._();
+
+  static const String privacy = '/privacy';
+  static const String terms = '/terms';
+  static const String about = '/about';
+
+  static String fullPrivacy() => '${RoutesNames.legalBase}privacy';
+  static String fullTerms() => '${RoutesNames.legalBase}terms';
+  static String fullAbout() => '${RoutesNames.legalBase}about';
+}
+
 class OnboardingRoutes {
   OnboardingRoutes._();
 

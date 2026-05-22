@@ -5,6 +5,7 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:localize_and_translate/localize_and_translate.dart';
 import 'package:quran/core/services/routes/routes_names.dart';
 import 'package:quran/core/theme/app_colors.dart';
+import 'package:quran/core/theme/brand_colors.dart';
 import 'package:quran/modules/onboarding/presentation/cubits/cb_onboarding.dart';
 import 'package:quran/modules/onboarding/presentation/cubits/s_onboarding.dart';
 
@@ -42,7 +43,7 @@ class _SNLanguageSelectionState extends State<SNLanguageSelection> {
                     Text(
                       'onboarding_language_body'.tr(),
                       style: TextStyle(
-                        fontSize: 13.sp, color: AppColorsLight.muted,
+                        fontSize: 13.sp, color: context.brand.muted,
                       ),
                     ),
                     SizedBox(height: 16.h),
@@ -119,7 +120,7 @@ class _LangTile extends StatelessWidget {
             border: Border.all(
               color: selected
                   ? AppColorsLight.primary
-                  : AppColorsLight.border,
+                  : context.brand.border,
               width: selected ? 1.4 : 1,
             ),
             borderRadius: BorderRadius.circular(12.r),
@@ -130,7 +131,7 @@ class _LangTile extends StatelessWidget {
                 selected
                     ? Icons.radio_button_checked
                     : Icons.radio_button_unchecked,
-                color: selected ? AppColorsLight.primary : AppColorsLight.muted,
+                color: selected ? AppColorsLight.primary : context.brand.muted,
               ),
               SizedBox(width: 12.w),
               Expanded(
@@ -143,7 +144,7 @@ class _LangTile extends StatelessWidget {
                         )),
                     Text(opt.englishName,
                         style: TextStyle(
-                          fontSize: 12.sp, color: AppColorsLight.muted,
+                          fontSize: 12.sp, color: context.brand.muted,
                         )),
                   ],
                 ),
