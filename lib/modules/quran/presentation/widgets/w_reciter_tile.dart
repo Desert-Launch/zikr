@@ -3,6 +3,7 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:localize_and_translate/localize_and_translate.dart';
 import 'package:quran/core/theme/app_colors.dart';
+import 'package:quran/core/theme/brand_colors.dart';
 import 'package:quran/modules/quran/data/models/m_reciter.dart';
 
 class WReciterTile extends StatelessWidget {
@@ -29,7 +30,7 @@ class WReciterTile extends StatelessWidget {
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(14.r),
         side: BorderSide(
-          color: isActive ? AppColors.brandPurple : Colors.transparent,
+          color: isActive ? AppColorsLight.primary : Colors.transparent,
           width: 1.5,
         ),
       ),
@@ -44,12 +45,12 @@ class WReciterTile extends StatelessWidget {
                 width: 48.r,
                 height: 48.r,
                 decoration: BoxDecoration(
-                  color: AppColors.brandPurple.withValues(alpha: 0.1),
+                  color: AppColorsLight.primary.withValues(alpha: 0.1),
                   shape: BoxShape.circle,
                 ),
                 alignment: Alignment.center,
                 child: Icon(Icons.person_rounded,
-                    color: AppColors.brandPurple, size: 24.r),
+                    color: AppColorsLight.primary, size: 24.r),
               ),
               SizedBox(width: 12.w),
               Expanded(
@@ -61,7 +62,7 @@ class WReciterTile extends StatelessWidget {
                       style: GoogleFonts.amiri(
                         fontSize: 16.sp,
                         fontWeight: FontWeight.w600,
-                        color: AppColors.cleanTextPrimary,
+                        color: context.brand.onSurface,
                       ),
                     ),
                     SizedBox(height: 2.h),
@@ -71,19 +72,19 @@ class WReciterTile extends StatelessWidget {
                           padding: EdgeInsets.symmetric(horizontal: 6.w, vertical: 2.h),
                           decoration: BoxDecoration(
                             color: reciter.style == ReciterStyle.mujawwad
-                                ? AppColors.surfaceLightPurple
+                                ? AppColorsLight.primary.withAlpha(30)
                                 : AppColors.surfaceLightGreen,
                             borderRadius: BorderRadius.circular(6.r),
                           ),
                           child: Text(
                             reciter.style == ReciterStyle.mujawwad ? 'مجود' : 'مرتل',
-                            style: TextStyle(fontSize: 10.sp, color: AppColors.cleanTextSecondary),
+                            style: TextStyle(fontSize: 10.sp, color: context.brand.muted),
                           ),
                         ),
                         SizedBox(width: 6.w),
                         Text(
                           '~${reciter.estimatedSizeMb} MB',
-                          style: TextStyle(fontSize: 11.sp, color: AppColors.cleanTextTertiary),
+                          style: TextStyle(fontSize: 11.sp, color: context.brand.muted),
                         ),
                       ],
                     ),
@@ -93,7 +94,7 @@ class WReciterTile extends StatelessWidget {
               if (isActive)
                 const Padding(
                   padding: EdgeInsets.symmetric(horizontal: 4),
-                  child: Icon(Icons.check_circle, color: AppColors.brandPurple),
+                  child: Icon(Icons.check_circle, color: AppColorsLight.primary),
                 ),
               IconButton(
                 icon: Icon(

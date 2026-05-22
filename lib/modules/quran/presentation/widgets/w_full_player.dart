@@ -4,6 +4,7 @@ import 'package:flutter_modular/flutter_modular.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:localize_and_translate/localize_and_translate.dart';
 import 'package:quran/core/theme/app_colors.dart';
+import 'package:quran/core/theme/brand_colors.dart';
 import 'package:quran/modules/quran/data/models/m_surah.dart';
 import 'package:quran/modules/quran/domain/entities/e_playback_options.dart';
 import 'package:quran/modules/quran/domain/entities/param_ayah_ref.dart';
@@ -40,7 +41,7 @@ class WFullPlayer extends StatelessWidget {
         builder: (context, scrollController) {
           return Container(
             decoration: BoxDecoration(
-              color: Colors.white,
+              color: context.brand.surface,
               borderRadius: BorderRadius.vertical(top: Radius.circular(24.r)),
             ),
             child: ListView(
@@ -81,7 +82,7 @@ class _Grip extends StatelessWidget {
         width: 42.w,
         height: 4.h,
         decoration: BoxDecoration(
-          color: AppColors.neutralBorderMedium,
+          color: context.brand.border,
           borderRadius: BorderRadius.circular(4.r),
         ),
       ),
@@ -127,7 +128,7 @@ class _ArtworkBlock extends StatelessWidget {
               height: 160.r,
               decoration: const BoxDecoration(
                 gradient: LinearGradient(
-                  colors: [AppColors.brandPurple, AppColors.brandPurpleAccent],
+                  colors: [AppColorsLight.primary, AppColorsLight.accent],
                   begin: Alignment.topLeft,
                   end: Alignment.bottomRight,
                 ),
@@ -148,7 +149,7 @@ class _ArtworkBlock extends StatelessWidget {
               ayah == null
                   ? ''
                   : '${'player_ayah_label'.tr()} ${ayah.ayah}',
-              style: TextStyle(color: AppColors.faheemTextSecondary, fontSize: 13.sp),
+              style: TextStyle(color: context.brand.muted, fontSize: 13.sp),
             ),
           ],
         );
@@ -175,9 +176,9 @@ class _Scrubber extends StatelessWidget {
               data: SliderTheme.of(context).copyWith(
                 thumbShape: RoundSliderThumbShape(enabledThumbRadius: 6.r),
                 trackHeight: 3.h,
-                activeTrackColor: AppColors.brandPurple,
-                inactiveTrackColor: AppColors.neutralBorderLight,
-                thumbColor: AppColors.brandPurple,
+                activeTrackColor: AppColorsLight.primary,
+                inactiveTrackColor: context.brand.border,
+                thumbColor: AppColorsLight.primary,
               ),
               child: Slider(
                 value: posMs.toDouble().clamp(0, sliderMax),
@@ -193,9 +194,9 @@ class _Scrubber extends StatelessWidget {
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
                   Text(_fmt(state.position),
-                      style: TextStyle(fontSize: 11.sp, color: AppColors.faheemTextSecondary)),
+                      style: TextStyle(fontSize: 11.sp, color: context.brand.muted)),
                   Text(_fmt(state.duration),
-                      style: TextStyle(fontSize: 11.sp, color: AppColors.faheemTextSecondary)),
+                      style: TextStyle(fontSize: 11.sp, color: context.brand.muted)),
                 ],
               ),
             ),
@@ -243,7 +244,7 @@ class _Transport extends StatelessWidget {
             Container(
               decoration: const BoxDecoration(
                 gradient: LinearGradient(
-                  colors: [AppColors.brandPurple, AppColors.brandPurpleAccent],
+                  colors: [AppColorsLight.primary, AppColorsLight.accent],
                 ),
                 shape: BoxShape.circle,
               ),
@@ -300,7 +301,7 @@ class _RepeatRow extends StatelessWidget {
           child: Row(
             children: [
               Icon(Icons.repeat_rounded,
-                  size: 18.r, color: AppColors.faheemTextSecondary),
+                  size: 18.r, color: context.brand.muted),
               SizedBox(width: 8.w),
               Text('player_repeat'.tr(),
                   style: TextStyle(fontSize: 13.sp, fontWeight: FontWeight.w600)),
@@ -355,7 +356,7 @@ class _SpeedRow extends StatelessWidget {
               child: Row(
                 children: [
                   Icon(Icons.speed_rounded,
-                      size: 18.r, color: AppColors.faheemTextSecondary),
+                      size: 18.r, color: context.brand.muted),
                   SizedBox(width: 8.w),
                   Text('player_speed'.tr(),
                       style: TextStyle(fontSize: 13.sp, fontWeight: FontWeight.w600)),
@@ -363,7 +364,7 @@ class _SpeedRow extends StatelessWidget {
                   Container(
                     padding: EdgeInsets.symmetric(horizontal: 8.w, vertical: 2.h),
                     decoration: BoxDecoration(
-                      color: AppColors.brandPurple.withValues(alpha: 0.1),
+                      color: AppColorsLight.primary.withValues(alpha: 0.1),
                       borderRadius: BorderRadius.circular(8.r),
                     ),
                     child: Text(
@@ -371,7 +372,7 @@ class _SpeedRow extends StatelessWidget {
                       style: TextStyle(
                         fontSize: 12.sp,
                         fontWeight: FontWeight.w700,
-                        color: AppColors.brandPurple,
+                        color: AppColorsLight.primary,
                       ),
                     ),
                   ),
@@ -381,9 +382,9 @@ class _SpeedRow extends StatelessWidget {
             SliderTheme(
               data: SliderTheme.of(context).copyWith(
                 trackHeight: 3.h,
-                activeTrackColor: AppColors.brandPurple,
-                thumbColor: AppColors.brandPurple,
-                inactiveTrackColor: AppColors.neutralBorderLight,
+                activeTrackColor: AppColorsLight.primary,
+                thumbColor: AppColorsLight.primary,
+                inactiveTrackColor: context.brand.border,
               ),
               child: Slider(
                 value: speed,
@@ -454,7 +455,7 @@ class _RangePickerState extends State<_RangePicker> {
       margin: EdgeInsets.only(top: 4.h),
       padding: EdgeInsets.all(12.w),
       decoration: BoxDecoration(
-        color: AppColors.neutralBg100,
+        color: context.brand.background,
         borderRadius: BorderRadius.circular(12.r),
       ),
       child: Column(
@@ -463,7 +464,7 @@ class _RangePickerState extends State<_RangePicker> {
           Row(
             children: [
               Icon(Icons.tune_rounded,
-                  size: 18.r, color: AppColors.faheemTextSecondary),
+                  size: 18.r, color: context.brand.muted),
               SizedBox(width: 8.w),
               Text('player_range_title'.tr(),
                   style: TextStyle(fontSize: 13.sp, fontWeight: FontWeight.w700)),
@@ -527,7 +528,7 @@ class _RangePickerState extends State<_RangePicker> {
             width: double.infinity,
             child: FilledButton.icon(
               style: FilledButton.styleFrom(
-                backgroundColor: AppColors.brandPurple,
+                backgroundColor: AppColorsLight.primary,
                 padding: EdgeInsets.symmetric(vertical: 10.h),
               ),
               onPressed: _canPlay() ? _playRange : null,
@@ -567,11 +568,11 @@ class _RangePickerState extends State<_RangePicker> {
         fillColor: Colors.white,
         border: OutlineInputBorder(
           borderRadius: BorderRadius.circular(10.r),
-          borderSide: BorderSide(color: AppColors.neutralBorderLight),
+          borderSide: BorderSide(color: context.brand.border),
         ),
         enabledBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(10.r),
-          borderSide: BorderSide(color: AppColors.neutralBorderLight),
+          borderSide: BorderSide(color: context.brand.border),
         ),
       );
 }

@@ -3,6 +3,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_modular/flutter_modular.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:quran/core/theme/app_colors.dart';
+import 'package:quran/core/theme/brand_colors.dart';
 import 'package:quran/modules/quran/presentation/cubits/cb_audio_player.dart';
 import 'package:quran/modules/quran/presentation/cubits/s_audio_player.dart';
 import 'package:quran/modules/quran/presentation/widgets/w_full_player.dart';
@@ -48,7 +49,7 @@ class _Bar extends StatelessWidget {
       child: Container(
         margin: EdgeInsets.fromLTRB(12.w, 0, 12.w, 12.h),
         decoration: BoxDecoration(
-          color: Colors.white,
+          color: context.brand.surface,
           borderRadius: BorderRadius.circular(14.r),
           boxShadow: [
             BoxShadow(
@@ -70,7 +71,7 @@ class _Bar extends StatelessWidget {
                   height: 40.r,
                   decoration: const BoxDecoration(
                     gradient: LinearGradient(
-                      colors: [AppColors.brandPurple, AppColors.brandPurpleAccent],
+                      colors: [AppColorsLight.primary, AppColorsLight.accent],
                     ),
                     shape: BoxShape.circle,
                   ),
@@ -93,8 +94,8 @@ class _Bar extends StatelessWidget {
                           value: state.position.inMilliseconds /
                               state.duration.inMilliseconds.clamp(1, 1 << 31),
                           minHeight: 3.h,
-                          backgroundColor: AppColors.neutralBorderLight,
-                          color: AppColors.brandPurple,
+                          backgroundColor: context.brand.border,
+                          color: AppColorsLight.primary,
                         ),
                     ],
                   ),
@@ -107,7 +108,7 @@ class _Bar extends StatelessWidget {
                   icon: Icon(state.isPlaying
                       ? Icons.pause_circle_filled_rounded
                       : Icons.play_circle_fill_rounded,
-                    color: AppColors.brandPurple, size: 32.r),
+                    color: AppColorsLight.primary, size: 32.r),
                   onPressed: state.isPlaying ? cubit.pause : cubit.resume,
                 ),
                 IconButton(

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:quran/core/theme/app_colors.dart';
+import 'package:quran/core/theme/brand_colors.dart';
 import 'package:quran/modules/quran/data/models/m_surah.dart';
 
 class WSurahListTile extends StatelessWidget {
@@ -32,7 +33,7 @@ class WSurahListTile extends StatelessWidget {
                       style: GoogleFonts.amiri(
                         fontSize: 22.sp,
                         fontWeight: FontWeight.w700,
-                        color: AppColors.cleanTextPrimary,
+                        color: context.brand.onSurface,
                       ),
                     ),
                     SizedBox(height: 4.h),
@@ -40,7 +41,7 @@ class WSurahListTile extends StatelessWidget {
                       '${surah.name} · ${surah.translation}',
                       style: TextStyle(
                         fontSize: 12.sp,
-                        color: AppColors.cleanTextSecondary,
+                        color: context.brand.muted,
                       ),
                     ),
                   ],
@@ -52,9 +53,10 @@ class WSurahListTile extends StatelessWidget {
                   Container(
                     padding: EdgeInsets.symmetric(horizontal: 8.w, vertical: 4.h),
                     decoration: BoxDecoration(
-                      color: surah.isMakki
-                          ? AppColors.surfaceLightYellow
-                          : AppColors.surfaceLightGreen,
+                      color: (surah.isMakki
+                              ? AppColorsLight.accent
+                              : AppColorsLight.primary)
+                          .withValues(alpha: 0.16),
                       borderRadius: BorderRadius.circular(8.r),
                     ),
                     child: Text(
@@ -62,9 +64,9 @@ class WSurahListTile extends StatelessWidget {
                       style: TextStyle(
                         fontSize: 10.sp,
                         color: surah.isMakki
-                            ? AppColors.subjectEnglishColor
-                            : AppColors.accentGreen,
-                        fontWeight: FontWeight.w600,
+                            ? AppColorsLight.accent
+                            : AppColorsLight.primary,
+                        fontWeight: FontWeight.w700,
                       ),
                     ),
                   ),
@@ -73,7 +75,7 @@ class WSurahListTile extends StatelessWidget {
                     '${surah.totalAyah} آية',
                     style: TextStyle(
                       fontSize: 11.sp,
-                      color: AppColors.cleanTextTertiary,
+                      color: context.brand.muted,
                     ),
                   ),
                 ],
@@ -97,7 +99,7 @@ class _NumberBadge extends StatelessWidget {
       height: 44.r,
       decoration: BoxDecoration(
         gradient: const LinearGradient(
-          colors: [AppColors.brandPurple, AppColors.brandPurpleAccent],
+          colors: [AppColorsLight.primary, AppColorsLight.accent],
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
         ),

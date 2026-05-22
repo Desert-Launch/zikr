@@ -17,7 +17,7 @@ class WSurahHeader extends StatelessWidget {
         gradient: const LinearGradient(
           colors: [AppColors.paperWarm, AppColors.paperCream],
         ),
-        border: Border.all(color: AppColors.brandPurple.withValues(alpha: 0.45), width: 1.5),
+        border: Border.all(color: AppColorsLight.primary.withValues(alpha: 0.45), width: 1.5),
         borderRadius: BorderRadius.circular(10.r),
       ),
       child: Center(
@@ -27,7 +27,7 @@ class WSurahHeader extends StatelessWidget {
           style: GoogleFonts.amiri(
             fontSize: 22.sp,
             fontWeight: FontWeight.w700,
-            color: AppColors.brandPurpleDark,
+            color: AppColorsLight.primaryDark,
           ),
         ),
       ),

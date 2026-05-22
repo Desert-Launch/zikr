@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:quran/core/theme/app_colors.dart';
+import 'package:quran/core/theme/brand_colors.dart';
 import 'package:quran/modules/quran/data/models/m_download_task.dart';
 
 class WDownloadProgressTile extends StatelessWidget {
@@ -41,13 +42,13 @@ class WDownloadProgressTile extends StatelessWidget {
             LinearProgressIndicator(
               value: t.progress,
               minHeight: 4.h,
-              backgroundColor: AppColors.neutralBorderLight,
-              color: AppColors.brandPurple,
+              backgroundColor: context.brand.border,
+              color: AppColorsLight.primary,
             ),
             SizedBox(height: 4.h),
             Text(
               '${t.downloadedAyat}/${t.totalAyat} · ${(t.sizeBytes / 1024 / 1024).toStringAsFixed(1)} MB',
-              style: TextStyle(fontSize: 11.sp, color: AppColors.cleanTextTertiary),
+              style: TextStyle(fontSize: 11.sp, color: context.brand.muted),
             ),
           ],
         ],
@@ -57,7 +58,7 @@ class WDownloadProgressTile extends StatelessWidget {
           : isActive
               ? IconButton(icon: const Icon(Icons.stop_circle_outlined), onPressed: onCancel)
               : IconButton(
-                  icon: const Icon(Icons.download_outlined, color: AppColors.brandPurple),
+                  icon: const Icon(Icons.download_outlined, color: AppColorsLight.primary),
                   onPressed: onDownload,
                 ),
     );

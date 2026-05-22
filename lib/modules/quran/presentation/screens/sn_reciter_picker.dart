@@ -3,7 +3,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_modular/flutter_modular.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:localize_and_translate/localize_and_translate.dart';
-import 'package:quran/core/theme/app_colors.dart';
+import 'package:quran/core/theme/brand_colors.dart';
 import 'package:quran/core/widgets/w_shared_scaffold.dart';
 import 'package:quran/modules/quran/presentation/cubits/cb_reciter.dart';
 import 'package:quran/modules/quran/presentation/cubits/s_reciter.dart';
@@ -36,7 +36,7 @@ class _SNReciterPickerState extends State<SNReciterPicker> {
           'reciter_picker_title'.tr(),
           style: TextStyle(fontSize: 18.sp, fontWeight: FontWeight.w700),
         ),
-        backgroundColor: AppColors.cleanCanvas,
+        backgroundColor: context.brand.background,
         padding: EdgeInsets.zero,
         body: BlocBuilder<CBReciter, SReciter>(
           builder: (context, state) {

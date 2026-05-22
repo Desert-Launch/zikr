@@ -6,6 +6,7 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:localize_and_translate/localize_and_translate.dart';
 import 'package:quran/core/services/routes/routes_names.dart';
 import 'package:quran/core/theme/app_colors.dart';
+import 'package:quran/core/theme/brand_colors.dart';
 import 'package:quran/core/widgets/w_shared_scaffold.dart';
 import 'package:quran/modules/quran/presentation/cubits/cb_surah_list.dart';
 import 'package:quran/modules/quran/presentation/cubits/s_surah_list.dart';
@@ -32,7 +33,7 @@ class _SNSurahListState extends State<SNSurahList> {
     return BlocProvider.value(
       value: _cubit,
       child: WSharedScaffold(
-        backgroundColor: AppColors.cleanCanvas,
+        backgroundColor: context.brand.background,
         body: SafeArea(
           child: Column(
             children: [
@@ -66,7 +67,7 @@ class _SNSurahListState extends State<SNSurahList> {
                       itemCount: visible.length,
                       separatorBuilder: (_, __) => Divider(
                         height: 1.h,
-                        color: AppColors.neutralBorderLight,
+                        color: context.brand.border,
                       ),
                       itemBuilder: (context, i) {
                         final surah = visible[i];
@@ -90,7 +91,7 @@ class _SNSurahListState extends State<SNSurahList> {
             final lastRead = state.lastRead;
             if (lastRead == null) return const SizedBox();
             return FloatingActionButton.extended(
-              backgroundColor: AppColors.brandPurple,
+              backgroundColor: AppColorsLight.primary,
               foregroundColor: Colors.white,
               onPressed: () {
                 Modular.to.pushNamed(QuranRoutes.readerFromPage(lastRead.page));
@@ -117,22 +118,22 @@ class _Header extends StatelessWidget {
             style: GoogleFonts.amiri(
               fontSize: 26.sp,
               fontWeight: FontWeight.w700,
-              color: AppColors.brandPurpleDark,
+              color: AppColorsLight.primaryDark,
             ),
           ),
           const Spacer(),
           IconButton(
-            icon: const Icon(Icons.menu_book_rounded, color: AppColors.brandPurple),
+            icon: const Icon(Icons.menu_book_rounded, color: AppColorsLight.primary),
             tooltip: 'reciter_picker_title'.tr(),
             onPressed: () => Modular.to.pushNamed('${RoutesNames.quranBase}reciter'),
           ),
           IconButton(
-            icon: const Icon(Icons.bookmarks_outlined, color: AppColors.brandPurple),
+            icon: const Icon(Icons.bookmarks_outlined, color: AppColorsLight.primary),
             tooltip: 'bookmarks_title'.tr(),
             onPressed: () => Modular.to.pushNamed('${RoutesNames.quranBase}bookmarks'),
           ),
           IconButton(
-            icon: const Icon(Icons.download_outlined, color: AppColors.brandPurple),
+            icon: const Icon(Icons.download_outlined, color: AppColorsLight.primary),
             tooltip: 'downloads_title'.tr(),
             onPressed: () => Modular.to.pushNamed('${RoutesNames.quranBase}downloads'),
           ),
@@ -162,7 +163,7 @@ class _SearchAndFilters extends StatelessWidget {
               contentPadding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 12.h),
               border: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(12.r),
-                borderSide: BorderSide(color: AppColors.neutralBorderLight),
+                borderSide: BorderSide(color: context.brand.border),
               ),
             ),
           ),
@@ -214,14 +215,16 @@ class _FilterChip extends StatelessWidget {
         duration: const Duration(milliseconds: 150),
         padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 8.h),
         decoration: BoxDecoration(
-          color: active ? AppColors.brandPurple : Colors.white,
+          color: active ? AppColorsLight.primary : context.brand.surface,
           borderRadius: BorderRadius.circular(20.r),
-          border: Border.all(color: AppColors.neutralBorderLight),
+          border: Border.all(
+            color: active ? AppColorsLight.primary : context.brand.border,
+          ),
         ),
         child: Text(
           label,
           style: TextStyle(
-            color: active ? Colors.white : AppColors.cleanTextSecondary,
+            color: active ? Colors.white : context.brand.onSurface,
             fontSize: 13.sp,
             fontWeight: FontWeight.w600,
           ),

@@ -3,7 +3,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_modular/flutter_modular.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:localize_and_translate/localize_and_translate.dart';
-import 'package:quran/core/theme/app_colors.dart';
+import 'package:quran/core/theme/brand_colors.dart';
 import 'package:quran/core/widgets/w_shared_scaffold.dart';
 import 'package:quran/modules/quran/presentation/cubits/cb_downloads.dart';
 import 'package:quran/modules/quran/presentation/cubits/s_downloads.dart';
@@ -35,7 +35,7 @@ class _SNDownloadsState extends State<SNDownloads> {
           'downloads_title'.tr(),
           style: TextStyle(fontSize: 18.sp, fontWeight: FontWeight.w700),
         ),
-        backgroundColor: AppColors.cleanCanvas,
+        backgroundColor: context.brand.background,
         padding: EdgeInsets.zero,
         body: BlocBuilder<CBDownloads, SDownloads>(
           builder: (context, state) {
@@ -100,7 +100,7 @@ class _Header extends StatelessWidget {
               const Spacer(),
               Text(
                 '${(state.totalBytes / 1024 / 1024).toStringAsFixed(1)} MB',
-                style: TextStyle(fontSize: 12.sp, color: AppColors.cleanTextSecondary),
+                style: TextStyle(fontSize: 12.sp, color: context.brand.muted),
               ),
             ],
           ),

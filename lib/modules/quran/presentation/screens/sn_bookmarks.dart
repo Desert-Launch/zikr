@@ -6,6 +6,7 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:localize_and_translate/localize_and_translate.dart';
 import 'package:quran/core/services/routes/routes_names.dart';
 import 'package:quran/core/theme/app_colors.dart';
+import 'package:quran/core/theme/brand_colors.dart';
 import 'package:quran/core/widgets/w_shared_scaffold.dart';
 import 'package:quran/modules/quran/presentation/cubits/cb_bookmarks.dart';
 import 'package:quran/modules/quran/presentation/cubits/s_bookmarks.dart';
@@ -29,7 +30,7 @@ class _SNBookmarksState extends State<SNBookmarks> {
           'bookmarks_title'.tr(),
           style: TextStyle(fontSize: 18.sp, fontWeight: FontWeight.w700),
         ),
-        backgroundColor: AppColors.cleanCanvas,
+        backgroundColor: context.brand.background,
         padding: EdgeInsets.zero,
         body: BlocBuilder<CBBookmarks, SBookmarks>(
           builder: (context, state) {
@@ -39,7 +40,7 @@ class _SNBookmarksState extends State<SNBookmarks> {
                   padding: EdgeInsets.all(24.w),
                   child: Text(
                     'bookmarks_empty'.tr(),
-                    style: TextStyle(fontSize: 14.sp, color: AppColors.cleanTextSecondary),
+                    style: TextStyle(fontSize: 14.sp, color: context.brand.muted),
                   ),
                 ),
               );
@@ -48,11 +49,11 @@ class _SNBookmarksState extends State<SNBookmarks> {
               padding: EdgeInsets.symmetric(vertical: 8.h),
               itemCount: state.all.length,
               separatorBuilder: (_, __) =>
-                  Divider(height: 1.h, color: AppColors.neutralBorderLight),
+                  Divider(height: 1.h, color: context.brand.border),
               itemBuilder: (context, i) {
                 final b = state.all[i];
                 return ListTile(
-                  leading: const Icon(Icons.bookmark_rounded, color: AppColors.brandPurple),
+                  leading: const Icon(Icons.bookmark_rounded, color: AppColorsLight.primary),
                   title: Text(
                     'سورة ${b.surah} · آية ${b.ayah}',
                     style: GoogleFonts.amiri(fontSize: 16.sp, fontWeight: FontWeight.w600),

@@ -4,6 +4,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_modular/flutter_modular.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:quran/core/theme/app_colors.dart';
+import 'package:quran/core/theme/brand_colors.dart';
 import 'package:quran/modules/quran/data/datasources/local/ds_qpc_font_loader.dart';
 import 'package:quran/modules/quran/data/models/m_page_layout.dart';
 import 'package:quran/modules/quran/domain/entities/param_ayah_ref.dart';
@@ -60,7 +61,13 @@ class _WMushafPageState extends State<WMushafPage> {
     return BlocSelector<CBMushafReader, SMushafReader, ({ParamAyahRef? selected, double scale, ReaderTheme theme})>(
       selector: (s) => (selected: s.selectedAyah, scale: s.fontScale, theme: s.theme),
       builder: (context, view) {
-        final fg = view.theme == ReaderTheme.dark ? Colors.white : AppColors.cleanTextPrimary;
+        // QPC V1 glyphs have hair-thin strokes by design — keep the text in a
+        // saturated near-black so they remain readable over the cream paper.
+        // Theme.onSurface (#1A1A1A) is technically dark but loses contrast on
+        // cream once anti-aliasing thins the strokes further.
+        final fg = view.theme == ReaderTheme.dark
+            ? Colors.white
+            : const Color(0xFF0A0A0A);
         return BlocSelector<CBAudioPlayer, SAudioPlayer, ParamAyahRef?>(
           bloc: Modular.get<CBAudioPlayer>(),
           selector: (s) => s.currentAyah,
@@ -118,7 +125,7 @@ class _WMushafPageState extends State<WMushafPage> {
                   Center(
                     child: Text(
                       '${widget.layout.page}',
-                      style: TextStyle(fontSize: 11.sp, color: AppColors.cleanTextTertiary),
+                      style: TextStyle(fontSize: 11.sp, color: context.brand.muted),
                     ),
                   ),
                 ],
@@ -174,13 +181,14 @@ class _WMushafPageState extends State<WMushafPage> {
         style: TextStyle(
           fontFamily: fontFamily,
           fontSize: 28.sp * scale,
-          color: isPlaying ? AppColors.progressMasteryGold : color,
+          color: isPlaying ? AppColorsLight.accent : color,
+          fontWeight: FontWeight.w500,
           height: 1.0,
           backgroundColor: isSelected
               ? AppColors.surfaceLightGreen
               : (isPlaying ? AppColors.accentGoldAmber.withValues(alpha: 0.15) : null),
           decoration: isPlaying ? TextDecoration.underline : null,
-          decorationColor: AppColors.progressMasteryGold,
+          decorationColor: AppColorsLight.accent,
           decorationThickness: 2.5,
         ),
       ));

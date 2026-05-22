@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_modular/flutter_modular.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
-import 'package:quran/core/theme/app_colors.dart';
 import 'package:quran/modules/quran/data/datasources/local/ds_qpc_font_loader.dart';
 import 'package:quran/modules/quran/presentation/cubits/cb_mushaf_reader.dart';
 import 'package:quran/modules/quran/presentation/cubits/s_mushaf_reader.dart';
@@ -51,7 +50,8 @@ class _WBasmalaLineState extends State<WBasmalaLine> {
               style: TextStyle(
                 fontFamily: WBasmalaLine.fontFamily,
                 fontSize: (widget.fontSize ?? 28.sp) * scale,
-                color: AppColors.cleanTextPrimary,
+                color: const Color(0xFF0A0A0A),
+                fontWeight: FontWeight.w500,
                 height: 1.0,
               ),
             ),

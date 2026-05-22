@@ -6,6 +6,7 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:localize_and_translate/localize_and_translate.dart';
 import 'package:quran/core/services/routes/routes_names.dart';
 import 'package:quran/core/theme/app_colors.dart';
+import 'package:quran/core/theme/brand_colors.dart';
 import 'package:quran/core/widgets/w_shared_scaffold.dart';
 import 'package:quran/modules/quran/data/datasources/local/ds_local_quran.dart';
 import 'package:quran/modules/quran/domain/usecases/uc_search_quran.dart';
@@ -39,7 +40,7 @@ class _SNQuranSearchState extends State<SNQuranSearch> {
           'search_title'.tr(),
           style: TextStyle(fontSize: 18.sp, fontWeight: FontWeight.w700),
         ),
-        backgroundColor: AppColors.cleanCanvas,
+        backgroundColor: context.brand.background,
         padding: EdgeInsets.zero,
         body: Column(
           children: [
@@ -53,10 +54,10 @@ class _SNQuranSearchState extends State<SNQuranSearch> {
                 onChanged: _cubit.setQuery,
                 decoration: InputDecoration(
                   hintText: 'search_hint'.tr(),
-                  hintStyle: TextStyle(fontSize: 13.sp, color: AppColors.faheemTextLight),
+                  hintStyle: TextStyle(fontSize: 13.sp, color: context.brand.muted),
                   filled: true,
-                  fillColor: Colors.white,
-                  prefixIcon: const Icon(Icons.search, color: AppColors.brandPurple),
+                  fillColor: context.brand.surface,
+                  prefixIcon: const Icon(Icons.search, color: AppColorsLight.primary),
                   suffixIcon: ValueListenableBuilder<TextEditingValue>(
                     valueListenable: _controller,
                     builder: (_, v, __) => v.text.isEmpty
@@ -71,15 +72,15 @@ class _SNQuranSearchState extends State<SNQuranSearch> {
                   ),
                   border: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(12.r),
-                    borderSide: BorderSide(color: AppColors.neutralBorderLight),
+                    borderSide: BorderSide(color: context.brand.border),
                   ),
                   enabledBorder: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(12.r),
-                    borderSide: BorderSide(color: AppColors.neutralBorderLight),
+                    borderSide: BorderSide(color: context.brand.border),
                   ),
                   focusedBorder: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(12.r),
-                    borderSide: const BorderSide(color: AppColors.brandPurple, width: 1.4),
+                    borderSide: const BorderSide(color: AppColorsLight.primary, width: 1.4),
                   ),
                 ),
               ),
@@ -103,7 +104,7 @@ class _Results extends StatelessWidget {
           return Center(
             child: Text(
               'search_min_chars'.tr(),
-              style: TextStyle(fontSize: 13.sp, color: AppColors.cleanTextTertiary),
+              style: TextStyle(fontSize: 13.sp, color: context.brand.muted),
             ),
           );
         }
@@ -126,7 +127,7 @@ class _Results extends StatelessWidget {
           return Center(
             child: Text(
               'search_no_results'.tr(),
-              style: TextStyle(fontSize: 13.sp, color: AppColors.cleanTextSecondary),
+              style: TextStyle(fontSize: 13.sp, color: context.brand.muted),
             ),
           );
         }
@@ -140,7 +141,7 @@ class _Results extends StatelessWidget {
                     'search_results_count'
                         .tr()
                         .replaceFirst('{{count}}', '${state.results.length}'),
-                    style: TextStyle(fontSize: 12.sp, color: AppColors.faheemTextSecondary),
+                    style: TextStyle(fontSize: 12.sp, color: context.brand.muted),
                   ),
                 ],
               ),
@@ -150,7 +151,7 @@ class _Results extends StatelessWidget {
                 padding: EdgeInsets.only(bottom: 24.h),
                 itemCount: state.results.length,
                 separatorBuilder: (_, __) =>
-                    Divider(height: 1.h, color: AppColors.neutralBorderLight),
+                    Divider(height: 1.h, color: context.brand.border),
                 itemBuilder: (_, i) =>
                     _HitTile(hit: state.results[i], query: state.query.trim()),
               ),
@@ -183,13 +184,13 @@ class _HitTile extends StatelessWidget {
                 Container(
                   padding: EdgeInsets.symmetric(horizontal: 8.w, vertical: 2.h),
                   decoration: BoxDecoration(
-                    color: AppColors.brandPurple.withValues(alpha: 0.1),
+                    color: AppColorsLight.primary.withValues(alpha: 0.1),
                     borderRadius: BorderRadius.circular(6.r),
                   ),
                   child: Text(
                     '${hit.ref.surah}:${hit.ref.ayah}',
                     style: TextStyle(
-                      color: AppColors.brandPurple,
+                      color: AppColorsLight.primary,
                       fontSize: 11.sp,
                       fontWeight: FontWeight.w700,
                     ),
@@ -197,7 +198,7 @@ class _HitTile extends StatelessWidget {
                 ),
                 SizedBox(width: 8.w),
                 Icon(Icons.menu_book_outlined,
-                    size: 14.r, color: AppColors.faheemTextLight),
+                    size: 14.r, color: context.brand.muted),
               ],
             ),
             SizedBox(height: 6.h),
@@ -229,7 +230,7 @@ class _HighlightedAyah extends StatelessWidget {
         style: GoogleFonts.amiri(
           fontSize: 18.sp,
           height: 1.8,
-          color: AppColors.faheemTextPrimary,
+          color: context.brand.onSurface,
         ),
         children: spans,
       ),
@@ -277,9 +278,9 @@ class _HighlightedAyah extends StatelessWidget {
       spans.add(TextSpan(
         text: String.fromCharCodes(originalRunes.sublist(origStart, origEnd)),
         style: TextStyle(
-          color: AppColors.brandPurple,
+          color: AppColorsLight.primary,
           fontWeight: FontWeight.w800,
-          backgroundColor: AppColors.brandPurple.withValues(alpha: 0.12),
+          backgroundColor: AppColorsLight.primary.withValues(alpha: 0.12),
         ),
       ));
       cursor = origEnd;

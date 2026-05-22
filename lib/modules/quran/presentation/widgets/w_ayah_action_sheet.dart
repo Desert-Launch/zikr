@@ -5,6 +5,7 @@ import 'package:flutter_modular/flutter_modular.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:localize_and_translate/localize_and_translate.dart';
 import 'package:quran/core/theme/app_colors.dart';
+import 'package:quran/core/theme/brand_colors.dart';
 import 'package:quran/modules/quran/domain/entities/param_ayah_ref.dart';
 import 'package:quran/modules/quran/domain/usecases/uc_save_bookmark.dart';
 import 'package:quran/modules/quran/presentation/cubits/cb_audio_player.dart';
@@ -33,7 +34,7 @@ class WAyahActionSheet extends StatelessWidget {
               child: Padding(
                 padding: EdgeInsets.fromLTRB(12.w, 0, 12.w, 12.h),
                 child: Material(
-                  color: Colors.white,
+                  color: context.brand.surface,
                   elevation: 8,
                   borderRadius: BorderRadius.circular(16.r),
                   shadowColor: Colors.black.withValues(alpha: 0.2),
@@ -68,13 +69,13 @@ class _SheetBody extends StatelessWidget {
             Container(
               padding: EdgeInsets.symmetric(horizontal: 10.w, vertical: 4.h),
               decoration: BoxDecoration(
-                color: AppColors.brandPurple.withValues(alpha: 0.1),
+                color: AppColorsLight.primary.withValues(alpha: 0.1),
                 borderRadius: BorderRadius.circular(8.r),
               ),
               child: Text(
                 '${ref.surah}:${ref.ayah}',
                 style: TextStyle(
-                  color: AppColors.brandPurple,
+                  color: AppColorsLight.primary,
                   fontWeight: FontWeight.w700,
                   fontSize: 13.sp,
                 ),
@@ -181,7 +182,7 @@ class _Action extends StatelessWidget {
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Icon(icon, color: AppColors.brandPurple, size: 26.r),
+            Icon(icon, color: AppColorsLight.primary, size: 26.r),
             SizedBox(height: 4.h),
             Text(label, style: TextStyle(fontSize: 11.sp)),
           ],
