@@ -36,7 +36,8 @@ class QuranRoutes {
   static const String search = '/search';
 
   static String fullSurahList() => RoutesNames.quranBase;
-  static String readerFromPage(int page) => '${RoutesNames.quranBase}reader?page=$page';
+  static String readerFromPage(int page) =>
+      '${RoutesNames.quranBase}reader?page=$page';
   static String readerFromAyah(int surah, int ayah) =>
       '${RoutesNames.quranBase}reader?surah=$surah&ayah=$ayah';
   static String fullReciterPicker() => '${RoutesNames.quranBase}reciter';
@@ -49,12 +50,15 @@ class AzkarRoutes {
   AzkarRoutes._();
 
   static const String home = '/';
+  static const String category = '/category';
   static const String player = '/player';
   static const String favorites = '/favorites';
 
   static String fullHome() => RoutesNames.azkarBase;
-  static String fullPlayer(String categoryId) =>
-      '${RoutesNames.azkarBase}player?category=$categoryId';
+  static String fullCategory(String categoryId) =>
+      '${RoutesNames.azkarBase}category?category=$categoryId';
+  static String fullPlayer(String categoryId, {int item = 0}) =>
+      '${RoutesNames.azkarBase}player?category=$categoryId&item=$item';
   static String fullFavorites() => '${RoutesNames.azkarBase}favorites';
 }
 
@@ -93,11 +97,14 @@ class KhatmaRoutes {
   KhatmaRoutes._();
 
   static const String plans = '/';
+  static const String wirds = '/wirds';
   static const String tracker = '/tracker';
   static const String completed = '/completed';
   static const String history = '/history';
 
   static String fullPlans() => RoutesNames.khatmaBase;
+  static String fullWirds(int planId) =>
+      '${RoutesNames.khatmaBase}wirds?plan=$planId';
   static String fullTracker() => '${RoutesNames.khatmaBase}tracker';
   static String fullCompleted() => '${RoutesNames.khatmaBase}completed';
   static String fullHistory() => '${RoutesNames.khatmaBase}history';
@@ -158,7 +165,7 @@ class AuthRoutes {
   static String fullForgot() => '${RoutesNames.authBase}forgot';
   static String fullOtp(String email) =>
       '${RoutesNames.authBase}otp?email=${Uri.encodeQueryComponent(email)}';
-  static String fullReset(String email) =>
-      '${RoutesNames.authBase}reset?email=${Uri.encodeQueryComponent(email)}';
+  static String fullReset(String email, String otp) =>
+      '${RoutesNames.authBase}reset?email=${Uri.encodeQueryComponent(email)}&otp=${Uri.encodeQueryComponent(otp)}';
   static String fullSuccess() => '${RoutesNames.authBase}success';
 }

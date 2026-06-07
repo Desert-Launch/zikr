@@ -27,7 +27,10 @@ class DSRemoteAuth {
     return _dio.dio.post<Map<String, dynamic>>(
       EndPoints.authRegister,
       data: {
-        'name': name, 'email': email, 'phone': phone, 'password': password,
+        'name': name,
+        'email': email,
+        'phone': phone,
+        'password': password,
       },
     );
   }

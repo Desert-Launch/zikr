@@ -7,7 +7,8 @@ class CBForgotForm extends Cubit<SForgotForm> {
 
   final UCForgotPassword _forgot;
 
-  void setEmail(String v) => emit(state.copyWith(email: v, clearError: true, didSend: false));
+  void setEmail(String v) =>
+      emit(state.copyWith(email: v, clearError: true, didSend: false));
 
   Future<bool> submit() async {
     if (!state.isValid) return false;

@@ -24,6 +24,8 @@ class MReminderAdapter extends TypeAdapter<MReminder> {
       daysOfWeek: (fields[5] as List).cast<bool>(),
       body: fields[2] == null ? '' : fields[2] as String,
       enabled: fields[6] == null ? true : fields[6] as bool,
+      iconId: fields[8] == null ? 2 : (fields[8] as num).toInt(),
+      colorId: fields[9] == null ? 3 : (fields[9] as num).toInt(),
       createdAt: fields[7] as DateTime?,
     );
   }
@@ -31,7 +33,7 @@ class MReminderAdapter extends TypeAdapter<MReminder> {
   @override
   void write(BinaryWriter writer, MReminder obj) {
     writer
-      ..writeByte(8)
+      ..writeByte(10)
       ..writeByte(0)
       ..write(obj.id)
       ..writeByte(1)
@@ -47,7 +49,11 @@ class MReminderAdapter extends TypeAdapter<MReminder> {
       ..writeByte(6)
       ..write(obj.enabled)
       ..writeByte(7)
-      ..write(obj.createdAt);
+      ..write(obj.createdAt)
+      ..writeByte(8)
+      ..write(obj.iconId)
+      ..writeByte(9)
+      ..write(obj.colorId);
   }
 
   @override

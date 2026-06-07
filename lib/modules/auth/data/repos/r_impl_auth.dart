@@ -17,9 +17,9 @@ class RImplAuth implements RAuth {
     required DSRemoteAuth remote,
     required BoxUser userBox,
     required BoxAuthToken tokenBox,
-  })  : _remote = remote,
-        _userBox = userBox,
-        _tokenBox = tokenBox;
+  }) : _remote = remote,
+       _userBox = userBox,
+       _tokenBox = tokenBox;
 
   final DSRemoteAuth _remote;
   final BoxUser _userBox;
@@ -27,10 +27,13 @@ class RImplAuth implements RAuth {
 
   Failure _failureFromDio(DioException e) {
     final data = e.response?.data;
-    final msg = data is Map ? (data['error']?.toString() ?? e.message ?? 'Network error') : (e.message ?? 'Network error');
+    final msg = data is Map
+        ? (data['error']?.toString() ?? e.message ?? 'Network error')
+        : (e.message ?? 'Network error');
     final code = e.response?.statusCode;
     if (code == 401) return Failure.authenticationFailure(message: msg);
-    if (code == 400 || code == 422) return Failure.validationFailure(message: msg);
+    if (code == 400 || code == 422)
+      return Failure.validationFailure(message: msg);
     if (code == 404) return Failure.notFoundFailure(message: msg);
     if (code != null && code >= 500) {
       return Failure.serverFailure(message: msg, statusCode: code);
@@ -46,7 +49,10 @@ class RImplAuth implements RAuth {
   @override
   Future<Either<Failure, AuthSuccess>> login(ParamLogin p) async {
     try {
-      final res = await _remote.login(identifier: p.identifier, password: p.password);
+      final res = await _remote.login(
+        identifier: p.identifier,
+        password: p.password,
+      );
       final body = res.data ?? const {};
       final user = MUser.fromJson(body['user'] as Map<String, dynamic>);
       final token = MAuthToken(
@@ -59,7 +65,11 @@ class RImplAuth implements RAuth {
     } on DioException catch (e) {
       return Left(_failureFromDio(e));
     } catch (e, st) {
-      ErrorHelper.printDebugError(name: 'RImplAuth.login', error: e, stackTrace: st);
+      ErrorHelper.printDebugError(
+        name: 'RImplAuth.login',
+        error: e,
+        stackTrace: st,
+      );
       return Left(Failure.unexpectedFailure(message: e.toString()));
     }
   }
@@ -68,7 +78,10 @@ class RImplAuth implements RAuth {
   Future<Either<Failure, AuthSuccess>> register(ParamRegister p) async {
     try {
       final res = await _remote.register(
-        name: p.name, email: p.email, phone: p.phone, password: p.password,
+        name: p.name,
+        email: p.email,
+        phone: p.phone,
+        password: p.password,
       );
       final body = res.data ?? const {};
       final user = MUser.fromJson(body['user'] as Map<String, dynamic>);
@@ -82,7 +95,11 @@ class RImplAuth implements RAuth {
     } on DioException catch (e) {
       return Left(_failureFromDio(e));
     } catch (e, st) {
-      ErrorHelper.printDebugError(name: 'RImplAuth.register', error: e, stackTrace: st);
+      ErrorHelper.printDebugError(
+        name: 'RImplAuth.register',
+        error: e,
+        stackTrace: st,
+      );
       return Left(Failure.unexpectedFailure(message: e.toString()));
     }
   }
@@ -95,14 +112,19 @@ class RImplAuth implements RAuth {
     } on DioException catch (e) {
       return Left(_failureFromDio(e));
     } catch (e, st) {
-      ErrorHelper.printDebugError(name: 'RImplAuth.forgotPassword', error: e, stackTrace: st);
+      ErrorHelper.printDebugError(
+        name: 'RImplAuth.forgotPassword',
+        error: e,
+        stackTrace: st,
+      );
       return Left(Failure.unexpectedFailure(message: e.toString()));
     }
   }
 
   @override
   Future<Either<Failure, Unit>> verifyOtp({
-    required String email, required String otp,
+    required String email,
+    required String otp,
   }) async {
     try {
       await _remote.verifyOtp(email: email, otp: otp);
@@ -110,7 +132,11 @@ class RImplAuth implements RAuth {
     } on DioException catch (e) {
       return Left(_failureFromDio(e));
     } catch (e, st) {
-      ErrorHelper.printDebugError(name: 'RImplAuth.verifyOtp', error: e, stackTrace: st);
+      ErrorHelper.printDebugError(
+        name: 'RImplAuth.verifyOtp',
+        error: e,
+        stackTrace: st,
+      );
       return Left(Failure.unexpectedFailure(message: e.toString()));
     }
   }
@@ -119,13 +145,19 @@ class RImplAuth implements RAuth {
   Future<Either<Failure, Unit>> resetPassword(ParamReset p) async {
     try {
       await _remote.resetPassword(
-        email: p.email, otp: p.otp, newPassword: p.newPassword,
+        email: p.email,
+        otp: p.otp,
+        newPassword: p.newPassword,
       );
       return const Right(unit);
     } on DioException catch (e) {
       return Left(_failureFromDio(e));
     } catch (e, st) {
-      ErrorHelper.printDebugError(name: 'RImplAuth.resetPassword', error: e, stackTrace: st);
+      ErrorHelper.printDebugError(
+        name: 'RImplAuth.resetPassword',
+        error: e,
+        stackTrace: st,
+      );
       return Left(Failure.unexpectedFailure(message: e.toString()));
     }
   }
@@ -134,12 +166,18 @@ class RImplAuth implements RAuth {
   Future<Either<Failure, Unit>> logout() async {
     try {
       // Best-effort server logout; still clear local state on failure.
-      try { await _remote.logout(); } catch (_) {}
+      try {
+        await _remote.logout();
+      } catch (_) {}
       await _userBox.clear();
       await _tokenBox.clear();
       return const Right(unit);
     } catch (e, st) {
-      ErrorHelper.printDebugError(name: 'RImplAuth.logout', error: e, stackTrace: st);
+      ErrorHelper.printDebugError(
+        name: 'RImplAuth.logout',
+        error: e,
+        stackTrace: st,
+      );
       return Left(Failure.unexpectedFailure(message: e.toString()));
     }
   }
@@ -157,7 +195,11 @@ class RImplAuth implements RAuth {
     } on DioException catch (e) {
       return Left(_failureFromDio(e));
     } catch (e, st) {
-      ErrorHelper.printDebugError(name: 'RImplAuth.currentUser', error: e, stackTrace: st);
+      ErrorHelper.printDebugError(
+        name: 'RImplAuth.currentUser',
+        error: e,
+        stackTrace: st,
+      );
       return Left(Failure.unexpectedFailure(message: e.toString()));
     }
   }

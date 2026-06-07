@@ -13,10 +13,10 @@ class CBAuth extends Cubit<SAuth> {
     required UCIsLoggedIn isLoggedIn,
     required UCGetCurrentUser currentUser,
     required UCLogout logout,
-  })  : _isLoggedIn = isLoggedIn,
-        _currentUser = currentUser,
-        _logout = logout,
-        super(const SAuth());
+  }) : _isLoggedIn = isLoggedIn,
+       _currentUser = currentUser,
+       _logout = logout,
+       super(const SAuth());
 
   final UCIsLoggedIn _isLoggedIn;
   final UCGetCurrentUser _currentUser;
@@ -30,14 +30,21 @@ class CBAuth extends Cubit<SAuth> {
     }
     final res = await _currentUser();
     res.fold(
-      (_) => emit(state.copyWith(status: EAuthStatus.loggedOut, clearUser: true)),
+      (_) =>
+          emit(state.copyWith(status: EAuthStatus.loggedOut, clearUser: true)),
       (user) => emit(state.copyWith(status: EAuthStatus.loggedIn, user: user)),
     );
   }
 
   /// Called by the form cubits after a successful login/register.
   void onLoggedIn(MUser user) {
-    emit(state.copyWith(status: EAuthStatus.loggedIn, user: user, clearError: true));
+    emit(
+      state.copyWith(
+        status: EAuthStatus.loggedIn,
+        user: user,
+        clearError: true,
+      ),
+    );
   }
 
   Future<void> logout() async {

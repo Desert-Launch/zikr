@@ -15,8 +15,7 @@ class SLoginForm extends Equatable {
   final bool obscurePassword;
   final String? error;
 
-  bool get isValid =>
-      identifier.trim().isNotEmpty && password.length >= 8;
+  bool get isValid => identifier.trim().isNotEmpty && password.length >= 8;
 
   SLoginForm copyWith({
     String? identifier,
@@ -36,5 +35,11 @@ class SLoginForm extends Equatable {
   }
 
   @override
-  List<Object?> get props => [identifier, password, isSubmitting, obscurePassword, error];
+  List<Object?> get props => [
+    identifier,
+    password,
+    isSubmitting,
+    obscurePassword,
+    error,
+  ];
 }

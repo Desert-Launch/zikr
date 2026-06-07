@@ -56,14 +56,24 @@ class AuthModule extends Module {
     r.child(AuthRoutes.login, child: (_) => const SNLogin());
     r.child(AuthRoutes.register, child: (_) => const SNRegister());
     r.child(AuthRoutes.forgotPassword, child: (_) => const SNForgotPassword());
-    r.child(AuthRoutes.verifyOtp, child: (_) {
-      final email = r.args.queryParams['email'] ?? '';
-      return SNVerifyOtp(email: email);
-    });
-    r.child(AuthRoutes.resetPassword, child: (_) {
-      final email = r.args.queryParams['email'] ?? '';
-      return SNResetPassword(email: email);
-    });
-    r.child(AuthRoutes.registerSuccess, child: (_) => const SNRegisterSuccess());
+    r.child(
+      AuthRoutes.verifyOtp,
+      child: (_) {
+        final email = r.args.queryParams['email'] ?? '';
+        return SNVerifyOtp(email: email);
+      },
+    );
+    r.child(
+      AuthRoutes.resetPassword,
+      child: (_) {
+        final email = r.args.queryParams['email'] ?? '';
+        final otp = r.args.queryParams['otp'] ?? '';
+        return SNResetPassword(email: email, otp: otp);
+      },
+    );
+    r.child(
+      AuthRoutes.registerSuccess,
+      child: (_) => const SNRegisterSuccess(),
+    );
   }
 }

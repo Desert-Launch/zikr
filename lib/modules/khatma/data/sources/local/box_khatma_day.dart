@@ -11,8 +11,8 @@ class BoxKhatmaDay extends HiveBoxBase<MKhatmaDay> {
     return '$yyyy$mm$dd';
   }
 
-  List<MKhatmaDay> all() => box.values.toList()
-    ..sort((a, b) => a.dayIndex.compareTo(b.dayIndex));
+  List<MKhatmaDay> all() =>
+      box.values.toList()..sort((a, b) => a.dayIndex.compareTo(b.dayIndex));
 
   MKhatmaDay? today() {
     final k = keyFor(DateTime.now());
@@ -21,7 +21,17 @@ class BoxKhatmaDay extends HiveBoxBase<MKhatmaDay> {
 
   Future<void> upsert(MKhatmaDay day) async => box.put(day.dateKey, day);
 
+  Future<void> upsertWird(MKhatmaDay day) async =>
+      box.put('wird_${day.dayIndex}', day);
+
   Future<void> clearAll() async => box.clear();
 
   int get completedCount => box.values.where((d) => d.completed).length;
+
+  int completedOn(DateTime date) {
+    final key = keyFor(date);
+    return box.values
+        .where((day) => day.completed && day.dateKey == key)
+        .length;
+  }
 }

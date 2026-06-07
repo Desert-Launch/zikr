@@ -35,4 +35,11 @@ class BoxAzkarProgress extends HiveBoxBase<MAzkarProgress> {
     final k = keyFor(categoryId, DateTime.now());
     await box.delete(k);
   }
+
+  Future<void> resetItem(String categoryId, String itemId) async {
+    final r = today(categoryId);
+    r.completedCounts.remove(itemId);
+    r.updatedAt = DateTime.now();
+    await r.save();
+  }
 }

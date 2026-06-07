@@ -102,6 +102,7 @@ flutter:
     - assets/data/
     - assets/data/mushaf_pages/
     - assets/data/azkar/
+    - assets/data/khatma/
     - assets/fonts/qpc/
     - assets/lang/
     - assets/mock/

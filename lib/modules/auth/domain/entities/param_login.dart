@@ -8,9 +8,9 @@ class ParamLogin extends Equatable {
   final String password;
 
   Map<String, dynamic> toJson() => {
-        'identifier': identifier,
-        'password': password,
-      };
+    'identifier': identifier,
+    'password': password,
+  };
 
   @override
   List<Object?> get props => [identifier, password];

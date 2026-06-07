@@ -11,6 +11,11 @@ class MKhatmaPlan extends HiveObject {
     required this.totalDays,
     required this.startedAt,
     this.isActive = true,
+    this.planId = 0,
+    this.currentWirdIndex = 1,
+    this.reminderEnabled = true,
+    this.reminderHour = 8,
+    this.reminderMinute = 0,
   });
 
   /// 30, 60, or any custom positive number — total length of the plan.
@@ -23,6 +28,19 @@ class MKhatmaPlan extends HiveObject {
   @HiveField(2)
   bool isActive;
 
-  /// Daily reading target (in pages) — `604 / totalDays` rounded up.
-  int get pagesPerDay => (604 / totalDays).ceil();
+  @HiveField(3)
+  int planId;
+
+  /// One-indexed next wird to complete.
+  @HiveField(4)
+  int currentWirdIndex;
+
+  @HiveField(5)
+  bool reminderEnabled;
+
+  @HiveField(6)
+  int reminderHour;
+
+  @HiveField(7)
+  int reminderMinute;
 }

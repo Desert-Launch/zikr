@@ -20,7 +20,7 @@ class SNLocationPermission extends StatelessWidget {
     await cubit.setLocationOptIn(granted);
     await cubit.markComplete();
     if (!context.mounted) return;
-    Modular.to.navigate(RoutesNames.authBase);
+    Modular.to.navigate(RoutesNames.homeBase);
   }
 
   @override
@@ -42,15 +42,19 @@ class SNLocationPermission extends StatelessWidget {
                     color: AppColorsLight.primary.withValues(alpha: 0.08),
                     shape: BoxShape.circle,
                   ),
-                  child: Icon(Icons.location_on_outlined,
-                      color: AppColorsLight.primary, size: 56.r),
+                  child: Icon(
+                    Icons.location_on_outlined,
+                    color: AppColorsLight.primary,
+                    size: 56.r,
+                  ),
                 ),
                 SizedBox(height: 20.h),
                 Text(
                   'onboarding_location_title'.tr(),
                   textAlign: TextAlign.center,
                   style: TextStyle(
-                    fontSize: 20.sp, fontWeight: FontWeight.w800,
+                    fontSize: 20.sp,
+                    fontWeight: FontWeight.w800,
                   ),
                 ),
                 SizedBox(height: 8.h),
@@ -58,7 +62,9 @@ class SNLocationPermission extends StatelessWidget {
                   'onboarding_location_body'.tr(),
                   textAlign: TextAlign.center,
                   style: TextStyle(
-                    fontSize: 13.sp, color: context.brand.muted, height: 1.5,
+                    fontSize: 13.sp,
+                    color: context.brand.muted,
+                    height: 1.5,
                   ),
                 ),
                 const Spacer(),
@@ -73,10 +79,13 @@ class SNLocationPermission extends StatelessWidget {
                         borderRadius: BorderRadius.circular(12.r),
                       ),
                     ),
-                    child: Text('onboarding_location_allow'.tr(),
-                        style: TextStyle(
-                          fontSize: 15.sp, fontWeight: FontWeight.w700,
-                        )),
+                    child: Text(
+                      'onboarding_location_allow'.tr(),
+                      style: TextStyle(
+                        fontSize: 15.sp,
+                        fontWeight: FontWeight.w700,
+                      ),
+                    ),
                   ),
                 ),
                 SizedBox(height: 8.h),

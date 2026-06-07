@@ -10,18 +10,19 @@ class CBLoginForm extends Cubit<SLoginForm> {
   final UCLogin _login;
   final CBAuth _auth;
 
-  void setIdentifier(String v) => emit(state.copyWith(identifier: v, clearError: true));
-  void setPassword(String v) => emit(state.copyWith(password: v, clearError: true));
+  void setIdentifier(String v) =>
+      emit(state.copyWith(identifier: v, clearError: true));
+  void setPassword(String v) =>
+      emit(state.copyWith(password: v, clearError: true));
   void toggleObscure() =>
       emit(state.copyWith(obscurePassword: !state.obscurePassword));
 
   Future<bool> submit() async {
     if (!state.isValid) return false;
     emit(state.copyWith(isSubmitting: true, clearError: true));
-    final res = await _login(ParamLogin(
-      identifier: state.identifier.trim(),
-      password: state.password,
-    ));
+    final res = await _login(
+      ParamLogin(identifier: state.identifier.trim(), password: state.password),
+    );
     return res.fold(
       (f) {
         emit(state.copyWith(isSubmitting: false, error: f.message));

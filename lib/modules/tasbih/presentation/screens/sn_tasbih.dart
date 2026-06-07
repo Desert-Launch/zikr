@@ -5,76 +5,134 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:localize_and_translate/localize_and_translate.dart';
 import 'package:quran/core/services/routes/routes_names.dart';
-import 'package:quran/core/theme/app_colors.dart';
-import 'package:quran/core/theme/brand_colors.dart';
 import 'package:quran/modules/tasbih/presentation/cubits/cb_tasbih.dart';
 import 'package:quran/modules/tasbih/presentation/cubits/s_tasbih.dart';
 
 class SNTasbih extends StatelessWidget {
   const SNTasbih({super.key});
 
+  static const _green = Color(0xFF007A58);
+  static const _gold = Color(0xFFD6A72C);
+  static const _canvas = Color(0xFFF8F7F4);
+
   static const _phrases = [
     'سُبْحَانَ اللَّهِ',
     'الْحَمْدُ لِلَّهِ',
     'لَا إِلَهَ إِلَّا اللَّهُ',
     'اللَّهُ أَكْبَرُ',
-    'لَا حَوْلَ وَلَا قُوَّةَ إِلَّا بِاللَّهِ',
-    'أَسْتَغْفِرُ اللَّهَ',
   ];
-
-  static const _targets = [33, 99, 100, 500, 1000];
 
   @override
   Widget build(BuildContext context) {
-    final cb = Modular.get<CBTasbih>();
+    final cubit = Modular.get<CBTasbih>();
     return BlocProvider.value(
-      value: cb,
+      value: cubit,
       child: Scaffold(
-        appBar: AppBar(
-          title: Text('tasbih_title'.tr(),
-              style: TextStyle(fontSize: 18.sp, fontWeight: FontWeight.w700)),
-          actions: [
-            IconButton(
-              icon: const Icon(Icons.history_rounded),
-              tooltip: 'tasbih_history'.tr(),
-              onPressed: () => Modular.to.pushNamed(TasbihRoutes.fullHistory()),
-            ),
-            IconButton(
-              icon: const Icon(Icons.settings_outlined),
-              tooltip: 'tasbih_hourly_title'.tr(),
-              onPressed: () => Modular.to.pushNamed(TasbihRoutes.fullHourly()),
-            ),
-          ],
-        ),
+        backgroundColor: _canvas,
         body: BlocBuilder<CBTasbih, STasbih>(
-          builder: (context, state) {
-            return Column(
+          builder: (_, state) => CustomScrollView(
+            slivers: [
+              SliverToBoxAdapter(
+                child: _TasbihHeader(
+                  green: _green,
+                  onHistory: () =>
+                      Modular.to.pushNamed(TasbihRoutes.fullHistory()),
+                  onSettings: () =>
+                      Modular.to.pushNamed(TasbihRoutes.fullHourly()),
+                ),
+              ),
+              SliverPadding(
+                padding: EdgeInsets.fromLTRB(16.w, 10.h, 16.w, 28.h),
+                sliver: SliverList.list(
+                  children: [
+                    _PhraseSelector(
+                      selected: state.zekrAr,
+                      phrases: _phrases,
+                      green: _green,
+                      onChanged: cubit.setZekr,
+                    ),
+                    SizedBox(height: 12.h),
+                    _CounterCard(
+                      state: state,
+                      totalToday: state.count,
+                      green: _green,
+                      onTap: cubit.tap,
+                      onReset: cubit.reset,
+                    ),
+                    SizedBox(height: 12.h),
+                    _VirtueCard(gold: _gold),
+                  ],
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class _TasbihHeader extends StatelessWidget {
+  const _TasbihHeader({
+    required this.green,
+    required this.onHistory,
+    required this.onSettings,
+  });
+
+  final Color green;
+  final VoidCallback onHistory;
+  final VoidCallback onSettings;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: EdgeInsets.fromLTRB(16.w, 8.h, 16.w, 13.h),
+      decoration: BoxDecoration(
+        color: green,
+        borderRadius: BorderRadius.vertical(bottom: Radius.circular(28.r)),
+      ),
+      child: SafeArea(
+        bottom: false,
+        child: Row(
+          children: [
+            IconButton(
+              onPressed: onHistory,
+              icon: const Icon(Icons.history_rounded, color: Colors.white),
+            ),
+            IconButton(
+              onPressed: onSettings,
+              icon: const Icon(Icons.volume_up_outlined, color: Colors.white),
+            ),
+            const Spacer(),
+            Column(
+              crossAxisAlignment: CrossAxisAlignment.end,
               children: [
-                SizedBox(height: 12.h),
-                _PhraseSelector(value: state.zekrAr, options: _phrases, onChanged: cb.setZekr),
-                SizedBox(height: 12.h),
-                _TargetSelector(value: state.target, options: _targets, onChanged: cb.setTarget),
-                Expanded(child: _CountCircle(state: state, onTap: cb.tap)),
-                Padding(
-                  padding: EdgeInsets.fromLTRB(20.w, 0, 20.w, 24.h),
-                  child: Row(
-                    children: [
-                      Expanded(
-                        child: OutlinedButton.icon(
-                          icon: const Icon(Icons.restart_alt_rounded),
-                          label: Text('tasbih_reset'.tr()),
-                          onPressed: cb.reset,
-                          style: OutlinedButton.styleFrom(
-                            padding: EdgeInsets.symmetric(vertical: 12.h),
-                          ),
-                        ),
-                      ),
-                    ],
+                Text(
+                  'tasbih_digital_title'.tr(),
+                  style: GoogleFonts.tajawal(
+                    color: Colors.white,
+                    fontSize: 17.sp,
+                    fontWeight: FontWeight.w700,
+                  ),
+                ),
+                Text(
+                  'tasbih_digital_subtitle'.tr(),
+                  style: TextStyle(
+                    color: Colors.white.withValues(alpha: 0.72),
+                    fontSize: 8.sp,
                   ),
                 ),
               ],
-            );
-          },
+            ),
+            SizedBox(width: 6.w),
+            IconButton(
+              onPressed: Modular.to.pop,
+              icon: const Icon(
+                Icons.arrow_forward_rounded,
+                color: Colors.white,
+              ),
+            ),
+          ],
         ),
       ),
     );
@@ -83,135 +141,262 @@ class SNTasbih extends StatelessWidget {
 
 class _PhraseSelector extends StatelessWidget {
   const _PhraseSelector({
-    required this.value,
-    required this.options,
+    required this.selected,
+    required this.phrases,
+    required this.green,
     required this.onChanged,
   });
-  final String value;
-  final List<String> options;
+
+  final String selected;
+  final List<String> phrases;
+  final Color green;
   final ValueChanged<String> onChanged;
 
   @override
   Widget build(BuildContext context) {
-    return SizedBox(
-      height: 40.h,
-      child: ListView.separated(
-        scrollDirection: Axis.horizontal,
-        padding: EdgeInsets.symmetric(horizontal: 16.w),
-        itemCount: options.length,
-        separatorBuilder: (_, __) => SizedBox(width: 8.w),
-        itemBuilder: (_, i) {
-          final opt = options[i];
-          final selected = opt == value;
-          return ChoiceChip(
-            label: Text(opt, style: GoogleFonts.amiri(fontSize: 14.sp)),
-            selected: selected,
-            onSelected: (_) => onChanged(opt),
-            selectedColor: AppColorsLight.primary.withValues(alpha: 0.15),
-            labelStyle: TextStyle(
-              color: selected
-                  ? AppColorsLight.primary
-                  : context.brand.onSurface,
-              fontWeight: selected ? FontWeight.w800 : FontWeight.w600,
-            ),
-            side: BorderSide(
-              color: selected ? AppColorsLight.primary : context.brand.border,
-            ),
-          );
-        },
+    return GridView.builder(
+      shrinkWrap: true,
+      physics: const NeverScrollableScrollPhysics(),
+      padding: EdgeInsets.zero,
+      itemCount: phrases.length,
+      gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+        crossAxisCount: 2,
+        mainAxisSpacing: 8.h,
+        crossAxisSpacing: 8.w,
+        childAspectRatio: 2.75,
       ),
-    );
-  }
-}
-
-class _TargetSelector extends StatelessWidget {
-  const _TargetSelector({
-    required this.value,
-    required this.options,
-    required this.onChanged,
-  });
-  final int value;
-  final List<int> options;
-  final ValueChanged<int> onChanged;
-
-  @override
-  Widget build(BuildContext context) {
-    return Padding(
-      padding: EdgeInsets.symmetric(horizontal: 16.w),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: options
-            .map((n) => Padding(
-                  padding: EdgeInsets.symmetric(horizontal: 4.w),
-                  child: ChoiceChip(
-                    label: Text('$n', style: TextStyle(fontSize: 12.sp)),
-                    selected: n == value,
-                    onSelected: (_) => onChanged(n),
-                    selectedColor: AppColorsLight.accent.withValues(alpha: 0.2),
-                  ),
-                ))
-            .toList(),
-      ),
-    );
-  }
-}
-
-class _CountCircle extends StatelessWidget {
-  const _CountCircle({required this.state, required this.onTap});
-  final STasbih state;
-  final VoidCallback onTap;
-
-  @override
-  Widget build(BuildContext context) {
-    return Center(
-      child: GestureDetector(
-        onTap: onTap,
-        behavior: HitTestBehavior.opaque,
-        child: SizedBox(
-          width: 260.r,
-          height: 260.r,
-          child: Stack(
+      itemBuilder: (_, index) {
+        final phrase = phrases[index];
+        final active = phrase == selected;
+        return InkWell(
+          borderRadius: BorderRadius.circular(10.r),
+          onTap: () => onChanged(phrase),
+          child: Container(
             alignment: Alignment.center,
-            children: [
-              SizedBox(
-                width: 260.r,
-                height: 260.r,
-                child: CircularProgressIndicator(
-                  value: state.progress,
-                  strokeWidth: 12.r,
-                  backgroundColor: context.brand.border,
-                  color: state.isComplete
-                      ? AppColorsLight.success
-                      : AppColorsLight.primary,
+            decoration: BoxDecoration(
+              color: active ? green.withValues(alpha: 0.08) : Colors.white,
+              borderRadius: BorderRadius.circular(10.r),
+              border: active ? Border.all(color: green) : null,
+            ),
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Text(
+                  phrase,
+                  style: GoogleFonts.amiri(
+                    color: active ? green : Colors.black87,
+                    fontSize: 14.sp,
+                    fontWeight: active ? FontWeight.w700 : FontWeight.w500,
+                  ),
                 ),
+                if (active)
+                  Container(
+                    width: 4.r,
+                    height: 4.r,
+                    decoration: BoxDecoration(
+                      color: green,
+                      shape: BoxShape.circle,
+                    ),
+                  ),
+              ],
+            ),
+          ),
+        );
+      },
+    );
+  }
+}
+
+class _CounterCard extends StatelessWidget {
+  const _CounterCard({
+    required this.state,
+    required this.totalToday,
+    required this.green,
+    required this.onTap,
+    required this.onReset,
+  });
+
+  final STasbih state;
+  final int totalToday;
+  final Color green;
+  final VoidCallback onTap;
+  final VoidCallback onReset;
+
+  @override
+  Widget build(BuildContext context) {
+    return InkWell(
+      borderRadius: BorderRadius.circular(16.r),
+      onTap: onTap,
+      child: Container(
+        padding: EdgeInsets.all(16.r),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(16.r),
+          boxShadow: const [
+            BoxShadow(
+              color: Color(0x22000000),
+              blurRadius: 14,
+              offset: Offset(0, 5),
+            ),
+          ],
+        ),
+        child: Column(
+          children: [
+            Text(
+              state.zekrAr,
+              style: GoogleFonts.amiri(
+                color: green,
+                fontSize: 18.sp,
+                fontWeight: FontWeight.w700,
               ),
-              Column(
-                mainAxisSize: MainAxisSize.min,
+            ),
+            SizedBox(height: 28.h),
+            Container(
+              width: 126.r,
+              height: 126.r,
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                border: Border.all(color: green, width: 4),
+                boxShadow: [
+                  BoxShadow(
+                    color: green.withValues(alpha: 0.09),
+                    blurRadius: 30,
+                    spreadRadius: 10,
+                  ),
+                ],
+              ),
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
                 children: [
                   Text(
                     '${state.count}',
                     style: TextStyle(
-                      fontSize: 72.sp,
-                      fontWeight: FontWeight.w900,
-                      color: state.isComplete
-                          ? AppColorsLight.success
-                          : AppColorsLight.primary,
-                      fontFeatures: const [FontFeature.tabularFigures()],
+                      fontSize: 40.sp,
+                      fontWeight: FontWeight.w300,
                     ),
                   ),
-                  SizedBox(height: 4.h),
                   Text(
-                    '${'tasbih_target_label'.tr()} ${state.target}',
-                    style: TextStyle(
-                      fontSize: 12.sp,
-                      color: context.brand.muted,
+                    '${'tasbih_of'.tr()} ${state.target}',
+                    style: TextStyle(fontSize: 8.sp, color: Colors.grey[600]),
+                  ),
+                  SizedBox(height: 4.h),
+                  SizedBox(
+                    width: 42.w,
+                    child: LinearProgressIndicator(
+                      value: state.progress,
+                      minHeight: 3.h,
+                      color: green,
+                      backgroundColor: const Color(0xFFE8E7E2),
                     ),
                   ),
                 ],
               ),
+            ),
+            SizedBox(height: 28.h),
+            Divider(color: green.withValues(alpha: 0.16)),
+            Row(
+              children: [
+                TextButton.icon(
+                  onPressed: onReset,
+                  icon: const Icon(Icons.restart_alt_rounded, size: 14),
+                  label: Text('tasbih_reset_counter'.tr()),
+                  style: TextButton.styleFrom(
+                    foregroundColor: Colors.grey[700],
+                    textStyle: TextStyle(fontSize: 8.sp),
+                  ),
+                ),
+                const Spacer(),
+                Column(
+                  crossAxisAlignment: CrossAxisAlignment.end,
+                  children: [
+                    CircleAvatar(
+                      radius: 16.r,
+                      backgroundColor: const Color(0xFFEEF0E9),
+                      child: Text(
+                        '$totalToday',
+                        style: TextStyle(
+                          fontSize: 10.sp,
+                          color: Colors.grey[700],
+                        ),
+                      ),
+                    ),
+                    SizedBox(height: 3.h),
+                    Text(
+                      'tasbih_today_total'.tr(),
+                      style: TextStyle(fontSize: 8.sp, color: Colors.grey[600]),
+                    ),
+                  ],
+                ),
+              ],
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _VirtueCard extends StatelessWidget {
+  const _VirtueCard({required this.gold});
+
+  final Color gold;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: EdgeInsets.all(15.r),
+      decoration: BoxDecoration(
+        color: const Color(0xFFFFEDC0),
+        borderRadius: BorderRadius.circular(15.r),
+        border: Border.all(color: gold),
+      ),
+      child: Stack(
+        children: [
+          PositionedDirectional(
+            top: -35.h,
+            end: -30.w,
+            child: Container(
+              width: 82.r,
+              height: 82.r,
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                border: Border.all(
+                  color: gold.withValues(alpha: 0.15),
+                  width: 3,
+                ),
+              ),
+            ),
+          ),
+          Column(
+            children: [
+              CircleAvatar(
+                radius: 13.r,
+                backgroundColor: gold,
+                child: const Icon(
+                  Icons.star_rounded,
+                  color: Colors.white,
+                  size: 14,
+                ),
+              ),
+              SizedBox(height: 5.h),
+              Text(
+                'tasbih_virtue_title'.tr(),
+                style: TextStyle(fontSize: 8.sp, color: Colors.grey[700]),
+              ),
+              SizedBox(height: 7.h),
+              Text(
+                'tasbih_virtue_body'.tr(),
+                textAlign: TextAlign.center,
+                style: GoogleFonts.amiri(fontSize: 12.sp, height: 1.7),
+              ),
+              SizedBox(height: 5.h),
+              Text(
+                'tasbih_virtue_source'.tr(),
+                style: TextStyle(fontSize: 7.sp, color: Colors.grey[600]),
+              ),
             ],
           ),
-        ),
+        ],
       ),
     );
   }

@@ -39,14 +39,23 @@ class WHomeHeader extends StatelessWidget {
           final user = state.user;
           return Row(
             children: [
-              CircleAvatar(
-                radius: 24.r,
-                backgroundColor: Colors.white.withValues(alpha: 0.18),
-                backgroundImage:
-                    user?.avatar != null ? NetworkImage(user!.avatar!) : null,
-                child: user?.avatar == null
-                    ? Icon(Icons.person, color: AppColorsLight.accent)
-                    : null,
+              InkWell(
+                customBorder: const CircleBorder(),
+                onTap: () => Modular.to.pushNamed(
+                  state.isLoggedIn
+                      ? SettingsRoutes.fullMain()
+                      : AuthRoutes.fullLogin(),
+                ),
+                child: CircleAvatar(
+                  radius: 24.r,
+                  backgroundColor: Colors.white.withValues(alpha: 0.18),
+                  backgroundImage: user?.avatar != null
+                      ? NetworkImage(user!.avatar!)
+                      : null,
+                  child: user?.avatar == null
+                      ? Icon(Icons.person, color: AppColorsLight.accent)
+                      : null,
+                ),
               ),
               SizedBox(width: 12.w),
               Expanded(
@@ -65,7 +74,8 @@ class WHomeHeader extends StatelessWidget {
                       user?.name ?? 'app_name'.tr(),
                       style: GoogleFonts.tajawal(
                         color: Colors.white,
-                        fontSize: 18.sp, fontWeight: FontWeight.w800,
+                        fontSize: 18.sp,
+                        fontWeight: FontWeight.w800,
                       ),
                       overflow: TextOverflow.ellipsis,
                     ),

@@ -31,6 +31,7 @@ import 'package:quran/modules/home/home_module.dart';
 import 'package:quran/modules/khatma/data/sources/local/box_khatma_completion.dart';
 import 'package:quran/modules/khatma/data/sources/local/box_khatma_day.dart';
 import 'package:quran/modules/khatma/data/sources/local/box_khatma_plan.dart';
+import 'package:quran/modules/khatma/data/datasources/local/ds_local_khatma.dart';
 import 'package:quran/modules/khatma/khatma_module.dart';
 import 'package:quran/modules/khatma/presentation/cubits/cb_khatma.dart';
 import 'package:quran/modules/legal/legal_module.dart';
@@ -90,6 +91,7 @@ class AppModule extends Module {
 
     // Adhan
     i.addSingleton<DSLocalAdhan>(DSLocalAdhan.new);
+    i.addSingleton<DSLocalKhatma>(DSLocalKhatma.new);
 
     // Notifications + location (cross-cutting infra)
     i.addSingleton<NotificationRouter>(NotificationRouter.new);
@@ -100,7 +102,9 @@ class AppModule extends Module {
 
     // Mock backend — registered before BaseDio so the interceptor is wired in.
     i.addSingleton<MockDatabase>(MockDatabase.new);
-    i.addSingleton<MockInterceptor>(() => MockInterceptor(i.get<MockDatabase>()));
+    i.addSingleton<MockInterceptor>(
+      () => MockInterceptor(i.get<MockDatabase>()),
+    );
 
     // Network
     i.addSingleton<BaseDio>(BaseDio.new);
@@ -163,6 +167,8 @@ class AppModule extends Module {
         planBox: i.get<BoxKhatmaPlan>(),
         dayBox: i.get<BoxKhatmaDay>(),
         completionBox: i.get<BoxKhatmaCompletion>(),
+        local: i.get<DSLocalKhatma>(),
+        notifications: i.get<NotificationsService>(),
       ),
     );
   }
@@ -195,12 +201,16 @@ class AppModularObserver extends NavigatorObserver {
   @override
   void didPush(Route<dynamic> route, Route<dynamic>? previousRoute) {
     super.didPush(route, previousRoute);
-    debugPrint('[Nav] PUSH ${route.settings.name} (from: ${previousRoute?.settings.name})');
+    debugPrint(
+      '[Nav] PUSH ${route.settings.name} (from: ${previousRoute?.settings.name})',
+    );
   }
 
   @override
   void didPop(Route<dynamic> route, Route<dynamic>? previousRoute) {
     super.didPop(route, previousRoute);
-    debugPrint('[Nav] POP ${route.settings.name} → ${previousRoute?.settings.name}');
+    debugPrint(
+      '[Nav] POP ${route.settings.name} → ${previousRoute?.settings.name}',
+    );
   }
 }

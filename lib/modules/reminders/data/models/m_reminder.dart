@@ -15,6 +15,8 @@ class MReminder extends HiveObject {
     required this.daysOfWeek,
     this.body = '',
     this.enabled = true,
+    this.iconId = 2,
+    this.colorId = 3,
     DateTime? createdAt,
   }) : createdAt = createdAt ?? DateTime.now();
 
@@ -42,6 +44,14 @@ class MReminder extends HiveObject {
 
   @HiveField(7)
   DateTime createdAt;
+
+  /// Index into [ReminderStyles.icons]. Defaults to the clock icon.
+  @HiveField(8)
+  int iconId;
+
+  /// Index into [ReminderStyles.colors]. Defaults to brand green.
+  @HiveField(9)
+  int colorId;
 
   /// Stable notification id. We reserve 7000..7999 for reminders so they
   /// don't clash with prayer (1000+) or hourly (5000+).

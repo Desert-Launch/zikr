@@ -12,10 +12,10 @@ class ParamReset extends Equatable {
   final String newPassword;
 
   Map<String, dynamic> toJson() => {
-        'email': email,
-        'otp': otp,
-        'new_password': newPassword,
-      };
+    'email': email,
+    'otp': otp,
+    'new_password': newPassword,
+  };
 
   @override
   List<Object?> get props => [email, otp, newPassword];

@@ -3,6 +3,7 @@ import 'package:equatable/equatable.dart';
 class SRegisterForm extends Equatable {
   const SRegisterForm({
     this.name = '',
+    this.birthDate = '',
     this.email = '',
     this.phone = '',
     this.password = '',
@@ -13,6 +14,7 @@ class SRegisterForm extends Equatable {
   });
 
   final String name;
+  final String birthDate;
   final String email;
   final String phone;
   final String password;
@@ -23,19 +25,25 @@ class SRegisterForm extends Equatable {
 
   static final _emailRegex = RegExp(r'^[\w.+-]+@[\w-]+\.[\w.-]+$');
   static final _passwordRegex = RegExp(r'^(?=.*[A-Za-z])(?=.*\d).{8,}$');
-  static final _phoneRegex = RegExp(r'^(\+?20)?1\d{9}$');
 
   bool get isNameValid => name.trim().length >= 2;
+  bool get isBirthDateValid => birthDate.trim().isNotEmpty;
   bool get isEmailValid => _emailRegex.hasMatch(email.trim());
-  bool get isPhoneValid => phone.isEmpty || _phoneRegex.hasMatch(phone.replaceAll(' ', ''));
+  bool get isPhoneValid => phone.replaceAll(' ', '').isNotEmpty;
   bool get isPasswordValid => _passwordRegex.hasMatch(password);
   bool get passwordsMatch => password == confirmPassword;
 
   bool get isValid =>
-      isNameValid && isEmailValid && isPhoneValid && isPasswordValid && passwordsMatch;
+      isNameValid &&
+      isBirthDateValid &&
+      isEmailValid &&
+      isPhoneValid &&
+      isPasswordValid &&
+      passwordsMatch;
 
   SRegisterForm copyWith({
     String? name,
+    String? birthDate,
     String? email,
     String? phone,
     String? password,
@@ -47,6 +55,7 @@ class SRegisterForm extends Equatable {
   }) {
     return SRegisterForm(
       name: name ?? this.name,
+      birthDate: birthDate ?? this.birthDate,
       email: email ?? this.email,
       phone: phone ?? this.phone,
       password: password ?? this.password,
@@ -58,6 +67,15 @@ class SRegisterForm extends Equatable {
   }
 
   @override
-  List<Object?> get props =>
-      [name, email, phone, password, confirmPassword, isSubmitting, obscurePassword, error];
+  List<Object?> get props => [
+    name,
+    birthDate,
+    email,
+    phone,
+    password,
+    confirmPassword,
+    isSubmitting,
+    obscurePassword,
+    error,
+  ];
 }

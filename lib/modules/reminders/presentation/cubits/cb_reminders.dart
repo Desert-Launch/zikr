@@ -37,6 +37,8 @@ class CBReminders extends Cubit<SReminders> {
     required int hour,
     required int minute,
     required List<bool> daysOfWeek,
+    int iconId = 2,
+    int colorId = 3,
   }) async {
     if (_box.count >= cap) {
       emit(state.copyWith(error: 'reminders_max_reached'));
@@ -49,6 +51,8 @@ class CBReminders extends Cubit<SReminders> {
       hour: hour,
       minute: minute,
       daysOfWeek: List<bool>.from(daysOfWeek),
+      iconId: iconId,
+      colorId: colorId,
     );
     await _box.upsert(reminder);
     await _schedule(reminder);

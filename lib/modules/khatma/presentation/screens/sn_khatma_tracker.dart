@@ -2,155 +2,416 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_modular/flutter_modular.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
-import 'package:google_fonts/google_fonts.dart';
 import 'package:localize_and_translate/localize_and_translate.dart';
 import 'package:quran/core/services/routes/routes_names.dart';
-import 'package:quran/core/theme/app_colors.dart';
-import 'package:quran/core/theme/brand_colors.dart';
 import 'package:quran/modules/khatma/presentation/cubits/cb_khatma.dart';
 import 'package:quran/modules/khatma/presentation/cubits/s_khatma.dart';
 
 class SNKhatmaTracker extends StatelessWidget {
   const SNKhatmaTracker({super.key});
 
+  static const _green = Color(0xFF007A58);
+  static const _canvas = Color(0xFFF8F7F4);
+  static const _border = Color(0xFFDDE6E0);
+
   @override
   Widget build(BuildContext context) {
-    final cb = Modular.get<CBKhatma>();
+    final cubit = Modular.get<CBKhatma>();
     return BlocProvider.value(
-      value: cb,
-      child: Scaffold(
-        appBar: AppBar(
-          title: Text('khatma_title'.tr(),
-              style: TextStyle(fontSize: 18.sp, fontWeight: FontWeight.w700)),
-          actions: [
-            IconButton(
-              icon: const Icon(Icons.close_rounded),
-              tooltip: 'common_cancel'.tr(),
-              onPressed: () async {
-                final ok = await showDialog<bool>(
-                  context: context,
-                  builder: (ctx) => AlertDialog(
-                    title: Text('khatma_cancel_confirm'.tr()),
-                    actions: [
-                      TextButton(
-                        onPressed: () => Navigator.pop(ctx, false),
-                        child: Text('common_cancel'.tr()),
-                      ),
-                      FilledButton(
-                        style: FilledButton.styleFrom(
-                          backgroundColor: AppColorsLight.error,
+      value: cubit,
+      child: BlocConsumer<CBKhatma, SKhatma>(
+        listenWhen: (previous, current) =>
+            previous.justCompletedId != current.justCompletedId,
+        listener: (_, state) {
+          if (state.justCompletedId == null) return;
+          cubit.acknowledgeCompletion();
+          Modular.to.pushReplacementNamed(KhatmaRoutes.fullCompleted());
+        },
+        builder: (_, state) {
+          if (state.isLoading) {
+            return const Scaffold(
+              body: Center(child: CircularProgressIndicator()),
+            );
+          }
+          if (!state.hasActivePlan || state.currentWird == null) {
+            WidgetsBinding.instance.addPostFrameCallback((_) {
+              Modular.to.pushReplacementNamed(KhatmaRoutes.fullPlans());
+            });
+            return const Scaffold(body: SizedBox.shrink());
+          }
+          return Scaffold(
+            backgroundColor: _canvas,
+            body: ListView(
+              padding: EdgeInsets.zero,
+              children: [
+                _Header(onBack: Modular.to.pop),
+                Padding(
+                  padding: EdgeInsets.fromLTRB(14.w, 14.h, 14.w, 28.h),
+                  child: Column(
+                    children: [
+                      _CurrentWirdCard(state: state),
+                      SizedBox(height: 12.h),
+                      SizedBox(
+                        width: double.infinity,
+                        child: FilledButton.icon(
+                          style: FilledButton.styleFrom(
+                            backgroundColor: _green,
+                            padding: EdgeInsets.symmetric(vertical: 13.h),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(28.r),
+                            ),
+                          ),
+                          onPressed: () => _complete(context, cubit, state),
+                          icon: const Icon(Icons.check_circle_outline_rounded),
+                          label: Text('khatma_complete_wird'.tr()),
                         ),
-                        onPressed: () => Navigator.pop(ctx, true),
-                        child: Text('common_delete'.tr()),
+                      ),
+                      SizedBox(height: 16.h),
+                      _SectionLabel('khatma_reminder'.tr()),
+                      _ReminderCard(cubit: cubit, state: state),
+                      SizedBox(height: 16.h),
+                      _SectionLabel('khatma_current_plan'.tr()),
+                      _ProgressCard(state: state),
+                      SizedBox(height: 12.h),
+                      _PlanCard(state: state),
+                      SizedBox(height: 12.h),
+                      SizedBox(
+                        width: double.infinity,
+                        child: OutlinedButton(
+                          style: OutlinedButton.styleFrom(
+                            foregroundColor: Colors.red,
+                            side: const BorderSide(color: _border),
+                            padding: EdgeInsets.symmetric(vertical: 13.h),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(12.r),
+                            ),
+                          ),
+                          onPressed: () => _cancel(context, cubit),
+                          child: Text('khatma_cancel_plan'.tr()),
+                        ),
                       ),
                     ],
                   ),
-                );
-                if (ok == true) {
-                  await cb.cancelPlan();
-                  if (!context.mounted) return;
-                  Modular.to.pushReplacementNamed(KhatmaRoutes.fullPlans());
-                }
-              },
+                ),
+              ],
+            ),
+          );
+        },
+      ),
+    );
+  }
+
+  Future<void> _complete(
+    BuildContext context,
+    CBKhatma cubit,
+    SKhatma state,
+  ) async {
+    if (state.completedToday > 0) {
+      final confirmed = await showDialog<bool>(
+        context: context,
+        builder: (dialogContext) => AlertDialog(
+          title: Text('khatma_second_today_warning_title'.tr()),
+          content: Text('khatma_second_today_warning_body'.tr()),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(dialogContext, false),
+              child: Text('common_cancel'.tr()),
+            ),
+            FilledButton(
+              onPressed: () => Navigator.pop(dialogContext, true),
+              child: Text('khatma_continue_completion'.tr()),
             ),
           ],
         ),
-        body: BlocConsumer<CBKhatma, SKhatma>(
-          listenWhen: (a, b) => a.justCompletedId != b.justCompletedId,
-          listener: (context, state) {
-            if (state.justCompletedId != null) {
-              cb.acknowledgeCompletion();
-              Modular.to.pushReplacementNamed(KhatmaRoutes.fullCompleted());
-            }
-          },
-          builder: (context, state) {
-            final plan = state.plan;
-            if (plan == null) return const SizedBox.shrink();
-            final today = state.today;
-            return ListView(
-              padding: EdgeInsets.all(16.w),
-              children: [
-                _Hero(state: state),
-                SizedBox(height: 14.h),
-                _TodayCard(
-                  pagesTarget: plan.pagesPerDay,
-                  pagesDone: today?.pagesRead ?? 0,
-                  completed: today?.completed ?? false,
-                  onMarkDone: cb.markTodayDone,
-                ),
-                SizedBox(height: 18.h),
-                Text('khatma_days_grid'.tr(),
-                    style: TextStyle(
-                      fontSize: 12.sp,
-                      color: context.brand.muted,
-                      fontWeight: FontWeight.w700,
-                    )),
-                SizedBox(height: 6.h),
-                _DaysGrid(totalDays: plan.totalDays, completed: state.days),
-              ],
-            );
-          },
+      );
+      if (confirmed != true) return;
+    }
+    await cubit.completeCurrentWird();
+  }
+
+  Future<void> _cancel(BuildContext context, CBKhatma cubit) async {
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (dialogContext) => AlertDialog(
+        title: Text('khatma_cancel_confirm'.tr()),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(dialogContext, false),
+            child: Text('common_cancel'.tr()),
+          ),
+          TextButton(
+            onPressed: () => Navigator.pop(dialogContext, true),
+            child: Text(
+              'common_delete'.tr(),
+              style: const TextStyle(color: Colors.red),
+            ),
+          ),
+        ],
+      ),
+    );
+    if (confirmed != true) return;
+    await cubit.cancelPlan();
+    Modular.to.pushReplacementNamed(KhatmaRoutes.fullPlans());
+  }
+}
+
+class _Header extends StatelessWidget {
+  const _Header({required this.onBack});
+
+  final VoidCallback onBack;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: EdgeInsets.fromLTRB(14.w, 8.h, 14.w, 14.h),
+      decoration: BoxDecoration(
+        color: SNKhatmaTracker._green,
+        borderRadius: BorderRadius.vertical(bottom: Radius.circular(28.r)),
+        boxShadow: const [
+          BoxShadow(
+            color: Color(0x24000000),
+            blurRadius: 7,
+            offset: Offset(0, 3),
+          ),
+        ],
+      ),
+      child: SafeArea(
+        bottom: false,
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.end,
+          children: [
+            Text(
+              'khatma_wird_title'.tr(),
+              style: TextStyle(color: Colors.white, fontSize: 20.sp),
+            ),
+            SizedBox(width: 8.w),
+            IconButton(
+              onPressed: onBack,
+              icon: const Icon(
+                Icons.arrow_forward_rounded,
+                color: Colors.white,
+              ),
+            ),
+          ],
         ),
       ),
     );
   }
 }
 
-class _Hero extends StatelessWidget {
-  const _Hero({required this.state});
+class _CurrentWirdCard extends StatelessWidget {
+  const _CurrentWirdCard({required this.state});
+
+  final SKhatma state;
+
+  @override
+  Widget build(BuildContext context) {
+    final wird = state.currentWird!;
+    final isArabic = LocalizeAndTranslate.getLanguageCode() == 'ar';
+    final startSurah = isArabic ? wird.startSurahAr : wird.startSurahEn;
+    final endSurah = isArabic ? wird.endSurahAr : wird.endSurahEn;
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.end,
+      children: [
+        Padding(
+          padding: EdgeInsetsDirectional.only(end: 5.w, bottom: 6.h),
+          child: Text(
+            '${'khatma_wird_day'.tr()} ${wird.index}',
+            style: TextStyle(fontSize: 12.sp, color: Colors.grey[600]),
+          ),
+        ),
+        Container(
+          padding: EdgeInsets.symmetric(horizontal: 14.w, vertical: 4.h),
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(14.r),
+            border: Border.all(color: SNKhatmaTracker._border),
+          ),
+          child: Column(
+            children: [
+              _RangeRow(
+                title: '${'khatma_from'.tr()} $startSurah',
+                subtitle: '${'khatma_ayah'.tr()} ${wird.startAyahNumber}',
+                pageNumber: wird.startPageNumber,
+              ),
+              const Divider(height: 1),
+              _RangeRow(
+                title: '${'khatma_to'.tr()} $endSurah',
+                subtitle: '${'khatma_ayah'.tr()} ${wird.endAyahNumber}',
+                pageNumber: wird.endPageNumber,
+              ),
+            ],
+          ),
+        ),
+      ],
+    );
+  }
+}
+
+class _RangeRow extends StatelessWidget {
+  const _RangeRow({
+    required this.title,
+    required this.subtitle,
+    required this.pageNumber,
+  });
+
+  final String title;
+  final String subtitle;
+  final int pageNumber;
+
+  @override
+  Widget build(BuildContext context) {
+    return InkWell(
+      onTap: () => Modular.to.pushNamed(QuranRoutes.readerFromPage(pageNumber)),
+      child: Padding(
+        padding: EdgeInsets.symmetric(vertical: 10.h),
+        child: Row(
+          children: [
+            const Icon(Icons.chevron_left_rounded, size: 22),
+            const Spacer(),
+            Column(
+              crossAxisAlignment: CrossAxisAlignment.end,
+              children: [
+                Text(title, style: TextStyle(fontSize: 15.sp)),
+                Text(
+                  subtitle,
+                  style: TextStyle(fontSize: 12.sp, color: Colors.grey[600]),
+                ),
+              ],
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _ReminderCard extends StatelessWidget {
+  const _ReminderCard({required this.cubit, required this.state});
+
+  final CBKhatma cubit;
   final SKhatma state;
 
   @override
   Widget build(BuildContext context) {
     final plan = state.plan!;
+    final time = TimeOfDay(
+      hour: plan.reminderHour,
+      minute: plan.reminderMinute,
+    );
     return Container(
-      padding: EdgeInsets.all(20.w),
       decoration: BoxDecoration(
-        gradient: const LinearGradient(
-          colors: [AppColorsLight.primary, AppColorsLight.primaryDark],
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-        ),
-        borderRadius: BorderRadius.circular(18.r),
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(12.r),
+        border: Border.all(color: SNKhatmaTracker._border),
       ),
       child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text('khatma_progress'.tr(),
-              style: TextStyle(
-                color: Colors.white.withValues(alpha: 0.85),
-                fontSize: 12.sp,
-              )),
-          SizedBox(height: 4.h),
+          SwitchListTile.adaptive(
+            value: plan.reminderEnabled,
+            activeTrackColor: SNKhatmaTracker._green,
+            title: Text(
+              'khatma_daily_wird'.tr(),
+              textAlign: TextAlign.end,
+              style: TextStyle(fontSize: 15.sp),
+            ),
+            subtitle: Text(
+              time.format(context),
+              textAlign: TextAlign.end,
+              style: TextStyle(fontSize: 12.sp, color: Colors.grey[600]),
+            ),
+            onChanged: cubit.setReminderEnabled,
+          ),
+          const Divider(height: 1),
+          ListTile(
+            leading: const Icon(
+              Icons.access_time_rounded,
+              color: SNKhatmaTracker._green,
+            ),
+            title: Text(
+              'khatma_reminder_time'.tr(),
+              textAlign: TextAlign.end,
+              style: TextStyle(fontSize: 15.sp),
+            ),
+            subtitle: Text(
+              time.format(context),
+              textAlign: TextAlign.end,
+              style: TextStyle(fontSize: 12.sp, color: Colors.grey[600]),
+            ),
+            onTap: () async {
+              final picked = await showTimePicker(
+                context: context,
+                initialTime: time,
+              );
+              if (picked != null) {
+                await cubit.setReminderTime(picked.hour, picked.minute);
+              }
+            },
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _ProgressCard extends StatelessWidget {
+  const _ProgressCard({required this.state});
+
+  final SKhatma state;
+
+  @override
+  Widget build(BuildContext context) {
+    final remaining = state.wirds.length - state.completedDays;
+    return Container(
+      padding: EdgeInsets.all(14.r),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(12.r),
+        border: Border.all(color: SNKhatmaTracker._border),
+      ),
+      child: Column(
+        children: [
           Row(
-            crossAxisAlignment: CrossAxisAlignment.end,
             children: [
-              Text('${state.completedDays}',
-                  style: TextStyle(
-                    color: Colors.white,
-                    fontSize: 40.sp,
-                    fontWeight: FontWeight.w900,
-                    fontFeatures: const [FontFeature.tabularFigures()],
-                  )),
-              SizedBox(width: 6.w),
-              Padding(
-                padding: EdgeInsets.only(bottom: 8.h),
-                child: Text('/ ${plan.totalDays} ${'khatma_days_unit'.tr()}',
-                    style: TextStyle(
-                      color: Colors.white.withValues(alpha: 0.85),
-                      fontSize: 14.sp,
-                    )),
+              Container(
+                width: 34.r,
+                height: 34.r,
+                decoration: const BoxDecoration(
+                  color: SNKhatmaTracker._green,
+                  shape: BoxShape.circle,
+                ),
+                child: const Icon(
+                  Icons.access_time_rounded,
+                  color: Colors.white,
+                ),
+              ),
+              const Spacer(),
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.end,
+                children: [
+                  Text(
+                    'khatma_current_plan'.tr(),
+                    style: TextStyle(fontSize: 17.sp),
+                  ),
+                  Text(
+                    'khatma_remaining_wirds'.tr().replaceFirst(
+                      '{{n}}',
+                      '$remaining',
+                    ),
+                    style: TextStyle(fontSize: 12.sp, color: Colors.grey[600]),
+                  ),
+                ],
               ),
             ],
           ),
-          SizedBox(height: 10.h),
+          SizedBox(height: 12.h),
           ClipRRect(
-            borderRadius: BorderRadius.circular(6.r),
+            borderRadius: BorderRadius.circular(4.r),
             child: LinearProgressIndicator(
               value: state.progress,
-              minHeight: 8.h,
-              backgroundColor: Colors.white.withValues(alpha: 0.18),
-              color: AppColorsLight.accent,
+              minHeight: 4.h,
+              backgroundColor: const Color(0xFFE8E2BF),
+              color: SNKhatmaTracker._green,
             ),
           ),
         ],
@@ -159,137 +420,55 @@ class _Hero extends StatelessWidget {
   }
 }
 
-class _TodayCard extends StatelessWidget {
-  const _TodayCard({
-    required this.pagesTarget,
-    required this.pagesDone,
-    required this.completed,
-    required this.onMarkDone,
-  });
-  final int pagesTarget;
-  final int pagesDone;
-  final bool completed;
-  final VoidCallback onMarkDone;
+class _PlanCard extends StatelessWidget {
+  const _PlanCard({required this.state});
+
+  final SKhatma state;
 
   @override
   Widget build(BuildContext context) {
+    final metadata = state.metadata!;
+    final isArabic = LocalizeAndTranslate.getLanguageCode() == 'ar';
     return Container(
-      padding: EdgeInsets.all(16.w),
+      padding: EdgeInsets.symmetric(horizontal: 14.w, vertical: 12.h),
       decoration: BoxDecoration(
-        color: context.brand.surface,
-        border: Border.all(color: context.brand.border),
-        borderRadius: BorderRadius.circular(14.r),
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(12.r),
+        border: Border.all(color: SNKhatmaTracker._border),
       ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
+      child: Row(
         children: [
-          Text('khatma_today'.tr(),
-              style: TextStyle(
-                fontSize: 12.sp,
-                color: context.brand.muted,
-                fontWeight: FontWeight.w700,
-              )),
-          SizedBox(height: 4.h),
           Text(
-            'khatma_today_target'.tr().replaceFirst('{{n}}', '$pagesTarget'),
-            style: TextStyle(fontSize: 16.sp, fontWeight: FontWeight.w800),
+            '${state.completedDays} / ${state.wirds.length}',
+            style: TextStyle(fontSize: 12.sp, color: Colors.grey[600]),
           ),
-          SizedBox(height: 12.h),
-          if (completed)
-            Container(
-              padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 10.h),
-              decoration: BoxDecoration(
-                color: AppColorsLight.success.withValues(alpha: 0.12),
-                borderRadius: BorderRadius.circular(10.r),
-              ),
-              child: Row(
-                children: [
-                  Icon(Icons.check_circle_rounded,
-                      color: AppColorsLight.success, size: 18.r),
-                  SizedBox(width: 8.w),
-                  Text('khatma_today_done'.tr(),
-                      style: TextStyle(
-                        fontSize: 13.sp,
-                        fontWeight: FontWeight.w700,
-                        color: AppColorsLight.success,
-                      )),
-                ],
-              ),
-            )
-          else
-            SizedBox(
-              width: double.infinity,
-              child: FilledButton.icon(
-                icon: const Icon(Icons.check_rounded),
-                label: Text('khatma_mark_done'.tr()),
-                onPressed: onMarkDone,
-                style: FilledButton.styleFrom(
-                  backgroundColor: AppColorsLight.primary,
-                  padding: EdgeInsets.symmetric(vertical: 14.h),
-                ),
-              ),
-            ),
-          if (pagesDone > 0 && !completed) ...[
-            SizedBox(height: 8.h),
-            Text(
-              'khatma_pages_done'
-                  .tr()
-                  .replaceFirst('{{done}}', '$pagesDone')
-                  .replaceFirst('{{target}}', '$pagesTarget'),
-              style: TextStyle(fontSize: 11.sp, color: context.brand.muted),
-            ),
-          ],
+          const Spacer(),
+          Text(
+            isArabic ? metadata.nameAr : metadata.nameEn,
+            style: TextStyle(fontSize: 15.sp),
+          ),
         ],
       ),
     );
   }
 }
 
-class _DaysGrid extends StatelessWidget {
-  const _DaysGrid({required this.totalDays, required this.completed});
-  final int totalDays;
-  final List<dynamic> completed;
+class _SectionLabel extends StatelessWidget {
+  const _SectionLabel(this.text);
+
+  final String text;
 
   @override
   Widget build(BuildContext context) {
-    final completedIndices = <int>{
-      for (final d in completed)
-        if (d.completed == true) d.dayIndex as int,
-    };
-    return GridView.builder(
-      shrinkWrap: true,
-      physics: const NeverScrollableScrollPhysics(),
-      itemCount: totalDays,
-      gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-        crossAxisCount: 8,
-        mainAxisSpacing: 6.h,
-        crossAxisSpacing: 6.w,
-        childAspectRatio: 1.0,
+    return Align(
+      alignment: AlignmentDirectional.centerEnd,
+      child: Padding(
+        padding: EdgeInsetsDirectional.only(end: 5.w, bottom: 6.h),
+        child: Text(
+          text,
+          style: TextStyle(fontSize: 12.sp, color: Colors.grey[600]),
+        ),
       ),
-      itemBuilder: (_, i) {
-        final dayIndex = i + 1;
-        final done = completedIndices.contains(dayIndex);
-        return Container(
-          decoration: BoxDecoration(
-            color: done
-                ? AppColorsLight.primary
-                : context.brand.surface,
-            border: Border.all(
-              color: done ? AppColorsLight.primary : context.brand.border,
-            ),
-            borderRadius: BorderRadius.circular(6.r),
-          ),
-          alignment: Alignment.center,
-          child: Text(
-            '$dayIndex',
-            style: GoogleFonts.tajawal(
-              fontSize: 11.sp,
-              fontWeight: FontWeight.w700,
-              color: done ? Colors.white : context.brand.muted,
-            ),
-          ),
-        );
-      },
     );
   }
 }

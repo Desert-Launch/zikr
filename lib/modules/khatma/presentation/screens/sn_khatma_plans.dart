@@ -4,78 +4,174 @@ import 'package:flutter_modular/flutter_modular.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:localize_and_translate/localize_and_translate.dart';
 import 'package:quran/core/services/routes/routes_names.dart';
-import 'package:quran/core/theme/app_colors.dart';
-import 'package:quran/core/theme/brand_colors.dart';
+import 'package:quran/modules/khatma/data/datasources/local/ds_local_khatma.dart';
+import 'package:quran/modules/khatma/data/models/m_khatma_metadata.dart';
 import 'package:quran/modules/khatma/presentation/cubits/cb_khatma.dart';
 import 'package:quran/modules/khatma/presentation/cubits/s_khatma.dart';
 
 class SNKhatmaPlans extends StatelessWidget {
   const SNKhatmaPlans({super.key});
 
-  static const _presets = [
-    (30, 'khatma_plan_30'),
-    (60, 'khatma_plan_60'),
-    (90, 'khatma_plan_90'),
-  ];
+  static const _green = Color(0xFF007A58);
+  static const _canvas = Color(0xFFF8F7F4);
 
   @override
   Widget build(BuildContext context) {
-    final cb = Modular.get<CBKhatma>();
+    final cubit = Modular.get<CBKhatma>();
+    final local = Modular.get<DSLocalKhatma>();
     return BlocProvider.value(
-      value: cb,
-      child: Scaffold(
-        appBar: AppBar(
-          title: Text('khatma_title'.tr(),
-              style: TextStyle(fontSize: 18.sp, fontWeight: FontWeight.w700)),
-          actions: [
+      value: cubit,
+      child: BlocBuilder<CBKhatma, SKhatma>(
+        builder: (_, state) {
+          if (state.isLoading) {
+            return const Scaffold(
+              body: Center(child: CircularProgressIndicator()),
+            );
+          }
+          if (state.hasActivePlan) {
+            WidgetsBinding.instance.addPostFrameCallback((_) {
+              if (Modular.to.path == KhatmaRoutes.fullPlans()) {
+                Modular.to.pushReplacementNamed(KhatmaRoutes.fullTracker());
+              }
+            });
+            return const Scaffold(body: SizedBox.shrink());
+          }
+          return Scaffold(
+            backgroundColor: _canvas,
+            body: FutureBuilder<List<MKhatmaMetadata>>(
+              future: local.metadata(),
+              builder: (_, snapshot) {
+                if (!snapshot.hasData) {
+                  return const Center(child: CircularProgressIndicator());
+                }
+                final plans = snapshot.data!;
+                final suggested = plans.where((plan) => plan.isSuggested);
+                final others = plans.where((plan) => !plan.isSuggested);
+                return CustomScrollView(
+                  slivers: [
+                    SliverToBoxAdapter(
+                      child: _Header(
+                        title: 'khatma_new_title'.tr(),
+                        onBack: Modular.to.pop,
+                      ),
+                    ),
+                    SliverPadding(
+                      padding: EdgeInsets.fromLTRB(16.w, 12.h, 16.w, 28.h),
+                      sliver: SliverList.list(
+                        children: [
+                          if (suggested.isNotEmpty) ...[
+                            _SectionLabel('khatma_suggested'.tr()),
+                            ...suggested.map(
+                              (plan) => _PlanCard(
+                                plan: plan,
+                                suggested: true,
+                                onTap: () => Modular.to.pushNamed(
+                                  KhatmaRoutes.fullWirds(plan.id),
+                                ),
+                              ),
+                            ),
+                            SizedBox(height: 12.h),
+                          ],
+                          _SectionLabel('khatma_all_plans'.tr()),
+                          Container(
+                            decoration: BoxDecoration(
+                              color: Colors.white,
+                              borderRadius: BorderRadius.circular(14.r),
+                              border: Border.all(
+                                color: const Color(0xFFE0E7E2),
+                              ),
+                            ),
+                            child: Column(
+                              children: [
+                                for (final plan in others) ...[
+                                  _PlanRow(
+                                    plan: plan,
+                                    onTap: () => Modular.to.pushNamed(
+                                      KhatmaRoutes.fullWirds(plan.id),
+                                    ),
+                                  ),
+                                  if (plan != others.last)
+                                    const Divider(
+                                      height: 1,
+                                      indent: 12,
+                                      endIndent: 12,
+                                    ),
+                                ],
+                              ],
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
+                );
+              },
+            ),
+          );
+        },
+      ),
+    );
+  }
+}
+
+class _Header extends StatelessWidget {
+  const _Header({required this.title, required this.onBack});
+
+  final String title;
+  final VoidCallback onBack;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: EdgeInsets.fromLTRB(16.w, 8.h, 16.w, 15.h),
+      decoration: BoxDecoration(
+        color: SNKhatmaPlans._green,
+        borderRadius: BorderRadius.vertical(bottom: Radius.circular(28.r)),
+        boxShadow: const [
+          BoxShadow(
+            color: Color(0x25000000),
+            blurRadius: 8,
+            offset: Offset(0, 4),
+          ),
+        ],
+      ),
+      child: SafeArea(
+        bottom: false,
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.end,
+          children: [
+            Text(
+              title,
+              style: TextStyle(color: Colors.white, fontSize: 20.sp),
+            ),
+            SizedBox(width: 8.w),
             IconButton(
-              icon: const Icon(Icons.history_rounded),
-              tooltip: 'khatma_history'.tr(),
-              onPressed: () => Modular.to.pushNamed(KhatmaRoutes.fullHistory()),
+              onPressed: onBack,
+              icon: const Icon(
+                Icons.arrow_forward_rounded,
+                color: Colors.white,
+              ),
             ),
           ],
         ),
-        body: BlocBuilder<CBKhatma, SKhatma>(
-          builder: (context, state) {
-            if (state.hasActivePlan) {
-              // Active plan → route to tracker on first frame.
-              WidgetsBinding.instance.addPostFrameCallback((_) {
-                if (Modular.to.path == KhatmaRoutes.fullPlans()) {
-                  Modular.to.pushReplacementNamed(KhatmaRoutes.fullTracker());
-                }
-              });
-              return const SizedBox.shrink();
-            }
-            return ListView(
-              padding: EdgeInsets.all(16.w),
-              children: [
-                Padding(
-                  padding: EdgeInsets.only(bottom: 16.h),
-                  child: Text('khatma_pick_plan'.tr(),
-                      style: TextStyle(
-                        fontSize: 14.sp, color: context.brand.muted,
-                      )),
-                ),
-                ..._presets.map((preset) => _PlanCard(
-                      days: preset.$1,
-                      titleKey: preset.$2,
-                      onTap: () async {
-                        await cb.startPlan(preset.$1);
-                        if (!context.mounted) return;
-                        Modular.to.pushReplacementNamed(
-                            KhatmaRoutes.fullTracker());
-                      },
-                    )),
-                SizedBox(height: 12.h),
-                _CustomDaysCard(onSubmit: (n) async {
-                  await cb.startPlan(n);
-                  if (!context.mounted) return;
-                  Modular.to.pushReplacementNamed(KhatmaRoutes.fullTracker());
-                }),
-              ],
-            );
-          },
-        ),
+      ),
+    );
+  }
+}
+
+class _SectionLabel extends StatelessWidget {
+  const _SectionLabel(this.text);
+
+  final String text;
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: EdgeInsetsDirectional.only(start: 5.w, bottom: 6.h),
+      child: Text(
+        text,
+        textAlign: TextAlign.end,
+        style: TextStyle(fontSize: 12.sp, color: Colors.grey[600]),
       ),
     );
   }
@@ -83,148 +179,75 @@ class SNKhatmaPlans extends StatelessWidget {
 
 class _PlanCard extends StatelessWidget {
   const _PlanCard({
-    required this.days,
-    required this.titleKey,
+    required this.plan,
+    required this.suggested,
     required this.onTap,
   });
-  final int days;
-  final String titleKey;
+
+  final MKhatmaMetadata plan;
+  final bool suggested;
   final VoidCallback onTap;
 
   @override
   Widget build(BuildContext context) {
-    final pagesPerDay = (604 / days).ceil();
-    return Padding(
-      padding: EdgeInsets.only(bottom: 10.h),
-      child: InkWell(
-        borderRadius: BorderRadius.circular(14.r),
-        onTap: onTap,
-        child: Container(
-          padding: EdgeInsets.all(16.w),
-          decoration: BoxDecoration(
-            color: context.brand.surface,
-            border: Border.all(color: context.brand.border),
-            borderRadius: BorderRadius.circular(14.r),
-          ),
-          child: Row(
-            children: [
-              Container(
-                width: 50.r,
-                height: 50.r,
-                decoration: BoxDecoration(
-                  color: AppColorsLight.primary.withValues(alpha: 0.1),
-                  borderRadius: BorderRadius.circular(12.r),
+    final isArabic = LocalizeAndTranslate.getLanguageCode() == 'ar';
+    return InkWell(
+      borderRadius: BorderRadius.circular(14.r),
+      onTap: onTap,
+      child: Container(
+        padding: EdgeInsets.all(14.r),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(14.r),
+          border: Border.all(color: const Color(0xFFDDE6E0)),
+        ),
+        child: Row(
+          children: [
+            const Icon(Icons.chevron_left_rounded),
+            const Spacer(),
+            Column(
+              crossAxisAlignment: CrossAxisAlignment.end,
+              children: [
+                Text(
+                  isArabic ? plan.nameAr : plan.nameEn,
+                  style: TextStyle(fontSize: 16.sp),
                 ),
-                child: Center(
-                  child: Text('$days',
-                      style: TextStyle(
-                        fontSize: 18.sp,
-                        fontWeight: FontWeight.w900,
-                        color: AppColorsLight.primary,
-                      )),
+                Text(
+                  isArabic ? plan.quartersPerDayAr : plan.quartersPerDayEn,
+                  style: TextStyle(fontSize: 12.sp, color: Colors.grey[600]),
                 ),
-              ),
-              SizedBox(width: 14.w),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(titleKey.tr(),
-                        style: TextStyle(
-                          fontSize: 15.sp, fontWeight: FontWeight.w800,
-                        )),
-                    SizedBox(height: 2.h),
-                    Text(
-                      'khatma_pages_per_day'
-                          .tr()
-                          .replaceFirst('{{n}}', '$pagesPerDay'),
-                      style: TextStyle(
-                        fontSize: 12.sp, color: context.brand.muted,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-              const Icon(Icons.arrow_forward_ios_rounded, size: 16),
-            ],
-          ),
+              ],
+            ),
+          ],
         ),
       ),
     );
   }
 }
 
-class _CustomDaysCard extends StatefulWidget {
-  const _CustomDaysCard({required this.onSubmit});
-  final ValueChanged<int> onSubmit;
+class _PlanRow extends StatelessWidget {
+  const _PlanRow({required this.plan, required this.onTap});
 
-  @override
-  State<_CustomDaysCard> createState() => _CustomDaysCardState();
-}
-
-class _CustomDaysCardState extends State<_CustomDaysCard> {
-  int _days = 45;
+  final MKhatmaMetadata plan;
+  final VoidCallback onTap;
 
   @override
   Widget build(BuildContext context) {
-    final ppd = (604 / _days).ceil();
-    return Container(
-      padding: EdgeInsets.all(16.w),
-      decoration: BoxDecoration(
-        color: context.brand.surface,
-        border: Border.all(color: context.brand.border),
-        borderRadius: BorderRadius.circular(14.r),
+    final isArabic = LocalizeAndTranslate.getLanguageCode() == 'ar';
+    return ListTile(
+      dense: true,
+      leading: const Icon(Icons.chevron_left_rounded, size: 18),
+      title: Text(
+        isArabic ? plan.nameAr : plan.nameEn,
+        textAlign: TextAlign.end,
+        style: TextStyle(fontSize: 15.sp),
       ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text('khatma_custom'.tr(),
-              style: TextStyle(fontSize: 14.sp, fontWeight: FontWeight.w800)),
-          SizedBox(height: 4.h),
-          Text(
-            'khatma_pages_per_day'.tr().replaceFirst('{{n}}', '$ppd'),
-            style: TextStyle(fontSize: 12.sp, color: context.brand.muted),
-          ),
-          Row(
-            children: [
-              Expanded(
-                child: Slider(
-                  value: _days.toDouble(),
-                  min: 7,
-                  max: 365,
-                  divisions: 358,
-                  label: '$_days',
-                  onChanged: (v) => setState(() => _days = v.round()),
-                ),
-              ),
-              SizedBox(
-                width: 48.r,
-                child: Text('$_days',
-                    textAlign: TextAlign.end,
-                    style: TextStyle(
-                      fontSize: 18.sp,
-                      fontWeight: FontWeight.w800,
-                      fontFeatures: const [FontFeature.tabularFigures()],
-                    )),
-              ),
-            ],
-          ),
-          SizedBox(height: 4.h),
-          SizedBox(
-            width: double.infinity,
-            child: FilledButton(
-              onPressed: () => widget.onSubmit(_days),
-              style: FilledButton.styleFrom(
-                backgroundColor: AppColorsLight.primary,
-              ),
-              child: Text('khatma_start_custom'.tr(),
-                  style: TextStyle(
-                    fontSize: 14.sp, fontWeight: FontWeight.w700,
-                  )),
-            ),
-          ),
-        ],
+      subtitle: Text(
+        isArabic ? plan.quartersPerDayAr : plan.quartersPerDayEn,
+        textAlign: TextAlign.end,
+        style: TextStyle(fontSize: 12.sp),
       ),
+      onTap: onTap,
     );
   }
 }

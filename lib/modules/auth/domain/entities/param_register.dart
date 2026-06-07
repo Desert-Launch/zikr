@@ -6,20 +6,23 @@ class ParamRegister extends Equatable {
     required this.email,
     required this.phone,
     required this.password,
+    this.birthDate,
   });
 
   final String name;
   final String email;
   final String phone;
   final String password;
+  final String? birthDate;
 
   Map<String, dynamic> toJson() => {
-        'name': name,
-        'email': email,
-        'phone': phone,
-        'password': password,
-      };
+    'name': name,
+    'email': email,
+    'phone': phone,
+    'password': password,
+    if (birthDate != null) 'birth_date': birthDate,
+  };
 
   @override
-  List<Object?> get props => [name, email, phone, password];
+  List<Object?> get props => [name, email, phone, password, birthDate];
 }

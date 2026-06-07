@@ -12,9 +12,9 @@ class MAuthToken extends HiveObject {
   }) : issuedAt = issuedAt ?? DateTime.now();
 
   factory MAuthToken.fromJson(Map<String, dynamic> json) => MAuthToken(
-        accessToken: json['access_token'] as String? ?? '',
-        refreshToken: json['refresh_token'] as String? ?? '',
-      );
+    accessToken: json['access_token'] as String? ?? '',
+    refreshToken: json['refresh_token'] as String? ?? '',
+  );
 
   @HiveField(0)
   String accessToken;
@@ -24,8 +24,8 @@ class MAuthToken extends HiveObject {
   DateTime issuedAt;
 
   Map<String, dynamic> toJson() => {
-        'access_token': accessToken,
-        'refresh_token': refreshToken,
-        'issued_at': issuedAt.toIso8601String(),
-      };
+    'access_token': accessToken,
+    'refresh_token': refreshToken,
+    'issued_at': issuedAt.toIso8601String(),
+  };
 }

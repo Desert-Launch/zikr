@@ -16,7 +16,10 @@ abstract class RAuth {
   Future<Either<Failure, AuthSuccess>> login(ParamLogin p);
   Future<Either<Failure, AuthSuccess>> register(ParamRegister p);
   Future<Either<Failure, Unit>> forgotPassword(String email);
-  Future<Either<Failure, Unit>> verifyOtp({required String email, required String otp});
+  Future<Either<Failure, Unit>> verifyOtp({
+    required String email,
+    required String otp,
+  });
   Future<Either<Failure, Unit>> resetPassword(ParamReset p);
   Future<Either<Failure, Unit>> logout();
   Future<Either<Failure, MUser>> currentUser();

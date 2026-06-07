@@ -9,9 +9,21 @@ import 'package:quran/core/theme/brand_colors.dart';
 import 'package:quran/modules/reminders/data/models/m_reminder.dart';
 import 'package:quran/modules/reminders/presentation/cubits/cb_reminders.dart';
 import 'package:quran/modules/reminders/presentation/cubits/s_reminders.dart';
+import 'package:quran/modules/reminders/presentation/reminder_styles.dart';
+import 'package:quran/modules/reminders/presentation/widgets/w_reminders_header.dart';
 
 class SNReminders extends StatelessWidget {
   const SNReminders({super.key});
+
+  void _openForm(BuildContext context, SReminders state, {String? id}) {
+    if (id == null && state.isAtCap) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('reminders_max_reached'.tr())),
+      );
+      return;
+    }
+    Modular.to.pushNamed(RemindersRoutes.fullForm(id: id));
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -19,81 +31,28 @@ class SNReminders extends StatelessWidget {
     return BlocProvider.value(
       value: cb,
       child: Scaffold(
-        appBar: AppBar(
-          title: Text('reminders_title'.tr(),
-              style: TextStyle(fontSize: 18.sp, fontWeight: FontWeight.w700)),
-        ),
-        floatingActionButton: BlocBuilder<CBReminders, SReminders>(
-          builder: (context, state) {
-            return FloatingActionButton.extended(
-              backgroundColor: state.isAtCap
-                  ? context.brand.muted
-                  : AppColorsLight.primary,
-              foregroundColor: Colors.white,
-              icon: Icon(state.isAtCap
-                  ? Icons.do_not_disturb_alt_rounded
-                  : Icons.add_rounded),
-              label: Text(state.isAtCap
-                  ? 'reminders_max_reached'.tr()
-                  : 'reminders_add'.tr()),
-              onPressed: state.isAtCap
-                  ? null
-                  : () => Modular.to.pushNamed(RemindersRoutes.fullForm()),
-            );
-          },
-        ),
+        backgroundColor: context.brand.background,
         body: BlocBuilder<CBReminders, SReminders>(
           builder: (context, state) {
             return Column(
               children: [
-                Padding(
-                  padding: EdgeInsets.fromLTRB(16.w, 12.h, 16.w, 8.h),
-                  child: Row(
-                    children: [
-                      Container(
-                        padding: EdgeInsets.symmetric(
-                            horizontal: 10.w, vertical: 4.h),
-                        decoration: BoxDecoration(
-                          color: AppColorsLight.primary.withValues(alpha: 0.1),
-                          borderRadius: BorderRadius.circular(8.r),
-                        ),
-                        child: Text(
-                          '${state.count} / ${CBReminders.cap}',
-                          style: TextStyle(
-                            color: AppColorsLight.primaryDark,
-                            fontSize: 12.sp,
-                            fontWeight: FontWeight.w700,
-                            fontFeatures: const [FontFeature.tabularFigures()],
-                          ),
-                        ),
-                      ),
-                      const Spacer(),
-                    ],
-                  ),
+                WRemindersHeader(
+                  title: 'reminders_title'.tr(),
+                  onAdd: () => _openForm(context, state),
                 ),
                 Expanded(
-                  child: state.items.isEmpty
-                      ? Center(
-                          child: Padding(
-                            padding: EdgeInsets.all(24.w),
-                            child: Text(
-                              'reminders_empty'.tr(),
-                              style: TextStyle(
-                                fontSize: 14.sp,
-                                color: context.brand.muted,
-                              ),
-                              textAlign: TextAlign.center,
-                            ),
-                          ),
-                        )
-                      : ListView.separated(
-                          padding: EdgeInsets.fromLTRB(12.w, 0, 12.w, 80.h),
-                          itemCount: state.items.length,
-                          separatorBuilder: (_, __) =>
-                              SizedBox(height: 8.h),
-                          itemBuilder: (_, i) =>
-                              _ReminderTile(reminder: state.items[i], cb: cb),
-                        ),
+                  child: ListView(
+                    padding: EdgeInsets.fromLTRB(16.w, 16.h, 16.w, 24.h),
+                    children: [
+                      for (final r in state.items) ...[
+                        _ReminderTile(reminder: r, cb: cb),
+                        SizedBox(height: 12.h),
+                      ],
+                      _AddCard(onTap: () => _openForm(context, state)),
+                      SizedBox(height: 16.h),
+                      const _TipCard(),
+                    ],
+                  ),
                 ),
               ],
             );
@@ -114,44 +73,163 @@ class _ReminderTile extends StatelessWidget {
     final h = reminder.hour > 12
         ? reminder.hour - 12
         : (reminder.hour == 0 ? 12 : reminder.hour);
-    final suffix = reminder.hour >= 12 ? 'م' : 'ص';
+    final suffix = reminder.hour >= 12 ? 'reminders_pm'.tr() : 'reminders_am'.tr();
     return '${two(h)}:${two(reminder.minute)} $suffix';
   }
 
   @override
   Widget build(BuildContext context) {
-    return Card(
-      elevation: 0,
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(14.r),
-        side: BorderSide(color: context.brand.border),
-      ),
-      child: ListTile(
+    final color = ReminderStyles.colorFor(reminder.colorId);
+    return Material(
+      color: context.brand.surface,
+      borderRadius: BorderRadius.circular(18.r),
+      child: InkWell(
+        borderRadius: BorderRadius.circular(18.r),
         onTap: () => Modular.to.pushNamed(
           RemindersRoutes.fullForm(id: reminder.id),
         ),
-        leading: Container(
-          width: 40.r,
-          height: 40.r,
+        child: Container(
+          padding: EdgeInsets.symmetric(horizontal: 14.w, vertical: 12.h),
           decoration: BoxDecoration(
-            color: AppColorsLight.primary.withValues(alpha: 0.12),
-            borderRadius: BorderRadius.circular(10.r),
+            borderRadius: BorderRadius.circular(18.r),
+            border: Border.all(color: context.brand.border),
           ),
-          child: Icon(Icons.notifications_active_outlined,
-              color: AppColorsLight.primary, size: 22.r),
+          child: Row(
+            children: [
+              Container(
+                width: 46.r,
+                height: 46.r,
+                decoration: BoxDecoration(
+                  color: color.withValues(alpha: 0.14),
+                  shape: BoxShape.circle,
+                ),
+                child: Icon(ReminderStyles.iconFor(reminder.iconId),
+                    color: color, size: 24.r),
+              ),
+              SizedBox(width: 12.w),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      reminder.title,
+                      style: TextStyle(
+                        fontSize: 14.sp,
+                        fontWeight: FontWeight.w700,
+                        color: context.brand.onSurface,
+                      ),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                    SizedBox(height: 4.h),
+                    Text(
+                      _formatTime(),
+                      style: TextStyle(
+                        fontSize: 12.sp,
+                        color: context.brand.muted,
+                        fontFeatures: const [FontFeature.tabularFigures()],
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              Switch.adaptive(
+                value: reminder.enabled,
+                activeThumbColor: AppColorsLight.primary,
+                onChanged: (v) => cb.setEnabled(reminder.id, v),
+              ),
+            ],
+          ),
         ),
-        title: Text(reminder.title,
-            style: TextStyle(fontSize: 14.sp, fontWeight: FontWeight.w700)),
-        subtitle: Text(_formatTime(),
+      ),
+    );
+  }
+}
+
+class _AddCard extends StatelessWidget {
+  const _AddCard({required this.onTap});
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    return Material(
+      color: context.brand.surface,
+      borderRadius: BorderRadius.circular(18.r),
+      child: InkWell(
+        borderRadius: BorderRadius.circular(18.r),
+        onTap: onTap,
+        child: Container(
+          padding: EdgeInsets.symmetric(vertical: 18.h),
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(18.r),
+            border: Border.all(
+              color: AppColorsLight.primary.withValues(alpha: 0.4),
+            ),
+          ),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Icon(Icons.add_rounded,
+                  color: AppColorsLight.primary, size: 20.r),
+              SizedBox(width: 8.w),
+              Text(
+                'reminders_add_new'.tr(),
+                style: TextStyle(
+                  fontSize: 14.sp,
+                  fontWeight: FontWeight.w700,
+                  color: AppColorsLight.primary,
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class _TipCard extends StatelessWidget {
+  const _TipCard();
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: EdgeInsets.all(16.w),
+      decoration: BoxDecoration(
+        color: AppColorsLight.accent.withValues(alpha: 0.16),
+        borderRadius: BorderRadius.circular(18.r),
+        border: Border.all(
+          color: AppColorsLight.accent.withValues(alpha: 0.45),
+        ),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Icon(Icons.location_on_rounded,
+                  color: AppColorsLight.accent, size: 18.r),
+              SizedBox(width: 6.w),
+              Text(
+                'reminders_tip_title'.tr(),
+                style: TextStyle(
+                  fontSize: 14.sp,
+                  fontWeight: FontWeight.w800,
+                  color: context.brand.onSurface,
+                ),
+              ),
+            ],
+          ),
+          SizedBox(height: 8.h),
+          Text(
+            'reminders_tip_body'.tr(),
             style: TextStyle(
               fontSize: 12.sp,
+              height: 1.6,
               color: context.brand.muted,
-              fontFeatures: const [FontFeature.tabularFigures()],
-            )),
-        trailing: Switch(
-          value: reminder.enabled,
-          onChanged: (v) => cb.setEnabled(reminder.id, v),
-        ),
+            ),
+          ),
+        ],
       ),
     );
   }

@@ -5,12 +5,10 @@ import 'package:quran/modules/auth/domain/usecases/uc_verify_otp.dart';
 import 'package:quran/modules/auth/presentation/cubits/s_otp_form.dart';
 
 class CBOtpForm extends Cubit<SOtpForm> {
-  CBOtpForm({
-    required UCVerifyOtp verify,
-    required UCResetPassword reset,
-  })  : _verify = verify,
-        _reset = reset,
-        super(const SOtpForm());
+  CBOtpForm({required UCVerifyOtp verify, required UCResetPassword reset})
+    : _verify = verify,
+      _reset = reset,
+      super(const SOtpForm());
 
   final UCVerifyOtp _verify;
   final UCResetPassword _reset;
@@ -21,7 +19,8 @@ class CBOtpForm extends Cubit<SOtpForm> {
   }
 
   void setOtp(String v) => emit(state.copyWith(otp: v, clearError: true));
-  void setPassword(String v) => emit(state.copyWith(newPassword: v, clearError: true));
+  void setPassword(String v) =>
+      emit(state.copyWith(newPassword: v, clearError: true));
   void setConfirmPassword(String v) =>
       emit(state.copyWith(confirmPassword: v, clearError: true));
   void toggleObscure() =>
@@ -47,9 +46,9 @@ class CBOtpForm extends Cubit<SOtpForm> {
   Future<bool> resetPassword() async {
     if (!state.isValid) return false;
     emit(state.copyWith(isSubmitting: true, clearError: true));
-    final res = await _reset(ParamReset(
-      email: email, otp: state.otp, newPassword: state.newPassword,
-    ));
+    final res = await _reset(
+      ParamReset(email: email, otp: state.otp, newPassword: state.newPassword),
+    );
     return res.fold(
       (f) {
         emit(state.copyWith(isSubmitting: false, error: f.message));

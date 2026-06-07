@@ -35,8 +35,11 @@ class WAuthHeader extends StatelessWidget {
                   color: Colors.white.withValues(alpha: 0.16),
                   borderRadius: BorderRadius.circular(12.r),
                 ),
-                child: Icon(Icons.menu_book_rounded,
-                    color: AppColorsLight.accent, size: 26.r),
+                child: Icon(
+                  Icons.menu_book_rounded,
+                  color: AppColorsLight.accent,
+                  size: 26.r,
+                ),
               ),
               SizedBox(width: 12.w),
               Text(

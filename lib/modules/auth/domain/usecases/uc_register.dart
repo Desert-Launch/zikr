@@ -7,5 +7,6 @@ class UCRegister {
   UCRegister(this._repo);
   final RAuth _repo;
 
-  Future<Either<Failure, AuthSuccess>> call(ParamRegister p) => _repo.register(p);
+  Future<Either<Failure, AuthSuccess>> call(ParamRegister p) =>
+      _repo.register(p);
 }

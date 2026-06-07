@@ -11,9 +11,12 @@ class CBRegisterForm extends Cubit<SRegisterForm> {
   final CBAuth _auth;
 
   void setName(String v) => emit(state.copyWith(name: v, clearError: true));
+  void setBirthDate(String v) =>
+      emit(state.copyWith(birthDate: v, clearError: true));
   void setEmail(String v) => emit(state.copyWith(email: v, clearError: true));
   void setPhone(String v) => emit(state.copyWith(phone: v, clearError: true));
-  void setPassword(String v) => emit(state.copyWith(password: v, clearError: true));
+  void setPassword(String v) =>
+      emit(state.copyWith(password: v, clearError: true));
   void setConfirmPassword(String v) =>
       emit(state.copyWith(confirmPassword: v, clearError: true));
   void toggleObscure() =>
@@ -22,12 +25,17 @@ class CBRegisterForm extends Cubit<SRegisterForm> {
   Future<bool> submit() async {
     if (!state.isValid) return false;
     emit(state.copyWith(isSubmitting: true, clearError: true));
-    final res = await _register(ParamRegister(
-      name: state.name.trim(),
-      email: state.email.trim(),
-      phone: state.phone.replaceAll(' ', ''),
-      password: state.password,
-    ));
+    final res = await _register(
+      ParamRegister(
+        name: state.name.trim(),
+        email: state.email.trim(),
+        phone: state.phone.replaceAll(' ', ''),
+        password: state.password,
+        birthDate: state.birthDate.trim().isEmpty
+            ? null
+            : state.birthDate.trim(),
+      ),
+    );
     return res.fold(
       (f) {
         emit(state.copyWith(isSubmitting: false, error: f.message));

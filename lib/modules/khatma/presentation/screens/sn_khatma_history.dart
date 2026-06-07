@@ -14,18 +14,20 @@ class SNKhatmaHistory extends StatelessWidget {
     final entries = Modular.get<CBKhatma>().history();
     return Scaffold(
       appBar: AppBar(
-        title: Text('khatma_history'.tr(),
-            style: TextStyle(fontSize: 18.sp, fontWeight: FontWeight.w700)),
+        title: Text(
+          'khatma_history'.tr(),
+          style: TextStyle(fontSize: 18.sp, fontWeight: FontWeight.w700),
+        ),
       ),
       body: entries.isEmpty
           ? Center(
               child: Padding(
                 padding: EdgeInsets.all(24.w),
-                child: Text('khatma_history_empty'.tr(),
-                    textAlign: TextAlign.center,
-                    style: TextStyle(
-                      fontSize: 14.sp, color: context.brand.muted,
-                    )),
+                child: Text(
+                  'khatma_history_empty'.tr(),
+                  textAlign: TextAlign.center,
+                  style: TextStyle(fontSize: 14.sp, color: context.brand.muted),
+                ),
               ),
             )
           : ListView.separated(
@@ -48,11 +50,16 @@ class SNKhatmaHistory extends StatelessWidget {
                           width: 44.r,
                           height: 44.r,
                           decoration: BoxDecoration(
-                            color: AppColorsLight.accent.withValues(alpha: 0.18),
+                            color: AppColorsLight.accent.withValues(
+                              alpha: 0.18,
+                            ),
                             borderRadius: BorderRadius.circular(12.r),
                           ),
-                          child: Icon(Icons.auto_awesome_rounded,
-                              color: AppColorsLight.accent, size: 22.r),
+                          child: Icon(
+                            Icons.auto_awesome_rounded,
+                            color: AppColorsLight.accent,
+                            size: 22.r,
+                          ),
                         ),
                         SizedBox(width: 12.w),
                         Expanded(
@@ -60,21 +67,24 @@ class SNKhatmaHistory extends StatelessWidget {
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
                               Text(
-                                'khatma_history_entry'
-                                    .tr()
-                                    .replaceFirst('{{n}}',
-                                        '${c.planTotalDays}'),
+                                'khatma_history_entry'.tr().replaceFirst(
+                                  '{{n}}',
+                                  '${c.planTotalDays}',
+                                ),
                                 style: TextStyle(
-                                  fontSize: 14.sp, fontWeight: FontWeight.w800,
+                                  fontSize: 14.sp,
+                                  fontWeight: FontWeight.w800,
                                 ),
                               ),
                               SizedBox(height: 2.h),
                               Text(
                                 '${_fmt(c.startedAt)} → ${_fmt(c.completedAt)}',
                                 style: TextStyle(
-                                  fontSize: 11.sp,
+                                  fontSize: 12.sp,
                                   color: context.brand.muted,
-                                  fontFeatures: const [FontFeature.tabularFigures()],
+                                  fontFeatures: const [
+                                    FontFeature.tabularFigures(),
+                                  ],
                                 ),
                               ),
                             ],
@@ -82,15 +92,19 @@ class SNKhatmaHistory extends StatelessWidget {
                         ),
                         Container(
                           padding: EdgeInsets.symmetric(
-                              horizontal: 8.w, vertical: 4.h),
+                            horizontal: 8.w,
+                            vertical: 4.h,
+                          ),
                           decoration: BoxDecoration(
-                            color: AppColorsLight.primary.withValues(alpha: 0.1),
+                            color: AppColorsLight.primary.withValues(
+                              alpha: 0.1,
+                            ),
                             borderRadius: BorderRadius.circular(8.r),
                           ),
                           child: Text(
                             '${c.longestStreakDays}🔥',
                             style: TextStyle(
-                              fontSize: 11.sp,
+                              fontSize: 12.sp,
                               fontWeight: FontWeight.w700,
                               color: AppColorsLight.primaryDark,
                             ),

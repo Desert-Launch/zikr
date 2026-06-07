@@ -9,9 +9,9 @@ class CBAzkarSession extends Cubit<SAzkarSession> {
   CBAzkarSession({
     required DSLocalAzkar local,
     required BoxAzkarProgress progress,
-  })  : _local = local,
-        _progress = progress,
-        super(const SAzkarSession());
+  }) : _local = local,
+       _progress = progress,
+       super(const SAzkarSession());
 
   final DSLocalAzkar _local;
   final BoxAzkarProgress _progress;
@@ -20,11 +20,13 @@ class CBAzkarSession extends Cubit<SAzkarSession> {
     final cat = await _local.category(categoryId);
     if (cat == null) return;
     final stored = _progress.today(categoryId);
-    emit(state.copyWith(
-      category: cat,
-      itemIndex: 0,
-      completed: Map<String, int>.from(stored.completedCounts),
-    ));
+    emit(
+      state.copyWith(
+        category: cat,
+        itemIndex: 0,
+        completed: Map<String, int>.from(stored.completedCounts),
+      ),
+    );
   }
 
   Future<void> tap() async {
@@ -58,9 +60,7 @@ class CBAzkarSession extends Cubit<SAzkarSession> {
   void jumpTo(int index) {
     final cat = state.category;
     if (cat == null) return;
-    emit(state.copyWith(
-      itemIndex: index.clamp(0, cat.items.length - 1),
-    ));
+    emit(state.copyWith(itemIndex: index.clamp(0, cat.items.length - 1)));
   }
 
   Future<void> resetCategory() async {
@@ -68,5 +68,14 @@ class CBAzkarSession extends Cubit<SAzkarSession> {
     if (cat == null) return;
     await _progress.reset(cat.id);
     emit(state.copyWith(completed: <String, int>{}, itemIndex: 0));
+  }
+
+  Future<void> resetCurrent() async {
+    final cat = state.category;
+    final item = state.currentItem;
+    if (cat == null || item == null) return;
+    await _progress.resetItem(cat.id, item.id);
+    final updated = Map<String, int>.from(state.completed)..remove(item.id);
+    emit(state.copyWith(completed: updated));
   }
 }

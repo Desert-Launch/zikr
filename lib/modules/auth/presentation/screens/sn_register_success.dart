@@ -26,30 +26,32 @@ class SNRegisterSuccess extends StatelessWidget {
                     color: AppColorsLight.success.withValues(alpha: 0.12),
                     shape: BoxShape.circle,
                   ),
-                  child: Icon(Icons.check_rounded,
-                      color: AppColorsLight.success, size: 60.r),
+                  child: Icon(
+                    Icons.check_rounded,
+                    color: AppColorsLight.success,
+                    size: 60.r,
+                  ),
                 ),
                 SizedBox(height: 24.h),
                 Text(
                   'auth_register_success_title'.tr(),
-                  style: TextStyle(fontSize: 22.sp, fontWeight: FontWeight.w800),
+                  style: TextStyle(
+                    fontSize: 22.sp,
+                    fontWeight: FontWeight.w800,
+                  ),
                   textAlign: TextAlign.center,
                 ),
                 SizedBox(height: 8.h),
                 Text(
                   'auth_register_success_body'.tr(),
-                  style: TextStyle(
-                    fontSize: 14.sp,
-                    color: context.brand.muted,
-                  ),
+                  style: TextStyle(fontSize: 14.sp, color: context.brand.muted),
                   textAlign: TextAlign.center,
                 ),
                 SizedBox(height: 32.h),
                 SizedBox(
                   width: double.infinity,
                   child: FilledButton(
-                    onPressed: () =>
-                        Modular.to.navigate(RoutesNames.homeBase),
+                    onPressed: () => Modular.to.navigate(RoutesNames.homeBase),
                     style: FilledButton.styleFrom(
                       backgroundColor: AppColorsLight.primary,
                       padding: EdgeInsets.symmetric(vertical: 14.h),
@@ -59,7 +61,10 @@ class SNRegisterSuccess extends StatelessWidget {
                     ),
                     child: Text(
                       'auth_continue_to_app'.tr(),
-                      style: TextStyle(fontSize: 15.sp, fontWeight: FontWeight.w700),
+                      style: TextStyle(
+                        fontSize: 15.sp,
+                        fontWeight: FontWeight.w700,
+                      ),
                     ),
                   ),
                 ),

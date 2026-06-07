@@ -1,15 +1,19 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_modular/flutter_modular.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:localize_and_translate/localize_and_translate.dart';
+import 'package:quran/core/config/params/custom_pin_code_options.dart';
+import 'package:quran/core/config/params/params_custom_input.dart';
+import 'package:quran/core/services/forms/f_otp.dart';
 import 'package:quran/core/services/routes/routes_names.dart';
 import 'package:quran/core/theme/app_colors.dart';
 import 'package:quran/core/theme/brand_colors.dart';
 import 'package:quran/modules/auth/presentation/cubits/cb_otp_form.dart';
 import 'package:quran/modules/auth/presentation/cubits/s_otp_form.dart';
-import 'package:quran/modules/auth/presentation/widgets/w_auth_header.dart';
+import 'package:quran/modules/auth/presentation/widgets/w_auth_button.dart';
+import 'package:quran/modules/auth/presentation/widgets/w_auth_error_banner.dart';
+import 'package:quran/modules/auth/presentation/widgets/w_auth_scaffold.dart';
 
 class SNVerifyOtp extends StatefulWidget {
   const SNVerifyOtp({super.key, required this.email});
@@ -21,133 +25,86 @@ class SNVerifyOtp extends StatefulWidget {
 }
 
 class _SNVerifyOtpState extends State<SNVerifyOtp> {
-  late final CBOtpForm _cubit = Modular.get<CBOtpForm>()..setEmail(widget.email);
+  late final CBOtpForm _cubit = Modular.get<CBOtpForm>()
+    ..setEmail(widget.email);
+  final FOtp _form = FOtp()..init();
+
+  Future<void> _submit() async {
+    final ok = await _cubit.verifyOnly();
+    if (!mounted) return;
+    if (ok) {
+      Modular.to.pushNamed(AuthRoutes.fullReset(widget.email, _cubit.state.otp));
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
     return BlocProvider.value(
       value: _cubit,
-      child: Scaffold(
-        body: SingleChildScrollView(
-          padding: EdgeInsets.zero,
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-              WAuthHeader(
-                title: 'auth_otp_title'.tr(),
-                subtitle: 'auth_otp_subtitle'.tr().replaceFirst(
-                      '{{email}}',
-                      widget.email,
-                    ),
-              ),
-              Padding(
-                padding: EdgeInsets.fromLTRB(20.w, 20.h, 20.w, 24.h),
-                child: BlocBuilder<CBOtpForm, SOtpForm>(
-                  builder: (context, state) {
-                    return Column(
-                      children: [
-                        TextField(
-                          onChanged: _cubit.setOtp,
-                          keyboardType: TextInputType.number,
-                          inputFormatters: [
-                            FilteringTextInputFormatter.digitsOnly,
-                            LengthLimitingTextInputFormatter(6),
-                          ],
-                          textAlign: TextAlign.center,
-                          style: TextStyle(
-                            fontSize: 22.sp,
-                            letterSpacing: 8,
-                            fontWeight: FontWeight.w700,
-                          ),
-                          decoration: InputDecoration(
-                            labelText: 'auth_otp_code'.tr(),
-                            border: const OutlineInputBorder(),
-                          ),
-                        ),
-                        SizedBox(height: 12.h),
-                        if (state.error != null) ...[
-                          _ErrorBanner(message: state.error!),
-                          SizedBox(height: 8.h),
-                        ],
-                        SizedBox(
-                          width: double.infinity,
-                          child: FilledButton(
-                            onPressed: state.isOtpValid && !state.isSubmitting
-                                ? () async {
-                                    final ok = await _cubit.verifyOnly();
-                                    if (!mounted) return;
-                                    if (ok) {
-                                      Modular.to.pushNamed(
-                                        AuthRoutes.fullReset(widget.email),
-                                      );
-                                    }
-                                  }
-                                : null,
-                            style: FilledButton.styleFrom(
-                              backgroundColor: AppColorsLight.primary,
-                              padding: EdgeInsets.symmetric(vertical: 14.h),
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(12.r),
-                              ),
-                            ),
-                            child: state.isSubmitting
-                                ? SizedBox(
-                                    width: 20.r, height: 20.r,
-                                    child: const CircularProgressIndicator(
-                                      color: Colors.white, strokeWidth: 2.2,
-                                    ),
-                                  )
-                                : Text('auth_verify_otp'.tr(),
-                                    style: TextStyle(
-                                      fontSize: 15.sp,
-                                      fontWeight: FontWeight.w700,
-                                    )),
-                          ),
-                        ),
-                        SizedBox(height: 12.h),
-                        Text(
-                          'auth_demo_otp_hint'.tr(),
-                          style: TextStyle(
-                            fontSize: 12.sp,
-                            color: context.brand.muted,
-                          ),
-                        ),
-                      ],
-                    );
-                  },
+      child: WAuthScaffold(
+        title: 'auth_otp_title'.tr(),
+        child: BlocBuilder<CBOtpForm, SOtpForm>(
+          builder: (context, state) {
+            return Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                Text(
+                  'auth_otp_subtitle'.tr().replaceFirst('{{email}}', ''),
+                  textAlign: TextAlign.center,
+                  style: TextStyle(fontSize: 13.sp, color: context.brand.muted),
                 ),
-              ),
-            ],
-          ),
+                SizedBox(height: 6.h),
+                Text(
+                  widget.email,
+                  textAlign: TextAlign.center,
+                  textDirection: TextDirection.ltr,
+                  style: const TextStyle(
+                    color: AppColorsLight.primary,
+                    fontWeight: FontWeight.w700,
+                  ),
+                ),
+                SizedBox(height: 28.h),
+                _form.pinCodeField.buildField(
+                  context,
+                  param: ParamsCustomInput(
+                    onChanged: _cubit.setOtp,
+                    pinCodeOptions: CustomPinCodeOptions(
+                      length: 6,
+                      onCompleted: (_) => _submit(),
+                    ),
+                  ),
+                ),
+                SizedBox(height: 24.h),
+                if (state.error != null) ...[
+                  WAuthErrorBanner(message: state.error!),
+                  SizedBox(height: 12.h),
+                ],
+                WAuthButton(
+                  label: 'auth_verify_otp'.tr(),
+                  isLoading: state.isSubmitting,
+                  onPressed: state.isOtpValid ? _submit : null,
+                ),
+                SizedBox(height: 12.h),
+                TextButton(
+                  onPressed: () => Modular.to.pop(),
+                  child: Text(
+                    'auth_resend_code'.tr(),
+                    style: const TextStyle(
+                      color: AppColorsLight.primary,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                ),
+                SizedBox(height: 8.h),
+                Text(
+                  'auth_demo_otp_hint'.tr(),
+                  textAlign: TextAlign.center,
+                  style: TextStyle(fontSize: 12.sp, color: context.brand.muted),
+                ),
+              ],
+            );
+          },
         ),
-      ),
-    );
-  }
-}
-
-class _ErrorBanner extends StatelessWidget {
-  const _ErrorBanner({required this.message});
-  final String message;
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      width: double.infinity,
-      padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 10.h),
-      decoration: BoxDecoration(
-        color: AppColorsLight.error.withValues(alpha: 0.08),
-        borderRadius: BorderRadius.circular(10.r),
-        border: Border.all(color: AppColorsLight.error, width: 0.5),
-      ),
-      child: Row(
-        children: [
-          Icon(Icons.error_outline_rounded,
-              color: AppColorsLight.error, size: 16.r),
-          SizedBox(width: 8.w),
-          Expanded(
-            child: Text(message,
-                style: TextStyle(color: AppColorsLight.error, fontSize: 12.sp)),
-          ),
-        ],
       ),
     );
   }

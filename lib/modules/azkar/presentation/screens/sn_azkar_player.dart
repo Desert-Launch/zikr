@@ -1,34 +1,45 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_modular/flutter_modular.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:localize_and_translate/localize_and_translate.dart';
-import 'package:quran/core/theme/app_colors.dart';
-import 'package:quran/core/theme/brand_colors.dart';
 import 'package:quran/modules/azkar/data/models/m_azkar_item.dart';
 import 'package:quran/modules/azkar/data/sources/local/box_azkar_favorite.dart';
 import 'package:quran/modules/azkar/presentation/cubits/cb_azkar_session.dart';
 import 'package:quran/modules/azkar/presentation/cubits/s_azkar_session.dart';
 
 class SNAzkarPlayer extends StatefulWidget {
-  const SNAzkarPlayer({super.key, required this.categoryId});
+  const SNAzkarPlayer({
+    super.key,
+    required this.categoryId,
+    this.itemIndex = 0,
+  });
 
   final String categoryId;
+  final int itemIndex;
 
   @override
   State<SNAzkarPlayer> createState() => _SNAzkarPlayerState();
 }
 
 class _SNAzkarPlayerState extends State<SNAzkarPlayer> {
+  static const _green = Color(0xFF007A58);
+  static const _gold = Color(0xFFD6A72C);
+  static const _canvas = Color(0xFFF8F7F4);
+
   late final CBAzkarSession _cubit = Modular.get<CBAzkarSession>();
-  final _favorites = Modular.get<BoxAzkarFavorite>();
+  late final BoxAzkarFavorite _favorites = Modular.get<BoxAzkarFavorite>();
 
   @override
   void initState() {
     super.initState();
-    _cubit.open(widget.categoryId);
+    _open();
+  }
+
+  Future<void> _open() async {
+    await _cubit.open(widget.categoryId);
+    _cubit.jumpTo(widget.itemIndex);
   }
 
   @override
@@ -36,69 +47,65 @@ class _SNAzkarPlayerState extends State<SNAzkarPlayer> {
     return BlocProvider.value(
       value: _cubit,
       child: Scaffold(
-        appBar: AppBar(
-          title: BlocBuilder<CBAzkarSession, SAzkarSession>(
-            buildWhen: (a, b) => a.category?.id != b.category?.id,
-            builder: (_, s) => Text(
-              s.category?.nameAr ?? '',
-              style: TextStyle(fontSize: 18.sp, fontWeight: FontWeight.w700),
-            ),
-          ),
-          actions: [
-            IconButton(
-              icon: const Icon(Icons.restart_alt_rounded),
-              tooltip: 'azkar_reset'.tr(),
-              onPressed: _cubit.resetCategory,
-            ),
-          ],
-        ),
+        backgroundColor: _canvas,
         body: BlocBuilder<CBAzkarSession, SAzkarSession>(
-          builder: (context, state) {
-            final cat = state.category;
-            if (cat == null) {
+          builder: (_, state) {
+            final category = state.category;
+            final item = state.currentItem;
+            if (category == null || item == null) {
               return const Center(child: CircularProgressIndicator());
             }
-            final item = state.currentItem;
-            if (item == null) return const SizedBox.shrink();
-            return Column(
-              children: [
-                Padding(
-                  padding: EdgeInsets.fromLTRB(16.w, 8.h, 16.w, 0),
-                  child: LinearProgressIndicator(
-                    minHeight: 4.h,
-                    value: (state.itemIndex + 1) / cat.items.length,
-                    backgroundColor: context.brand.border,
-                    color: AppColorsLight.primary,
+            final completed = state.countFor(item.id);
+            return CustomScrollView(
+              slivers: [
+                SliverToBoxAdapter(
+                  child: _CompactHeader(
+                    itemCount: category.items.length,
+                    completed: category.items
+                        .where((item) => state.isComplete(item))
+                        .length,
+                    favorites: _favorites.all().length,
+                    green: _green,
                   ),
                 ),
-                Padding(
-                  padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 8.h),
-                  child: Row(
+                SliverPadding(
+                  padding: EdgeInsets.fromLTRB(18.w, 8.h, 18.w, 28.h),
+                  sliver: SliverList.list(
                     children: [
-                      Text(
-                        '${state.itemIndex + 1} / ${cat.items.length}',
-                        style: TextStyle(
-                          fontSize: 12.sp, color: context.brand.muted,
-                        ),
+                      Row(
+                        children: [
+                          TextButton.icon(
+                            onPressed: Modular.to.pop,
+                            icon: const Icon(
+                              Icons.arrow_forward_rounded,
+                              size: 16,
+                            ),
+                            label: Text('azkar_back_list'.tr()),
+                          ),
+                          const Spacer(),
+                          Text(
+                            category.nameAr,
+                            style: TextStyle(
+                              fontSize: 13.sp,
+                              color: Colors.grey[700],
+                            ),
+                          ),
+                        ],
                       ),
-                      const Spacer(),
-                      _FavoriteButton(itemId: item.id, favorites: _favorites),
-                      IconButton(
-                        icon: const Icon(Icons.copy_outlined),
-                        tooltip: 'reader_copy'.tr(),
-                        onPressed: () => _copy(item),
+                      _CounterCard(
+                        item: item,
+                        completed: completed,
+                        green: _green,
+                        onTap: _cubit.tap,
+                        onReset: _cubit.resetCurrent,
                       ),
+                      if (item.virtueAr?.isNotEmpty == true) ...[
+                        SizedBox(height: 12.h),
+                        _VirtueCard(text: item.virtueAr!, gold: _gold),
+                      ],
                     ],
                   ),
                 ),
-                Expanded(child: _ZekrCard(item: item, state: state, onTap: _cubit.tap)),
-                _ControlBar(
-                  state: state,
-                  onPrev: _cubit.previous,
-                  onNext: _cubit.next,
-                  onTap: _cubit.tap,
-                ),
-                SizedBox(height: 16.h),
               ],
             );
           },
@@ -106,197 +113,273 @@ class _SNAzkarPlayerState extends State<SNAzkarPlayer> {
       ),
     );
   }
-
-  Future<void> _copy(MAzkarItem item) async {
-    await Clipboard.setData(ClipboardData(text: item.textAr));
-    if (!mounted) return;
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text('reader_copy'.tr())),
-    );
-  }
 }
 
-class _ZekrCard extends StatelessWidget {
-  const _ZekrCard({
-    required this.item,
-    required this.state,
-    required this.onTap,
+class _CompactHeader extends StatelessWidget {
+  const _CompactHeader({
+    required this.itemCount,
+    required this.completed,
+    required this.favorites,
+    required this.green,
   });
 
-  final MAzkarItem item;
-  final SAzkarSession state;
-  final VoidCallback onTap;
+  final int itemCount;
+  final int completed;
+  final int favorites;
+  final Color green;
 
   @override
   Widget build(BuildContext context) {
-    final completed = state.countFor(item.id);
-    return Padding(
-      padding: EdgeInsets.symmetric(horizontal: 16.w),
-      child: GestureDetector(
-        onTap: onTap,
-        child: SingleChildScrollView(
-          padding: EdgeInsets.symmetric(vertical: 16.h),
-          child: Column(
-            children: [
-              Container(
-                width: double.infinity,
-                padding: EdgeInsets.all(20.w),
-                decoration: BoxDecoration(
-                  color: context.brand.surface,
-                  border: Border.all(color: context.brand.border),
-                  borderRadius: BorderRadius.circular(16.r),
+    return Container(
+      height: 164.h,
+      padding: EdgeInsets.fromLTRB(14.w, 8.h, 14.w, 16.h),
+      color: green,
+      child: SafeArea(
+        bottom: false,
+        child: Column(
+          children: [
+            Row(
+              children: [
+                CircleAvatar(
+                  radius: 17.r,
+                  backgroundColor: Colors.white.withValues(alpha: 0.14),
+                  child: const Text('🤲'),
                 ),
-                child: Column(
+                const Spacer(),
+                Column(
+                  crossAxisAlignment: CrossAxisAlignment.end,
                   children: [
-                    Directionality(
-                      textDirection: TextDirection.rtl,
-                      child: Text(
-                        item.textAr,
-                        textAlign: TextAlign.center,
-                        style: GoogleFonts.amiri(
-                          fontSize: 22.sp, height: 2.0,
-                        ),
+                    Text(
+                      'azkar_header_title'.tr(),
+                      style: GoogleFonts.tajawal(
+                        color: Colors.white,
+                        fontSize: 17.sp,
+                        fontWeight: FontWeight.w700,
                       ),
                     ),
-                    if (item.source != null) ...[
-                      SizedBox(height: 14.h),
-                      Container(
-                        padding:
-                            EdgeInsets.symmetric(horizontal: 10.w, vertical: 4.h),
-                        decoration: BoxDecoration(
-                          color: AppColorsLight.accent.withValues(alpha: 0.15),
-                          borderRadius: BorderRadius.circular(8.r),
-                        ),
-                        child: Text(item.source!,
-                            style: TextStyle(
-                              fontSize: 11.sp,
-                              fontWeight: FontWeight.w700,
-                              color: AppColorsLight.primaryDark,
-                            )),
+                    Text(
+                      'azkar_header_subtitle'.tr(),
+                      style: TextStyle(
+                        color: Colors.white.withValues(alpha: 0.7),
+                        fontSize: 8.sp,
                       ),
-                    ],
-                    if (item.virtueAr != null) ...[
-                      SizedBox(height: 12.h),
-                      Text(item.virtueAr!,
-                          textAlign: TextAlign.center,
-                          style: TextStyle(
-                            fontSize: 12.sp,
-                            color: context.brand.muted,
-                            height: 1.6,
-                          )),
-                    ],
+                    ),
                   ],
                 ),
-              ),
-              SizedBox(height: 18.h),
-              Text('azkar_repeat_label'.tr(),
-                  style: TextStyle(
-                    fontSize: 11.sp, color: context.brand.muted,
-                  )),
-              SizedBox(height: 4.h),
-              Text('$completed / ${item.repeat}',
-                  style: TextStyle(
-                    fontSize: 28.sp,
-                    fontWeight: FontWeight.w800,
-                    color: state.isComplete(item)
-                        ? AppColorsLight.success
-                        : AppColorsLight.primary,
-                    fontFeatures: const [FontFeature.tabularFigures()],
-                  )),
-            ],
-          ),
+                IconButton(
+                  onPressed: Modular.to.pop,
+                  icon: const Icon(
+                    Icons.arrow_forward_rounded,
+                    color: Colors.white,
+                  ),
+                ),
+              ],
+            ),
+            const Spacer(),
+            Row(
+              children: [
+                _MiniStat(value: favorites, label: 'azkar_favorites'.tr()),
+                SizedBox(width: 7.w),
+                _MiniStat(
+                  value: completed,
+                  label: 'azkar_completed_today'.tr(),
+                ),
+                SizedBox(width: 7.w),
+                _MiniStat(value: itemCount, label: 'azkar_items_suffix'.tr()),
+              ],
+            ),
+          ],
         ),
       ),
     );
   }
 }
 
-class _ControlBar extends StatelessWidget {
-  const _ControlBar({
-    required this.state,
-    required this.onPrev,
-    required this.onNext,
-    required this.onTap,
-  });
+class _MiniStat extends StatelessWidget {
+  const _MiniStat({required this.value, required this.label});
 
-  final SAzkarSession state;
-  final VoidCallback onPrev;
-  final VoidCallback onNext;
-  final VoidCallback onTap;
+  final int value;
+  final String label;
 
   @override
   Widget build(BuildContext context) {
-    return Padding(
-      padding: EdgeInsets.symmetric(horizontal: 20.w),
-      child: Row(
-        children: [
-          IconButton.filled(
-            onPressed: state.itemIndex > 0 ? onPrev : null,
-            icon: const Icon(Icons.arrow_back_ios_new_rounded),
-            style: IconButton.styleFrom(
-              backgroundColor: context.brand.background,
-              foregroundColor: AppColorsLight.primary,
+    return Expanded(
+      child: Container(
+        padding: EdgeInsets.symmetric(vertical: 7.h),
+        decoration: BoxDecoration(
+          color: Colors.white.withValues(alpha: 0.08),
+          borderRadius: BorderRadius.circular(12.r),
+        ),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Text(
+              '$value',
+              style: TextStyle(color: Colors.white, fontSize: 14.sp),
             ),
-          ),
-          Expanded(
-            child: Padding(
-              padding: EdgeInsets.symmetric(horizontal: 12.w),
-              child: FilledButton(
-                onPressed: onTap,
-                style: FilledButton.styleFrom(
-                  backgroundColor: AppColorsLight.primary,
-                  padding: EdgeInsets.symmetric(vertical: 14.h),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(14.r),
-                  ),
-                ),
-                child: Text('azkar_tap_to_count'.tr(),
-                    style: TextStyle(
-                      fontSize: 15.sp, fontWeight: FontWeight.w700,
-                    )),
+            Text(
+              label,
+              style: TextStyle(
+                color: Colors.white.withValues(alpha: 0.7),
+                fontSize: 7.sp,
               ),
             ),
-          ),
-          IconButton.filled(
-            onPressed: (state.category != null &&
-                    state.itemIndex < state.category!.items.length - 1)
-                ? onNext
-                : null,
-            icon: const Icon(Icons.arrow_forward_ios_rounded),
-            style: IconButton.styleFrom(
-              backgroundColor: context.brand.background,
-              foregroundColor: AppColorsLight.primary,
-            ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }
 }
 
-class _FavoriteButton extends StatefulWidget {
-  const _FavoriteButton({required this.itemId, required this.favorites});
-  final String itemId;
-  final BoxAzkarFavorite favorites;
+class _CounterCard extends StatelessWidget {
+  const _CounterCard({
+    required this.item,
+    required this.completed,
+    required this.green,
+    required this.onTap,
+    required this.onReset,
+  });
 
-  @override
-  State<_FavoriteButton> createState() => _FavoriteButtonState();
-}
-
-class _FavoriteButtonState extends State<_FavoriteButton> {
-  bool get _isFav => widget.favorites.isFavorite(widget.itemId);
+  final MAzkarItem item;
+  final int completed;
+  final Color green;
+  final VoidCallback onTap;
+  final VoidCallback onReset;
 
   @override
   Widget build(BuildContext context) {
-    return IconButton(
-      icon: Icon(
-        _isFav ? Icons.favorite_rounded : Icons.favorite_outline_rounded,
-        color: _isFav ? AppColorsLight.error : null,
+    final progress = item.repeat <= 0
+        ? 0.0
+        : (completed / item.repeat).clamp(0, 1).toDouble();
+    return InkWell(
+      borderRadius: BorderRadius.circular(16.r),
+      onTap: onTap,
+      child: Container(
+        constraints: BoxConstraints(minHeight: 365.h),
+        padding: EdgeInsets.all(18.r),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(16.r),
+          boxShadow: const [
+            BoxShadow(
+              color: Color(0x25000000),
+              blurRadius: 14,
+              offset: Offset(0, 5),
+            ),
+          ],
+        ),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Directionality(
+              textDirection: TextDirection.rtl,
+              child: Text(
+                item.textAr,
+                textAlign: TextAlign.center,
+                style: GoogleFonts.amiri(fontSize: 20.sp, height: 1.8),
+              ),
+            ),
+            SizedBox(height: 28.h),
+            Container(
+              width: 128.r,
+              height: 128.r,
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                border: Border.all(color: green, width: 4),
+                boxShadow: [
+                  BoxShadow(
+                    color: green.withValues(alpha: 0.1),
+                    blurRadius: 30,
+                    spreadRadius: 10,
+                  ),
+                ],
+              ),
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Text(
+                    '$completed',
+                    style: TextStyle(
+                      fontSize: 42.sp,
+                      fontWeight: FontWeight.w300,
+                    ),
+                  ),
+                  Text(
+                    '${'azkar_of'.tr()} ${item.repeat}',
+                    style: TextStyle(fontSize: 8.sp, color: Colors.grey[600]),
+                  ),
+                  SizedBox(height: 4.h),
+                  SizedBox(
+                    width: 42.w,
+                    child: LinearProgressIndicator(
+                      minHeight: 3.h,
+                      value: progress,
+                      color: green,
+                      backgroundColor: const Color(0xFFE7E7E2),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            SizedBox(height: 20.h),
+            TextButton.icon(
+              onPressed: onReset,
+              icon: const Icon(Icons.restart_alt_rounded, size: 14),
+              label: Text('azkar_reset_counter'.tr()),
+              style: TextButton.styleFrom(
+                foregroundColor: Colors.grey[700],
+                textStyle: TextStyle(fontSize: 9.sp),
+              ),
+            ),
+          ],
+        ),
       ),
-      onPressed: () async {
-        await widget.favorites.toggle(widget.itemId);
-        if (mounted) setState(() {});
-      },
+    );
+  }
+}
+
+class _VirtueCard extends StatelessWidget {
+  const _VirtueCard({required this.text, required this.gold});
+
+  final String text;
+  final Color gold;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: EdgeInsets.all(16.r),
+      decoration: BoxDecoration(
+        color: const Color(0xFFFFEDC0),
+        borderRadius: BorderRadius.circular(15.r),
+        border: Border.all(color: gold),
+      ),
+      child: Column(
+        children: [
+          CircleAvatar(
+            radius: 13.r,
+            backgroundColor: gold,
+            child: const Icon(
+              Icons.star_rounded,
+              color: Colors.white,
+              size: 14,
+            ),
+          ),
+          SizedBox(height: 5.h),
+          Text(
+            'azkar_virtue'.tr(),
+            style: TextStyle(fontSize: 9.sp, color: Colors.grey[700]),
+          ),
+          SizedBox(height: 7.h),
+          Directionality(
+            textDirection: TextDirection.rtl,
+            child: Text(
+              text,
+              textAlign: TextAlign.center,
+              style: GoogleFonts.amiri(fontSize: 13.sp, height: 1.7),
+            ),
+          ),
+        ],
+      ),
     );
   }
 }

@@ -7,12 +7,10 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:quran/core/data/sources/local/box_app_settings.dart';
 import 'package:quran/core/services/routes/routes_names.dart';
 import 'package:quran/core/theme/app_colors.dart';
-import 'package:quran/modules/auth/domain/entities/e_auth_status.dart';
-import 'package:quran/modules/auth/presentation/cubits/cb_auth.dart';
 
-/// Boot screen. Decides between onboarding / auth / home using:
-/// 1. `BoxAppSettings.hasSeenOnboarding` — false on first install.
-/// 2. `CBAuth.state.isLoggedIn` — true if a valid token is in the box.
+/// Boot screen. Shows onboarding on first install, then opens the guest-friendly
+/// home screen. Authentication is requested only when a protected feature is
+/// opened.
 class SNSplash extends StatefulWidget {
   const SNSplash({super.key});
 
@@ -35,17 +33,8 @@ class _SNSplashState extends State<SNSplash> {
       return;
     }
 
-    // Wait briefly for CBAuth.bootstrap() (started in main) to settle.
-    final cb = Modular.get<CBAuth>();
-    final start = DateTime.now();
-    while (cb.state.status == EAuthStatus.unknown &&
-        DateTime.now().difference(start) < const Duration(milliseconds: 1500)) {
-      await Future<void>.delayed(const Duration(milliseconds: 80));
-    }
     if (!mounted) return;
-    Modular.to.navigate(
-      cb.state.isLoggedIn ? RoutesNames.homeBase : RoutesNames.authBase,
-    );
+    Modular.to.navigate(RoutesNames.homeBase);
   }
 
   @override
@@ -57,8 +46,11 @@ class _SNSplashState extends State<SNSplash> {
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Icon(Icons.menu_book_rounded,
-                size: 96.r, color: AppColorsLight.primary),
+            Icon(
+              Icons.menu_book_rounded,
+              size: 96.r,
+              color: AppColorsLight.primary,
+            ),
             SizedBox(height: 24.h),
             Text(
               'القرآن الكريم',
@@ -70,7 +62,8 @@ class _SNSplashState extends State<SNSplash> {
             ),
             SizedBox(height: 32.h),
             const SizedBox(
-              width: 28, height: 28,
+              width: 28,
+              height: 28,
               child: CircularProgressIndicator(strokeWidth: 2.5),
             ),
           ],

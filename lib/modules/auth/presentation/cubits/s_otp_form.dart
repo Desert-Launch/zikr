@@ -48,6 +48,13 @@ class SOtpForm extends Equatable {
   }
 
   @override
-  List<Object?> get props =>
-      [otp, newPassword, confirmPassword, isSubmitting, obscurePassword, didReset, error];
+  List<Object?> get props => [
+    otp,
+    newPassword,
+    confirmPassword,
+    isSubmitting,
+    obscurePassword,
+    didReset,
+    error,
+  ];
 }

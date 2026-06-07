@@ -11,8 +11,10 @@ class NotificationRouter {
   NotificationRouter();
 
   void route(NotificationPayload payload) {
-    AppLogger.info('Notification tapped: ${payload.type}',
-        tag: 'NotificationRouter');
+    AppLogger.info(
+      'Notification tapped: ${payload.type}',
+      tag: 'NotificationRouter',
+    );
     switch (payload.type) {
       case 'prayer':
         Modular.to.navigate(RoutesNames.prayerBase);
@@ -38,6 +40,8 @@ class NotificationRouter {
         } else {
           Modular.to.navigate(RoutesNames.quranBase);
         }
+      case 'khatma':
+        Modular.to.navigate(KhatmaRoutes.fullTracker());
       default:
         // Unknown payload — open home as a safe fallback.
         Modular.to.navigate(RoutesNames.homeBase);

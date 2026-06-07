@@ -18,15 +18,17 @@ class MUser extends HiveObject {
   }) : createdAt = createdAt ?? DateTime.now();
 
   factory MUser.fromJson(Map<String, dynamic> json) => MUser(
-        id: json['id'] as String,
-        name: json['name'] as String? ?? '',
-        nameEn: json['name_en'] as String?,
-        email: json['email'] as String? ?? '',
-        phone: json['phone'] as String?,
-        avatar: json['avatar'] as String?,
-        isVerified: json['is_verified'] as bool? ?? false,
-        createdAt: DateTime.tryParse(json['created_at'] as String? ?? '') ?? DateTime.now(),
-      );
+    id: json['id'] as String,
+    name: json['name'] as String? ?? '',
+    nameEn: json['name_en'] as String?,
+    email: json['email'] as String? ?? '',
+    phone: json['phone'] as String?,
+    avatar: json['avatar'] as String?,
+    isVerified: json['is_verified'] as bool? ?? false,
+    createdAt:
+        DateTime.tryParse(json['created_at'] as String? ?? '') ??
+        DateTime.now(),
+  );
 
   @HiveField(0)
   String id;
@@ -46,13 +48,13 @@ class MUser extends HiveObject {
   DateTime createdAt;
 
   Map<String, dynamic> toJson() => {
-        'id': id,
-        'name': name,
-        if (nameEn != null) 'name_en': nameEn,
-        'email': email,
-        if (phone != null) 'phone': phone,
-        if (avatar != null) 'avatar': avatar,
-        'is_verified': isVerified,
-        'created_at': createdAt.toIso8601String(),
-      };
+    'id': id,
+    'name': name,
+    if (nameEn != null) 'name_en': nameEn,
+    'email': email,
+    if (phone != null) 'phone': phone,
+    if (avatar != null) 'avatar': avatar,
+    'is_verified': isVerified,
+    'created_at': createdAt.toIso8601String(),
+  };
 }

@@ -6,5 +6,6 @@ class UCForgotPassword {
   UCForgotPassword(this._repo);
   final RAuth _repo;
 
-  Future<Either<Failure, Unit>> call(String email) => _repo.forgotPassword(email);
+  Future<Either<Failure, Unit>> call(String email) =>
+      _repo.forgotPassword(email);
 }
