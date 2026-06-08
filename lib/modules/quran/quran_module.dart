@@ -65,7 +65,9 @@ class QuranModule extends Module {
     i.addSingleton<DSLocalBookmarks>(
       () => DSLocalBookmarks(i.get<BoxBookmarks>(), i.get<BoxLastRead>()),
     );
-    i.addSingleton<DSLocalSettings>(() => DSLocalSettings(i.get<BoxReciterPref>()));
+    i.addSingleton<DSLocalSettings>(
+      () => DSLocalSettings(i.get<BoxReciterPref>()),
+    );
     i.addSingleton<DSLocalAudioFiles>(DSLocalAudioFiles.new);
     i.addSingleton<DSQpcFontLoader>(DSQpcFontLoader.new);
 
@@ -77,7 +79,11 @@ class QuranModule extends Module {
     i.addSingleton<RQuran>(() => RImplQuran(i.get<DSLocalQuran>()));
     i.addSingleton<RReciter>(() => RImplReciter(i.get<DSLocalSettings>()));
     i.addSingleton<RAudio>(
-      () => RImplAudio(i.get<DSLocalAudioFiles>(), i.get<DSRemoteAudio>(), i.get<RReciter>()),
+      () => RImplAudio(
+        i.get<DSLocalAudioFiles>(),
+        i.get<DSRemoteAudio>(),
+        i.get<RReciter>(),
+      ),
     );
     i.addSingleton<RBookmarks>(() => RImplBookmarks(i.get<DSLocalBookmarks>()));
     i.addSingleton<RDownloads>(
@@ -140,10 +146,19 @@ class QuranModule extends Module {
 
     // Per-screen cubits (factory).
     i.add<CBSurahList>(
-      () => CBSurahList(i.get<UCGetSurahList>(), i.get<UCSaveLastRead>(), i.get<UCGetBookmarks>()),
+      () => CBSurahList(
+        i.get<UCGetSurahList>(),
+        i.get<UCSaveLastRead>(),
+        i.get<UCGetBookmarks>(),
+      ),
     );
     i.add<CBMushafReader>(
-      () => CBMushafReader(i.get<UCGetPageLayout>(), i.get<UCSaveLastRead>(), i.get<DSQpcFontLoader>()),
+      () => CBMushafReader(
+        i.get<UCGetPageLayout>(),
+        i.get<UCSaveLastRead>(),
+        i.get<DSQpcFontLoader>(),
+        i.get<DSLocalQuran>(),
+      ),
     );
     i.add<CBBookmarks>(
       () => CBBookmarks(i.get<UCGetBookmarks>(), i.get<UCSaveBookmark>()),
@@ -173,7 +188,9 @@ class QuranModule extends Module {
         final ayah = int.tryParse(params['ayah'] ?? '');
         return SNMushafReader(
           initialPage: page,
-          initialAyah: (surah != null && ayah != null) ? (surah: surah, ayah: ayah) : null,
+          initialAyah: (surah != null && ayah != null)
+              ? (surah: surah, ayah: ayah)
+              : null,
         );
       },
     );

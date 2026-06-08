@@ -19,11 +19,11 @@ class CBAudioPlayer extends Cubit<SAudioPlayer> {
     required RAudio audio,
     required RQuran quran,
     required UCGetReciters reciters,
-  })  : _audio = audio,
-        _quran = quran,
-        _reciters = reciters,
-        _player = AudioPlayer(),
-        super(const SAudioPlayer()) {
+  }) : _audio = audio,
+       _quran = quran,
+       _reciters = reciters,
+       _player = AudioPlayer(),
+       super(const SAudioPlayer()) {
     _hydrate();
     _wireStreams();
   }
@@ -78,7 +78,9 @@ class CBAudioPlayer extends Cubit<SAudioPlayer> {
       emit(state.copyWith(status: next));
     });
 
-    _posSub = _player.positionStream.listen((p) => emit(state.copyWith(position: p)));
+    _posSub = _player.positionStream.listen(
+      (p) => emit(state.copyWith(position: p)),
+    );
     _durSub = _player.durationStream.listen((d) {
       emit(state.copyWith(duration: d ?? Duration.zero));
     });
@@ -117,10 +119,16 @@ class CBAudioPlayer extends Cubit<SAudioPlayer> {
       });
       _interruptSub = session.interruptionEventStream.listen(_onInterruption);
     } catch (e, st) {
-      AppLogger.warning('audio_session configure failed: $e',
-          tag: 'CBAudioPlayer');
-      AppLogger.error('audio_session configure',
-          error: e, stackTrace: st, tag: 'CBAudioPlayer');
+      AppLogger.warning(
+        'audio_session configure failed: $e',
+        tag: 'CBAudioPlayer',
+      );
+      AppLogger.error(
+        'audio_session configure',
+        error: e,
+        stackTrace: st,
+        tag: 'CBAudioPlayer',
+      );
     }
   }
 
@@ -151,7 +159,10 @@ class CBAudioPlayer extends Cubit<SAudioPlayer> {
       'Audio playback error: ${error.message} (idx=$idx)',
       tag: 'CBAudioPlayer',
     );
-    if (playlist == null || idx == null || idx < 0 || idx >= state.queue.length) {
+    if (playlist == null ||
+        idx == null ||
+        idx < 0 ||
+        idx >= state.queue.length) {
       emit(state.copyWith(status: PlayerStatus.error, error: error.message));
       return;
     }
@@ -174,7 +185,8 @@ class CBAudioPlayer extends Cubit<SAudioPlayer> {
       _fallbackAttempted.add(idx);
       final tag = MediaItem(
         id: '${ayah.surah}_${ayah.ayah}',
-        album: 'القرآن الكريم${_activeReciterName != null ? ' - $_activeReciterName' : ''}',
+        album:
+            'القرآن الكريم${_activeReciterName != null ? ' - $_activeReciterName' : ''}',
         title: '${'سورة'} ${ayah.surah} - الآية ${ayah.ayah}',
         artist: _activeReciterName ?? '',
       );
@@ -183,11 +195,17 @@ class CBAudioPlayer extends Cubit<SAudioPlayer> {
       await playlist.insert(idx, replacement);
       await _player.seek(Duration.zero, index: idx);
       await _player.play();
-      AppLogger.info('Swapped to fallback for ${ayah.key}',
-          tag: 'CBAudioPlayer');
+      AppLogger.info(
+        'Swapped to fallback for ${ayah.key}',
+        tag: 'CBAudioPlayer',
+      );
     } catch (e, st) {
-      AppLogger.error('Fallback swap failed',
-          error: e, stackTrace: st, tag: 'CBAudioPlayer');
+      AppLogger.error(
+        'Fallback swap failed',
+        error: e,
+        stackTrace: st,
+        tag: 'CBAudioPlayer',
+      );
       await _player.seekToNext();
     }
   }
@@ -200,9 +218,10 @@ class CBAudioPlayer extends Cubit<SAudioPlayer> {
   Future<void> playFrom(ParamAyahRef ref, {bool toEndOfSurah = true}) async {
     try {
       emit(state.copyWith(status: PlayerStatus.loading, clearError: true));
-      final reciterId = _activeReciterId ??
-          (await _reciters.active())
-              .fold<String?>((_) => null, (r) => r.id) ?? 'alafasy';
+      final reciterId =
+          _activeReciterId ??
+          (await _reciters.active()).fold<String?>((_) => null, (r) => r.id) ??
+          'alafasy';
       _activeReciterId = reciterId;
 
       // Build the ayah queue: from selected ayah to end of surah (or to whatever scope).
@@ -219,27 +238,41 @@ class CBAudioPlayer extends Cubit<SAudioPlayer> {
       final sources = <AudioSource>[];
       for (final ayahRef in queue) {
         final urlRes = await _audio.resolveAyahAudio(
-          reciterId: reciterId, surah: ayahRef.surah, ayah: ayahRef.ayah,
+          reciterId: reciterId,
+          surah: ayahRef.surah,
+          ayah: ayahRef.ayah,
         );
-        urlRes.fold((failure) {
-          AppLogger.warning('Audio resolve failed: ${failure.message}', tag: 'CBAudioPlayer');
-        }, (url) {
-          final tag = MediaItem(
-            id: '${ayahRef.surah}_${ayahRef.ayah}',
-            album: 'القرآن الكريم${_activeReciterName != null ? ' - $_activeReciterName' : ''}',
-            title: '${surah?.arabic ?? ''} - الآية ${ayahRef.ayah}',
-            artist: _activeReciterName ?? '',
-          );
-          final uri = Uri.parse(url);
-          final source = url.startsWith('file://')
-              ? AudioSource.uri(uri, tag: tag)
-              : LockCachingAudioSource(uri, tag: tag);
-          sources.add(source);
-        });
+        urlRes.fold(
+          (failure) {
+            AppLogger.warning(
+              'Audio resolve failed: ${failure.message}',
+              tag: 'CBAudioPlayer',
+            );
+          },
+          (url) {
+            final tag = MediaItem(
+              id: '${ayahRef.surah}_${ayahRef.ayah}',
+              album:
+                  'القرآن الكريم${_activeReciterName != null ? ' - $_activeReciterName' : ''}',
+              title: '${surah?.arabic ?? ''} - الآية ${ayahRef.ayah}',
+              artist: _activeReciterName ?? '',
+            );
+            final uri = Uri.parse(url);
+            final source = url.startsWith('file://')
+                ? AudioSource.uri(uri, tag: tag)
+                : LockCachingAudioSource(uri, tag: tag);
+            sources.add(source);
+          },
+        );
       }
 
       if (sources.isEmpty) {
-        emit(state.copyWith(status: PlayerStatus.error, error: 'No audio sources resolved'));
+        emit(
+          state.copyWith(
+            status: PlayerStatus.error,
+            error: 'No audio sources resolved',
+          ),
+        );
         return;
       }
 
@@ -248,17 +281,24 @@ class CBAudioPlayer extends Cubit<SAudioPlayer> {
       _fallbackAttempted.clear();
       await _player.setAudioSource(playlist, initialIndex: 0);
       await _player.setSpeed(state.options.speed);
-      _applyLoopMode();
-      emit(state.copyWith(
-        queue: queue,
-        queueIndex: 0,
-        currentAyah: queue.first,
-        reciterId: reciterId,
-        status: PlayerStatus.loading,
-      ));
+      await _applyLoopMode();
+      emit(
+        state.copyWith(
+          queue: queue,
+          queueIndex: 0,
+          currentAyah: queue.first,
+          reciterId: reciterId,
+          status: PlayerStatus.loading,
+        ),
+      );
       await _player.play();
     } catch (e, st) {
-      AppLogger.error('playFrom failed', error: e, stackTrace: st, tag: 'CBAudioPlayer');
+      AppLogger.error(
+        'playFrom failed',
+        error: e,
+        stackTrace: st,
+        tag: 'CBAudioPlayer',
+      );
       emit(state.copyWith(status: PlayerStatus.error, error: e.toString()));
     }
   }
@@ -268,39 +308,59 @@ class CBAudioPlayer extends Cubit<SAudioPlayer> {
       // v1: only supports ranges inside a single surah; cross-surah ranges
       // can be added later by stitching `ayatOfSurah` results.
       if (from.surah != to.surah) {
-        AppLogger.warning('Cross-surah ranges not supported yet', tag: 'CBAudioPlayer');
+        AppLogger.warning(
+          'Cross-surah ranges not supported yet',
+          tag: 'CBAudioPlayer',
+        );
         return;
       }
       final ayatRes = await _quran.ayatOfSurah(from.surah);
       final queue = ayatRes.fold<List<ParamAyahRef>>(
         (_) => [],
-        (list) => list.where((r) => r.ayah >= from.ayah && r.ayah <= to.ayah).toList(),
+        (list) => list
+            .where((r) => r.ayah >= from.ayah && r.ayah <= to.ayah)
+            .toList(),
       );
       if (queue.isEmpty) return;
       await playFrom(queue.first, toEndOfSurah: false);
       // Override the queue produced by playFrom with the precise range.
-      emit(state.copyWith(queue: queue, queueIndex: 0, currentAyah: queue.first));
+      emit(
+        state.copyWith(queue: queue, queueIndex: 0, currentAyah: queue.first),
+      );
     } catch (e, st) {
-      AppLogger.error('playRange failed', error: e, stackTrace: st, tag: 'CBAudioPlayer');
+      AppLogger.error(
+        'playRange failed',
+        error: e,
+        stackTrace: st,
+        tag: 'CBAudioPlayer',
+      );
     }
   }
 
   Future<void> repeatSingle(ParamAyahRef ref) async {
-    emit(state.copyWith(options: state.options.copyWith(repeatMode: RepeatMode.singleAyah)));
+    emit(
+      state.copyWith(
+        options: state.options.copyWith(repeatMode: RepeatMode.singleAyah),
+      ),
+    );
     await playFrom(ref, toEndOfSurah: false);
+    await _player.setLoopMode(LoopMode.one);
   }
 
   Future<void> pause() => _player.pause();
   Future<void> resume() => _player.play();
   Future<void> stop() async {
     await _player.stop();
-    emit(state.copyWith(
-      status: PlayerStatus.idle,
-      clearCurrentAyah: true,
-      clearQueueIndex: true,
-      queue: const [],
-    ));
+    emit(
+      state.copyWith(
+        status: PlayerStatus.idle,
+        clearCurrentAyah: true,
+        clearQueueIndex: true,
+        queue: const [],
+      ),
+    );
   }
+
   Future<void> next() => _player.seekToNext();
   Future<void> previous() => _player.seekToPrevious();
   Future<void> seekTo(Duration position) => _player.seek(position);
@@ -312,17 +372,17 @@ class CBAudioPlayer extends Cubit<SAudioPlayer> {
 
   Future<void> setRepeatMode(RepeatMode mode) async {
     emit(state.copyWith(options: state.options.copyWith(repeatMode: mode)));
-    _applyLoopMode();
+    await _applyLoopMode();
   }
 
-  void _applyLoopMode() {
+  Future<void> _applyLoopMode() async {
     switch (state.options.repeatMode) {
       case RepeatMode.off:
-        _player.setLoopMode(LoopMode.off);
+        await _player.setLoopMode(LoopMode.off);
       case RepeatMode.singleAyah:
-        _player.setLoopMode(LoopMode.one);
+        await _player.setLoopMode(LoopMode.one);
       case RepeatMode.range:
-        _player.setLoopMode(LoopMode.all);
+        await _player.setLoopMode(LoopMode.all);
     }
   }
 

@@ -31,7 +31,9 @@ class DSLocalQuran {
     final cached = _pageCache[page];
     if (cached != null) return cached;
     final raw = await rootBundle.loadString(_pagePath(page));
-    final layout = MPageLayout.fromJson(Map<String, dynamic>.from(jsonDecode(raw) as Map));
+    final layout = MPageLayout.fromJson(
+      Map<String, dynamic>.from(jsonDecode(raw) as Map),
+    );
     _pageCache[page] = layout;
     // Cap the cache so we don't hold all 604 pages — keep last 12 visited.
     if (_pageCache.length > 12) {
@@ -53,16 +55,36 @@ class DSLocalQuran {
     if (page <= 0) return 1;
     while (page <= 604) {
       final layout = await loadPage(page);
-      final hit = layout.allAyahRefs.any((r) => r.surah == surah && r.ayah == ayah);
+      final hit = layout.allAyahRefs.any(
+        (r) => r.surah == surah && r.ayah == ayah,
+      );
       if (hit) return page;
       // Stop early if this page belongs to a later surah and ayah wasn't found
       final maxSurah = layout.allAyahRefs.isEmpty
           ? surah
-          : layout.allAyahRefs.map((r) => r.surah).reduce((a, b) => a > b ? a : b);
+          : layout.allAyahRefs
+                .map((r) => r.surah)
+                .reduce((a, b) => a > b ? a : b);
       if (maxSurah > surah) return page; // ayah out of range — return closest
       page++;
     }
     return s.pageStart;
+  }
+
+  /// Returns the plain Uthmani text for one ayah without building the full
+  /// search index.
+  Future<String> ayahText(ParamAyahRef ref) async {
+    final page = await pageOfAyah(ref.surah, ref.ayah);
+    final layout = await loadPage(page);
+    final words = <String>[];
+    for (final line in layout.lines) {
+      for (final word in line.words) {
+        if (word.surah == ref.surah && word.ayah == ref.ayah) {
+          words.add(word.word);
+        }
+      }
+    }
+    return words.join(' ');
   }
 
   /// Plain Uthmani text per ayah, keyed by `"surah:ayah"`. Built once by
@@ -124,7 +146,10 @@ class DSLocalQuran {
         continue;
       }
       // Normalise alef variants → bare alef.
-      if (code == 0x0623 || code == 0x0625 || code == 0x0622 || code == 0x0671) {
+      if (code == 0x0623 ||
+          code == 0x0625 ||
+          code == 0x0622 ||
+          code == 0x0671) {
         buf.writeCharCode(0x0627);
         continue;
       }

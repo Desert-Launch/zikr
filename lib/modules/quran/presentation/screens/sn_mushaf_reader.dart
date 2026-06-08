@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_modular/flutter_modular.dart';
-import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:quran/core/theme/app_colors.dart';
 import 'package:quran/core/widgets/w_shared_scaffold.dart';
 import 'package:quran/modules/quran/data/datasources/local/ds_local_quran.dart';
@@ -10,10 +9,12 @@ import 'package:quran/modules/quran/presentation/cubits/cb_audio_player.dart';
 import 'package:quran/modules/quran/presentation/cubits/cb_mushaf_reader.dart';
 import 'package:quran/modules/quran/presentation/cubits/s_audio_player.dart';
 import 'package:quran/modules/quran/presentation/cubits/s_mushaf_reader.dart';
-import 'package:quran/modules/quran/presentation/cubits/s_surah_list.dart' show LoadStatus;
+import 'package:quran/modules/quran/presentation/cubits/s_surah_list.dart'
+    show LoadStatus;
 import 'package:quran/modules/quran/presentation/widgets/w_ayah_action_sheet.dart';
 import 'package:quran/modules/quran/presentation/widgets/w_mini_player.dart';
 import 'package:quran/modules/quran/presentation/widgets/w_mushaf_page.dart';
+import 'package:quran/modules/quran/presentation/widgets/w_reader_top_bar.dart';
 
 class SNMushafReader extends StatefulWidget {
   const SNMushafReader({super.key, this.initialPage, this.initialAyah});
@@ -34,7 +35,10 @@ class _SNMushafReaderState extends State<SNMushafReader> {
   void initState() {
     super.initState();
     _resolvedStart = widget.initialPage ?? 1;
-    _pageController = PageController(initialPage: _resolvedStart - 1, viewportFraction: 1);
+    _pageController = PageController(
+      initialPage: _resolvedStart - 1,
+      viewportFraction: 1,
+    );
     _resolveInitial();
   }
 
@@ -42,7 +46,10 @@ class _SNMushafReaderState extends State<SNMushafReader> {
     int target = widget.initialPage ?? 1;
     final initialAyah = widget.initialAyah;
     if (initialAyah != null) {
-      target = await Modular.get<DSLocalQuran>().pageOfAyah(initialAyah.surah, initialAyah.ayah);
+      target = await Modular.get<DSLocalQuran>().pageOfAyah(
+        initialAyah.surah,
+        initialAyah.ayah,
+      );
       if (mounted) {
         _pageController.jumpToPage(target - 1);
       }
@@ -57,9 +64,13 @@ class _SNMushafReaderState extends State<SNMushafReader> {
   }
 
   Future<void> _scrollToPlayingPage(ParamAyahRef ref) async {
-    final page = await Modular.get<DSLocalQuran>().pageOfAyah(ref.surah, ref.ayah);
+    final page = await Modular.get<DSLocalQuran>().pageOfAyah(
+      ref.surah,
+      ref.ayah,
+    );
     if (!mounted) return;
-    if (_pageController.hasClients && _pageController.page?.round() != page - 1) {
+    if (_pageController.hasClients &&
+        _pageController.page?.round() != page - 1) {
       _pageController.animateToPage(
         page - 1,
         duration: const Duration(milliseconds: 300),
@@ -75,6 +86,7 @@ class _SNMushafReaderState extends State<SNMushafReader> {
       child: WSharedScaffold(
         backgroundColor: AppColors.paperWarm,
         padding: EdgeInsets.zero,
+        withSafeArea: false,
         body: BlocListener<CBAudioPlayer, SAudioPlayer>(
           bloc: Modular.get<CBAudioPlayer>(),
           listenWhen: (a, b) => a.currentAyah?.key != b.currentAyah?.key,
@@ -84,26 +96,28 @@ class _SNMushafReaderState extends State<SNMushafReader> {
           },
           child: Stack(
             children: [
-              PageView.builder(
-                controller: _pageController,
-                reverse: true, // RTL — page 1 on the right
-                itemCount: 604,
-                onPageChanged: (i) => _cubit.openPage(i + 1),
-                itemBuilder: (context, i) {
-                  final pageNumber = i + 1;
-                  return _PageLoader(pageNumber: pageNumber);
-                },
-              ),
-              Positioned(
-                top: MediaQuery.paddingOf(context).top + 4.h,
-                right: 8.w,
-                child: Material(
-                  color: Colors.transparent,
-                  child: IconButton(
-                    icon: const Icon(Icons.arrow_back),
-                    onPressed: () => Modular.to.pop(),
+              // Tapping empty space on the page toggles the reader chrome
+              // (top app bar). Word taps are handled by the page's own
+              // gesture recognizers and never reach this detector.
+              GestureDetector(
+                behavior: HitTestBehavior.translucent,
+                onTap: _cubit.toggleChrome,
+                child: SafeArea(
+                  child: PageView.builder(
+                    controller: _pageController,
+                    reverse: true, // RTL — page 1 on the right
+                    itemCount: 604,
+                    onPageChanged: (i) => _cubit.openPage(i + 1),
+                    itemBuilder: (context, i) {
+                      final pageNumber = i + 1;
+                      return _PageLoader(pageNumber: pageNumber);
+                    },
                   ),
                 ),
+              ),
+              const Align(
+                alignment: Alignment.topCenter,
+                child: WReaderTopBar(),
               ),
               const Align(
                 alignment: Alignment.bottomCenter,

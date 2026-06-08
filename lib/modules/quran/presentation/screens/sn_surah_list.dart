@@ -23,72 +23,92 @@ class _SNSurahListState extends State<SNSurahList> {
 
   late final CBSurahList _cubit = Modular.get<CBSurahList>()..loadInitial();
 
+  void _goBack() {
+    if (Modular.to.canPop()) {
+      Modular.to.pop();
+    } else {
+      Modular.to.navigate(RoutesNames.homeBase);
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return BlocProvider.value(
       value: _cubit,
-      child: Scaffold(
-        backgroundColor: _canvas,
-        body: BlocBuilder<CBSurahList, SSurahList>(
-          builder: (context, state) {
-            return CustomScrollView(
-              slivers: [
-                SliverToBoxAdapter(child: _QuranHeader(cubit: _cubit)),
-                SliverToBoxAdapter(
-                  child: _FilterBar(cubit: _cubit, state: state, green: _green),
-                ),
-                if (state.status == LoadStatus.loading && state.all.isEmpty)
-                  const SliverFillRemaining(
-                    child: Center(child: CircularProgressIndicator()),
-                  )
-                else if (state.status == LoadStatus.error)
-                  SliverFillRemaining(
-                    child: Center(
-                      child: Text(state.error ?? 'common_error'.tr()),
-                    ),
-                  )
-                else ...[
+      child: PopScope(
+        canPop: Modular.to.canPop(),
+        onPopInvokedWithResult: (didPop, _) {
+          if (!didPop) Modular.to.navigate(RoutesNames.homeBase);
+        },
+        child: Scaffold(
+          backgroundColor: _canvas,
+          body: BlocBuilder<CBSurahList, SSurahList>(
+            builder: (context, state) {
+              return CustomScrollView(
+                slivers: [
                   SliverToBoxAdapter(
-                    child: _SummaryCards(
-                      surahs: state.all.length,
-                      ayat: state.all.fold(
-                        0,
-                        (sum, surah) => sum + surah.totalAyah,
-                      ),
-                      bookmarks: state.bookmarkCount,
+                    child: _QuranHeader(cubit: _cubit, onBack: _goBack),
+                  ),
+                  SliverToBoxAdapter(
+                    child: _FilterBar(
+                      cubit: _cubit,
+                      state: state,
                       green: _green,
-                      gold: _gold,
-                      onBookmarks: () =>
-                          Modular.to.pushNamed(QuranRoutes.fullBookmarks()),
                     ),
                   ),
-                  if (state.visible.isEmpty)
-                    SliverFillRemaining(
-                      child: Center(child: Text('search_no_results'.tr())),
+                  if (state.status == LoadStatus.loading && state.all.isEmpty)
+                    const SliverFillRemaining(
+                      child: Center(child: CircularProgressIndicator()),
                     )
-                  else
-                    SliverPadding(
-                      padding: EdgeInsets.fromLTRB(16.w, 4.h, 16.w, 28.h),
-                      sliver: SliverList.separated(
-                        itemCount: state.visible.length,
-                        separatorBuilder: (_, __) => SizedBox(height: 8.h),
-                        itemBuilder: (_, index) {
-                          final surah = state.visible[index];
-                          return _SurahCard(
-                            surah: surah,
-                            green: _green,
-                            gold: _gold,
-                            onTap: () => Modular.to.pushNamed(
-                              QuranRoutes.readerFromPage(surah.pageStart),
-                            ),
-                          );
-                        },
+                  else if (state.status == LoadStatus.error)
+                    SliverFillRemaining(
+                      child: Center(
+                        child: Text(state.error ?? 'common_error'.tr()),
+                      ),
+                    )
+                  else ...[
+                    SliverToBoxAdapter(
+                      child: _SummaryCards(
+                        surahs: state.all.length,
+                        ayat: state.all.fold(
+                          0,
+                          (sum, surah) => sum + surah.totalAyah,
+                        ),
+                        bookmarks: state.bookmarkCount,
+                        green: _green,
+                        gold: _gold,
+                        onBookmarks: () =>
+                            Modular.to.pushNamed(QuranRoutes.fullBookmarks()),
                       ),
                     ),
+                    if (state.visible.isEmpty)
+                      SliverFillRemaining(
+                        child: Center(child: Text('search_no_results'.tr())),
+                      )
+                    else
+                      SliverPadding(
+                        padding: EdgeInsets.fromLTRB(16.w, 4.h, 16.w, 28.h),
+                        sliver: SliverList.separated(
+                          itemCount: state.visible.length,
+                          separatorBuilder: (_, __) => SizedBox(height: 8.h),
+                          itemBuilder: (_, index) {
+                            final surah = state.visible[index];
+                            return _SurahCard(
+                              surah: surah,
+                              green: _green,
+                              gold: _gold,
+                              onTap: () => Modular.to.pushNamed(
+                                QuranRoutes.readerFromPage(surah.pageStart),
+                              ),
+                            );
+                          },
+                        ),
+                      ),
+                  ],
                 ],
-              ],
-            );
-          },
+              );
+            },
+          ),
         ),
       ),
     );
@@ -96,9 +116,10 @@ class _SNSurahListState extends State<SNSurahList> {
 }
 
 class _QuranHeader extends StatelessWidget {
-  const _QuranHeader({required this.cubit});
+  const _QuranHeader({required this.cubit, required this.onBack});
 
   final CBSurahList cubit;
+  final VoidCallback onBack;
 
   @override
   Widget build(BuildContext context) {
@@ -137,7 +158,7 @@ class _QuranHeader extends StatelessWidget {
                 ),
                 const Spacer(),
                 IconButton(
-                  onPressed: Modular.to.pop,
+                  onPressed: onBack,
                   icon: const Icon(
                     Icons.arrow_forward_rounded,
                     color: Colors.white,

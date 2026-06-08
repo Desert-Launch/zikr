@@ -1,22 +1,44 @@
 import 'dart:async';
 
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:quran/modules/quran/data/datasources/local/ds_local_quran.dart';
 import 'package:quran/modules/quran/data/datasources/local/ds_qpc_font_loader.dart';
 import 'package:quran/modules/quran/domain/entities/param_ayah_ref.dart';
 import 'package:quran/modules/quran/domain/usecases/uc_get_page_layout.dart';
 import 'package:quran/modules/quran/domain/usecases/uc_save_last_read.dart';
 import 'package:quran/modules/quran/presentation/cubits/s_mushaf_reader.dart';
-import 'package:quran/modules/quran/presentation/cubits/s_surah_list.dart' show LoadStatus;
+import 'package:quran/modules/quran/presentation/cubits/s_surah_list.dart'
+    show LoadStatus;
 
 class CBMushafReader extends Cubit<SMushafReader> {
-  CBMushafReader(this._getPage, this._saveLastRead, this._fonts)
-      : super(const SMushafReader());
+  CBMushafReader(this._getPage, this._saveLastRead, this._fonts, this._local)
+    : super(const SMushafReader());
 
   final UCGetPageLayout _getPage;
   final UCSaveLastRead _saveLastRead;
   final DSQpcFontLoader _fonts;
+  final DSLocalQuran _local;
 
   Timer? _saveDebounce;
+
+  /// First page of every juz' in the 604-page Madani Mushaf. Index 0 → juz' 1.
+  static const List<int> _juzStartPages = [
+    1, 22, 42, 62, 82, 102, 121, 142, 162, 182, //
+    201, 222, 242, 262, 282, 302, 322, 342, 362, 382, //
+    402, 422, 442, 462, 482, 502, 522, 542, 562, 582, //
+  ];
+
+  static int _juzForPage(int page) {
+    var juz = 1;
+    for (var i = 0; i < _juzStartPages.length; i++) {
+      if (page >= _juzStartPages[i]) {
+        juz = i + 1;
+      } else {
+        break;
+      }
+    }
+    return juz;
+  }
 
   Future<void> openPage(int page) async {
     if (page < 1 || page > 604) return;
@@ -25,22 +47,58 @@ class CBMushafReader extends Cubit<SMushafReader> {
     final preloadFut = _fonts.preloadWindow(page);
     final layoutRes = await _getPage(page);
     await preloadFut;
-    layoutRes.fold(
-      (failure) => emit(state.copyWith(status: LoadStatus.error, error: failure.message)),
-      (layout) => emit(state.copyWith(status: LoadStatus.success, layout: layout)),
+    await layoutRes.fold(
+      (failure) async {
+        if (state.currentPage != page) return;
+        emit(state.copyWith(status: LoadStatus.error, error: failure.message));
+      },
+      (layout) async {
+        final surahNo = layout.allAyahRefs.firstOrNull?.surah ?? 1;
+        final surahName = await _surahName(surahNo);
+        if (state.currentPage != page) return;
+        emit(
+          state.copyWith(
+            status: LoadStatus.success,
+            layout: layout,
+            surahName: surahName,
+            juz: _juzForPage(page),
+          ),
+        );
+      },
     );
-    _scheduleLastReadSave(page);
+    if (state.currentPage == page) _scheduleLastReadSave(page);
+  }
+
+  Future<String> _surahName(int number) async {
+    try {
+      final surahs = await _local.loadSurahs();
+      for (final s in surahs) {
+        if (s.number == number) {
+          return s.arabicLong.isNotEmpty ? s.arabicLong : s.arabic;
+        }
+      }
+    } catch (_) {
+      // Best-effort — the top bar simply shows no name on lookup failure.
+    }
+    return '';
   }
 
   void selectAyah(ParamAyahRef ref) {
     if (state.selectedAyah?.key == ref.key) {
       emit(state.copyWith(clearSelected: true));
     } else {
-      emit(state.copyWith(selectedAyah: ref));
+      // Selecting an ayah opens the bottom action sheet and reveals the chrome.
+      emit(state.copyWith(selectedAyah: ref, chromeVisible: true));
     }
   }
 
-  void clearSelection() => emit(state.copyWith(clearSelected: true, multiSelection: const {}));
+  void toggleChrome() =>
+      emit(state.copyWith(chromeVisible: !state.chromeVisible));
+
+  void setChrome(bool visible) => emit(state.copyWith(chromeVisible: visible));
+
+  void clearSelection() =>
+      emit(state.copyWith(clearSelected: true, multiSelection: const {}));
 
   void toggleMultiSelect(ParamAyahRef ref) {
     final next = Set<String>.from(state.multiSelection);

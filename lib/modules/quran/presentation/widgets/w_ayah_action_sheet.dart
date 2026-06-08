@@ -18,10 +18,11 @@ class WAyahActionSheet extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return BlocSelector<CBMushafReader, SMushafReader, ParamAyahRef?>(
-      selector: (s) => s.selectedAyah,
-      builder: (context, selected) {
-        final visible = selected != null;
+    return BlocSelector<CBMushafReader, SMushafReader, ({ParamAyahRef? selected, bool chromeVisible})>(
+      selector: (s) => (selected: s.selectedAyah, chromeVisible: s.chromeVisible),
+      builder: (context, state) {
+        final selected = state.selected;
+        final visible = selected != null && state.chromeVisible;
         return AnimatedSlide(
           offset: Offset(0, visible ? 0 : 1),
           duration: const Duration(milliseconds: 200),
@@ -40,9 +41,7 @@ class WAyahActionSheet extends StatelessWidget {
                   shadowColor: Colors.black.withValues(alpha: 0.2),
                   child: Padding(
                     padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 12.h),
-                    child: selected == null
-                        ? const SizedBox.shrink()
-                        : _SheetBody(ref: selected),
+                    child: selected == null ? const SizedBox.shrink() : _SheetBody(ref: selected),
                   ),
                 ),
               ),
@@ -74,18 +73,11 @@ class _SheetBody extends StatelessWidget {
               ),
               child: Text(
                 '${ref.surah}:${ref.ayah}',
-                style: TextStyle(
-                  color: AppColorsLight.primary,
-                  fontWeight: FontWeight.w700,
-                  fontSize: 13.sp,
-                ),
+                style: TextStyle(color: AppColorsLight.primary, fontWeight: FontWeight.w700, fontSize: 13.sp),
               ),
             ),
             const Spacer(),
-            IconButton(
-              icon: const Icon(Icons.close),
-              onPressed: cubit.clearSelection,
-            ),
+            IconButton(icon: const Icon(Icons.close), onPressed: cubit.clearSelection),
           ],
         ),
         SizedBox(height: 4.h),
@@ -95,34 +87,24 @@ class _SheetBody extends StatelessWidget {
             _Action(
               icon: Icons.play_arrow_rounded,
               label: 'reader_play'.tr(),
-              onTap: () {
-                Modular.get<CBAudioPlayer>().playFrom(ref);
-                BlocProvider.of<CBMushafReader>(context).clearSelection();
+              onTap: (actionContext) async {
+                await Modular.get<CBAudioPlayer>().playFrom(ref);
+                if (!actionContext.mounted) return;
+                BlocProvider.of<CBMushafReader>(actionContext).clearSelection();
               },
             ),
-            _Action(
-              icon: Icons.repeat_rounded,
-              label: 'reader_repeat'.tr(),
-              onTap: () {
-                Modular.get<CBAudioPlayer>().repeatSingle(ref);
-                BlocProvider.of<CBMushafReader>(context).clearSelection();
-              },
-            ),
-            _Action(
-              icon: Icons.bookmark_add_outlined,
-              label: 'reader_bookmark'.tr(),
-              onTap: () => _bookmark(context),
-            ),
-            _Action(
-              icon: Icons.copy_outlined,
-              label: 'reader_copy'.tr(),
-              onTap: () => _copy(context),
-            ),
-            _Action(
-              icon: Icons.share_outlined,
-              label: 'reader_share'.tr(),
-              onTap: () => _share(context),
-            ),
+            // _Action(
+            //   icon: Icons.repeat_rounded,
+            //   label: 'reader_repeat'.tr(),
+            //   onTap: (actionContext) async {
+            //     await Modular.get<CBAudioPlayer>().repeatSingle(ref);
+            //     if (!actionContext.mounted) return;
+            //     BlocProvider.of<CBMushafReader>(actionContext).clearSelection();
+            //   },
+            // ),
+            _Action(icon: Icons.bookmark_add_outlined, label: 'reader_bookmark'.tr(), onTap: _bookmark),
+            _Action(icon: Icons.copy_outlined, label: 'reader_copy'.tr(), onTap: _copy),
+            _Action(icon: Icons.share_outlined, label: 'reader_share'.tr(), onTap: _share),
           ],
         ),
       ],
@@ -144,10 +126,7 @@ class _SheetBody extends StatelessWidget {
     final uc = Modular.get<UCSaveBookmark>();
     final result = await uc(ref: ref);
     if (!context.mounted) return;
-    final msg = result.fold(
-      (l) => 'common_error'.tr(),
-      (r) => 'reader_bookmark'.tr(),
-    );
+    final msg = result.fold((l) => 'common_error'.tr(), (r) => 'reader_bookmark'.tr());
     ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(msg)));
     BlocProvider.of<CBMushafReader>(context).clearSelection();
   }
@@ -161,21 +140,25 @@ class _SheetBody extends StatelessWidget {
 
   Future<void> _share(BuildContext context) async {
     final text = _plainText(context);
-    await Share.share('$text\n— سورة ${ref.surah}، آية ${ref.ayah}');
+    final box = context.findRenderObject() as RenderBox?;
+    final screenSize = MediaQuery.sizeOf(context);
+    final origin = box != null && box.hasSize && box.size.width > 0 && box.size.height > 0
+        ? box.localToGlobal(Offset.zero) & box.size
+        : Rect.fromLTWH(screenSize.width / 2, screenSize.height / 2, 1, 1);
+    await Share.share('$text\n— سورة ${ref.surah}، آية ${ref.ayah}', sharePositionOrigin: origin);
   }
-
 }
 
 class _Action extends StatelessWidget {
   const _Action({required this.icon, required this.label, required this.onTap});
   final IconData icon;
   final String label;
-  final VoidCallback onTap;
+  final ValueChanged<BuildContext> onTap;
 
   @override
   Widget build(BuildContext context) {
     return InkWell(
-      onTap: onTap,
+      onTap: () => onTap(context),
       borderRadius: BorderRadius.circular(10.r),
       child: Padding(
         padding: EdgeInsets.symmetric(horizontal: 6.w, vertical: 6.h),
@@ -191,4 +174,3 @@ class _Action extends StatelessWidget {
     );
   }
 }
-

@@ -5,8 +5,10 @@ import 'package:flutter_modular/flutter_modular.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:quran/core/theme/app_colors.dart';
 import 'package:quran/core/theme/brand_colors.dart';
+import 'package:quran/modules/quran/data/datasources/local/ds_local_quran.dart';
 import 'package:quran/modules/quran/data/datasources/local/ds_qpc_font_loader.dart';
 import 'package:quran/modules/quran/data/models/m_page_layout.dart';
+import 'package:quran/modules/quran/data/models/m_surah.dart';
 import 'package:quran/modules/quran/domain/entities/param_ayah_ref.dart';
 import 'package:quran/modules/quran/presentation/cubits/cb_audio_player.dart';
 import 'package:quran/modules/quran/presentation/cubits/cb_mushaf_reader.dart';
@@ -32,11 +34,21 @@ class WMushafPage extends StatefulWidget {
 class _WMushafPageState extends State<WMushafPage> {
   final List<TapGestureRecognizer> _recognizers = [];
   late final DSQpcFontLoader _fonts = Modular.get<DSQpcFontLoader>();
+  Map<int, MSurah> _surahs = const {};
 
   @override
   void initState() {
     super.initState();
     _fonts.preloadWindow(widget.layout.page);
+    _loadSurahs();
+  }
+
+  Future<void> _loadSurahs() async {
+    final surahs = await Modular.get<DSLocalQuran>().loadSurahs();
+    if (!mounted) return;
+    setState(() {
+      _surahs = {for (final surah in surahs) surah.number: surah};
+    });
   }
 
   @override
@@ -58,8 +70,13 @@ class _WMushafPageState extends State<WMushafPage> {
     final cubit = BlocProvider.of<CBMushafReader>(context);
     final pageFamily = DSQpcFontLoader.pageFamily(widget.layout.page);
 
-    return BlocSelector<CBMushafReader, SMushafReader, ({ParamAyahRef? selected, double scale, ReaderTheme theme})>(
-      selector: (s) => (selected: s.selectedAyah, scale: s.fontScale, theme: s.theme),
+    return BlocSelector<
+      CBMushafReader,
+      SMushafReader,
+      ({ParamAyahRef? selected, double scale, ReaderTheme theme})
+    >(
+      selector: (s) =>
+          (selected: s.selectedAyah, scale: s.fontScale, theme: s.theme),
       builder: (context, view) {
         // QPC V1 glyphs have hair-thin strokes by design — keep the text in a
         // saturated near-black so they remain readable over the cream paper.
@@ -72,26 +89,34 @@ class _WMushafPageState extends State<WMushafPage> {
           bloc: Modular.get<CBAudioPlayer>(),
           selector: (s) => s.currentAyah,
           builder: (context, playing) {
-            final lineWidgets = widget.layout.lines.map((line) {
-              switch (line.type) {
-                case LineType.surahHeader:
-                  return WSurahHeader(title: line.text);
-                case LineType.basmala:
-                  return WBasmalaLine(fontSize: 28.sp * view.scale);
-                case LineType.spacer:
-                  return SizedBox(height: 8.h);
-                case LineType.text:
-                  return _renderTextLine(
-                    line,
-                    cubit: cubit,
-                    selected: view.selected,
-                    playing: playing,
-                    fontFamily: pageFamily,
-                    scale: view.scale,
-                    color: fg,
-                  );
-              }
-            }).toList(growable: false);
+            final lineWidgets = widget.layout.lines
+                .map((line) {
+                  switch (line.type) {
+                    case LineType.surahHeader:
+                      final surah = _surahs[line.surahNumber];
+                      return WSurahHeader(
+                        title: line.text,
+                        surahNumber: surah?.number ?? line.surahNumber,
+                        ayahCount: surah?.totalAyah,
+                        dark: view.theme == ReaderTheme.dark,
+                      );
+                    case LineType.basmala:
+                      return WBasmalaLine(fontSize: 28.sp * view.scale);
+                    case LineType.spacer:
+                      return SizedBox(height: 8.h);
+                    case LineType.text:
+                      return _renderTextLine(
+                        line,
+                        cubit: cubit,
+                        selected: view.selected,
+                        playing: playing,
+                        fontFamily: pageFamily,
+                        scale: view.scale,
+                        color: fg,
+                      );
+                  }
+                })
+                .toList(growable: false);
 
             // Regular Mushaf pages have ~15 lines and should fill the page
             // top-to-bottom. Short pages (Fatihah, Baqarah opening, last few)
@@ -99,11 +124,15 @@ class _WMushafPageState extends State<WMushafPage> {
             // available space.
             final isFullPage = widget.layout.lines.length >= 12;
             final wrappedLines = lineWidgets
-                .map((w) => FittedBox(
-                      fit: BoxFit.scaleDown,
-                      alignment: Alignment.center,
-                      child: w,
-                    ))
+                .map(
+                  (w) => w is WSurahHeader
+                      ? w
+                      : FittedBox(
+                          fit: BoxFit.scaleDown,
+                          alignment: Alignment.center,
+                          child: w,
+                        ),
+                )
                 .toList(growable: false);
 
             return Container(
@@ -125,7 +154,10 @@ class _WMushafPageState extends State<WMushafPage> {
                   Center(
                     child: Text(
                       '${widget.layout.page}',
-                      style: TextStyle(fontSize: 11.sp, color: context.brand.muted),
+                      style: TextStyle(
+                        fontSize: 11.sp,
+                        color: context.brand.muted,
+                      ),
                     ),
                   ),
                 ],
@@ -175,23 +207,27 @@ class _WMushafPageState extends State<WMushafPage> {
       final group = groups[i];
       final isSelected = selected?.key == group.ref.key;
       final isPlaying = playing?.key == group.ref.key;
-      spans.add(TextSpan(
-        text: group.glyphs.join(' '),
-        recognizer: _recogniser(group.ref, cubit),
-        style: TextStyle(
-          fontFamily: fontFamily,
-          fontSize: 28.sp * scale,
-          color: isPlaying ? AppColorsLight.accent : color,
-          fontWeight: FontWeight.w500,
-          height: 1.0,
-          backgroundColor: isSelected
-              ? AppColors.surfaceLightGreen
-              : (isPlaying ? AppColors.accentGoldAmber.withValues(alpha: 0.15) : null),
-          decoration: isPlaying ? TextDecoration.underline : null,
-          decorationColor: AppColorsLight.accent,
-          decorationThickness: 2.5,
+      spans.add(
+        TextSpan(
+          text: group.glyphs.join(' '),
+          recognizer: _recogniser(group.ref, cubit),
+          style: TextStyle(
+            fontFamily: fontFamily,
+            fontSize: 28.sp * scale,
+            color: isPlaying ? AppColorsLight.accent : color,
+            fontWeight: FontWeight.w500,
+            height: 1.0,
+            backgroundColor: isSelected
+                ? AppColors.surfaceLightGreen
+                : (isPlaying
+                      ? AppColors.accentGoldAmber.withValues(alpha: 0.15)
+                      : null),
+            decoration: isPlaying ? TextDecoration.underline : null,
+            decorationColor: AppColorsLight.accent,
+            decorationThickness: 2.5,
+          ),
         ),
-      ));
+      );
       if (i != groups.length - 1) {
         spans.add(const TextSpan(text: ' '));
       }
