@@ -2,6 +2,7 @@ import 'package:dartz/dartz.dart';
 import 'package:quran/core/errors/failure.dart';
 import 'package:quran/modules/quran/data/models/m_page_layout.dart';
 import 'package:quran/modules/quran/data/models/m_surah.dart';
+import 'package:quran/modules/quran/domain/entities/e_daily_verse.dart';
 import 'package:quran/modules/quran/domain/entities/param_ayah_ref.dart';
 
 class QuranSearchHit {
@@ -23,6 +24,9 @@ abstract class RQuran {
 
   /// Returns all ayah refs of [juz] (1..30) in document order.
   Future<Either<Failure, List<ParamAyahRef>>> ayatOfJuz(int juz);
+
+  /// Deterministic "verse of the day" for the given calendar [day].
+  Future<Either<Failure, EDailyVerse>> getDailyVerse(DateTime day);
 
   /// Diacritics-tolerant Uthmani text search across all 6236 ayat.
   /// Returns hits in canonical order (surah, ayah), capped at [limit].

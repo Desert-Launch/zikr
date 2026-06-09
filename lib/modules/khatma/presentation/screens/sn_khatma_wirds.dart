@@ -3,6 +3,7 @@ import 'package:flutter_modular/flutter_modular.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:localize_and_translate/localize_and_translate.dart';
 import 'package:quran/core/services/routes/routes_names.dart';
+import 'package:quran/core/widgets/w_gradient_app_bar.dart';
 import 'package:quran/modules/khatma/data/datasources/local/ds_local_khatma.dart';
 import 'package:quran/modules/khatma/data/models/m_khatma_metadata.dart';
 import 'package:quran/modules/khatma/presentation/cubits/cb_khatma.dart';
@@ -46,7 +47,9 @@ class _SNKhatmaWirdsState extends State<SNKhatmaWirds> {
           }
           return CustomScrollView(
             slivers: [
-              SliverToBoxAdapter(child: _Header(onBack: Modular.to.pop)),
+              SliverToBoxAdapter(
+                child: WGradientAppBar(title: 'khatma_start_title'.tr()),
+              ),
               SliverPadding(
                 padding: EdgeInsets.fromLTRB(14.w, 12.h, 14.w, 100.h),
                 sliver: SliverList.list(
@@ -150,50 +153,6 @@ class _SNKhatmaWirdsState extends State<SNKhatmaWirds> {
     await cubit.startPlan(plan);
     if (!mounted) return;
     Modular.to.pushReplacementNamed(KhatmaRoutes.fullTracker());
-  }
-}
-
-class _Header extends StatelessWidget {
-  const _Header({required this.onBack});
-
-  final VoidCallback onBack;
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      padding: EdgeInsets.fromLTRB(14.w, 8.h, 14.w, 14.h),
-      decoration: BoxDecoration(
-        color: _SNKhatmaWirdsState._green,
-        borderRadius: BorderRadius.vertical(bottom: Radius.circular(28.r)),
-        boxShadow: const [
-          BoxShadow(
-            color: Color(0x24000000),
-            blurRadius: 7,
-            offset: Offset(0, 3),
-          ),
-        ],
-      ),
-      child: SafeArea(
-        bottom: false,
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.end,
-          children: [
-            Text(
-              'khatma_start_title'.tr(),
-              style: TextStyle(color: Colors.white, fontSize: 20.sp),
-            ),
-            SizedBox(width: 8.w),
-            IconButton(
-              onPressed: onBack,
-              icon: const Icon(
-                Icons.arrow_forward_rounded,
-                color: Colors.white,
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
   }
 }
 

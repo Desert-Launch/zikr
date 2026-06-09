@@ -1,3 +1,4 @@
+import 'package:geocoding/geocoding.dart';
 import 'package:geolocator/geolocator.dart';
 
 class LocationResult {
@@ -5,10 +6,15 @@ class LocationResult {
     required this.latitude,
     required this.longitude,
     this.label = '',
+    this.countryCode,
   });
   final double latitude;
   final double longitude;
   final String label;
+
+  /// ISO-2 country code from reverse geocoding (e.g. 'EG'). Null when the
+  /// lookup failed or returned nothing — callers fall back to a default method.
+  final String? countryCode;
 }
 
 /// Wraps `geolocator` with permission + service checks. Throws on hard
@@ -42,7 +48,36 @@ class DSLocation {
         timeLimit: timeout,
       ),
     );
-    return LocationResult(latitude: pos.latitude, longitude: pos.longitude);
+
+    final (label, countryCode) = await _reverseGeocode(
+      pos.latitude,
+      pos.longitude,
+    );
+    return LocationResult(
+      latitude: pos.latitude,
+      longitude: pos.longitude,
+      label: label,
+      countryCode: countryCode,
+    );
+  }
+
+  /// Best-effort reverse geocode → (city label, ISO-2 country code). Never
+  /// throws: on any platform/network error returns ('', null) so prayer-time
+  /// fetching still proceeds with the default calculation method.
+  Future<(String, String?)> _reverseGeocode(double lat, double lon) async {
+    try {
+      final places = await placemarkFromCoordinates(lat, lon);
+      if (places.isEmpty) return ('', null);
+      final p = places.first;
+      final city = p.locality?.isNotEmpty == true
+          ? p.locality
+          : (p.administrativeArea?.isNotEmpty == true
+              ? p.administrativeArea
+              : p.country);
+      return (city ?? '', p.isoCountryCode);
+    } catch (_) {
+      return ('', null);
+    }
   }
 }
 

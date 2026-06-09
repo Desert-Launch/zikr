@@ -4,7 +4,9 @@
 
 import 'package:hive_ce/hive.dart';
 import 'package:quran/core/data/models/m_app_settings.dart';
+import 'package:quran/modules/adhan/data/models/m_adhan_download.dart';
 import 'package:quran/modules/adhan/data/models/m_adhan_preference.dart';
+import 'package:quran/modules/adhan/data/models/m_adhan_settings.dart';
 import 'package:quran/modules/auth/data/models/m_auth_token.dart';
 import 'package:quran/modules/auth/data/models/m_user.dart';
 import 'package:quran/modules/azkar/data/models/m_azkar_favorite.dart';
@@ -25,7 +27,9 @@ import 'package:quran/modules/tasbih/data/models/m_tasbih_history.dart';
 
 extension HiveRegistrar on HiveInterface {
   void registerAdapters() {
+    registerAdapter(MAdhanDownloadAdapter());
     registerAdapter(MAdhanPreferenceAdapter());
+    registerAdapter(MAdhanSettingsAdapter());
     registerAdapter(MAppSettingsAdapter());
     registerAdapter(MAuthTokenAdapter());
     registerAdapter(MAzkarFavoriteAdapter());
@@ -49,7 +53,9 @@ extension HiveRegistrar on HiveInterface {
 
 extension IsolatedHiveRegistrar on IsolatedHiveInterface {
   void registerAdapters() {
+    registerAdapter(MAdhanDownloadAdapter());
     registerAdapter(MAdhanPreferenceAdapter());
+    registerAdapter(MAdhanSettingsAdapter());
     registerAdapter(MAppSettingsAdapter());
     registerAdapter(MAuthTokenAdapter());
     registerAdapter(MAzkarFavoriteAdapter());

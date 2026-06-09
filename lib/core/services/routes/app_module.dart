@@ -11,8 +11,20 @@ import 'package:quran/core/services/routes/routes_names.dart';
 import 'package:quran/core/theme/theme_manager.dart';
 import 'package:quran/modules/adhan/adhan_module.dart';
 import 'package:quran/modules/adhan/data/datasources/local/ds_local_adhan.dart';
+import 'package:quran/modules/adhan/data/datasources/remote/ds_remote_adhan.dart';
+import 'package:quran/modules/adhan/data/repos/r_impl_adhan.dart';
+import 'package:quran/modules/adhan/data/sources/local/box_adhan_download.dart';
 import 'package:quran/modules/adhan/data/sources/local/box_adhan_preference.dart';
+import 'package:quran/modules/adhan/data/sources/local/box_adhan_settings.dart';
+import 'package:quran/modules/adhan/domain/repos/r_adhan.dart';
+import 'package:quran/modules/adhan/domain/usecases/uc_delete_adhan_voice.dart';
+import 'package:quran/modules/adhan/domain/usecases/uc_download_adhan_voice.dart';
+import 'package:quran/modules/adhan/domain/usecases/uc_fetch_adhan_catalog.dart';
+import 'package:quran/modules/adhan/presentation/cubits/cb_adhan_download.dart';
 import 'package:quran/modules/adhan/presentation/cubits/cb_adhan_player.dart';
+import 'package:quran/modules/adhan/presentation/cubits/cb_adhan_settings.dart';
+import 'package:quran/modules/adhan/services/adhan_bootstrap.dart';
+import 'package:quran/modules/adhan/services/adhan_scheduler.dart';
 import 'package:quran/modules/auth/auth_module.dart';
 import 'package:quran/modules/auth/data/datasources/remote/ds_remote_auth.dart';
 import 'package:quran/modules/auth/data/repos/r_impl_auth.dart';
@@ -37,11 +49,19 @@ import 'package:quran/modules/khatma/presentation/cubits/cb_khatma.dart';
 import 'package:quran/modules/legal/legal_module.dart';
 import 'package:quran/modules/onboarding/onboarding_module.dart';
 import 'package:quran/modules/prayer/data/datasources/local/ds_location.dart';
+import 'package:quran/modules/prayer/data/datasources/remote/ds_remote_prayer.dart';
+import 'package:quran/modules/prayer/data/repos/r_impl_prayer.dart';
 import 'package:quran/modules/prayer/data/sources/local/box_prayer_cache.dart';
 import 'package:quran/modules/prayer/data/sources/local/box_prayer_settings.dart';
+import 'package:quran/modules/prayer/domain/repos/r_prayer.dart';
+import 'package:quran/modules/prayer/domain/usecases/uc_get_prayer_times.dart';
 import 'package:quran/modules/prayer/prayer_module.dart';
 import 'package:quran/modules/prayer/presentation/cubits/cb_prayer_times.dart';
 import 'package:quran/modules/qibla/qibla_module.dart';
+import 'package:quran/modules/quran/data/datasources/local/ds_local_quran.dart';
+import 'package:quran/modules/quran/data/repos/r_impl_quran.dart';
+import 'package:quran/modules/quran/domain/usecases/uc_get_daily_verse.dart';
+import 'package:quran/modules/quran/presentation/cubits/cb_daily_verse.dart';
 import 'package:quran/modules/quran/quran_module.dart';
 import 'package:quran/modules/reminders/data/sources/local/box_reminders.dart';
 import 'package:quran/modules/reminders/presentation/cubits/cb_reminders.dart';
@@ -72,6 +92,8 @@ class AppModule extends Module {
     i.addSingleton<BoxPrayerSettings>(BoxPrayerSettings.new);
     i.addSingleton<BoxPrayerCache>(BoxPrayerCache.new);
     i.addSingleton<BoxAdhanPreference>(BoxAdhanPreference.new);
+    i.addSingleton<BoxAdhanSettings>(BoxAdhanSettings.new);
+    i.addSingleton<BoxAdhanDownload>(BoxAdhanDownload.new);
     i.addSingleton<BoxAzkarFavorite>(BoxAzkarFavorite.new);
     i.addSingleton<BoxAzkarProgress>(BoxAzkarProgress.new);
     i.addSingleton<BoxTasbihCounter>(BoxTasbihCounter.new);
@@ -124,6 +146,46 @@ class AppModule extends Module {
     i.add<UCGetCurrentUser>(() => UCGetCurrentUser(i.get<RAuth>()));
     i.add<UCLogout>(() => UCLogout(i.get<RAuth>()));
 
+    // Prayer data + repo (Aladhan remote API). DSRemotePrayer owns its own
+    // Dio, so it does not depend on BaseDio.
+    i.addSingleton<DSRemotePrayer>(DSRemotePrayer.new);
+    i.addSingleton<RPrayer>(() => RImplPrayer(remote: i.get<DSRemotePrayer>()));
+    i.add<UCGetPrayerTimes>(() => UCGetPrayerTimes(i.get<RPrayer>()));
+
+    // Adhan catalog + download (own Dio, falls back to bundled adhans.json).
+    i.addSingleton<DSRemoteAdhan>(DSRemoteAdhan.new);
+    i.addSingleton<RAdhan>(
+      () => RImplAdhan(
+        remote: i.get<DSRemoteAdhan>(),
+        local: i.get<DSLocalAdhan>(),
+        downloads: i.get<BoxAdhanDownload>(),
+      ),
+    );
+    i.add<UCFetchAdhanCatalog>(() => UCFetchAdhanCatalog(i.get<RAdhan>()));
+    i.add<UCDownloadAdhanVoice>(() => UCDownloadAdhanVoice(i.get<RAdhan>()));
+    i.add<UCDeleteAdhanVoice>(() => UCDeleteAdhanVoice(i.get<RAdhan>()));
+
+    // Rolling adhan-notification scheduler + first-launch bootstrap.
+    i.addSingleton<AdhanScheduler>(
+      () => AdhanScheduler(
+        notifications: i.get<NotificationsService>(),
+        location: i.get<DSLocation>(),
+        getTimes: i.get<UCGetPrayerTimes>(),
+        prayerSettings: i.get<BoxPrayerSettings>(),
+        adhanSettings: i.get<BoxAdhanSettings>(),
+        adhanPrefs: i.get<BoxAdhanPreference>(),
+      ),
+    );
+    i.addSingleton<AdhanBootstrap>(
+      () => AdhanBootstrap(
+        repo: i.get<RAdhan>(),
+        settings: i.get<BoxAdhanSettings>(),
+        prefs: i.get<BoxAdhanPreference>(),
+        local: i.get<DSLocalAdhan>(),
+        localeTag: 'ar-EG',
+      ),
+    );
+
     // App-wide cubits / managers
     i.addLazySingleton<ThemeManager>(ThemeManager.new);
     i.addSingleton<CBTheme>(() => CBTheme(i.get<BoxThemePref>()));
@@ -139,14 +201,39 @@ class AppModule extends Module {
         location: i.get<DSLocation>(),
         settings: i.get<BoxPrayerSettings>(),
         cache: i.get<BoxPrayerCache>(),
-        notifications: i.get<NotificationsService>(),
+        scheduler: i.get<AdhanScheduler>(),
+        getTimes: i.get<UCGetPrayerTimes>(),
       ),
+    );
+    // Verse-of-the-day for the home dashboard. Built with a dedicated
+    // DSLocalQuran instance so it does not depend on QuranModule's scope
+    // (home is loaded before any Quran route is mounted).
+    i.addSingleton<CBDailyVerse>(
+      () => CBDailyVerse(UCGetDailyVerse(RImplQuran(DSLocalQuran()))),
     );
     i.addSingleton<CBAdhanPlayer>(
       () => CBAdhanPlayer(
         local: i.get<DSLocalAdhan>(),
         prefs: i.get<BoxAdhanPreference>(),
+        prayerSettings: i.get<BoxPrayerSettings>(),
         localeTag: 'ar-EG',
+      ),
+    );
+    i.addSingleton<CBAdhanDownload>(
+      () => CBAdhanDownload(
+        download: i.get<UCDownloadAdhanVoice>(),
+        delete: i.get<UCDeleteAdhanVoice>(),
+        downloads: i.get<BoxAdhanDownload>(),
+      ),
+    );
+    i.addSingleton<CBAdhanSettings>(
+      () => CBAdhanSettings(
+        adhanSettings: i.get<BoxAdhanSettings>(),
+        prayerSettings: i.get<BoxPrayerSettings>(),
+        adhanPrefs: i.get<BoxAdhanPreference>(),
+        local: i.get<DSLocalAdhan>(),
+        notifications: i.get<NotificationsService>(),
+        scheduler: i.get<AdhanScheduler>(),
       ),
     );
     i.addSingleton<CBTasbih>(

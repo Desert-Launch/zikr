@@ -55,4 +55,6 @@ class HiveTypeIds {
 
   //   110–119 Adhan
   static const int adhanPreference = 110;
+  static const int adhanSettings = 111;
+  static const int adhanDownload = 112;
 }

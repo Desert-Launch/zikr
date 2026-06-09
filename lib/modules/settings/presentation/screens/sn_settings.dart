@@ -8,7 +8,6 @@ import 'package:package_info_plus/package_info_plus.dart';
 import 'package:quran/core/cubits/cb_theme.dart';
 import 'package:quran/core/cubits/s_theme.dart';
 import 'package:quran/core/services/routes/routes_names.dart';
-import 'package:quran/core/theme/app_colors.dart';
 import 'package:quran/modules/auth/presentation/cubits/cb_auth.dart';
 import 'package:quran/modules/auth/presentation/cubits/s_auth.dart';
 
@@ -20,16 +19,18 @@ class SNSettings extends StatefulWidget {
 }
 
 class _SNSettingsState extends State<SNSettings> {
-  static const _green = Color(0xFF007A58);
-  static const _canvas = Color(0xFFF6F5F2);
+  static const _green = Color(0xFF2F7E63);
+  static const _greenDark = Color(0xFF286B55);
+  static const _gold = Color(0xFFD9B947);
+  static const _canvas = Color(0xFFFAF9F7);
+  static const _border = Color(0xFFE2ECE8);
   String _version = '';
 
   @override
   void initState() {
     super.initState();
     PackageInfo.fromPlatform().then((info) {
-      if (!mounted) return;
-      setState(() => _version = info.version);
+      if (mounted) setState(() => _version = info.version);
     });
   }
 
@@ -39,13 +40,13 @@ class _SNSettingsState extends State<SNSettings> {
       backgroundColor: _canvas,
       body: CustomScrollView(
         slivers: [
-          SliverToBoxAdapter(child: _SettingsHeader(green: _green)),
+          const SliverToBoxAdapter(child: _SettingsHeader()),
           SliverPadding(
-            padding: EdgeInsets.fromLTRB(16.w, 12.h, 16.w, 28.h),
+            padding: EdgeInsets.fromLTRB(19.w, 18.h, 19.w, 24.h),
             sliver: SliverList.list(
               children: [
-                const _ProfileCard(green: _green),
-                SizedBox(height: 16.h),
+                const _ProfileCard(),
+                SizedBox(height: 15.h),
                 _SectionLabel('settings_general'.tr()),
                 BlocBuilder<CBTheme, STheme>(
                   bloc: Modular.get<CBTheme>(),
@@ -55,9 +56,8 @@ class _SNSettingsState extends State<SNSettings> {
                         icon: Icons.dark_mode_outlined,
                         title: 'settings_night_mode'.tr(),
                         subtitle: 'settings_night_mode_hint'.tr(),
-                        trailing: Switch.adaptive(
-                          value: theme.mode == EThemeMode.dark,
-                          activeTrackColor: _green,
+                        leading: _NightModeSwitch(
+                          enabled: theme.mode == EThemeMode.dark,
                           onChanged: (enabled) =>
                               Modular.get<CBTheme>().setMode(
                                 enabled ? EThemeMode.dark : EThemeMode.light,
@@ -75,15 +75,22 @@ class _SNSettingsState extends State<SNSettings> {
                       ),
                       _SettingsRow(
                         icon: Icons.notifications_none_rounded,
-                        title: 'shortcut_reminders'.tr(),
+                        title: 'settings_notifications'.tr(),
                         subtitle: 'settings_notifications_hint'.tr(),
                         onTap: () =>
                             Modular.to.pushNamed(RoutesNames.remindersBase),
                       ),
+                      _SettingsRow(
+                        icon: Icons.access_time_rounded,
+                        title: 'prayer_settings_title'.tr(),
+                        subtitle: 'settings_adhan_hint'.tr(),
+                        onTap: () =>
+                            Modular.to.pushNamed(AdhanRoutes.overview()),
+                      ),
                     ],
                   ),
                 ),
-                SizedBox(height: 16.h),
+                SizedBox(height: 15.h),
                 _SectionLabel('settings_quran_section'.tr()),
                 _SettingsGroup(
                   children: [
@@ -94,16 +101,19 @@ class _SNSettingsState extends State<SNSettings> {
                       value: 'settings_mushaf_madani'.tr(),
                       onTap: () => Modular.to.pushNamed(RoutesNames.quranBase),
                     ),
-                    _SettingsRow(
-                      icon: Icons.palette_outlined,
-                      title: 'settings_theme_style'.tr(),
-                      subtitle: 'settings_theme_style_hint'.tr(),
-                      value: _themeLabel(Modular.get<CBTheme>().state.mode),
-                      onTap: _showThemePicker,
+                    BlocBuilder<CBTheme, STheme>(
+                      bloc: Modular.get<CBTheme>(),
+                      builder: (_, theme) => _SettingsRow(
+                        icon: Icons.palette_outlined,
+                        title: 'settings_theme_style'.tr(),
+                        subtitle: 'settings_theme_style_hint'.tr(),
+                        value: _themeLabel(theme.mode),
+                        onTap: _showThemePicker,
+                      ),
                     ),
                   ],
                 ),
-                SizedBox(height: 16.h),
+                SizedBox(height: 15.h),
                 _SectionLabel('settings_about_app'.tr()),
                 _SettingsGroup(
                   children: [
@@ -115,22 +125,16 @@ class _SNSettingsState extends State<SNSettings> {
                           Modular.to.pushNamed(LegalRoutes.fullAbout()),
                     ),
                     _SettingsRow(
-                      icon: Icons.privacy_tip_outlined,
-                      title: 'legal_privacy'.tr(),
-                      subtitle: 'settings_privacy_hint'.tr(),
-                      onTap: () =>
-                          Modular.to.pushNamed(LegalRoutes.fullPrivacy()),
-                    ),
-                    _SettingsRow(
                       icon: Icons.info_outline_rounded,
                       title: 'settings_version'.tr(),
                       subtitle: 'settings_version_hint'.tr(),
                       value: _version,
+                      showChevron: false,
                     ),
                   ],
                 ),
-                SizedBox(height: 20.h),
-                _AppFooter(green: _green),
+                SizedBox(height: 19.h),
+                const _AppFooter(),
               ],
             ),
           ),
@@ -149,6 +153,8 @@ class _SNSettingsState extends State<SNSettings> {
     final current = LocalizeAndTranslate.getLanguageCode();
     final selected = await showModalBottomSheet<String>(
       context: context,
+      backgroundColor: Colors.white,
+      showDragHandle: true,
       builder: (context) => SafeArea(
         child: Column(
           mainAxisSize: MainAxisSize.min,
@@ -175,6 +181,8 @@ class _SNSettingsState extends State<SNSettings> {
   Future<void> _showThemePicker() async {
     final selected = await showModalBottomSheet<EThemeMode>(
       context: context,
+      backgroundColor: Colors.white,
+      showDragHandle: true,
       builder: (context) => SafeArea(
         child: Column(
           mainAxisSize: MainAxisSize.min,
@@ -197,48 +205,73 @@ class _SNSettingsState extends State<SNSettings> {
 }
 
 class _SettingsHeader extends StatelessWidget {
-  const _SettingsHeader({required this.green});
-
-  final Color green;
+  const _SettingsHeader();
 
   @override
   Widget build(BuildContext context) {
     return Container(
       height: 126.h,
-      padding: EdgeInsets.fromLTRB(18.w, 8.h, 18.w, 24.h),
-      decoration: BoxDecoration(
-        color: green,
-        borderRadius: BorderRadius.vertical(bottom: Radius.circular(28.r)),
+      decoration: const BoxDecoration(
+        gradient: LinearGradient(
+          begin: Alignment.topCenter,
+          end: Alignment.bottomCenter,
+          colors: [_SNSettingsState._green, _SNSettingsState._greenDark],
+        ),
       ),
-      child: SafeArea(
-        bottom: false,
-        child: Row(
+      child: ClipRect(
+        child: Stack(
           children: [
-            IconButton(
-              onPressed: Modular.to.pop,
-              icon: const Icon(Icons.arrow_back_rounded, color: Colors.white),
+            PositionedDirectional(
+              top: -57.r,
+              start: -13.r,
+              child: const _HeaderCircle(size: 112),
             ),
-            const Spacer(),
-            Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              crossAxisAlignment: CrossAxisAlignment.end,
-              children: [
-                Text(
-                  'settings_title'.tr(),
-                  style: GoogleFonts.tajawal(
-                    color: Colors.white,
-                    fontSize: 20.sp,
-                    fontWeight: FontWeight.w700,
-                  ),
+            PositionedDirectional(
+              bottom: -51.r,
+              end: -24.r,
+              child: const _HeaderCircle(size: 94),
+            ),
+            SafeArea(
+              bottom: false,
+              child: Padding(
+                padding: EdgeInsetsDirectional.fromSTEB(23.w, 10.h, 23.w, 0),
+                child: Row(
+                  children: [
+                    IconButton(
+                      onPressed: Modular.to.pop,
+                      icon: const Icon(
+                        Icons.arrow_forward_rounded,
+                        color: Colors.white,
+                      ),
+                    ),
+                    const Spacer(),
+                    Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      crossAxisAlignment: CrossAxisAlignment.end,
+                      children: [
+                        Text(
+                          'settings_title'.tr(),
+                          style: GoogleFonts.tajawal(
+                            color: Colors.white,
+                            fontSize: 20.sp,
+                            fontWeight: FontWeight.w500,
+                            height: 1.1,
+                          ),
+                        ),
+                        SizedBox(height: 3.h),
+                        Text(
+                          'settings_subtitle'.tr(),
+                          style: GoogleFonts.tajawal(
+                            color: Colors.white.withValues(alpha: 0.62),
+                            fontSize: 11.sp,
+                            height: 1,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ],
                 ),
-                Text(
-                  'settings_subtitle'.tr(),
-                  style: TextStyle(
-                    color: Colors.white.withValues(alpha: 0.78),
-                    fontSize: 10.sp,
-                  ),
-                ),
-              ],
+              ),
             ),
           ],
         ),
@@ -247,10 +280,29 @@ class _SettingsHeader extends StatelessWidget {
   }
 }
 
-class _ProfileCard extends StatelessWidget {
-  const _ProfileCard({required this.green});
+class _HeaderCircle extends StatelessWidget {
+  const _HeaderCircle({required this.size});
 
-  final Color green;
+  final double size;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      width: size.r,
+      height: size.r,
+      decoration: BoxDecoration(
+        shape: BoxShape.circle,
+        border: Border.all(
+          color: Colors.white.withValues(alpha: 0.045),
+          width: 4.r,
+        ),
+      ),
+    );
+  }
+}
+
+class _ProfileCard extends StatelessWidget {
+  const _ProfileCard();
 
   @override
   Widget build(BuildContext context) {
@@ -258,111 +310,98 @@ class _ProfileCard extends StatelessWidget {
       bloc: Modular.get<CBAuth>(),
       builder: (_, state) {
         final user = state.user;
-        return InkWell(
-          borderRadius: BorderRadius.circular(14.r),
-          onTap: () {
-            if (state.isLoggedIn) {
-              _confirmLogout(context);
-            } else {
-              Modular.to.pushNamed(AuthRoutes.fullLogin());
-            }
-          },
-          child: Container(
-            padding: EdgeInsets.all(14.r),
-            decoration: BoxDecoration(
-              color: Colors.white,
-              borderRadius: BorderRadius.circular(14.r),
-              border: Border.all(color: const Color(0xFFE5E8E5)),
-              boxShadow: const [
-                BoxShadow(
-                  color: Color(0x18000000),
-                  blurRadius: 12,
-                  offset: Offset(0, 4),
-                ),
-              ],
-            ),
-            child: Row(
-              children: [
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.end,
-                    children: [
-                      Text(
-                        user?.name ?? 'settings_guest_user'.tr(),
-                        style: TextStyle(
-                          fontSize: 14.sp,
-                          fontWeight: FontWeight.w700,
+        return Container(
+          padding: EdgeInsets.symmetric(horizontal: 30.w, vertical: 18.h),
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(19.r),
+            border: Border.all(color: _SNSettingsState._border),
+            boxShadow: const [
+              BoxShadow(
+                color: Color(0x18000000),
+                blurRadius: 12,
+                offset: Offset(0, 7),
+              ),
+            ],
+          ),
+          child: Row(
+            children: [
+              _ProfileAvatar(avatar: user?.avatar),
+              SizedBox(width: 18.w),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      user?.name ?? 'settings_guest_user'.tr(),
+                      style: GoogleFonts.tajawal(
+                        color: const Color(0xFF2C2C2C),
+                        fontSize: 16.sp,
+                        fontWeight: FontWeight.w500,
+                        height: 1.15,
+                      ),
+                    ),
+                    SizedBox(height: 5.h),
+                    Text(
+                      user?.email ?? 'user@example.com',
+                      style: GoogleFonts.tajawal(
+                        fontSize: 11.sp,
+                        color: const Color(0xFF7C7C7C),
+                        height: 1,
+                      ),
+                    ),
+                    SizedBox(height: 7.h),
+                    InkWell(
+                      onTap: () => Modular.to.pushNamed(AuthRoutes.fullLogin()),
+                      child: Text(
+                        'settings_edit_profile'.tr(),
+                        style: GoogleFonts.tajawal(
+                          color: _SNSettingsState._green,
+                          fontSize: 11.sp,
+                          fontWeight: FontWeight.w500,
+                          height: 1,
                         ),
                       ),
-                      SizedBox(height: 2.h),
-                      Text(
-                        user?.email ?? 'settings_guest_email'.tr(),
-                        style: TextStyle(
-                          fontSize: 9.sp,
-                          color: Colors.grey[600],
-                        ),
-                      ),
-                      SizedBox(height: 3.h),
-                      Text(
-                        state.isLoggedIn
-                            ? 'settings_logout'.tr()
-                            : 'auth_login'.tr(),
-                        style: TextStyle(
-                          fontSize: 10.sp,
-                          color: green,
-                          fontWeight: FontWeight.w600,
-                        ),
-                      ),
-                    ],
-                  ),
+                    ),
+                  ],
                 ),
-                SizedBox(width: 12.w),
-                CircleAvatar(
-                  radius: 26.r,
-                  backgroundColor: green,
-                  backgroundImage: user?.avatar != null
-                      ? NetworkImage(user!.avatar!)
-                      : null,
-                  child: user?.avatar == null
-                      ? Icon(
-                          Icons.person_outline_rounded,
-                          color: Colors.white,
-                          size: 25.r,
-                        )
-                      : null,
-                ),
-              ],
-            ),
+              ),
+            ],
           ),
         );
       },
     );
   }
+}
 
-  Future<void> _confirmLogout(BuildContext context) async {
-    final confirmed = await showDialog<bool>(
-      context: context,
-      builder: (ctx) => AlertDialog(
-        title: Text('settings_logout_confirm_title'.tr()),
-        content: Text('settings_logout_confirm_body'.tr()),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(ctx, false),
-            child: Text('common_cancel'.tr()),
-          ),
-          FilledButton(
-            style: FilledButton.styleFrom(
-              backgroundColor: AppColorsLight.error,
-            ),
-            onPressed: () => Navigator.pop(ctx, true),
-            child: Text('settings_logout'.tr()),
+class _ProfileAvatar extends StatelessWidget {
+  const _ProfileAvatar({this.avatar});
+
+  final String? avatar;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      width: 58.r,
+      height: 58.r,
+      decoration: BoxDecoration(
+        color: _SNSettingsState._green,
+        borderRadius: BorderRadius.circular(22.r),
+        image: avatar != null
+            ? DecorationImage(image: NetworkImage(avatar!), fit: BoxFit.cover)
+            : null,
+        boxShadow: const [
+          BoxShadow(
+            color: Color(0x30000000),
+            blurRadius: 14,
+            offset: Offset(0, 8),
           ),
         ],
       ),
+      child: avatar == null
+          ? Icon(Icons.person_outline_rounded, color: Colors.white, size: 29.r)
+          : null,
     );
-    if (confirmed != true) return;
-    await Modular.get<CBAuth>().logout();
-    if (context.mounted) Modular.to.navigate(RoutesNames.homeBase);
   }
 }
 
@@ -374,10 +413,14 @@ class _SectionLabel extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Padding(
-      padding: EdgeInsetsDirectional.only(start: 6.w, bottom: 6.h),
+      padding: EdgeInsetsDirectional.only(start: 8.w, bottom: 7.h),
       child: Text(
         text,
-        style: TextStyle(fontSize: 9.sp, color: Colors.grey[600]),
+        style: GoogleFonts.tajawal(
+          fontSize: 10.sp,
+          color: const Color(0xFF777777),
+          height: 1,
+        ),
       ),
     );
   }
@@ -393,17 +436,32 @@ class _SettingsGroup extends StatelessWidget {
     return Container(
       decoration: BoxDecoration(
         color: Colors.white,
-        borderRadius: BorderRadius.circular(14.r),
-        border: Border.all(color: const Color(0xFFE1E6E2)),
-      ),
-      child: Column(
-        children: [
-          for (var i = 0; i < children.length; i++) ...[
-            children[i],
-            if (i != children.length - 1)
-              Divider(height: 1, indent: 14.w, endIndent: 14.w),
-          ],
+        borderRadius: BorderRadius.circular(19.r),
+        border: Border.all(color: _SNSettingsState._border),
+        boxShadow: const [
+          BoxShadow(
+            color: Color(0x10000000),
+            blurRadius: 3,
+            offset: Offset(0, 2),
+          ),
         ],
+      ),
+      child: ClipRRect(
+        borderRadius: BorderRadius.circular(19.r),
+        child: Column(
+          children: [
+            for (var i = 0; i < children.length; i++) ...[
+              children[i],
+              if (i != children.length - 1)
+                Divider(
+                  height: 1,
+                  indent: 14.w,
+                  endIndent: 14.w,
+                  color: const Color(0xFFEDF1EF),
+                ),
+            ],
+          ],
+        ),
       ),
     );
   }
@@ -415,104 +473,206 @@ class _SettingsRow extends StatelessWidget {
     required this.title,
     required this.subtitle,
     this.value,
-    this.trailing,
+    this.leading,
     this.onTap,
+    this.showChevron = true,
   });
 
   final IconData icon;
   final String title;
   final String subtitle;
   final String? value;
-  final Widget? trailing;
+  final Widget? leading;
   final VoidCallback? onTap;
+  final bool showChevron;
 
   @override
   Widget build(BuildContext context) {
     return InkWell(
       onTap: onTap,
-      child: Padding(
-        padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 10.h),
-        child: Row(
-          children: [
-            if (trailing != null)
-              SizedBox(
-                width: 44.w,
-                height: 28.h,
-                child: FittedBox(child: trailing),
-              )
-            else if (value != null)
-              Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Icon(Icons.chevron_left_rounded, size: 16.r),
-                  SizedBox(width: 3.w),
-                  Text(
-                    value!,
-                    style: TextStyle(fontSize: 9.sp, color: Colors.grey[700]),
-                  ),
-                ],
-              )
-            else
-              Icon(Icons.chevron_left_rounded, size: 16.r),
-            SizedBox(width: 8.w),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.end,
-                children: [
-                  Text(
-                    title,
-                    style: TextStyle(
-                      fontSize: 11.sp,
-                      fontWeight: FontWeight.w600,
+      child: ConstrainedBox(
+        constraints: BoxConstraints(minHeight: 72.h),
+        child: Padding(
+          padding: EdgeInsets.symmetric(horizontal: 27.w, vertical: 11.h),
+          child: Row(
+            children: [
+              _SettingsIcon(icon: icon),
+              SizedBox(width: 18.w),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Text(
+                      title,
+                      style: GoogleFonts.tajawal(
+                        color: const Color(0xFF303030),
+                        fontSize: 13.sp,
+                        fontWeight: FontWeight.w500,
+                        height: 1.1,
+                      ),
                     ),
-                  ),
-                  SizedBox(height: 2.h),
-                  Text(
-                    subtitle,
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                    style: TextStyle(fontSize: 8.sp, color: Colors.grey[600]),
-                  ),
-                ],
+                    SizedBox(height: 4.h),
+                    Text(
+                      subtitle,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: GoogleFonts.tajawal(
+                        fontSize: 9.sp,
+                        color: const Color(0xFF858585),
+                        height: 1,
+                      ),
+                    ),
+                  ],
+                ),
               ),
-            ),
-            SizedBox(width: 9.w),
-            CircleAvatar(
-              radius: 16.r,
-              backgroundColor: const Color(0xFFE8F5F0),
-              child: Icon(icon, color: _SNSettingsState._green, size: 16.r),
-            ),
-          ],
+              SizedBox(width: 8.w),
+              if (leading != null)
+                leading!
+              else
+                _RowValue(value: value, showChevron: showChevron),
+            ],
+          ),
         ),
       ),
     );
   }
 }
 
-class _AppFooter extends StatelessWidget {
-  const _AppFooter({required this.green});
+class _SettingsIcon extends StatelessWidget {
+  const _SettingsIcon({required this.icon});
 
-  final Color green;
+  final IconData icon;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      width: 38.r,
+      height: 38.r,
+      decoration: const BoxDecoration(
+        shape: BoxShape.circle,
+        color: Color(0xFFF1F4ED),
+      ),
+      child: Icon(icon, color: _SNSettingsState._green, size: 19.r),
+    );
+  }
+}
+
+class _RowValue extends StatelessWidget {
+  const _RowValue({required this.value, required this.showChevron});
+
+  final String? value;
+  final bool showChevron;
+
+  @override
+  Widget build(BuildContext context) {
+    if (value != null && !showChevron) {
+      return Container(
+        padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 4.h),
+        decoration: BoxDecoration(
+          color: const Color(0xFFE9E8E5),
+          borderRadius: BorderRadius.circular(20.r),
+        ),
+        child: Text(
+          value!.isEmpty ? '1.0.0' : value!,
+          style: GoogleFonts.tajawal(
+            fontSize: 9.sp,
+            color: const Color(0xFF777777),
+          ),
+        ),
+      );
+    }
+
+    return Row(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        if (showChevron)
+          Icon(
+            Icons.chevron_left_rounded,
+            color: const Color(0xFF6F6F6F),
+            size: 21.r,
+          ),
+        if (value != null) ...[
+          SizedBox(width: 7.w),
+          Text(
+            value!,
+            style: GoogleFonts.tajawal(
+              fontSize: 10.sp,
+              color: const Color(0xFF717171),
+            ),
+          ),
+        ],
+      ],
+    );
+  }
+}
+
+class _NightModeSwitch extends StatelessWidget {
+  const _NightModeSwitch({required this.enabled, required this.onChanged});
+
+  final bool enabled;
+  final ValueChanged<bool> onChanged;
+
+  @override
+  Widget build(BuildContext context) {
+    return Transform.scale(
+      scale: 0.75,
+      child: Switch(
+        value: enabled,
+        activeTrackColor: _SNSettingsState._green,
+        inactiveTrackColor: const Color(0xFFF7F7F7),
+        inactiveThumbColor: Colors.white,
+        trackOutlineColor: WidgetStateProperty.all(const Color(0xFFEDEDED)),
+        thumbColor: WidgetStateProperty.all(Colors.white),
+        onChanged: onChanged,
+      ),
+    );
+  }
+}
+
+class _AppFooter extends StatelessWidget {
+  const _AppFooter();
 
   @override
   Widget build(BuildContext context) {
     return Column(
       children: [
-        CircleAvatar(
-          radius: 24.r,
-          backgroundColor: green,
-          child: const Icon(Icons.star_rounded, color: Color(0xFFD6A72C)),
+        Container(
+          width: 51.r,
+          height: 51.r,
+          decoration: BoxDecoration(
+            color: _SNSettingsState._green,
+            borderRadius: BorderRadius.circular(22.r),
+            boxShadow: const [
+              BoxShadow(
+                color: Color(0x20000000),
+                blurRadius: 8,
+                offset: Offset(0, 5),
+              ),
+            ],
+          ),
+          child: Icon(
+            Icons.star_rounded,
+            color: _SNSettingsState._gold,
+            size: 27.r,
+          ),
         ),
-        SizedBox(height: 7.h),
+        SizedBox(height: 11.h),
         Text(
           'home_page_title'.tr(),
-          style: TextStyle(fontSize: 11.sp, fontWeight: FontWeight.w700),
+          style: GoogleFonts.tajawal(
+            fontSize: 12.sp,
+            color: const Color(0xFF777777),
+          ),
         ),
         SizedBox(height: 3.h),
         Text(
           'settings_footer'.tr(),
           textAlign: TextAlign.center,
-          style: TextStyle(fontSize: 8.sp, color: Colors.grey[600]),
+          style: GoogleFonts.tajawal(
+            fontSize: 9.sp,
+            color: const Color(0xFF8B8B8B),
+          ),
         ),
       ],
     );

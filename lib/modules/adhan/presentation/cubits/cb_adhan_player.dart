@@ -7,6 +7,7 @@ import 'package:quran/modules/adhan/data/datasources/local/ds_local_adhan.dart';
 import 'package:quran/modules/adhan/data/models/m_adhan.dart';
 import 'package:quran/modules/adhan/data/sources/local/box_adhan_preference.dart';
 import 'package:quran/modules/adhan/presentation/cubits/s_adhan_player.dart';
+import 'package:quran/modules/prayer/data/sources/local/box_prayer_settings.dart';
 
 /// App-wide adhan playback singleton. Owns a single [AudioPlayer] for both
 /// preview-in-settings and prayer-time playback. Handles locale-aware default
@@ -19,18 +20,21 @@ class CBAdhanPlayer extends Cubit<SAdhanPlayer> {
   CBAdhanPlayer({
     required DSLocalAdhan local,
     required BoxAdhanPreference prefs,
+    required BoxPrayerSettings prayerSettings,
     required String localeTag,
-  })  : _local = local,
-        _prefs = prefs,
-        _localeTag = localeTag,
-        _player = AudioPlayer(),
-        super(const SAdhanPlayer()) {
+  }) : _local = local,
+       _prefs = prefs,
+       _prayerSettings = prayerSettings,
+       _localeTag = localeTag,
+       _player = AudioPlayer(),
+       super(const SAdhanPlayer()) {
     _hydrate();
     _wireStateStream();
   }
 
   final DSLocalAdhan _local;
   final BoxAdhanPreference _prefs;
+  final BoxPrayerSettings _prayerSettings;
   final String _localeTag;
   final AudioPlayer _player;
 
@@ -42,20 +46,29 @@ class CBAdhanPlayer extends Cubit<SAdhanPlayer> {
       final pref = _prefs.current();
       final regular = pref.defaultAdhanId != null
           ? (await _local.byId(pref.defaultAdhanId!)) ??
-              await _local.defaultForLocale(_localeTag)
+                await _local.defaultForLocale(_localeTag)
           : await _local.defaultForLocale(_localeTag);
       final fajr = pref.fajrAdhanId != null
           ? (await _local.byId(pref.fajrAdhanId!)) ?? await _local.fajrDefault()
           : await _local.fajrDefault();
-      emit(state.copyWith(
-        allAdhans: all,
-        defaultAdhan: regular,
-        fajrAdhan: fajr,
-        useFajrSpecific: pref.useFajrSpecific,
-      ));
+      emit(
+        state.copyWith(
+          allAdhans: all,
+          defaultAdhan: regular,
+          fajrAdhan: fajr,
+          useFajrSpecific: pref.useFajrSpecific,
+        ),
+      );
     } catch (e, st) {
-      AppLogger.error('Adhan hydrate', error: e, stackTrace: st, tag: 'CBAdhanPlayer');
-      emit(state.copyWith(status: AdhanPlayerStatus.error, error: e.toString()));
+      AppLogger.error(
+        'Adhan hydrate',
+        error: e,
+        stackTrace: st,
+        tag: 'CBAdhanPlayer',
+      );
+      emit(
+        state.copyWith(status: AdhanPlayerStatus.error, error: e.toString()),
+      );
     }
   }
 
@@ -75,10 +88,12 @@ class CBAdhanPlayer extends Cubit<SAdhanPlayer> {
         case ProcessingState.completed:
           next = AdhanPlayerStatus.completed;
       }
-      emit(state.copyWith(
-        status: next,
-        clearPreview: next == AdhanPlayerStatus.completed,
-      ));
+      emit(
+        state.copyWith(
+          status: next,
+          clearPreview: next == AdhanPlayerStatus.completed,
+        ),
+      );
     });
   }
 
@@ -86,36 +101,50 @@ class CBAdhanPlayer extends Cubit<SAdhanPlayer> {
   /// settings and the actual prayer-time playback handler.
   Future<void> play(MAdhan adhan) async {
     try {
-      emit(state.copyWith(
-        status: AdhanPlayerStatus.loading,
-        currentPreview: adhan,
-        clearError: true,
-      ));
+      emit(
+        state.copyWith(
+          status: AdhanPlayerStatus.loading,
+          currentPreview: adhan,
+          clearError: true,
+        ),
+      );
       await _player.setAsset(adhan.asset);
       await _player.play();
     } catch (e, st) {
-      AppLogger.warning('Adhan play failed for ${adhan.id}: $e',
-          tag: 'CBAdhanPlayer');
-      AppLogger.error('Adhan play',
-          error: e, stackTrace: st, tag: 'CBAdhanPlayer');
-      emit(state.copyWith(
-        status: AdhanPlayerStatus.error,
-        error: e.toString(),
-        clearPreview: true,
-      ));
+      AppLogger.warning(
+        'Adhan play failed for ${adhan.id}: $e',
+        tag: 'CBAdhanPlayer',
+      );
+      AppLogger.error(
+        'Adhan play',
+        error: e,
+        stackTrace: st,
+        tag: 'CBAdhanPlayer',
+      );
+      emit(
+        state.copyWith(
+          status: AdhanPlayerStatus.error,
+          error: e.toString(),
+          clearPreview: true,
+        ),
+      );
     }
   }
 
   /// Plays the right adhan for a given prayer key (`fajr`/`dhuhr`/etc.).
   /// Honors the user's Fajr override + the `useFajrSpecific` flag.
   Future<void> playForPrayer(String prayerKey) async {
-    final adhan = adhanForPrayer(prayerKey);
+    final overrideId = _prayerSettings.current().adhanIdPerPrayer?[prayerKey];
+    final override = overrideId == null ? null : await _local.byId(overrideId);
+    final adhan = override ?? adhanForPrayer(prayerKey);
     if (adhan == null) return;
     await play(adhan);
   }
 
   MAdhan? adhanForPrayer(String prayerKey) {
-    if (prayerKey == 'fajr' && state.useFajrSpecific && state.fajrAdhan != null) {
+    if (prayerKey == 'fajr' &&
+        state.useFajrSpecific &&
+        state.fajrAdhan != null) {
       return state.fajrAdhan;
     }
     return state.defaultAdhan;
@@ -132,12 +161,17 @@ class CBAdhanPlayer extends Cubit<SAdhanPlayer> {
     if (adhan != null) emit(state.copyWith(defaultAdhan: adhan));
   }
 
-  Future<void> selectFajr(String? adhanId, {required bool useFajrSpecific}) async {
+  Future<void> selectFajr(
+    String? adhanId, {
+    required bool useFajrSpecific,
+  }) async {
     await _prefs.setFajr(adhanId, useFajrSpecific: useFajrSpecific);
     if (adhanId != null) {
       final adhan = await _local.byId(adhanId);
       if (adhan != null) {
-        emit(state.copyWith(fajrAdhan: adhan, useFajrSpecific: useFajrSpecific));
+        emit(
+          state.copyWith(fajrAdhan: adhan, useFajrSpecific: useFajrSpecific),
+        );
         return;
       }
     }

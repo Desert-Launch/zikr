@@ -3,6 +3,7 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:localize_and_translate/localize_and_translate.dart';
 import 'package:quran/core/theme/app_colors.dart';
 import 'package:quran/core/theme/brand_colors.dart';
+import 'package:quran/core/utils/helper/time_format.dart';
 import 'package:quran/modules/prayer/domain/entities/e_prayer.dart';
 
 class WPrayerRow extends StatelessWidget {
@@ -74,7 +75,7 @@ class WPrayerRow extends StatelessWidget {
               ],
             ),
           ),
-          Text(_format(slot.time),
+          Text(TimeFormat.hm12(slot.time),
               style: TextStyle(
                 fontSize: 15.sp,
                 fontWeight: FontWeight.w700,
@@ -94,12 +95,5 @@ class WPrayerRow extends StatelessWidget {
         EPrayer.maghrib => Icons.brightness_4_rounded,
         EPrayer.isha => Icons.brightness_2_rounded,
       };
-
-  static String _format(DateTime dt) {
-    String two(int n) => n.toString().padLeft(2, '0');
-    final h = dt.hour > 12 ? dt.hour - 12 : (dt.hour == 0 ? 12 : dt.hour);
-    final suffix = dt.hour >= 12 ? 'م' : 'ص';
-    return '${two(h)}:${two(dt.minute)} $suffix';
-  }
 }
 

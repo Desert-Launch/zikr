@@ -4,6 +4,7 @@ import 'package:flutter_modular/flutter_modular.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:localize_and_translate/localize_and_translate.dart';
 import 'package:quran/core/services/routes/routes_names.dart';
+import 'package:quran/core/widgets/w_gradient_app_bar.dart';
 import 'package:quran/modules/khatma/data/datasources/local/ds_local_khatma.dart';
 import 'package:quran/modules/khatma/data/models/m_khatma_metadata.dart';
 import 'package:quran/modules/khatma/presentation/cubits/cb_khatma.dart';
@@ -12,7 +13,6 @@ import 'package:quran/modules/khatma/presentation/cubits/s_khatma.dart';
 class SNKhatmaPlans extends StatelessWidget {
   const SNKhatmaPlans({super.key});
 
-  static const _green = Color(0xFF007A58);
   static const _canvas = Color(0xFFF8F7F4);
 
   @override
@@ -28,14 +28,6 @@ class SNKhatmaPlans extends StatelessWidget {
               body: Center(child: CircularProgressIndicator()),
             );
           }
-          if (state.hasActivePlan) {
-            WidgetsBinding.instance.addPostFrameCallback((_) {
-              if (Modular.to.path == KhatmaRoutes.fullPlans()) {
-                Modular.to.pushReplacementNamed(KhatmaRoutes.fullTracker());
-              }
-            });
-            return const Scaffold(body: SizedBox.shrink());
-          }
           return Scaffold(
             backgroundColor: _canvas,
             body: FutureBuilder<List<MKhatmaMetadata>>(
@@ -50,10 +42,7 @@ class SNKhatmaPlans extends StatelessWidget {
                 return CustomScrollView(
                   slivers: [
                     SliverToBoxAdapter(
-                      child: _Header(
-                        title: 'khatma_new_title'.tr(),
-                        onBack: Modular.to.pop,
-                      ),
+                      child: WGradientAppBar(title: 'khatma_new_title'.tr()),
                     ),
                     SliverPadding(
                       padding: EdgeInsets.fromLTRB(16.w, 12.h, 16.w, 28.h),
@@ -109,51 +98,6 @@ class SNKhatmaPlans extends StatelessWidget {
             ),
           );
         },
-      ),
-    );
-  }
-}
-
-class _Header extends StatelessWidget {
-  const _Header({required this.title, required this.onBack});
-
-  final String title;
-  final VoidCallback onBack;
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      padding: EdgeInsets.fromLTRB(16.w, 8.h, 16.w, 15.h),
-      decoration: BoxDecoration(
-        color: SNKhatmaPlans._green,
-        borderRadius: BorderRadius.vertical(bottom: Radius.circular(28.r)),
-        boxShadow: const [
-          BoxShadow(
-            color: Color(0x25000000),
-            blurRadius: 8,
-            offset: Offset(0, 4),
-          ),
-        ],
-      ),
-      child: SafeArea(
-        bottom: false,
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.end,
-          children: [
-            Text(
-              title,
-              style: TextStyle(color: Colors.white, fontSize: 20.sp),
-            ),
-            SizedBox(width: 8.w),
-            IconButton(
-              onPressed: onBack,
-              icon: const Icon(
-                Icons.arrow_forward_rounded,
-                color: Colors.white,
-              ),
-            ),
-          ],
-        ),
       ),
     );
   }

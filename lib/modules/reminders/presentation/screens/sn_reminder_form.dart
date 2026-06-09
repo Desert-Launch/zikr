@@ -25,7 +25,6 @@ class _SNReminderFormState extends State<SNReminderForm> {
   TimeOfDay _time = const TimeOfDay(hour: 8, minute: 0);
   int _iconId = ReminderStyles.defaultIcon;
   int _colorId = ReminderStyles.defaultColor;
-  bool _daily = true;
   String _existingBody = '';
   bool _isSubmitting = false;
   String? _error;
@@ -43,7 +42,6 @@ class _SNReminderFormState extends State<SNReminderForm> {
         _time = TimeOfDay(hour: existing.hour, minute: existing.minute);
         _iconId = existing.iconId;
         _colorId = existing.colorId;
-        _daily = existing.isDaily;
       }
     }
     _titleCtrl.addListener(() => setState(() {}));
@@ -57,12 +55,8 @@ class _SNReminderFormState extends State<SNReminderForm> {
 
   /// Sunday..Saturday mask. Daily → all true; otherwise just today's weekday so
   /// the reminder stays valid and non-empty (v1 still fires daily).
-  List<bool> _buildDays() {
-    if (_daily) return List<bool>.filled(7, true);
-    final mask = List<bool>.filled(7, false);
-    mask[DateTime.now().weekday % 7] = true;
-    return mask;
-  }
+  // Every reminder repeats daily, automatically.
+  List<bool> _buildDays() => List<bool>.filled(7, true);
 
   String _formatTime() {
     String two(int n) => n.toString().padLeft(2, '0');
@@ -197,7 +191,7 @@ class _SNReminderFormState extends State<SNReminderForm> {
                 SizedBox(height: 10.h),
                 _colorRow(),
                 SizedBox(height: 18.h),
-                _dailyToggle(context),
+                _dailyHint(context),
                 SizedBox(height: 18.h),
                 _preview(context),
                 if (_error != null) ...[
@@ -370,9 +364,10 @@ class _SNReminderFormState extends State<SNReminderForm> {
     );
   }
 
-  Widget _dailyToggle(BuildContext context) {
+  /// Static hint: every reminder repeats daily at the chosen time.
+  Widget _dailyHint(BuildContext context) {
     return Container(
-      padding: EdgeInsets.symmetric(horizontal: 14.w, vertical: 6.h),
+      padding: EdgeInsets.symmetric(horizontal: 14.w, vertical: 12.h),
       decoration: BoxDecoration(
         color: context.brand.surface,
         borderRadius: BorderRadius.circular(12.r),
@@ -380,6 +375,8 @@ class _SNReminderFormState extends State<SNReminderForm> {
       ),
       child: Row(
         children: [
+          Icon(Icons.repeat_rounded, size: 18.r, color: AppColorsLight.primary),
+          SizedBox(width: 10.w),
           Expanded(
             child: Text(
               'reminders_daily_repeat'.tr(),
@@ -389,11 +386,6 @@ class _SNReminderFormState extends State<SNReminderForm> {
                 color: context.brand.onSurface,
               ),
             ),
-          ),
-          Switch.adaptive(
-            value: _daily,
-            activeThumbColor: AppColorsLight.primary,
-            onChanged: (v) => setState(() => _daily = v),
           ),
         ],
       ),

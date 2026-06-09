@@ -27,10 +27,10 @@ class DSLocalAdhan {
       (a) => a.defaultForLocales.contains(localeTag),
       orElse: () {
         if (localeTag.startsWith('ar')) {
-          return list.firstWhere((a) => a.id == 'adhan_makkah',
+          return list.firstWhere((a) => a.id == 'adhan_mecca',
               orElse: () => list.first);
         }
-        return list.firstWhere((a) => a.id == 'adhan_alafasy',
+        return list.firstWhere((a) => a.id == 'adhan_aaqib',
             orElse: () => list.first);
       },
     );

@@ -24,6 +24,15 @@ class SReminders extends Equatable {
     );
   }
 
+  // Content signature so in-place mutations of the Hive-backed [MReminder]
+  // objects (e.g. toggling `enabled`) still produce a non-equal state and
+  // trigger a rebuild. Comparing `items` directly uses identity equality on the
+  // same mutated instances, so the change would be missed and `emit` skipped.
+  String get _signature => items
+      .map((r) =>
+          '${r.id}:${r.enabled}:${r.hour}:${r.minute}:${r.title}:${r.iconId}:${r.colorId}')
+      .join('|');
+
   @override
-  List<Object?> get props => [items, error];
+  List<Object?> get props => [_signature, error];
 }

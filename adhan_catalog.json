@@ -1,0 +1,57 @@
+{
+  "version": 1,
+  "voices": [
+    {
+      "id": "adhan_mecca",
+      "name_ar": "أذان المسجد الحرام — مكة",
+      "name_en": "Adhan — Great Mosque of Mecca",
+      "muezzin_ar": "تسجيل ميداني",
+      "full_url": "https://cdn.yourapp.example/adhans/adhan_mecca.mp3",
+      "size_bytes": 3154382,
+      "bundled": true,
+      "is_default": true,
+      "license": "CC BY 3.0",
+      "author": "Seyfula Islam",
+      "source_url": "https://commons.wikimedia.org/wiki/File:Adhan,_Great_Mosque_of_Mecca_-_Jan_21,_2013.webm"
+    },
+    {
+      "id": "adhan_hassan2",
+      "name_ar": "أذان مسجد الحسن الثاني — الدار البيضاء",
+      "name_en": "Adhan — Hassan II Mosque, Casablanca",
+      "muezzin_ar": "تسجيل ميداني",
+      "full_url": "https://cdn.yourapp.example/adhans/adhan_hassan2.mp3",
+      "size_bytes": 2812073,
+      "bundled": true,
+      "is_default": false,
+      "license": "CC BY-SA 4.0",
+      "author": "Fraguando",
+      "source_url": "https://commons.wikimedia.org/wiki/File:Llamada_a_oraci%C3%B3n_Mezquita_Hassan_II.wav"
+    },
+    {
+      "id": "adhan_aaqib",
+      "name_ar": "أذان — تلاوة استوديو",
+      "name_en": "Adhan — studio recitation",
+      "muezzin_ar": "عاقب عزيز",
+      "full_url": "https://cdn.yourapp.example/adhans/adhan_aaqib.mp3",
+      "size_bytes": 1385160,
+      "bundled": true,
+      "is_default": false,
+      "license": "CC BY-SA 4.0",
+      "author": "Aaqib Azeez (uploader: Atcovi)",
+      "source_url": "https://commons.wikimedia.org/wiki/File:The_Adhan_-_Muslim_Call_to_Prayer_-_Aaqib_Azeez.mp3"
+    },
+    {
+      "id": "adhan_wiki",
+      "name_ar": "أذان قصير",
+      "name_en": "Adhan — short",
+      "muezzin_ar": "تسجيل",
+      "full_url": "https://cdn.yourapp.example/adhans/adhan_wiki.mp3",
+      "size_bytes": 425944,
+      "bundled": true,
+      "is_default": false,
+      "license": "CC BY-SA 3.0",
+      "author": "Jarih",
+      "source_url": "https://commons.wikimedia.org/wiki/File:Adhan_wiki.oga"
+    }
+  ]
+}

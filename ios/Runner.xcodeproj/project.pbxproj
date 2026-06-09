@@ -7,14 +7,18 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		02CDB4B27A0687933D012A77 /* adhan_mecca.caf in Resources */ = {isa = PBXBuildFile; fileRef = 3AF088B447AA6D9834235872 /* adhan_mecca.caf */; };
 		1498D2341E8E89220040F4C2 /* GeneratedPluginRegistrant.m in Sources */ = {isa = PBXBuildFile; fileRef = 1498D2331E8E89220040F4C2 /* GeneratedPluginRegistrant.m */; };
 		331C808B294A63AB00263BE5 /* RunnerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 331C807B294A618700263BE5 /* RunnerTests.swift */; };
 		3B3967161E833CAA004F5970 /* AppFrameworkInfo.plist in Resources */ = {isa = PBXBuildFile; fileRef = 3B3967151E833CAA004F5970 /* AppFrameworkInfo.plist */; };
 		74858FAF1ED2DC5600515810 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 74858FAE1ED2DC5600515810 /* AppDelegate.swift */; };
 		76C0D917C67B51D17CA221A5 /* Pods_RunnerTests.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = AAD66BA6D5E8D474D93BB772 /* Pods_RunnerTests.framework */; };
+		804CC85E4AB86C447615FDE5 /* adhan_wiki.caf in Resources */ = {isa = PBXBuildFile; fileRef = 9F319016576718D867BA3188 /* adhan_wiki.caf */; };
 		97C146FC1CF9000F007C117D /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 97C146FA1CF9000F007C117D /* Main.storyboard */; };
 		97C146FE1CF9000F007C117D /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 97C146FD1CF9000F007C117D /* Assets.xcassets */; };
 		97C147011CF9000F007C117D /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 97C146FF1CF9000F007C117D /* LaunchScreen.storyboard */; };
+		CCA6AE2DA5A7A08963494384 /* adhan_hassan2.caf in Resources */ = {isa = PBXBuildFile; fileRef = 4766578DC2C4E8BA9299113E /* adhan_hassan2.caf */; };
+		CFBFE388C9D91EB5E1C7A06B /* adhan_aaqib.caf in Resources */ = {isa = PBXBuildFile; fileRef = F811D79903845A3523EA1251 /* adhan_aaqib.caf */; };
 		E641F86B306CE989D5F20E18 /* Pods_Runner.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = D936E7A085D90CDB44FBB372 /* Pods_Runner.framework */; };
 /* End PBXBuildFile section */
 
@@ -48,7 +52,9 @@
 		1498D2331E8E89220040F4C2 /* GeneratedPluginRegistrant.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = GeneratedPluginRegistrant.m; sourceTree = "<group>"; };
 		331C807B294A618700263BE5 /* RunnerTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RunnerTests.swift; sourceTree = "<group>"; };
 		331C8081294A63A400263BE5 /* RunnerTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = RunnerTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+		3AF088B447AA6D9834235872 /* adhan_mecca.caf */ = {isa = PBXFileReference; includeInIndex = 1; path = adhan_mecca.caf; sourceTree = "<group>"; };
 		3B3967151E833CAA004F5970 /* AppFrameworkInfo.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; name = AppFrameworkInfo.plist; path = Flutter/AppFrameworkInfo.plist; sourceTree = "<group>"; };
+		4766578DC2C4E8BA9299113E /* adhan_hassan2.caf */ = {isa = PBXFileReference; includeInIndex = 1; path = adhan_hassan2.caf; sourceTree = "<group>"; };
 		59F4695E0BBD2EDC8C47518E /* Pods-RunnerTests.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-RunnerTests.release.xcconfig"; path = "Target Support Files/Pods-RunnerTests/Pods-RunnerTests.release.xcconfig"; sourceTree = "<group>"; };
 		5C6A2D3DD2924B936FD9AAA9 /* Pods-RunnerTests.profile.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-RunnerTests.profile.xcconfig"; path = "Target Support Files/Pods-RunnerTests/Pods-RunnerTests.profile.xcconfig"; sourceTree = "<group>"; };
 		74858FAD1ED2DC5600515810 /* Runner-Bridging-Header.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "Runner-Bridging-Header.h"; sourceTree = "<group>"; };
@@ -62,9 +68,11 @@
 		97C146FD1CF9000F007C117D /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		97C147001CF9000F007C117D /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/LaunchScreen.storyboard; sourceTree = "<group>"; };
 		97C147021CF9000F007C117D /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		9F319016576718D867BA3188 /* adhan_wiki.caf */ = {isa = PBXFileReference; includeInIndex = 1; path = adhan_wiki.caf; sourceTree = "<group>"; };
 		A0BC5C148B369E8545206AC5 /* Pods-Runner.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-Runner.release.xcconfig"; path = "Target Support Files/Pods-Runner/Pods-Runner.release.xcconfig"; sourceTree = "<group>"; };
 		AAD66BA6D5E8D474D93BB772 /* Pods_RunnerTests.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_RunnerTests.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		D936E7A085D90CDB44FBB372 /* Pods_Runner.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_Runner.framework; sourceTree = BUILT_PRODUCTS_DIR; };
+		F811D79903845A3523EA1251 /* adhan_aaqib.caf */ = {isa = PBXFileReference; includeInIndex = 1; path = adhan_aaqib.caf; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -107,6 +115,18 @@
 				331C807B294A618700263BE5 /* RunnerTests.swift */,
 			);
 			path = RunnerTests;
+			sourceTree = "<group>";
+		};
+		60511E544A7C0CFB3C389F05 /* Sounds */ = {
+			isa = PBXGroup;
+			children = (
+				F811D79903845A3523EA1251 /* adhan_aaqib.caf */,
+				4766578DC2C4E8BA9299113E /* adhan_hassan2.caf */,
+				3AF088B447AA6D9834235872 /* adhan_mecca.caf */,
+				9F319016576718D867BA3188 /* adhan_wiki.caf */,
+			);
+			name = Sounds;
+			path = Sounds;
 			sourceTree = "<group>";
 		};
 		88693A77F71F6A8A4BEF003E /* Frameworks */ = {
@@ -161,6 +181,7 @@
 				1498D2331E8E89220040F4C2 /* GeneratedPluginRegistrant.m */,
 				74858FAE1ED2DC5600515810 /* AppDelegate.swift */,
 				74858FAD1ED2DC5600515810 /* Runner-Bridging-Header.h */,
+				60511E544A7C0CFB3C389F05 /* Sounds */,
 			);
 			path = Runner;
 			sourceTree = "<group>";
@@ -265,6 +286,10 @@
 				3B3967161E833CAA004F5970 /* AppFrameworkInfo.plist in Resources */,
 				97C146FE1CF9000F007C117D /* Assets.xcassets in Resources */,
 				97C146FC1CF9000F007C117D /* Main.storyboard in Resources */,
+				CFBFE388C9D91EB5E1C7A06B /* adhan_aaqib.caf in Resources */,
+				CCA6AE2DA5A7A08963494384 /* adhan_hassan2.caf in Resources */,
+				02CDB4B27A0687933D012A77 /* adhan_mecca.caf in Resources */,
+				804CC85E4AB86C447615FDE5 /* adhan_wiki.caf in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

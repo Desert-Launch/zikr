@@ -53,9 +53,29 @@ class MReminder extends HiveObject {
   @HiveField(9)
   int colorId;
 
-  /// Stable notification id. We reserve 7000..7999 for reminders so they
-  /// don't clash with prayer (1000+) or hourly (5000+).
+  /// Stable notification id for the daily-repeat case. We reserve 7000..7999
+  /// for reminders so they don't clash with prayer (1000+) or hourly (5000+).
   int get notifId => 7000 + (id.hashCode.abs() % 1000);
 
+  /// Distinct id for a single weekday's repeat (DateTime.monday..sunday → 1..7),
+  /// so a "Mon + Wed" reminder schedules two independent alarms. Lives in the
+  /// 70000..79997 band, away from the daily-repeat ids.
+  int weeklyNotifId(int weekday) => notifId * 10 + weekday;
+
   bool get isDaily => daysOfWeek.every((d) => d);
+
+  /// The DateTime weekdays (1=Mon..7=Sun) this reminder fires on, derived from
+  /// the Sunday..Saturday [daysOfWeek] mask (index 0 = Sunday → DateTime.sunday).
+  List<int> get scheduledWeekdays {
+    final out = <int>[];
+    for (var i = 0; i < daysOfWeek.length && i < 7; i++) {
+      if (daysOfWeek[i]) out.add(i == 0 ? DateTime.sunday : i);
+    }
+    return out;
+  }
+
+  /// Every notification id this reminder could own (daily + each weekday).
+  /// Used when cancelling so no stale alarm survives a day-mask change.
+  List<int> get allNotifIds =>
+      [notifId, for (var w = DateTime.monday; w <= DateTime.sunday; w++) weeklyNotifId(w)];
 }

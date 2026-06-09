@@ -1,6 +1,7 @@
 import 'package:flutter_modular/flutter_modular.dart';
 import 'package:quran/core/services/routes/routes_names.dart';
 import 'package:quran/modules/khatma/presentation/screens/sn_khatma_completed.dart';
+import 'package:quran/modules/khatma/presentation/screens/sn_khatma_empty.dart';
 import 'package:quran/modules/khatma/presentation/screens/sn_khatma_history.dart';
 import 'package:quran/modules/khatma/presentation/screens/sn_khatma_plans.dart';
 import 'package:quran/modules/khatma/presentation/screens/sn_khatma_tracker.dart';
@@ -12,6 +13,7 @@ class KhatmaModule extends Module {
 
   @override
   void routes(RouteManager r) {
+    r.child(KhatmaRoutes.home, child: (_) => const SNKhatmaEmpty());
     r.child(KhatmaRoutes.plans, child: (_) => const SNKhatmaPlans());
     r.child(
       KhatmaRoutes.wirds,

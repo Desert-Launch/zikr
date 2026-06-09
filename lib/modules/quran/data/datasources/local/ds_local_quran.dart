@@ -87,6 +87,77 @@ class DSLocalQuran {
     return words.join(' ');
   }
 
+  /// Full Uthmani text for one ayah, correctly aggregated even when the verse
+  /// spans more than one page. Unlike [ayahText] it keeps walking forward from
+  /// the start page until a page contributes no more words for the ayah.
+  Future<String> fullAyahText(ParamAyahRef ref) async {
+    final start = await pageOfAyah(ref.surah, ref.ayah);
+    final words = <String>[];
+    for (var page = start; page <= 604; page++) {
+      final layout = await loadPage(page);
+      final before = words.length;
+      for (final line in layout.lines) {
+        for (final word in line.words) {
+          if (word.surah == ref.surah && word.ayah == ref.ayah) {
+            words.add(word.word);
+          }
+        }
+      }
+      // Once we've started collecting, a page that adds nothing means the ayah
+      // has ended — stop before reading the rest of the mushaf.
+      if (words.isNotEmpty && words.length == before) break;
+    }
+    return words.join(' ');
+  }
+
+  /// Picks a single ayah deterministically for the calendar [day] and returns
+  /// it together with its surah. The same day always yields the same verse, and
+  /// consecutive days are spread across the whole mushaf via a hash so the
+  /// "verse of the day" doesn't simply walk forward one ayah at a time.
+  Future<({ParamAyahRef ref, MSurah surah, String text})> dailyVerse(
+    DateTime day,
+  ) async {
+    final surahs = await loadSurahs();
+    final total = surahs.fold<int>(0, (sum, s) => sum + s.totalAyah);
+    final dayNumber = DateTime.utc(day.year, day.month, day.day)
+        .difference(DateTime.utc(1970))
+        .inDays;
+    // Knuth multiplicative hash → spread sequential days across the range.
+    final pick = ((dayNumber * 2654435761) & 0x7fffffffffff) % total;
+
+    var running = pick;
+    var chosen = surahs.first;
+    var ayahNumber = 1;
+    for (final s in surahs) {
+      if (running < s.totalAyah) {
+        chosen = s;
+        ayahNumber = running + 1;
+        break;
+      }
+      running -= s.totalAyah;
+    }
+
+    final ref = ParamAyahRef(surah: chosen.number, ayah: ayahNumber);
+    final raw = await fullAyahText(ref);
+    return (ref: ref, surah: chosen, text: _stripAyahNumbers(raw));
+  }
+
+  /// Removes the trailing Arabic-Indic ayah-number glyph (and any stray digits)
+  /// from Uthmani verse text — the number is shown separately in the caption.
+  static String _stripAyahNumbers(String input) {
+    final buf = StringBuffer();
+    for (final code in input.runes) {
+      // Arabic-Indic (0x0660..0x0669) and extended (0x06F0..0x06F9) digits.
+      if ((code >= 0x0660 && code <= 0x0669) ||
+          (code >= 0x06F0 && code <= 0x06F9)) {
+        continue;
+      }
+      buf.writeCharCode(code);
+    }
+    // Collapse the double spaces left where a number was removed.
+    return buf.toString().replaceAll(RegExp(r'\s+'), ' ').trim();
+  }
+
   /// Plain Uthmani text per ayah, keyed by `"surah:ayah"`. Built once by
   /// streaming through all 604 page JSONs and aggregating words; cached
   /// for the rest of the session.

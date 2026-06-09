@@ -16,6 +16,13 @@ class MAdhan extends Equatable {
     this.defaultForLocales = const [],
     this.noteAr,
     this.noteEn,
+    this.fullUrl,
+    this.sizeBytes = 0,
+    this.bundled = true,
+    this.isDefault = false,
+    this.license,
+    this.author,
+    this.sourceUrl,
   });
 
   factory MAdhan.fromJson(Map<String, dynamic> json) => MAdhan(
@@ -32,6 +39,13 @@ class MAdhan extends Equatable {
             (json['default_for_locales'] as List<dynamic>?)?.cast<String>() ?? const [],
         noteAr: json['note_ar'] as String?,
         noteEn: json['note_en'] as String?,
+        fullUrl: json['full_url'] as String?,
+        sizeBytes: json['size_bytes'] as int? ?? 0,
+        bundled: json['bundled'] as bool? ?? (json['asset'] != null),
+        isDefault: json['is_default'] as bool? ?? false,
+        license: json['license'] as String?,
+        author: json['author'] as String?,
+        sourceUrl: json['source_url'] as String?,
       );
 
   final String id;
@@ -46,6 +60,39 @@ class MAdhan extends Equatable {
   final List<String> defaultForLocales;
   final String? noteAr;
   final String? noteEn;
+
+  /// Remote full-adhan URL (catalog-only voices). Null for purely bundled ones.
+  final String? fullUrl;
+
+  /// Download size in bytes (0 when unknown / bundled).
+  final int sizeBytes;
+
+  /// True when a bundled `asset` ships with the app.
+  final bool bundled;
+
+  /// True for the product default voice.
+  final bool isDefault;
+
+  /// Licensing provenance (required for CC-licensed audio). Surface
+  /// [license] + [author] in the UI to satisfy attribution.
+  final String? license;
+  final String? author;
+  final String? sourceUrl;
+
+  /// One-line attribution, e.g. "CC BY-SA 4.0 · Fraguando". Empty when the
+  /// voice carries no license metadata.
+  String get attribution {
+    final parts = [
+      if (license?.isNotEmpty ?? false) license,
+      if (author?.isNotEmpty ?? false) author,
+    ];
+    return parts.join(' · ');
+  }
+
+  /// Whether this voice can be fetched from the network — i.e. it isn't
+  /// already bundled and has a remote URL. Bundled voices never show a
+  /// download affordance.
+  bool get isDownloadable => !bundled && (fullUrl?.isNotEmpty ?? false);
 
   @override
   List<Object?> get props => [id];

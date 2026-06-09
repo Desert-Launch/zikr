@@ -23,6 +23,29 @@ class AppNotificationChannels {
     playSound: true,
   );
 
+  /// Adhan call-to-prayer alerts. Max importance so it surfaces a heads-up
+  /// even while idle. Default device sound until a bundled clip channel is
+  /// created for the selected voice (see
+  /// [NotificationsService.createVoiceChannel]).
+  static const adhan = AndroidNotificationChannel(
+    'adhan_channel',
+    'Adhan',
+    description: 'Call-to-prayer (adhan) alerts at each prayer time',
+    importance: Importance.max,
+    playSound: true,
+  );
+
+  /// Silent companion channel for the optional "X minutes before" reminder —
+  /// no sound, just a heads-up.
+  static const adhanPre = AndroidNotificationChannel(
+    'adhan_pre_channel',
+    'Prayer Reminder (before)',
+    description: 'Optional reminder a few minutes before each prayer',
+    importance: Importance.defaultImportance,
+    playSound: false,
+    enableVibration: false,
+  );
+
   /// Hourly tasbih is silent + low importance so it doesn't interrupt.
   static const hourly = AndroidNotificationChannel(
     'hourly_channel',
@@ -54,6 +77,8 @@ class AppNotificationChannels {
   static const List<AndroidNotificationChannel> all = [
     prayer,
     azkar,
+    adhan,
+    adhanPre,
     hourly,
     reminders,
     quranReminders,

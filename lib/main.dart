@@ -16,7 +16,10 @@ import 'package:quran/core/theme/app_themes.dart';
 import 'package:quran/modules/auth/data/models/m_auth_token.dart';
 import 'package:quran/modules/auth/data/models/m_user.dart';
 import 'package:quran/modules/auth/presentation/cubits/cb_auth.dart';
+import 'package:quran/modules/adhan/data/models/m_adhan_download.dart';
 import 'package:quran/modules/adhan/data/models/m_adhan_preference.dart';
+import 'package:quran/modules/adhan/data/models/m_adhan_settings.dart';
+import 'package:quran/modules/adhan/services/adhan_bootstrap.dart';
 import 'package:quran/modules/azkar/data/models/m_azkar_favorite.dart';
 import 'package:quran/modules/azkar/data/models/m_azkar_progress.dart';
 import 'package:quran/modules/khatma/data/models/m_khatma_completion.dart';
@@ -30,6 +33,7 @@ import 'package:quran/modules/quran/data/models/m_last_read.dart';
 import 'package:quran/modules/quran/data/models/m_reciter_pref.dart';
 import 'package:quran/modules/quran/data/sources/local/quran_hive_registrar.dart';
 import 'package:quran/modules/reminders/data/models/m_reminder.dart';
+import 'package:quran/modules/reminders/presentation/cubits/cb_reminders.dart';
 import 'package:quran/modules/settings/data/models/m_theme_pref.dart';
 import 'package:quran/modules/tasbih/data/models/m_tasbih_counter.dart';
 import 'package:quran/modules/tasbih/data/models/m_tasbih_history.dart';
@@ -66,6 +70,8 @@ Future<void> main() async {
   await Hive.openBox<MPrayerSettings>('prayer_settings');
   await Hive.openBox<MPrayerCache>('prayer_cache');
   await Hive.openBox<MAdhanPreference>('adhan_preference');
+  await Hive.openBox<MAdhanSettings>('adhan_settings');
+  await Hive.openBox<MAdhanDownload>('adhan_downloads');
   await Hive.openBox<MAzkarFavorite>('azkar_favorites');
   await Hive.openBox<MAzkarProgress>('azkar_progress');
   await Hive.openBox<MTasbihCounter>('tasbih_counter');
@@ -101,8 +107,13 @@ class _RootState extends State<_Root> {
     // Load theme + auth state in parallel before the first frame paints.
     Modular.get<CBTheme>().load();
     Modular.get<CBAuth>().bootstrap();
-    // Wire notification channels + tap router (silent if not granted yet).
-    Modular.get<NotificationsService>().init();
+    // Wire notification channels + tap router (silent if not granted yet),
+    // then re-register reminder alarms so schedules survive reboots / tz changes,
+    // run the one-time adhan bootstrap, and rebuild the rolling adhan window.
+    Modular.get<NotificationsService>().init().then((_) async {
+      await Modular.get<CBReminders>().rescheduleAll();
+      await Modular.get<AdhanBootstrap>().run();
+    });
   }
 
   @override

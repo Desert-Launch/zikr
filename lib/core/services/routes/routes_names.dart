@@ -25,6 +25,20 @@ class RoutesNames {
   static const String legalBase = '/legal/';
 }
 
+class AdhanRoutes {
+  AdhanRoutes._();
+
+  /// Sub-route within the adhan module ('/adhan/').
+  static const String notifications = '/notifications';
+  static const String picker = '/picker';
+
+  static String overview() => RoutesNames.adhanBase;
+  static String notificationsScreen() =>
+      '${RoutesNames.adhanBase}notifications';
+  static String voicePicker(String prayerKey) =>
+      '${RoutesNames.adhanBase}picker?prayer=$prayerKey';
+}
+
 class QuranRoutes {
   QuranRoutes._();
 
@@ -96,13 +110,15 @@ class QiblaRoutes {
 class KhatmaRoutes {
   KhatmaRoutes._();
 
-  static const String plans = '/';
+  static const String home = '/';
+  static const String plans = '/plans';
   static const String wirds = '/wirds';
   static const String tracker = '/tracker';
   static const String completed = '/completed';
   static const String history = '/history';
 
-  static String fullPlans() => RoutesNames.khatmaBase;
+  static String fullHome() => RoutesNames.khatmaBase;
+  static String fullPlans() => '${RoutesNames.khatmaBase}plans';
   static String fullWirds(int planId) =>
       '${RoutesNames.khatmaBase}wirds?plan=$planId';
   static String fullTracker() => '${RoutesNames.khatmaBase}tracker';

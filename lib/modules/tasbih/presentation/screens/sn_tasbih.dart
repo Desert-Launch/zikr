@@ -5,6 +5,7 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:localize_and_translate/localize_and_translate.dart';
 import 'package:quran/core/services/routes/routes_names.dart';
+import 'package:quran/core/widgets/w_gradient_app_bar.dart';
 import 'package:quran/modules/tasbih/presentation/cubits/cb_tasbih.dart';
 import 'package:quran/modules/tasbih/presentation/cubits/s_tasbih.dart';
 
@@ -33,12 +34,19 @@ class SNTasbih extends StatelessWidget {
           builder: (_, state) => CustomScrollView(
             slivers: [
               SliverToBoxAdapter(
-                child: _TasbihHeader(
-                  green: _green,
-                  onHistory: () =>
-                      Modular.to.pushNamed(TasbihRoutes.fullHistory()),
-                  onSettings: () =>
-                      Modular.to.pushNamed(TasbihRoutes.fullHourly()),
+                child: WGradientAppBar(
+                  title: 'tasbih_digital_title'.tr(),
+                  subtitle: 'tasbih_digital_subtitle'.tr(),
+                  actions: [
+                    IconButton(
+                      onPressed: () =>
+                          Modular.to.pushNamed(TasbihRoutes.fullHourly()),
+                      icon: const Icon(
+                        Icons.volume_up_outlined,
+                        color: Colors.white,
+                      ),
+                    ),
+                  ],
                 ),
               ),
               SliverPadding(
@@ -66,73 +74,6 @@ class SNTasbih extends StatelessWidget {
               ),
             ],
           ),
-        ),
-      ),
-    );
-  }
-}
-
-class _TasbihHeader extends StatelessWidget {
-  const _TasbihHeader({
-    required this.green,
-    required this.onHistory,
-    required this.onSettings,
-  });
-
-  final Color green;
-  final VoidCallback onHistory;
-  final VoidCallback onSettings;
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      padding: EdgeInsets.fromLTRB(16.w, 8.h, 16.w, 13.h),
-      decoration: BoxDecoration(
-        color: green,
-        borderRadius: BorderRadius.vertical(bottom: Radius.circular(28.r)),
-      ),
-      child: SafeArea(
-        bottom: false,
-        child: Row(
-          children: [
-            IconButton(
-              onPressed: onHistory,
-              icon: const Icon(Icons.history_rounded, color: Colors.white),
-            ),
-            IconButton(
-              onPressed: onSettings,
-              icon: const Icon(Icons.volume_up_outlined, color: Colors.white),
-            ),
-            const Spacer(),
-            Column(
-              crossAxisAlignment: CrossAxisAlignment.end,
-              children: [
-                Text(
-                  'tasbih_digital_title'.tr(),
-                  style: GoogleFonts.tajawal(
-                    color: Colors.white,
-                    fontSize: 17.sp,
-                    fontWeight: FontWeight.w700,
-                  ),
-                ),
-                Text(
-                  'tasbih_digital_subtitle'.tr(),
-                  style: TextStyle(
-                    color: Colors.white.withValues(alpha: 0.72),
-                    fontSize: 8.sp,
-                  ),
-                ),
-              ],
-            ),
-            SizedBox(width: 6.w),
-            IconButton(
-              onPressed: Modular.to.pop,
-              icon: const Icon(
-                Icons.arrow_forward_rounded,
-                color: Colors.white,
-              ),
-            ),
-          ],
         ),
       ),
     );
@@ -294,33 +235,37 @@ class _CounterCard extends StatelessWidget {
             ),
             SizedBox(height: 28.h),
             Divider(color: green.withValues(alpha: 0.16)),
+            SizedBox(height: 6.h),
             Row(
               children: [
-                TextButton.icon(
+                OutlinedButton.icon(
                   onPressed: onReset,
                   icon: const Icon(Icons.restart_alt_rounded, size: 14),
                   label: Text('tasbih_reset_counter'.tr()),
-                  style: TextButton.styleFrom(
+                  style: OutlinedButton.styleFrom(
                     foregroundColor: Colors.grey[700],
-                    textStyle: TextStyle(fontSize: 8.sp),
+                    side: const BorderSide(color: Color(0xFFE3E2DD)),
+                    shape: const StadiumBorder(),
+                    padding: EdgeInsets.symmetric(
+                      horizontal: 14.w,
+                      vertical: 6.h,
+                    ),
+                    textStyle: TextStyle(fontSize: 9.sp),
                   ),
                 ),
                 const Spacer(),
                 Column(
                   crossAxisAlignment: CrossAxisAlignment.end,
                   children: [
-                    CircleAvatar(
-                      radius: 16.r,
-                      backgroundColor: const Color(0xFFEEF0E9),
-                      child: Text(
-                        '$totalToday',
-                        style: TextStyle(
-                          fontSize: 10.sp,
-                          color: Colors.grey[700],
-                        ),
+                    Text(
+                      '$totalToday',
+                      style: TextStyle(
+                        fontSize: 16.sp,
+                        fontWeight: FontWeight.w700,
+                        color: Colors.black87,
                       ),
                     ),
-                    SizedBox(height: 3.h),
+                    SizedBox(height: 2.h),
                     Text(
                       'tasbih_today_total'.tr(),
                       style: TextStyle(fontSize: 8.sp, color: Colors.grey[600]),

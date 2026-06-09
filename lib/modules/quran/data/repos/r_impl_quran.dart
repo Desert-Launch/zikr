@@ -4,6 +4,7 @@ import 'package:quran/core/utils/helper/error_helper.dart';
 import 'package:quran/modules/quran/data/datasources/local/ds_local_quran.dart';
 import 'package:quran/modules/quran/data/models/m_page_layout.dart';
 import 'package:quran/modules/quran/data/models/m_surah.dart';
+import 'package:quran/modules/quran/domain/entities/e_daily_verse.dart';
 import 'package:quran/modules/quran/domain/entities/param_ayah_ref.dart';
 import 'package:quran/modules/quran/domain/repos/r_quran.dart';
 
@@ -99,6 +100,23 @@ class RImplQuran implements RQuran {
     } catch (e, st) {
       ErrorHelper.printDebugError(name: 'RImplQuran.search', error: e, stackTrace: st);
       return Left(Failure.unexpectedFailure(message: e.toString()));
+    }
+  }
+
+  @override
+  Future<Either<Failure, EDailyVerse>> getDailyVerse(DateTime day) async {
+    try {
+      final v = await _local.dailyVerse(day);
+      return Right(EDailyVerse(
+        surahNumber: v.surah.number,
+        surahArabicName: v.surah.arabic,
+        surahName: v.surah.name,
+        ayah: v.ref.ayah,
+        text: v.text,
+      ));
+    } catch (e, st) {
+      ErrorHelper.printDebugError(name: 'RImplQuran.getDailyVerse', error: e, stackTrace: st);
+      return Left(Failure.cacheFailure(message: e.toString()));
     }
   }
 

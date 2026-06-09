@@ -73,10 +73,13 @@ dependencies:
   flutter_local_notifications: ^18.0.1
   permission_handler: ^11.3.1
   timezone: ^0.9.4
+  flutter_timezone: ^5.1.0
 
   # Location + prayer times
+  # Prayer times come from the Aladhan remote API (see lib/modules/prayer);
+  # geocoding resolves the country to pick the calculation method.
   geolocator: ^13.0.1
-  adhan: ^2.0.0-nullsafety.2
+  geocoding: ^3.0.0
 
   # Qibla compass + tasbih haptics
   flutter_compass: ^0.8.1
@@ -103,7 +106,9 @@ flutter:
     - assets/data/mushaf_pages/
     - assets/data/azkar/
     - assets/data/khatma/
+    - assets/audio/adhan/
     - assets/fonts/qpc/
+    - assets/images/
     - assets/lang/
     - assets/mock/
     - assets/legal/

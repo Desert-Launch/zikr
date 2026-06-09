@@ -7,6 +7,8 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:localize_and_translate/localize_and_translate.dart';
 import 'package:quran/core/services/routes/routes_names.dart';
+import 'package:quran/core/utils/helper/time_format.dart';
+import 'package:quran/modules/adhan/services/adhan_scheduler.dart';
 import 'package:quran/modules/prayer/data/models/m_prayer_settings.dart';
 import 'package:quran/modules/prayer/data/sources/local/box_prayer_settings.dart';
 import 'package:quran/modules/prayer/domain/entities/e_prayer.dart';
@@ -59,11 +61,19 @@ class _SNPrayerTimesState extends State<SNPrayerTimes> {
               physics: const AlwaysScrollableScrollPhysics(),
               slivers: [
                 SliverToBoxAdapter(
-                  child: _PrayerHeader(state: state, green: _green, onRefresh: _cubit.refresh),
+                  child: _PrayerHeader(
+                    state: state,
+                    green: _green,
+                    onRefresh: _cubit.refresh,
+                  ),
                 ),
-                if (state.slots.isEmpty && state.status == PrayerLoadStatus.loading)
-                  const SliverFillRemaining(child: Center(child: CircularProgressIndicator()))
-                else if (state.slots.isEmpty && state.status == PrayerLoadStatus.permissionDenied)
+                if (state.slots.isEmpty &&
+                    state.status == PrayerLoadStatus.loading)
+                  const SliverFillRemaining(
+                    child: Center(child: CircularProgressIndicator()),
+                  )
+                else if (state.slots.isEmpty &&
+                    state.status == PrayerLoadStatus.permissionDenied)
                   SliverFillRemaining(
                     child: _MessageView(
                       icon: Icons.location_off_rounded,
@@ -72,7 +82,8 @@ class _SNPrayerTimesState extends State<SNPrayerTimes> {
                       onRetry: _cubit.refresh,
                     ),
                   )
-                else if (state.slots.isEmpty && state.status == PrayerLoadStatus.error)
+                else if (state.slots.isEmpty &&
+                    state.status == PrayerLoadStatus.error)
                   SliverFillRemaining(
                     child: _MessageView(
                       icon: Icons.error_outline_rounded,
@@ -93,7 +104,9 @@ class _SNPrayerTimesState extends State<SNPrayerTimes> {
                           slot: slot,
                           isNext: state.nextPrayer?.prayer == slot.prayer,
                           isCurrent: state.currentSalah?.prayer == slot.prayer,
-                          notificationEnabled: _notificationEnabled(slot.prayer),
+                          notificationEnabled: _notificationEnabled(
+                            slot.prayer,
+                          ),
                           green: _green,
                           gold: _gold,
                           onNotificationChanged: slot.prayer.isSalah
@@ -129,6 +142,8 @@ class _SNPrayerTimesState extends State<SNPrayerTimes> {
     notifications[index] = value;
     _settings.notifyForPrayer = notifications;
     await _settingsBox.save(_settings);
+    // Rebuild the rolling adhan window so the toggle takes effect immediately.
+    unawaited(Modular.get<AdhanScheduler>().reschedule());
     if (mounted) setState(() {});
   }
 
@@ -143,7 +158,11 @@ class _SNPrayerTimesState extends State<SNPrayerTimes> {
 }
 
 class _PrayerHeader extends StatelessWidget {
-  const _PrayerHeader({required this.state, required this.green, required this.onRefresh});
+  const _PrayerHeader({
+    required this.state,
+    required this.green,
+    required this.onRefresh,
+  });
 
   final SPrayerTimes state;
   final Color green;
@@ -178,8 +197,21 @@ class _PrayerHeader extends StatelessWidget {
                 Row(
                   children: [
                     IconButton(
-                      onPressed: () => Modular.to.pushNamed(SettingsRoutes.fullMain()),
-                      icon: const Icon(Icons.settings_outlined, color: Colors.white),
+                      onPressed: () =>
+                          Modular.to.pushNamed(SettingsRoutes.fullMain()),
+                      icon: const Icon(
+                        Icons.settings_outlined,
+                        color: Colors.white,
+                      ),
+                    ),
+                    IconButton(
+                      tooltip: 'adhan_settings_title'.tr(),
+                      onPressed: () =>
+                          Modular.to.pushNamed(AdhanRoutes.overview()),
+                      icon: const Icon(
+                        Icons.notifications_active_outlined,
+                        color: Colors.white,
+                      ),
                     ),
                     const Spacer(),
                     Column(
@@ -187,18 +219,28 @@ class _PrayerHeader extends StatelessWidget {
                       children: [
                         Text(
                           'prayer_title'.tr(),
-                          style: GoogleFonts.tajawal(color: Colors.white, fontSize: 19.sp, fontWeight: FontWeight.w700),
+                          style: GoogleFonts.tajawal(
+                            color: Colors.white,
+                            fontSize: 19.sp,
+                            fontWeight: FontWeight.w700,
+                          ),
                         ),
                         Text(
                           'prayer_header_subtitle'.tr(),
-                          style: TextStyle(color: Colors.white.withValues(alpha: 0.72), fontSize: 9.sp),
+                          style: TextStyle(
+                            color: Colors.white.withValues(alpha: 0.72),
+                            fontSize: 9.sp,
+                          ),
                         ),
                       ],
                     ),
                     SizedBox(width: 7.w),
                     IconButton(
                       onPressed: Modular.to.pop,
-                      icon: const Icon(Icons.arrow_forward_rounded, color: Colors.white),
+                      icon: const Icon(
+                        Icons.arrow_forward_rounded,
+                        color: Colors.white,
+                      ),
                     ),
                   ],
                 ),
@@ -208,7 +250,10 @@ class _PrayerHeader extends StatelessWidget {
                   onTap: onRefresh,
                   child: Container(
                     width: double.infinity,
-                    padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 8.h),
+                    padding: EdgeInsets.symmetric(
+                      horizontal: 12.w,
+                      vertical: 8.h,
+                    ),
                     decoration: BoxDecoration(
                       color: Colors.white.withValues(alpha: 0.08),
                       borderRadius: BorderRadius.circular(20.r),
@@ -217,11 +262,20 @@ class _PrayerHeader extends StatelessWidget {
                       mainAxisAlignment: MainAxisAlignment.end,
                       children: [
                         Text(
-                          state.cityName.isNotEmpty ? state.cityName : 'prayer_location_unknown'.tr(),
-                          style: TextStyle(color: Colors.white.withValues(alpha: 0.85), fontSize: 9.sp),
+                          state.cityName.isNotEmpty
+                              ? state.cityName
+                              : 'prayer_location_unknown'.tr(),
+                          style: TextStyle(
+                            color: Colors.white.withValues(alpha: 0.85),
+                            fontSize: 9.sp,
+                          ),
                         ),
                         SizedBox(width: 5.w),
-                        Icon(Icons.location_on_outlined, color: Colors.white.withValues(alpha: 0.85), size: 14.r),
+                        Icon(
+                          Icons.location_on_outlined,
+                          color: Colors.white.withValues(alpha: 0.85),
+                          size: 14.r,
+                        ),
                       ],
                     ),
                   ),
@@ -233,23 +287,35 @@ class _PrayerHeader extends StatelessWidget {
                   decoration: BoxDecoration(
                     color: Colors.white.withValues(alpha: 0.07),
                     borderRadius: BorderRadius.circular(18.r),
-                    border: Border.all(color: Colors.white.withValues(alpha: 0.04)),
+                    border: Border.all(
+                      color: Colors.white.withValues(alpha: 0.04),
+                    ),
                   ),
                   child: Column(
                     children: [
                       Text(
                         _weekday(now),
-                        style: TextStyle(color: Colors.white.withValues(alpha: 0.76), fontSize: 10.sp),
+                        style: TextStyle(
+                          color: Colors.white.withValues(alpha: 0.76),
+                          fontSize: 10.sp,
+                        ),
                       ),
                       SizedBox(height: 3.h),
                       Text(
                         _date(now),
-                        style: GoogleFonts.tajawal(color: Colors.white, fontSize: 20.sp, fontWeight: FontWeight.w500),
+                        style: GoogleFonts.tajawal(
+                          color: Colors.white,
+                          fontSize: 20.sp,
+                          fontWeight: FontWeight.w500,
+                        ),
                       ),
                       SizedBox(height: 4.h),
                       Text(
                         'prayer_date_hint'.tr(),
-                        style: TextStyle(color: Colors.white.withValues(alpha: 0.68), fontSize: 9.sp),
+                        style: TextStyle(
+                          color: Colors.white.withValues(alpha: 0.68),
+                          fontSize: 9.sp,
+                        ),
                       ),
                     ],
                   ),
@@ -263,9 +329,27 @@ class _PrayerHeader extends StatelessWidget {
   }
 
   String _weekday(DateTime date) {
-    const ar = ['الاثنين', 'الثلاثاء', 'الأربعاء', 'الخميس', 'الجمعة', 'السبت', 'الأحد'];
-    const en = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
-    return LocalizeAndTranslate.getLanguageCode() == 'ar' ? ar[date.weekday - 1] : en[date.weekday - 1];
+    const ar = [
+      'الاثنين',
+      'الثلاثاء',
+      'الأربعاء',
+      'الخميس',
+      'الجمعة',
+      'السبت',
+      'الأحد',
+    ];
+    const en = [
+      'Monday',
+      'Tuesday',
+      'Wednesday',
+      'Thursday',
+      'Friday',
+      'Saturday',
+      'Sunday',
+    ];
+    return LocalizeAndTranslate.getLanguageCode() == 'ar'
+        ? ar[date.weekday - 1]
+        : en[date.weekday - 1];
   }
 
   String _date(DateTime date) {
@@ -297,7 +381,9 @@ class _PrayerHeader extends StatelessWidget {
       'November',
       'December',
     ];
-    final month = LocalizeAndTranslate.getLanguageCode() == 'ar' ? arMonths[date.month - 1] : enMonths[date.month - 1];
+    final month = LocalizeAndTranslate.getLanguageCode() == 'ar'
+        ? arMonths[date.month - 1]
+        : enMonths[date.month - 1];
     return '${date.day} $month ${date.year}';
   }
 }
@@ -324,12 +410,24 @@ class _PrayerTile extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: isNext ? 13.h : 10.h),
+      padding: EdgeInsets.symmetric(
+        horizontal: 12.w,
+        vertical: isNext ? 13.h : 10.h,
+      ),
       decoration: BoxDecoration(
         color: isNext ? green : Colors.white,
         borderRadius: BorderRadius.circular(14.r),
-        border: Border.all(color: isNext ? gold : const Color(0xFFF0F0EE), width: isNext ? 1.5 : 1),
-        boxShadow: const [BoxShadow(color: Color(0x0E000000), blurRadius: 10, offset: Offset(0, 4))],
+        border: Border.all(
+          color: isNext ? gold : const Color(0xFFF0F0EE),
+          width: isNext ? 1.5 : 1,
+        ),
+        boxShadow: const [
+          BoxShadow(
+            color: Color(0x0E000000),
+            blurRadius: 10,
+            offset: Offset(0, 4),
+          ),
+        ],
       ),
       child: isNext ? _nextContent(context) : _normalContent(context),
     );
@@ -348,7 +446,11 @@ class _PrayerTile extends StatelessWidget {
             if (onNotificationChanged != null)
               Row(
                 children: [
-                  Icon(Icons.notifications_none_rounded, color: green, size: 14.r),
+                  Icon(
+                    Icons.notifications_none_rounded,
+                    color: green,
+                    size: 14.r,
+                  ),
                   SizedBox(width: 3.w),
                   Transform.scale(
                     scale: 0.7,
@@ -359,7 +461,9 @@ class _PrayerTile extends StatelessWidget {
                     ),
                   ),
                   Text(
-                    notificationEnabled ? 'prayer_notification_on'.tr() : 'prayer_notification_off'.tr(),
+                    notificationEnabled
+                        ? 'prayer_notification_on'.tr()
+                        : 'prayer_notification_off'.tr(),
                     style: TextStyle(fontSize: 8.sp, color: Colors.grey[500]),
                   ),
                 ],
@@ -398,11 +502,19 @@ class _PrayerTile extends StatelessWidget {
               children: [
                 Text(
                   _formatTime(slot.time),
-                  style: TextStyle(color: Colors.white, fontSize: 20.sp, fontWeight: FontWeight.w500),
+                  style: TextStyle(
+                    color: Colors.white,
+                    fontSize: 20.sp,
+                    fontWeight: FontWeight.w500,
+                  ),
                 ),
                 Row(
                   children: [
-                    Icon(Icons.notifications_none_rounded, color: Colors.white, size: 14.r),
+                    Icon(
+                      Icons.notifications_none_rounded,
+                      color: Colors.white,
+                      size: 14.r,
+                    ),
                     SizedBox(width: 3.w),
                     Transform.scale(
                       scale: 0.7,
@@ -414,8 +526,13 @@ class _PrayerTile extends StatelessWidget {
                       ),
                     ),
                     Text(
-                      notificationEnabled ? 'prayer_notification_on'.tr() : 'prayer_notification_off'.tr(),
-                      style: TextStyle(color: Colors.white.withValues(alpha: 0.7), fontSize: 8.sp),
+                      notificationEnabled
+                          ? 'prayer_notification_on'.tr()
+                          : 'prayer_notification_off'.tr(),
+                      style: TextStyle(
+                        color: Colors.white.withValues(alpha: 0.7),
+                        fontSize: 8.sp,
+                      ),
                     ),
                   ],
                 ),
@@ -427,11 +544,18 @@ class _PrayerTile extends StatelessWidget {
               children: [
                 Text(
                   _label(slot.prayer),
-                  style: TextStyle(color: Colors.white, fontSize: 14.sp, fontWeight: FontWeight.w700),
+                  style: TextStyle(
+                    color: Colors.white,
+                    fontSize: 14.sp,
+                    fontWeight: FontWeight.w700,
+                  ),
                 ),
                 Text(
                   '${'prayer_after'.tr()} ${_formatDuration(remaining)}',
-                  style: TextStyle(color: Colors.white.withValues(alpha: 0.78), fontSize: 9.sp),
+                  style: TextStyle(
+                    color: Colors.white.withValues(alpha: 0.78),
+                    fontSize: 9.sp,
+                  ),
                 ),
               ],
             ),
@@ -449,7 +573,10 @@ class _PrayerTile extends StatelessWidget {
             const Spacer(),
             Text(
               'prayer_time_remaining'.tr(),
-              style: TextStyle(color: Colors.white.withValues(alpha: 0.72), fontSize: 8.sp),
+              style: TextStyle(
+                color: Colors.white.withValues(alpha: 0.72),
+                fontSize: 8.sp,
+              ),
             ),
           ],
         ),
@@ -492,14 +619,15 @@ class _PrayerTile extends StatelessWidget {
     EPrayer.isha => 'prayer_isha'.tr(),
   };
 
-  String _formatTime(DateTime time) {
-    final hour = time.hour > 12 ? time.hour - 12 : (time.hour == 0 ? 12 : time.hour);
-    return '$hour:${time.minute.toString().padLeft(2, '0')}';
-  }
+  String _formatTime(DateTime time) => TimeFormat.hm12(time);
 }
 
 class _PrayerIcon extends StatelessWidget {
-  const _PrayerIcon({required this.prayer, required this.active, required this.green});
+  const _PrayerIcon({
+    required this.prayer,
+    required this.active,
+    required this.green,
+  });
 
   final EPrayer prayer;
   final bool active;
@@ -512,9 +640,17 @@ class _PrayerIcon extends StatelessWidget {
       height: 42.r,
       alignment: Alignment.center,
       decoration: BoxDecoration(
-        color: active ? Colors.white.withValues(alpha: 0.14) : const Color(0xFFF8F7F1),
+        color: active
+            ? Colors.white.withValues(alpha: 0.14)
+            : const Color(0xFFF8F7F1),
         borderRadius: BorderRadius.circular(14.r),
-        boxShadow: const [BoxShadow(color: Color(0x10000000), blurRadius: 7, offset: Offset(0, 3))],
+        boxShadow: const [
+          BoxShadow(
+            color: Color(0x10000000),
+            blurRadius: 7,
+            offset: Offset(0, 3),
+          ),
+        ],
       ),
       child: Text(_emoji(prayer), style: TextStyle(fontSize: 20.sp)),
     );
@@ -542,14 +678,22 @@ class _OutlineCircle extends StatelessWidget {
       height: size,
       decoration: BoxDecoration(
         shape: BoxShape.circle,
-        border: Border.all(color: Colors.white.withValues(alpha: 0.05), width: 4),
+        border: Border.all(
+          color: Colors.white.withValues(alpha: 0.05),
+          width: 4,
+        ),
       ),
     );
   }
 }
 
 class _MessageView extends StatelessWidget {
-  const _MessageView({required this.icon, required this.title, required this.message, required this.onRetry});
+  const _MessageView({
+    required this.icon,
+    required this.title,
+    required this.message,
+    required this.onRetry,
+  });
 
   final IconData icon;
   final String title;

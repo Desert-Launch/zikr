@@ -1,32 +1,34 @@
-import 'package:adhan/adhan.dart';
+import 'dart:async';
+
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:quran/core/services/logging/app_logger.dart';
-import 'package:quran/core/services/notifications/notification_channels.dart';
-import 'package:quran/core/services/notifications/notification_payload.dart';
-import 'package:quran/core/services/notifications/notifications_service.dart';
+import 'package:quran/modules/adhan/services/adhan_scheduler.dart';
 import 'package:quran/modules/prayer/data/datasources/local/ds_location.dart';
 import 'package:quran/modules/prayer/data/models/m_prayer_cache.dart';
+import 'package:quran/modules/prayer/data/models/m_prayer_timings.dart';
 import 'package:quran/modules/prayer/data/sources/local/box_prayer_cache.dart';
 import 'package:quran/modules/prayer/data/sources/local/box_prayer_settings.dart';
 import 'package:quran/modules/prayer/domain/entities/e_prayer.dart';
+import 'package:quran/modules/prayer/domain/entities/param_prayer_times.dart';
+import 'package:quran/modules/prayer/domain/usecases/uc_get_prayer_times.dart';
 import 'package:quran/modules/prayer/presentation/cubits/s_prayer_times.dart';
+import 'package:quran/modules/prayer/utils/prayer_method_mapper.dart';
 
 /// App-wide prayer-times singleton. Loads cached times on construct so the
-/// UI paints instantly; refreshes via [refresh()] and schedules the 5
-/// notifications for today.
-///
-/// Notification IDs reserved for daily prayers: 1000–1004 (one per prayer).
-/// Stable so re-scheduling overwrites the previous day's pending alerts.
+/// UI paints instantly; refreshes via [refresh()]. Adhan notification
+/// scheduling (rolling 7-day window) is delegated to [AdhanScheduler].
 class CBPrayerTimes extends Cubit<SPrayerTimes> {
   CBPrayerTimes({
     required DSLocation location,
     required BoxPrayerSettings settings,
     required BoxPrayerCache cache,
-    required NotificationsService notifications,
+    required AdhanScheduler scheduler,
+    required UCGetPrayerTimes getTimes,
   })  : _location = location,
         _settingsBox = settings,
         _cacheBox = cache,
-        _notifications = notifications,
+        _scheduler = scheduler,
+        _getTimes = getTimes,
         super(const SPrayerTimes()) {
     _hydrateFromCache();
   }
@@ -34,17 +36,8 @@ class CBPrayerTimes extends Cubit<SPrayerTimes> {
   final DSLocation _location;
   final BoxPrayerSettings _settingsBox;
   final BoxPrayerCache _cacheBox;
-  final NotificationsService _notifications;
-
-  static const _baseNotificationId = 1000;
-
-  static const _prayerOrder = [
-    (EPrayer.fajr, _baseNotificationId + 0),
-    (EPrayer.dhuhr, _baseNotificationId + 1),
-    (EPrayer.asr, _baseNotificationId + 2),
-    (EPrayer.maghrib, _baseNotificationId + 3),
-    (EPrayer.isha, _baseNotificationId + 4),
-  ];
+  final AdhanScheduler _scheduler;
+  final UCGetPrayerTimes _getTimes;
 
   void _hydrateFromCache() {
     final cache = _cacheBox.current();
@@ -76,8 +69,8 @@ class CBPrayerTimes extends Cubit<SPrayerTimes> {
         PrayerSlot(prayer: EPrayer.isha, time: c.isha),
       ];
 
-  /// Re-fetches GPS, recomputes prayer times, persists to cache, and
-  /// reschedules today's notifications.
+  /// Re-fetches GPS, pulls today's timings from Aladhan, persists to cache,
+  /// and reschedules today's notifications.
   Future<void> refresh() async {
     emit(state.copyWith(status: PrayerLoadStatus.loading, clearError: true));
     LocationResult? loc;
@@ -107,93 +100,76 @@ class CBPrayerTimes extends Cubit<SPrayerTimes> {
     }
 
     final settings = _settingsBox.current();
-    final params = _paramsFor(settings.calculationMethodIndex,
-        settings.madhabIndex);
-    final coords = Coordinates(loc.latitude, loc.longitude);
     final today = DateTime.now();
-    final pt = PrayerTimes(
-      coords,
-      DateComponents(today.year, today.month, today.day),
-      params,
+    final param = ParamPrayerTimes(
+      latitude: loc.latitude,
+      longitude: loc.longitude,
+      method: PrayerMethodMapper.methodForCountry(loc.countryCode),
+      school: settings.madhabIndex.clamp(0, 1),
+      date: today,
+      countryCode: loc.countryCode,
+      cityLabel: loc.label,
     );
 
-    final slots = [
-      PrayerSlot(prayer: EPrayer.fajr, time: pt.fajr.toLocal()),
-      PrayerSlot(prayer: EPrayer.sunrise, time: pt.sunrise.toLocal()),
-      PrayerSlot(prayer: EPrayer.dhuhr, time: pt.dhuhr.toLocal()),
-      PrayerSlot(prayer: EPrayer.asr, time: pt.asr.toLocal()),
-      PrayerSlot(prayer: EPrayer.maghrib, time: pt.maghrib.toLocal()),
-      PrayerSlot(prayer: EPrayer.isha, time: pt.isha.toLocal()),
-    ];
-
-    await _cacheBox.save(MPrayerCache(
-      latitude: loc.latitude,
-      longitude: loc.longitude,
-      cityName: loc.label,
-      fajrIso: pt.fajr.toLocal().toIso8601String(),
-      sunriseIso: pt.sunrise.toLocal().toIso8601String(),
-      dhuhrIso: pt.dhuhr.toLocal().toIso8601String(),
-      asrIso: pt.asr.toLocal().toIso8601String(),
-      maghribIso: pt.maghrib.toLocal().toIso8601String(),
-      ishaIso: pt.isha.toLocal().toIso8601String(),
-      computedAtIso: DateTime.now().toIso8601String(),
-    ));
-
-    emit(state.copyWith(
-      status: PrayerLoadStatus.success,
-      slots: slots,
-      cityName: loc.label,
-      latitude: loc.latitude,
-      longitude: loc.longitude,
-      computedAt: DateTime.now(),
-    ));
-
-    await _rescheduleNotifications(slots, settings);
+    final result = await _getTimes(param);
+    final cityName = loc.label.isNotEmpty ? loc.label : state.cityName;
+    result.fold(
+      (failure) {
+        AppLogger.warning('Timings fetch failed: ${failure.message}',
+            tag: 'CBPrayerTimes');
+        // Keep showing whatever we already have; only surface an error when
+        // there's nothing on screen.
+        if (state.slots.isEmpty) {
+          emit(state.copyWith(
+            status: PrayerLoadStatus.error,
+            error: failure.message,
+          ));
+        } else {
+          emit(state.copyWith(status: PrayerLoadStatus.success));
+        }
+      },
+      (timings) async {
+        final slots = _slotsFromTimings(timings);
+        await _persist(timings, loc!, cityName);
+        emit(state.copyWith(
+          status: PrayerLoadStatus.success,
+          slots: slots,
+          cityName: cityName,
+          latitude: loc.latitude,
+          longitude: loc.longitude,
+          computedAt: DateTime.now(),
+        ));
+        // Rebuild the rolling adhan window in the background — don't block the
+        // UI on 7 days of timing fetches.
+        unawaited(_scheduler.reschedule());
+      },
+    );
   }
 
-  Future<void> _rescheduleNotifications(
-      List<PrayerSlot> slots, dynamic settings) async {
-    final hasPerm = await _notifications.hasPermission();
-    if (!hasPerm) return;
+  List<PrayerSlot> _slotsFromTimings(MPrayerTimings t) => [
+        PrayerSlot(prayer: EPrayer.fajr, time: t.fajr),
+        PrayerSlot(prayer: EPrayer.sunrise, time: t.sunrise),
+        PrayerSlot(prayer: EPrayer.dhuhr, time: t.dhuhr),
+        PrayerSlot(prayer: EPrayer.asr, time: t.asr),
+        PrayerSlot(prayer: EPrayer.maghrib, time: t.maghrib),
+        PrayerSlot(prayer: EPrayer.isha, time: t.isha),
+      ];
 
-    final notify = (settings.notifyForPrayer as List).cast<bool>();
-    for (final entry in _prayerOrder) {
-      final prayer = entry.$1;
-      final id = entry.$2;
-      await _notifications.cancel(id);
-      final orderIndex = switch (prayer) {
-        EPrayer.fajr => 0,
-        EPrayer.dhuhr => 1,
-        EPrayer.asr => 2,
-        EPrayer.maghrib => 3,
-        EPrayer.isha => 4,
-        _ => -1,
-      };
-      if (orderIndex < 0 || orderIndex >= notify.length) continue;
-      if (!notify[orderIndex]) continue;
-
-      final slot = slots.firstWhere((s) => s.prayer == prayer);
-      if (slot.time.isBefore(DateTime.now())) continue;
-
-      await _notifications.scheduleAt(
-        id: id,
-        when: slot.time,
-        title: 'حان وقت صلاة ${prayer.key}',
-        body: 'اضغط لفتح مواقيت الصلاة',
-        channel: AppNotificationChannels.prayer,
-        payload: NotificationPayload(
-          type: 'adhan',
-          data: {'prayer': prayer.key},
-        ),
-      );
-    }
-  }
-
-  CalculationParameters _paramsFor(int methodIndex, int madhabIndex) {
-    final method = CalculationMethod.values[
-        methodIndex.clamp(0, CalculationMethod.values.length - 1)];
-    final params = method.getParameters();
-    params.madhab = Madhab.values[madhabIndex.clamp(0, 1)];
-    return params;
-  }
+  Future<void> _persist(
+    MPrayerTimings t,
+    LocationResult loc,
+    String cityName,
+  ) =>
+      _cacheBox.save(MPrayerCache(
+        latitude: loc.latitude,
+        longitude: loc.longitude,
+        cityName: cityName,
+        fajrIso: t.fajr.toIso8601String(),
+        sunriseIso: t.sunrise.toIso8601String(),
+        dhuhrIso: t.dhuhr.toIso8601String(),
+        asrIso: t.asr.toIso8601String(),
+        maghribIso: t.maghrib.toIso8601String(),
+        ishaIso: t.isha.toIso8601String(),
+        computedAtIso: DateTime.now().toIso8601String(),
+      ));
 }

@@ -17,4 +17,20 @@ class EndPoints {
 
   // Profile
   static const String usersProfile = '/users/profile';
+
+  // Aladhan — prayer timings (free, no auth). Astronomical calculation is
+  // done server-side; we only supply lat/lon/method/school/date.
+  // Reached via a dedicated Dio in DSRemotePrayer, NOT the shared BaseDio,
+  // so the app's Authorization header is never sent to a third party.
+  static const String aladhanBase = 'https://api.aladhan.com/v1';
+  static const String aladhanTimings = '/timings';
+
+  // Adhan voice catalog (host as JSON on your CDN). Lets NEW voices ship
+  // without an app update. Empty = remote catalog disabled: the app uses the
+  // bundled `assets/data/adhans.json` only and skips the network entirely.
+  //
+  // To enable: host the generated `adhan_catalog.json` (repo root) on any
+  // public static host and paste its URL here, e.g.
+  //   'https://cdn.yourapp.com/adhans/catalog.json'
+  static const String adhanCatalog = '';
 }

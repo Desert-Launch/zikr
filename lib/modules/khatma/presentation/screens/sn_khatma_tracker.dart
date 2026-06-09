@@ -4,6 +4,7 @@ import 'package:flutter_modular/flutter_modular.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:localize_and_translate/localize_and_translate.dart';
 import 'package:quran/core/services/routes/routes_names.dart';
+import 'package:quran/core/widgets/w_gradient_app_bar.dart';
 import 'package:quran/modules/khatma/presentation/cubits/cb_khatma.dart';
 import 'package:quran/modules/khatma/presentation/cubits/s_khatma.dart';
 
@@ -44,7 +45,7 @@ class SNKhatmaTracker extends StatelessWidget {
             body: ListView(
               padding: EdgeInsets.zero,
               children: [
-                _Header(onBack: Modular.to.pop),
+                WGradientAppBar(title: 'khatma_wird_title'.tr()),
                 Padding(
                   padding: EdgeInsets.fromLTRB(14.w, 14.h, 14.w, 28.h),
                   child: Column(
@@ -152,50 +153,6 @@ class SNKhatmaTracker extends StatelessWidget {
     if (confirmed != true) return;
     await cubit.cancelPlan();
     Modular.to.pushReplacementNamed(KhatmaRoutes.fullPlans());
-  }
-}
-
-class _Header extends StatelessWidget {
-  const _Header({required this.onBack});
-
-  final VoidCallback onBack;
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      padding: EdgeInsets.fromLTRB(14.w, 8.h, 14.w, 14.h),
-      decoration: BoxDecoration(
-        color: SNKhatmaTracker._green,
-        borderRadius: BorderRadius.vertical(bottom: Radius.circular(28.r)),
-        boxShadow: const [
-          BoxShadow(
-            color: Color(0x24000000),
-            blurRadius: 7,
-            offset: Offset(0, 3),
-          ),
-        ],
-      ),
-      child: SafeArea(
-        bottom: false,
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.end,
-          children: [
-            Text(
-              'khatma_wird_title'.tr(),
-              style: TextStyle(color: Colors.white, fontSize: 20.sp),
-            ),
-            SizedBox(width: 8.w),
-            IconButton(
-              onPressed: onBack,
-              icon: const Icon(
-                Icons.arrow_forward_rounded,
-                color: Colors.white,
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
   }
 }
 
