@@ -11,8 +11,7 @@ class DSLocalQuran {
   DSLocalQuran();
 
   static const _surahsPath = 'assets/data/surahs.json';
-  static String _pagePath(int page) =>
-      'assets/data/mushaf_pages/page-${page.toString().padLeft(3, '0')}.json';
+  static String _pagePath(int page) => 'assets/data/mushaf_pages/page-${page.toString().padLeft(3, '0')}.json';
 
   List<MSurah>? _surahsCache;
   final Map<int, MPageLayout> _pageCache = {};
@@ -31,9 +30,7 @@ class DSLocalQuran {
     final cached = _pageCache[page];
     if (cached != null) return cached;
     final raw = await rootBundle.loadString(_pagePath(page));
-    final layout = MPageLayout.fromJson(
-      Map<String, dynamic>.from(jsonDecode(raw) as Map),
-    );
+    final layout = MPageLayout.fromJson(Map<String, dynamic>.from(jsonDecode(raw) as Map));
     _pageCache[page] = layout;
     // Cap the cache so we don't hold all 604 pages — keep last 12 visited.
     if (_pageCache.length > 12) {
@@ -46,25 +43,18 @@ class DSLocalQuran {
   /// Find which page contains (surah, ayah). Falls back to surah.pageStart.
   Future<int> pageOfAyah(int surah, int ayah) async {
     final surahs = await loadSurahs();
-    final s = surahs.firstWhere(
-      (e) => e.number == surah,
-      orElse: () => surahs.first,
-    );
+    final s = surahs.firstWhere((e) => e.number == surah, orElse: () => surahs.first);
     // Scan from pageStart forward; usually within 2-3 pages.
     var page = s.pageStart;
     if (page <= 0) return 1;
     while (page <= 604) {
       final layout = await loadPage(page);
-      final hit = layout.allAyahRefs.any(
-        (r) => r.surah == surah && r.ayah == ayah,
-      );
+      final hit = layout.allAyahRefs.any((r) => r.surah == surah && r.ayah == ayah);
       if (hit) return page;
       // Stop early if this page belongs to a later surah and ayah wasn't found
       final maxSurah = layout.allAyahRefs.isEmpty
           ? surah
-          : layout.allAyahRefs
-                .map((r) => r.surah)
-                .reduce((a, b) => a > b ? a : b);
+          : layout.allAyahRefs.map((r) => r.surah).reduce((a, b) => a > b ? a : b);
       if (maxSurah > surah) return page; // ayah out of range — return closest
       page++;
     }
@@ -114,32 +104,54 @@ class DSLocalQuran {
   /// it together with its surah. The same day always yields the same verse, and
   /// consecutive days are spread across the whole mushaf via a hash so the
   /// "verse of the day" doesn't simply walk forward one ayah at a time.
-  Future<({ParamAyahRef ref, MSurah surah, String text})> dailyVerse(
-    DateTime day,
-  ) async {
+  ///
+  /// [maxChars] caps how long the chosen verse may be so it fits the home
+  /// "verse of the day" card without ellipsis. Length is measured on the
+  /// diacritic-stripped text (a closer proxy for rendered width than the raw
+  /// Uthmani string, since harakat add glyphs but little width). When no
+  /// candidate fits within the attempt budget, the primary day-pick is used.
+  Future<({ParamAyahRef ref, MSurah surah, String text})> dailyVerse(DateTime day, {int maxChars = 80}) async {
     final surahs = await loadSurahs();
     final total = surahs.fold<int>(0, (sum, s) => sum + s.totalAyah);
-    final dayNumber = DateTime.utc(day.year, day.month, day.day)
-        .difference(DateTime.utc(1970))
-        .inDays;
-    // Knuth multiplicative hash → spread sequential days across the range.
-    final pick = ((dayNumber * 2654435761) & 0x7fffffffffff) % total;
+    final dayNumber = DateTime.utc(day.year, day.month, day.day).difference(DateTime.utc(1970)).inDays;
 
-    var running = pick;
-    var chosen = surahs.first;
-    var ayahNumber = 1;
-    for (final s in surahs) {
-      if (running < s.totalAyah) {
-        chosen = s;
-        ayahNumber = running + 1;
-        break;
+    // Resolve a global 0-based ayah index to its surah + 1-based ayah number.
+    ({MSurah surah, int ayah}) locate(int globalIndex) {
+      var running = globalIndex;
+      for (final s in surahs) {
+        if (running < s.totalAyah) return (surah: s, ayah: running + 1);
+        running -= s.totalAyah;
       }
-      running -= s.totalAyah;
+      return (surah: surahs.first, ayah: 1);
     }
 
-    final ref = ParamAyahRef(surah: chosen.number, ayah: ayahNumber);
-    final raw = await fullAyahText(ref);
-    return (ref: ref, surah: chosen, text: _stripAyahNumbers(raw));
+    // Probe deterministically-spread candidates until one fits the card. Each
+    // attempt re-hashes (Knuth multiplicative) to a different part of the
+    // mushaf so we don't just walk into the long verse next to a long verse.
+    // Attempt 0 is the stable "primary" pick and the fallback if nothing fits.
+    late ParamAyahRef ref;
+    late MSurah chosen;
+    late String text;
+    const maxAttempts = 40;
+    for (var attempt = 0; attempt < maxAttempts; attempt++) {
+      final pick = (((dayNumber + attempt * 7919) * 2654435761) & 0x7fffffffffff) % total;
+      final hit = locate(pick);
+      final r = ParamAyahRef(surah: hit.surah.number, ayah: hit.ayah);
+      final t = _stripAyahNumbers(await fullAyahText(r));
+      if (attempt == 0) {
+        ref = r;
+        chosen = hit.surah;
+        text = t;
+      }
+      if (_normalise(t).length <= maxChars) {
+        ref = r;
+        chosen = hit.surah;
+        text = t;
+        break;
+      }
+    }
+
+    return (ref: ref, surah: chosen, text: text);
   }
 
   /// Removes the trailing Arabic-Indic ayah-number glyph (and any stray digits)
@@ -148,8 +160,7 @@ class DSLocalQuran {
     final buf = StringBuffer();
     for (final code in input.runes) {
       // Arabic-Indic (0x0660..0x0669) and extended (0x06F0..0x06F9) digits.
-      if ((code >= 0x0660 && code <= 0x0669) ||
-          (code >= 0x06F0 && code <= 0x06F9)) {
+      if ((code >= 0x0660 && code <= 0x0669) || (code >= 0x06F0 && code <= 0x06F9)) {
         continue;
       }
       buf.writeCharCode(code);
@@ -217,10 +228,7 @@ class DSLocalQuran {
         continue;
       }
       // Normalise alef variants → bare alef.
-      if (code == 0x0623 ||
-          code == 0x0625 ||
-          code == 0x0622 ||
-          code == 0x0671) {
+      if (code == 0x0623 || code == 0x0625 || code == 0x0622 || code == 0x0671) {
         buf.writeCharCode(0x0627);
         continue;
       }
@@ -245,10 +253,7 @@ class DSLocalQuran {
 
   /// Search the index for [normalisedQuery]. Caller must pass a string that
   /// has already been through [normaliseForSearch].
-  Future<List<({ParamAyahRef ref, String snippet})>> searchNormalised(
-    String normalisedQuery, {
-    int limit = 200,
-  }) async {
+  Future<List<({ParamAyahRef ref, String snippet})>> searchNormalised(String normalisedQuery, {int limit = 200}) async {
     if (normalisedQuery.isEmpty) return const [];
     await ayahTextIndex();
     final normIndex = _ayahNormalisedIndex ?? const {};
@@ -258,10 +263,7 @@ class DSLocalQuran {
       final idx = entry.value.indexOf(normalisedQuery);
       if (idx < 0) continue;
       final parts = entry.key.split(':');
-      final ref = ParamAyahRef(
-        surah: int.parse(parts[0]),
-        ayah: int.parse(parts[1]),
-      );
+      final ref = ParamAyahRef(surah: int.parse(parts[0]), ayah: int.parse(parts[1]));
       out.add((ref: ref, snippet: fullIndex[entry.key] ?? ''));
       if (out.length >= limit) break;
     }

@@ -254,7 +254,7 @@ class _HeaderBanner extends StatelessWidget {
                 children: [
                   Text(
                     'home_page_title'.tr(),
-                    style: GoogleFonts.tajawal(color: Colors.white, fontSize: 19.sp, fontWeight: FontWeight.w700),
+                    style: GoogleFonts.cairo(color: Colors.white, fontSize: 30.sp, fontWeight: FontWeight.w500),
                   ),
                   const Spacer(),
                   BlocBuilder<CBAuth, SAuth>(
@@ -275,7 +275,7 @@ class _HeaderBanner extends StatelessWidget {
             ),
           ),
           Padding(
-            padding: EdgeInsets.fromLTRB(29.w, cardsTop, 29.w, 0),
+            padding: EdgeInsets.fromLTRB(20.w, cardsTop, 20.w, 0),
             child: Column(
               children: [
                 BlocBuilder<CBPrayerTimes, SPrayerTimes>(
@@ -302,10 +302,10 @@ class _HeaderButton extends StatelessWidget {
   Widget build(BuildContext context) {
     return InkResponse(
       onTap: onTap,
-      radius: 22.r,
+      radius: 25.r,
       child: Padding(
         padding: EdgeInsets.all(5.r),
-        child: Icon(icon, color: Colors.white, size: 20.r),
+        child: Icon(icon, color: Colors.white, size: 25.r),
       ),
     );
   }
@@ -352,8 +352,8 @@ class _PrayerCard extends StatelessWidget {
             EPrayer.isha,
           ].map((p) => PrayerSlot(prayer: p, time: DateTime.now())).toList();
     // Show the five prayers that are not the highlighted "next" one.
-    final excluded = next?.prayer ?? EPrayer.isha;
-    final slots = allSlots.where((slot) => slot.prayer != excluded).take(5).toList();
+    // final excluded = next?.prayer ?? EPrayer.isha;
+    final slots = allSlots.toList();
 
     final caption = StringBuffer('prayer_next_label'.tr());
     if (state.cityName.isNotEmpty) {
@@ -378,9 +378,9 @@ class _PrayerCard extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.center,
               children: [
                 CircleAvatar(
-                  radius: 26.r,
+                  radius: 24.r,
                   backgroundColor: green,
-                  child: Icon(Icons.access_time_rounded, color: Colors.white, size: 26.r),
+                  child: Icon(Icons.access_time_rounded, color: Colors.white, size: 24.r),
                 ),
                 SizedBox(width: 12.w),
                 Expanded(
@@ -391,7 +391,7 @@ class _PrayerCard extends StatelessWidget {
                         caption.toString(),
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
-                        style: TextStyle(color: Colors.grey[600], fontSize: 11.sp),
+                        style: TextStyle(color: Colors.grey[600], fontSize: 12.sp),
                       ),
                       SizedBox(height: 4.h),
                       Text(
@@ -670,9 +670,9 @@ class _VerseCard extends StatelessWidget {
       TextSpan(
         style: GoogleFonts.amiri(fontSize: 15.sp, fontWeight: FontWeight.w700, color: _ink, height: 1.45),
         children: [
-          ornament('assets/images/verse_ornament_start.png'),
-          TextSpan(text: text),
           ornament('assets/images/verse_ornament_end.png'),
+          TextSpan(text: text),
+          ornament('assets/images/verse_ornament_start.png'),
         ],
       ),
       textAlign: TextAlign.center,

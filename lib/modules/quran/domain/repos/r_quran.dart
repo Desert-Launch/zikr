@@ -25,8 +25,12 @@ abstract class RQuran {
   /// Returns all ayah refs of [juz] (1..30) in document order.
   Future<Either<Failure, List<ParamAyahRef>>> ayatOfJuz(int juz);
 
-  /// Deterministic "verse of the day" for the given calendar [day].
-  Future<Either<Failure, EDailyVerse>> getDailyVerse(DateTime day);
+  /// Deterministic "verse of the day" for the given calendar [day], constrained
+  /// to verses no longer than [maxChars] so it fits the home card.
+  Future<Either<Failure, EDailyVerse>> getDailyVerse(
+    DateTime day, {
+    int maxChars,
+  });
 
   /// Diacritics-tolerant Uthmani text search across all 6236 ayat.
   /// Returns hits in canonical order (surah, ayah), capped at [limit].

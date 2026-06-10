@@ -7,6 +7,6 @@ class UCGetDailyVerse {
   UCGetDailyVerse(this._repo);
   final RQuran _repo;
 
-  Future<Either<Failure, EDailyVerse>> call(DateTime day) =>
-      _repo.getDailyVerse(day);
+  Future<Either<Failure, EDailyVerse>> call(DateTime day, {int maxChars = 85}) =>
+      _repo.getDailyVerse(day, maxChars: maxChars);
 }

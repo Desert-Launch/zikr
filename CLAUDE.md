@@ -1,7 +1,7 @@
 # CLAUDE.md
 
 > Concise reference for AI assistants (Claude, Cursor, Copilot Chat, etc.) working in this codebase.
-> For the full developer guide, see [`instructions.md`](./instructions.md).
+> For the full developer guide, see [`.claude/instructions.md`](./.claude/instructions.md).
 > For the Quran reader module specifically, see [`docs/plans/Quran_Module_Plan.md`](./docs/plans/Quran_Module_Plan.md).
 
 ---
@@ -10,8 +10,15 @@
 
 **App:** Quran companion mobile app (قرآن) — Mushaf reader, prayer times, azkar, tasbih, Qibla, reminders, nearby mosques.
 **Platforms:** Android & iOS.
-**Language:** Flutter / Dart (target: latest stable Flutter).
+**Language:** Flutter / Dart (SDK `^3.9.2`). Pubspec package name: **`quran`**.
 **Audience:** Arabic-first, RTL by default. English/Urdu/French planned.
+
+**Entry points:**
+- `lib/main.dart` — boots in this order before `runApp`: `AppLogger.init()` → `LocalizeAndTranslate.init()` (ar/en) → `Hive.initFlutter()` + `QuranHiveRegistrar.registerAdapters()` → **open all ~22 Hive boxes** → `JustAudioBackground.init()` → `runApp(ModularApp(AppModule()))`. Post-build it runs `CBTheme.load()`, `CBAuth.bootstrap()`, `NotificationsService.init()`, `CBReminders.rescheduleAll()`, `AdhanBootstrap.run()`.
+- `lib/core/services/routes/app_module.dart` — the **root `AppModule`**: registers box singletons, shared data sources, `BaseDio`, app-wide cubits, and mounts every feature module at its base path.
+- Route paths live in `RoutesNames` (module bases) + per-module `*Routes` classes (e.g. `QuranRoutes`, `AdhanRoutes`) in the routes layer — see rule #3.
+
+**Feature modules** (`lib/modules/`): `adhan`, `auth`, `azkar`, `home`, `khatma`, `legal`, `onboarding`, `prayer`, `qibla`, `quran`, `reminders`, `settings`, `tasbih`. App-wide cubits and shared services live in `lib/core/` (`cubits/`, `services/`, `widgets/`, `theme/`, `data/`).
 
 ---
 
@@ -84,7 +91,7 @@ Two-letter prefixes are mandatory. Class name = prefix uppercased.
 
 ## 6. The 8 critical rules — never violate
 
-1. **Package imports only** — `package:qrn_app/...`. Never `../../`. Sort alphabetically.
+1. **Package imports only** — `package:quran/...` (the pubspec package name is `quran`). Never `../../`. Sort alphabetically.
 2. **No `Bloc<Event,State>` ever** — Cubit only. One Cubit per screen, plus app-wide singletons (audio, downloads, reciter).
 3. **No string literals for navigation.** Use a `Routes` class with type-safe builders. Example: `Modular.to.pushNamed(QuranRoutes.readerFromAyah(2, 255))`, never `'/quran/reader?surah=2&ayah=255'`.
 4. **No null assertions (`!`).** Use `?.`, `??`, or explicit null checks. The only exception is *immediately after* a verified non-null check on the same line.
@@ -269,9 +276,11 @@ flutter pub run build_runner watch --delete-conflicting-outputs
 # Auto-fix lint issues
 dart fix --apply
 
-# Check the project compiles cleanly
+# Check the project compiles cleanly — this is the verification gate
 flutter analyze
 ```
+
+> **No test suite exists yet** (no `test/` directory). `flutter analyze` (zero errors) is the only automated gate. Lint config is stock `package:flutter_lints/flutter.yaml` (`analysis_options.yaml`), no custom rules.
 
 Things **I (the AI) should never run** in this project:
 - `flutter run`, `flutter build *`, `flutter emulators*`, `adb *`
@@ -282,7 +291,7 @@ Things **I (the AI) should never run** in this project:
 
 ## 13. When in doubt
 
-1. Read `instructions.md` (long-form spec).
+1. Read `.claude/instructions.md` (long-form spec).
 2. For Quran reader specifics, read `docs/plans/Quran_Module_Plan.md`.
 3. Grep the codebase for a similar pattern before inventing one.
 4. If you must guess, **ask** rather than assume.
