@@ -182,7 +182,7 @@ class _AzkarHeader extends StatelessWidget {
                       children: [
                         Text(
                           'azkar_header_title'.tr(),
-                          style: GoogleFonts.tajawal(color: Colors.white, fontSize: 21.sp, fontWeight: FontWeight.w700),
+                          style: GoogleFonts.cairo(color: Colors.white, fontSize: 21.sp, fontWeight: FontWeight.w700),
                         ),
                         Text(
                           'azkar_header_subtitle'.tr(),
@@ -319,7 +319,7 @@ class _CategoryCard extends StatelessWidget {
                         title,
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
-                        style: GoogleFonts.tajawal(color: Colors.white, fontSize: 16.sp, fontWeight: FontWeight.w600),
+                        style: GoogleFonts.cairo(color: Colors.white, fontSize: 16.sp, fontWeight: FontWeight.w600),
                       ),
                       SizedBox(height: 2.h),
                       Text(

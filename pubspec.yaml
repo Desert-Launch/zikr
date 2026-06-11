@@ -97,9 +97,16 @@ dev_dependencies:
   freezed: ^2.5.7
   hive_ce_generator: ^1.7.2
   json_serializable: ^6.8.0
+  flutter_gen_runner: ^5.8.0
+
+flutter_gen:
+  output: lib/core/assets
+  integrations:
+    flutter_svg: true
 
 flutter:
   uses-material-design: true
+  generate: true
 
   assets:
     - assets/data/
@@ -109,6 +116,7 @@ flutter:
     - assets/audio/adhan/
     - assets/fonts/qpc/
     - assets/images/
+    - assets/icons/
     - assets/lang/
     - assets/mock/
     - assets/legal/

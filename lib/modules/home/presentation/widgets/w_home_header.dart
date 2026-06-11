@@ -72,7 +72,7 @@ class WHomeHeader extends StatelessWidget {
                     SizedBox(height: 2.h),
                     Text(
                       user?.name ?? 'app_name'.tr(),
-                      style: GoogleFonts.tajawal(
+                      style: GoogleFonts.cairo(
                         color: Colors.white,
                         fontSize: 18.sp,
                         fontWeight: FontWeight.w800,

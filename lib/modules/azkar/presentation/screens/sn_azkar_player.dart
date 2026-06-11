@@ -151,7 +151,7 @@ class _CompactHeader extends StatelessWidget {
                   children: [
                     Text(
                       'azkar_header_title'.tr(),
-                      style: GoogleFonts.tajawal(
+                      style: GoogleFonts.cairo(
                         color: Colors.white,
                         fontSize: 17.sp,
                         fontWeight: FontWeight.w700,

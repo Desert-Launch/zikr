@@ -13,7 +13,7 @@ class CBDailyVerse extends Cubit<SDailyVerse> {
 
   /// Max verse length (diacritic-stripped) that fits the home "verse of the
   /// day" card on two lines without ellipsis. Tune here if the card resizes.
-  static const _verseCharBudget = 85;
+  static const _verseCharBudget = 30;
 
   DateTime? _loadedFor;
 

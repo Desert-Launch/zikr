@@ -91,7 +91,7 @@ class WGradientAppBar extends StatelessWidget implements PreferredSizeWidget {
                             Text(
                               title,
                               textAlign: TextAlign.center,
-                              style: GoogleFonts.tajawal(
+                              style: GoogleFonts.cairo(
                                 color: Colors.white,
                                 fontSize: 17.sp,
                                 fontWeight: FontWeight.w700,

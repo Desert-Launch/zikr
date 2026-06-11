@@ -251,7 +251,7 @@ class _SettingsHeader extends StatelessWidget {
                       children: [
                         Text(
                           'settings_title'.tr(),
-                          style: GoogleFonts.tajawal(
+                          style: GoogleFonts.cairo(
                             color: Colors.white,
                             fontSize: 20.sp,
                             fontWeight: FontWeight.w500,
@@ -261,7 +261,7 @@ class _SettingsHeader extends StatelessWidget {
                         SizedBox(height: 3.h),
                         Text(
                           'settings_subtitle'.tr(),
-                          style: GoogleFonts.tajawal(
+                          style: GoogleFonts.cairo(
                             color: Colors.white.withValues(alpha: 0.62),
                             fontSize: 11.sp,
                             height: 1,
@@ -334,7 +334,7 @@ class _ProfileCard extends StatelessWidget {
                   children: [
                     Text(
                       user?.name ?? 'settings_guest_user'.tr(),
-                      style: GoogleFonts.tajawal(
+                      style: GoogleFonts.cairo(
                         color: const Color(0xFF2C2C2C),
                         fontSize: 16.sp,
                         fontWeight: FontWeight.w500,
@@ -344,7 +344,7 @@ class _ProfileCard extends StatelessWidget {
                     SizedBox(height: 5.h),
                     Text(
                       user?.email ?? 'user@example.com',
-                      style: GoogleFonts.tajawal(
+                      style: GoogleFonts.cairo(
                         fontSize: 11.sp,
                         color: const Color(0xFF7C7C7C),
                         height: 1,
@@ -355,7 +355,7 @@ class _ProfileCard extends StatelessWidget {
                       onTap: () => Modular.to.pushNamed(AuthRoutes.fullLogin()),
                       child: Text(
                         'settings_edit_profile'.tr(),
-                        style: GoogleFonts.tajawal(
+                        style: GoogleFonts.cairo(
                           color: _SNSettingsState._green,
                           fontSize: 11.sp,
                           fontWeight: FontWeight.w500,
@@ -416,7 +416,7 @@ class _SectionLabel extends StatelessWidget {
       padding: EdgeInsetsDirectional.only(start: 8.w, bottom: 7.h),
       child: Text(
         text,
-        style: GoogleFonts.tajawal(
+        style: GoogleFonts.cairo(
           fontSize: 10.sp,
           color: const Color(0xFF777777),
           height: 1,
@@ -505,7 +505,7 @@ class _SettingsRow extends StatelessWidget {
                   children: [
                     Text(
                       title,
-                      style: GoogleFonts.tajawal(
+                      style: GoogleFonts.cairo(
                         color: const Color(0xFF303030),
                         fontSize: 13.sp,
                         fontWeight: FontWeight.w500,
@@ -517,7 +517,7 @@ class _SettingsRow extends StatelessWidget {
                       subtitle,
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
-                      style: GoogleFonts.tajawal(
+                      style: GoogleFonts.cairo(
                         fontSize: 9.sp,
                         color: const Color(0xFF858585),
                         height: 1,
@@ -575,7 +575,7 @@ class _RowValue extends StatelessWidget {
         ),
         child: Text(
           value!.isEmpty ? '1.0.0' : value!,
-          style: GoogleFonts.tajawal(
+          style: GoogleFonts.cairo(
             fontSize: 9.sp,
             color: const Color(0xFF777777),
           ),
@@ -596,7 +596,7 @@ class _RowValue extends StatelessWidget {
           SizedBox(width: 7.w),
           Text(
             value!,
-            style: GoogleFonts.tajawal(
+            style: GoogleFonts.cairo(
               fontSize: 10.sp,
               color: const Color(0xFF717171),
             ),
@@ -660,7 +660,7 @@ class _AppFooter extends StatelessWidget {
         SizedBox(height: 11.h),
         Text(
           'home_page_title'.tr(),
-          style: GoogleFonts.tajawal(
+          style: GoogleFonts.cairo(
             fontSize: 12.sp,
             color: const Color(0xFF777777),
           ),
@@ -669,7 +669,7 @@ class _AppFooter extends StatelessWidget {
         Text(
           'settings_footer'.tr(),
           textAlign: TextAlign.center,
-          style: GoogleFonts.tajawal(
+          style: GoogleFonts.cairo(
             fontSize: 9.sp,
             color: const Color(0xFF8B8B8B),
           ),

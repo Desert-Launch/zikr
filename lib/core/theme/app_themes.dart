@@ -22,12 +22,12 @@ ThemeData buildLightTheme() {
       error: AppColorsLight.error,
       onError: AppColorsLight.onPrimary,
     ),
-    textTheme: GoogleFonts.tajawalTextTheme(ThemeData.light().textTheme),
+    textTheme: GoogleFonts.cairoTextTheme(ThemeData.light().textTheme),
     appBarTheme: AppBarTheme(
       backgroundColor: AppColorsLight.surface,
       foregroundColor: AppColorsLight.onSurface,
       elevation: 0,
-      titleTextStyle: GoogleFonts.tajawal(
+      titleTextStyle: GoogleFonts.cairo(
         color: AppColorsLight.onSurface, fontSize: 18.sp, fontWeight: FontWeight.w700,
       ),
     ),
@@ -52,12 +52,12 @@ ThemeData buildDarkTheme() {
       error: AppColorsDark.error,
       onError: AppColorsDark.onPrimary,
     ),
-    textTheme: GoogleFonts.tajawalTextTheme(ThemeData.dark().textTheme),
+    textTheme: GoogleFonts.cairoTextTheme(ThemeData.dark().textTheme),
     appBarTheme: AppBarTheme(
       backgroundColor: AppColorsDark.surface,
       foregroundColor: AppColorsDark.onSurface,
       elevation: 0,
-      titleTextStyle: GoogleFonts.tajawal(
+      titleTextStyle: GoogleFonts.cairo(
         color: AppColorsDark.onSurface, fontSize: 18.sp, fontWeight: FontWeight.w700,
       ),
     ),
@@ -71,7 +71,7 @@ ThemeData buildDarkTheme() {
 class AppThemes {
   static ThemeData get light => ThemeData(
     // Use Tajawal as the default font for the entire app (matching Board app)
-    textTheme: GoogleFonts.tajawalTextTheme(),
+    textTheme: GoogleFonts.cairoTextTheme(),
     brightness: Brightness.light,
     highlightColor: Colors.transparent,
     splashColor: Colors.transparent,
@@ -86,13 +86,13 @@ class AppThemes {
       fillColor: AppColors.lightForeground,
       filled: true,
       contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 16),
-      hintStyle: GoogleFonts.tajawal(
+      hintStyle: GoogleFonts.cairo(
         color: AppColors.textBodyLight,
         fontSize: 18.sp,
         fontWeight: FontWeight.w400,
         height: 1.1,
       ),
-      errorStyle: GoogleFonts.tajawal(
+      errorStyle: GoogleFonts.cairo(
         color: AppColors.semanticDanger,
         fontSize: 18.sp,
         fontWeight: FontWeight.w700,
@@ -127,7 +127,7 @@ class AppThemes {
 
   static ThemeData get dark => ThemeData(
     // Use Tajawal as the default font for the entire app (matching Board app)
-    textTheme: GoogleFonts.tajawalTextTheme(ThemeData.dark().textTheme),
+    textTheme: GoogleFonts.cairoTextTheme(ThemeData.dark().textTheme),
     brightness: Brightness.dark,
     highlightColor: Colors.transparent,
     splashColor: Colors.transparent,
@@ -142,13 +142,13 @@ class AppThemes {
       fillColor: AppColors.darkForeground,
       filled: true,
       contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 16),
-      hintStyle: GoogleFonts.tajawal(
+      hintStyle: GoogleFonts.cairo(
         color: AppColors.textBodyDark,
         fontSize: 18.sp,
         fontWeight: FontWeight.w400,
         height: 1.1,
       ),
-      errorStyle: GoogleFonts.tajawal(
+      errorStyle: GoogleFonts.cairo(
         color: AppColors.semanticDanger,
         fontSize: 18.sp,
         fontWeight: FontWeight.w700,

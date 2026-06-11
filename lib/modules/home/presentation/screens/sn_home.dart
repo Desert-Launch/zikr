@@ -4,9 +4,12 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_modular/flutter_modular.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:localize_and_translate/localize_and_translate.dart';
+import 'package:quran/core/assets/assets.gen.dart';
 import 'package:quran/core/services/routes/routes_names.dart';
+import 'package:quran/core/theme/app_text_styles.dart';
 import 'package:quran/core/utils/helper/time_format.dart';
 import 'package:quran/modules/auth/presentation/cubits/cb_auth.dart';
 import 'package:quran/modules/auth/presentation/cubits/s_auth.dart';
@@ -88,67 +91,66 @@ class _SNHomeState extends State<SNHome> {
 
     return [
       // Continue-reading CTA
-      _WideCTA(
-        icon: Icons.arrow_forward_rounded,
+      _WideFeature(
+        icon: Assets.icons.arrowRight.path,
         title: 'home_daily_wird'.tr(),
-        subtitle: 'home_daily_wird_hint'.tr(),
         color: _gold,
         route: KhatmaRoutes.fullHome(),
       ),
       gap(),
       row(
         _FeatureCard(
-          icon: Icons.menu_book_rounded,
-          title: 'home_mushaf'.tr(),
-          subtitle: 'home_mushaf_hint'.tr(),
-          color: _green,
-          route: RoutesNames.quranBase,
-        ),
-        _FeatureCard(
-          icon: Icons.access_time_rounded,
+          icon: Assets.icons.clock.path,
           title: 'home_adhan'.tr(),
           subtitle: 'home_adhan_hint'.tr(),
           color: _gold,
           route: RoutesNames.prayerBase,
         ),
+        _FeatureCard(
+          icon: Assets.icons.bookClose.path,
+          title: 'home_mushaf'.tr(),
+          subtitle: 'home_mushaf_hint'.tr(),
+          color: _green,
+          route: RoutesNames.quranBase,
+        ),
       ),
       gap(),
       row(
         _FeatureCard(
-          icon: Icons.menu_book_outlined,
-          title: 'home_azkar'.tr(),
-          subtitle: 'home_azkar_hint'.tr(),
-          color: _green,
-          route: RoutesNames.azkarBase,
-        ),
-        _FeatureCard(
-          icon: Icons.location_on_outlined,
+          icon: Assets.icons.location.path,
           title: 'home_mosques'.tr(),
           subtitle: 'home_mosques_hint'.tr(),
           color: _gold,
           route: RoutesNames.qiblaBase,
         ),
+        _FeatureCard(
+          icon: Assets.icons.hand.path,
+          title: 'home_azkar'.tr(),
+          subtitle: 'home_azkar_hint'.tr(),
+          color: _green,
+          route: RoutesNames.azkarBase,
+        ),
       ),
       gap(),
       row(
         _FeatureCard(
-          icon: Icons.headphones_rounded,
-          title: 'home_tasmee'.tr(),
-          subtitle: 'home_tasmee_hint'.tr(),
-          color: _green,
-          route: QuranRoutes.fullReciterPicker(),
-        ),
-        _FeatureCard(
-          icon: Icons.school_outlined,
+          icon: Assets.icons.bookOpen.path,
           title: 'home_tahfeez'.tr(),
           subtitle: 'home_tahfeez_hint'.tr(),
           color: _gold,
           route: RoutesNames.quranBase,
         ),
+        _FeatureCard(
+          icon: Assets.icons.microphone.path,
+          title: 'home_tasmee'.tr(),
+          subtitle: 'home_tasmee_hint'.tr(),
+          color: _green,
+          route: QuranRoutes.fullReciterPicker(),
+        ),
       ),
       gap(),
       _WideFeature(
-        icon: Icons.touch_app_rounded,
+        icon: Assets.icons.circle.path,
         title: 'home_tasbih'.tr(),
         subtitle: 'home_tasbih_hint'.tr(),
         color: _green,
@@ -156,7 +158,7 @@ class _SNHomeState extends State<SNHome> {
       ),
       gap(),
       _WideFeature(
-        icon: Icons.explore_rounded,
+        icon: Assets.icons.compass.path,
         title: 'home_qibla'.tr(),
         subtitle: 'home_qibla_hint'.tr(),
         color: _gold,
@@ -165,40 +167,40 @@ class _SNHomeState extends State<SNHome> {
       gap(),
       row(
         _FeatureCard(
-          icon: Icons.podcasts_rounded,
-          title: 'home_live'.tr(),
-          subtitle: 'home_live_hint'.tr(),
-          color: _green,
-          route: RoutesNames.adhanBase,
-        ),
-        _FeatureCard(
-          icon: Icons.radio_rounded,
+          icon: Assets.icons.signal.path,
           title: 'home_radio'.tr(),
           subtitle: 'home_radio_hint'.tr(),
           color: _gold,
+          route: RoutesNames.adhanBase,
+        ),
+        _FeatureCard(
+          icon: Assets.icons.tv.path,
+          title: 'home_live'.tr(),
+          subtitle: 'home_live_hint'.tr(),
+          color: _green,
           route: RoutesNames.adhanBase,
         ),
       ),
       gap(),
       row(
         _FeatureCard(
-          icon: Icons.notifications_none_rounded,
-          title: 'home_reminders'.tr(),
-          subtitle: 'home_reminders_hint'.tr(),
-          color: _green,
-          route: RoutesNames.remindersBase,
-        ),
-        _FeatureCard(
-          icon: Icons.mic_none_rounded,
+          icon: Assets.icons.headphones.path,
           title: 'home_podcast'.tr(),
           subtitle: 'home_podcast_hint'.tr(),
           color: _gold,
           route: RoutesNames.adhanBase,
         ),
+        _FeatureCard(
+          icon: Assets.icons.bell.path,
+          title: 'home_reminders'.tr(),
+          subtitle: 'home_reminders_hint'.tr(),
+          color: _green,
+          route: RoutesNames.remindersBase,
+        ),
       ),
       gap(),
       _WideFeature(
-        icon: Icons.favorite_border_rounded,
+        icon: Assets.icons.heart.path,
         title: 'home_salawat'.tr(),
         subtitle: 'home_salawat_hint'.tr(),
         color: _gold,
@@ -576,9 +578,6 @@ class _VerseCard extends StatelessWidget {
 
   final Color gold;
 
-  static const _ink = Color(0xFF4B3A1B);
-  static const _caption = Color(0xFF9C7B2E);
-
   @override
   Widget build(BuildContext context) {
     return BlocBuilder<CBDailyVerse, SDailyVerse>(
@@ -591,7 +590,7 @@ class _VerseCard extends StatelessWidget {
               ? null
               : () => Modular.to.pushNamed(QuranRoutes.readerFromAyah(verse.surahNumber, verse.ayah)),
           child: SizedBox(
-            height: 124.h,
+            height: 154.h,
             child: Stack(
               children: [
                 Positioned.fill(
@@ -609,14 +608,14 @@ class _VerseCard extends StatelessWidget {
                   ),
                 ),
                 Positioned(
-                  top: 7.h,
+                  top: 4.h,
                   right: 5.w,
                   child: Container(
-                    width: 54.r,
-                    height: 54.r,
+                    width: 86.r,
+                    height: 86.r,
                     decoration: BoxDecoration(
                       shape: BoxShape.circle,
-                      border: Border.all(color: gold.withValues(alpha: 0.13), width: 4.r),
+                      border: Border.all(color: gold.withValues(alpha: 0.13), width: 6.r),
                     ),
                   ),
                 ),
@@ -626,21 +625,18 @@ class _VerseCard extends StatelessWidget {
                     child: Column(
                       children: [
                         CircleAvatar(
-                          radius: 13.r,
+                          radius: 20.r,
                           backgroundColor: gold,
-                          child: Icon(Icons.star_rounded, size: 14.r, color: Colors.white),
+                          child: Icon(Icons.star_rounded, size: 20.r, color: Colors.white),
                         ),
                         SizedBox(height: 2.h),
-                        Text(
-                          'home_verse_label'.tr(),
-                          style: TextStyle(fontSize: 8.sp, color: _caption, fontWeight: FontWeight.w600),
-                        ),
+                        Text('home_verse_label'.tr(), style: AppTextStyles.grey12W400),
                         Expanded(child: Center(child: _verseText(verse))),
                         Text(
                           _sourceLabel(verse),
                           maxLines: 1,
                           overflow: TextOverflow.ellipsis,
-                          style: TextStyle(fontSize: 8.sp, color: _caption),
+                          style: AppTextStyles.grey14W400,
                         ),
                       ],
                     ),
@@ -668,11 +664,11 @@ class _VerseCard extends StatelessWidget {
 
     return Text.rich(
       TextSpan(
-        style: GoogleFonts.amiri(fontSize: 15.sp, fontWeight: FontWeight.w700, color: _ink, height: 1.45),
+        style: AppTextStyles.ink18W400,
         children: [
-          ornament('assets/images/verse_ornament_end.png'),
-          TextSpan(text: text),
           ornament('assets/images/verse_ornament_start.png'),
+          TextSpan(text: text),
+          ornament('assets/images/verse_ornament_end.png'),
         ],
       ),
       textAlign: TextAlign.center,
@@ -713,7 +709,7 @@ class _FeatureCard extends StatelessWidget {
     required this.route,
   });
 
-  final IconData icon;
+  final String icon;
   final String title;
   final String subtitle;
   final Color color;
@@ -725,7 +721,7 @@ class _FeatureCard extends StatelessWidget {
       borderRadius: BorderRadius.circular(16.r),
       onTap: () => Modular.to.pushNamed(route),
       child: Container(
-        height: 104.h,
+        height: 150.h,
         padding: EdgeInsets.all(14.r),
         decoration: BoxDecoration(
           color: Colors.white,
@@ -737,82 +733,10 @@ class _FeatureCard extends StatelessWidget {
           children: [
             _HomeIconBox(icon: icon, color: color),
             const Spacer(),
-            Text(
-              title,
-              maxLines: 1,
-              overflow: TextOverflow.ellipsis,
-              style: TextStyle(fontSize: 13.sp, fontWeight: FontWeight.w800),
-            ),
+            Text(title, maxLines: 1, overflow: TextOverflow.ellipsis, style: AppTextStyles.ink18W500),
             SizedBox(height: 2.h),
-            Text(
-              subtitle,
-              maxLines: 1,
-              overflow: TextOverflow.ellipsis,
-              style: TextStyle(fontSize: 9.sp, color: Colors.grey[600]),
-            ),
+            Text(subtitle, maxLines: 1, overflow: TextOverflow.ellipsis, style: AppTextStyles.grey12W400),
           ],
-        ),
-      ),
-    );
-  }
-}
-
-/// Full-width "continue" card: text on the right, action arrow on the left.
-class _WideCTA extends StatelessWidget {
-  const _WideCTA({
-    required this.icon,
-    required this.title,
-    required this.subtitle,
-    required this.color,
-    required this.route,
-  });
-
-  final IconData icon;
-  final String title;
-  final String subtitle;
-  final Color color;
-  final String route;
-
-  @override
-  Widget build(BuildContext context) {
-    return Directionality(
-      textDirection: TextDirection.rtl,
-      child: InkWell(
-        borderRadius: BorderRadius.circular(28.r),
-        onTap: () => Modular.to.pushNamed(route),
-        child: Container(
-          height: 89.h,
-          padding: EdgeInsets.symmetric(horizontal: 20.w),
-          decoration: BoxDecoration(
-            color: Colors.white,
-            borderRadius: BorderRadius.circular(28.r),
-            border: Border.all(color: const Color(0xFFE6EFEC)),
-            boxShadow: const [BoxShadow(color: Color(0x09000000), blurRadius: 14, offset: Offset(0, 5))],
-          ),
-          child: Row(
-            children: [
-              Container(
-                width: 56.r,
-                height: 56.r,
-                decoration: BoxDecoration(
-                  borderRadius: BorderRadius.circular(24.r),
-                  color: Color(0xFFD4A62A),
-                  boxShadow: [BoxShadow(color: Color(0x33000000), blurRadius: 12, offset: Offset(0, 7))],
-                ),
-                child: Icon(Icons.arrow_back_rounded, color: Colors.white, size: 30.r),
-              ),
-              SizedBox(width: 18.w),
-              Expanded(
-                child: Text(
-                  title,
-                  textAlign: TextAlign.right,
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                  style: TextStyle(color: const Color(0xFF252525), fontSize: 23.sp, fontWeight: FontWeight.w500),
-                ),
-              ),
-            ],
-          ),
         ),
       ),
     );
@@ -824,14 +748,14 @@ class _WideFeature extends StatelessWidget {
   const _WideFeature({
     required this.icon,
     required this.title,
-    required this.subtitle,
+    this.subtitle,
     required this.color,
     required this.route,
   });
 
-  final IconData icon;
+  final String icon;
   final String title;
-  final String subtitle;
+  final String? subtitle;
   final Color color;
   final String route;
 
@@ -853,15 +777,9 @@ class _WideFeature extends StatelessWidget {
             Column(
               crossAxisAlignment: CrossAxisAlignment.end,
               children: [
-                Text(
-                  title,
-                  style: TextStyle(fontSize: 14.sp, fontWeight: FontWeight.w800),
-                ),
+                Text(title, style: AppTextStyles.ink18W500),
                 SizedBox(height: 2.h),
-                Text(
-                  subtitle,
-                  style: TextStyle(fontSize: 9.sp, color: Colors.grey[600]),
-                ),
+                if (subtitle != null) Text(subtitle!, style: AppTextStyles.grey12W400),
               ],
             ),
             SizedBox(width: 12.w),
@@ -876,7 +794,7 @@ class _WideFeature extends StatelessWidget {
 class _HomeIconBox extends StatelessWidget {
   const _HomeIconBox({required this.icon, required this.color});
 
-  final IconData icon;
+  final String icon;
   final Color color;
 
   @override
@@ -884,10 +802,10 @@ class _HomeIconBox extends StatelessWidget {
     final isGold = color == const Color(0xFFD6A72C);
 
     return Container(
-      width: 40.r,
-      height: 40.r,
+      width: 56.r,
+      height: 56.r,
       decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(14.r),
+        borderRadius: BorderRadius.circular(24.r),
         gradient: LinearGradient(
           begin: Alignment.topCenter,
           end: Alignment.bottomCenter,
@@ -895,7 +813,8 @@ class _HomeIconBox extends StatelessWidget {
         ),
         boxShadow: const [BoxShadow(color: Color(0x1A000000), blurRadius: 7, offset: Offset(0, 3))],
       ),
-      child: Icon(icon, color: Colors.white, size: 20.r),
+      padding: EdgeInsets.all(14.r),
+      child: SvgPicture.asset(icon, colorFilter: ColorFilter.mode(Colors.white, BlendMode.srcIn)),
     );
   }
 }

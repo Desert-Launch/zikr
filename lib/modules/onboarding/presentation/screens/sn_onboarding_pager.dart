@@ -187,7 +187,7 @@ class _Slide extends StatelessWidget {
           Text(
             data.titleKey.tr(),
             textAlign: TextAlign.center,
-            style: GoogleFonts.tajawal(
+            style: GoogleFonts.cairo(
               fontSize: 26.sp,
               fontWeight: FontWeight.w800,
             ),

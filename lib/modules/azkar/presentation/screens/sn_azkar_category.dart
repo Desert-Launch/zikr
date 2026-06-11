@@ -134,7 +134,7 @@ class _CategoryHeader extends StatelessWidget {
                   children: [
                     Text(
                       'azkar_header_title'.tr(),
-                      style: GoogleFonts.tajawal(
+                      style: GoogleFonts.cairo(
                         color: Colors.white,
                         fontSize: 20.sp,
                         fontWeight: FontWeight.w700,

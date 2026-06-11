@@ -100,7 +100,7 @@ class _Header extends StatelessWidget {
         SizedBox(height: 16.h),
         Text(
           'onboarding_language_title'.tr(),
-          style: GoogleFonts.tajawal(
+          style: GoogleFonts.cairo(
             fontSize: 24.sp,
             fontWeight: FontWeight.w800,
           ),

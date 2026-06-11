@@ -44,7 +44,7 @@ class SNAdhanSettings extends StatelessWidget {
                   padding: EdgeInsetsDirectional.only(start: 8.w, bottom: 9.h),
                   child: Text(
                     'adhan_prayer_alerts_section'.tr(),
-                    style: GoogleFonts.tajawal(
+                    style: GoogleFonts.cairo(
                       fontSize: 10.sp,
                       color: const Color(0xFF777777),
                     ),
@@ -157,7 +157,7 @@ class _PrayerRow extends StatelessWidget {
               SizedBox(width: 13.w),
               Text(
                 title,
-                style: GoogleFonts.tajawal(
+                style: GoogleFonts.cairo(
                   fontSize: 14.sp,
                   color: const Color(0xFF303030),
                 ),
@@ -171,7 +171,7 @@ class _PrayerRow extends StatelessWidget {
                     : 'adhan_voice_none'.tr(),
                 maxLines: 1,
                 overflow: TextOverflow.ellipsis,
-                style: GoogleFonts.tajawal(
+                style: GoogleFonts.cairo(
                   fontSize: 9.sp,
                   color: const Color(0xFF777777),
                 ),
@@ -223,7 +223,7 @@ class _VirtueCard extends StatelessWidget {
           SizedBox(height: 8.h),
           Text(
             'khatma_virtue_title'.tr(),
-            style: GoogleFonts.tajawal(
+            style: GoogleFonts.cairo(
               fontSize: 11.sp,
               color: const Color(0xFF8C7A55),
             ),
@@ -240,7 +240,7 @@ class _VirtueCard extends StatelessWidget {
           ),
           Text(
             '[فاطر: 29]',
-            style: GoogleFonts.tajawal(
+            style: GoogleFonts.cairo(
               fontSize: 10.sp,
               color: const Color(0xFF8C7A55),
             ),

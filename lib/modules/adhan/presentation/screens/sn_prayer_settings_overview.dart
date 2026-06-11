@@ -56,7 +56,7 @@ class _SNPrayerSettingsOverviewState extends State<SNPrayerSettingsOverview> {
             padding: EdgeInsetsDirectional.only(start: 8.w, bottom: 8.h),
             child: Text(
               'prayer_settings_location_section'.tr(),
-              style: GoogleFonts.tajawal(
+              style: GoogleFonts.cairo(
                 fontSize: 10.sp,
                 color: const Color(0xFF777777),
               ),
@@ -175,7 +175,7 @@ class _Row extends StatelessWidget {
                   children: [
                     Text(
                       title,
-                      style: GoogleFonts.tajawal(
+                      style: GoogleFonts.cairo(
                         fontSize: 14.sp,
                         color: const Color(0xFF303030),
                       ),
@@ -184,7 +184,7 @@ class _Row extends StatelessWidget {
                       SizedBox(height: 3.h),
                       Text(
                         subtitle!,
-                        style: GoogleFonts.tajawal(
+                        style: GoogleFonts.cairo(
                           fontSize: 9.sp,
                           color: const Color(0xFF858585),
                         ),
@@ -238,7 +238,7 @@ class _VirtueCard extends StatelessWidget {
           SizedBox(height: 8.h),
           Text(
             'khatma_virtue_title'.tr(),
-            style: GoogleFonts.tajawal(
+            style: GoogleFonts.cairo(
               fontSize: 11.sp,
               color: const Color(0xFF8C7A55),
             ),
@@ -255,7 +255,7 @@ class _VirtueCard extends StatelessWidget {
           ),
           Text(
             '[فاطر: 29]',
-            style: GoogleFonts.tajawal(
+            style: GoogleFonts.cairo(
               fontSize: 10.sp,
               color: const Color(0xFF8C7A55),
             ),

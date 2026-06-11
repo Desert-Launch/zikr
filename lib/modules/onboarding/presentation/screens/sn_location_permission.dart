@@ -85,7 +85,7 @@ class SNLocationPermission extends StatelessWidget {
                     Text(
                       'onboarding_location_title'.tr(),
                       textAlign: TextAlign.center,
-                      style: GoogleFonts.tajawal(
+                      style: GoogleFonts.cairo(
                         fontSize: 24.sp,
                         fontWeight: FontWeight.w800,
                       ),

@@ -246,7 +246,7 @@ class _QiblaHeader extends StatelessWidget {
               children: [
                 Text(
                   'home_qibla'.tr(),
-                  style: GoogleFonts.tajawal(
+                  style: GoogleFonts.cairo(
                     color: Colors.white,
                     fontSize: 20.sp,
                     fontWeight: FontWeight.w700,

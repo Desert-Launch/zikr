@@ -191,7 +191,7 @@ class _PrayerHeader extends StatelessWidget {
                       children: [
                         Text(
                           'prayer_title'.tr(),
-                          style: GoogleFonts.tajawal(color: Colors.white, fontSize: 19.sp, fontWeight: FontWeight.w700),
+                          style: GoogleFonts.cairo(color: Colors.white, fontSize: 19.sp, fontWeight: FontWeight.w700),
                         ),
                         Text(
                           'prayer_header_subtitle'.tr(),
@@ -248,7 +248,7 @@ class _PrayerHeader extends StatelessWidget {
                       SizedBox(height: 3.h),
                       Text(
                         _date(now),
-                        style: GoogleFonts.tajawal(color: Colors.white, fontSize: 20.sp, fontWeight: FontWeight.w500),
+                        style: GoogleFonts.cairo(color: Colors.white, fontSize: 20.sp, fontWeight: FontWeight.w500),
                       ),
                       SizedBox(height: 4.h),
                       Text(
