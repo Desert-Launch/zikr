@@ -7,6 +7,7 @@ import 'package:quran/core/services/routes/routes_names.dart';
 import 'package:quran/core/theme/app_colors.dart';
 import 'package:quran/core/theme/brand_colors.dart';
 import 'package:quran/modules/khatma/presentation/cubits/cb_khatma.dart';
+import 'package:quran/modules/khatma/presentation/widgets/w_khatma_stat_row.dart';
 import 'package:share_plus/share_plus.dart';
 
 class SNKhatmaCompleted extends StatelessWidget {
@@ -63,17 +64,17 @@ class SNKhatmaCompleted extends StatelessWidget {
                 ),
                 child: Column(
                   children: [
-                    _StatRow(
+                    WKhatmaStatRow(
                       label: 'khatma_total_days'.tr(),
                       value: '${latest.daysCompleted}',
                     ),
                     Divider(height: 16.h),
-                    _StatRow(
+                    WKhatmaStatRow(
                       label: 'khatma_longest_streak'.tr(),
                       value: '${latest.longestStreakDays}',
                     ),
                     Divider(height: 16.h),
-                    _StatRow(
+                    WKhatmaStatRow(
                       label: 'khatma_plan_length'.tr(),
                       value: '${latest.planTotalDays}',
                     ),
@@ -115,31 +116,6 @@ class SNKhatmaCompleted extends StatelessWidget {
           ],
         ),
       ),
-    );
-  }
-}
-
-class _StatRow extends StatelessWidget {
-  const _StatRow({required this.label, required this.value});
-  final String label;
-  final String value;
-
-  @override
-  Widget build(BuildContext context) {
-    return Row(
-      children: [
-        Expanded(
-          child: Text(label,
-              style: TextStyle(fontSize: 13.sp, color: context.brand.muted)),
-        ),
-        Text(value,
-            style: TextStyle(
-              fontSize: 18.sp,
-              fontWeight: FontWeight.w800,
-              color: AppColorsLight.primary,
-              fontFeatures: const [FontFeature.tabularFigures()],
-            )),
-      ],
     );
   }
 }

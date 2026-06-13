@@ -9,6 +9,9 @@ import 'package:quran/modules/khatma/data/datasources/local/ds_local_khatma.dart
 import 'package:quran/modules/khatma/data/models/m_khatma_metadata.dart';
 import 'package:quran/modules/khatma/presentation/cubits/cb_khatma.dart';
 import 'package:quran/modules/khatma/presentation/cubits/s_khatma.dart';
+import 'package:quran/modules/khatma/presentation/widgets/w_khatma_plan_card.dart';
+import 'package:quran/modules/khatma/presentation/widgets/w_khatma_plan_row.dart';
+import 'package:quran/modules/khatma/presentation/widgets/w_khatma_section_label.dart';
 
 class SNKhatmaPlans extends StatelessWidget {
   const SNKhatmaPlans({super.key});
@@ -49,9 +52,15 @@ class SNKhatmaPlans extends StatelessWidget {
                       sliver: SliverList.list(
                         children: [
                           if (suggested.isNotEmpty) ...[
-                            _SectionLabel('khatma_suggested'.tr()),
+                            WKhatmaSectionLabel(
+                              'khatma_suggested'.tr(),
+                              padding: EdgeInsetsDirectional.only(
+                                start: 5.w,
+                                bottom: 6.h,
+                              ),
+                            ),
                             ...suggested.map(
-                              (plan) => _PlanCard(
+                              (plan) => WKhatmaPlanCard(
                                 plan: plan,
                                 suggested: true,
                                 onTap: () => Modular.to.pushNamed(
@@ -61,7 +70,13 @@ class SNKhatmaPlans extends StatelessWidget {
                             ),
                             SizedBox(height: 12.h),
                           ],
-                          _SectionLabel('khatma_all_plans'.tr()),
+                          WKhatmaSectionLabel(
+                            'khatma_all_plans'.tr(),
+                            padding: EdgeInsetsDirectional.only(
+                              start: 5.w,
+                              bottom: 6.h,
+                            ),
+                          ),
                           Container(
                             decoration: BoxDecoration(
                               color: Colors.white,
@@ -73,7 +88,7 @@ class SNKhatmaPlans extends StatelessWidget {
                             child: Column(
                               children: [
                                 for (final plan in others) ...[
-                                  _PlanRow(
+                                  WKhatmaPlanRow(
                                     plan: plan,
                                     onTap: () => Modular.to.pushNamed(
                                       KhatmaRoutes.fullWirds(plan.id),
@@ -99,99 +114,6 @@ class SNKhatmaPlans extends StatelessWidget {
           );
         },
       ),
-    );
-  }
-}
-
-class _SectionLabel extends StatelessWidget {
-  const _SectionLabel(this.text);
-
-  final String text;
-
-  @override
-  Widget build(BuildContext context) {
-    return Padding(
-      padding: EdgeInsetsDirectional.only(start: 5.w, bottom: 6.h),
-      child: Text(
-        text,
-        textAlign: TextAlign.end,
-        style: TextStyle(fontSize: 12.sp, color: Colors.grey[600]),
-      ),
-    );
-  }
-}
-
-class _PlanCard extends StatelessWidget {
-  const _PlanCard({
-    required this.plan,
-    required this.suggested,
-    required this.onTap,
-  });
-
-  final MKhatmaMetadata plan;
-  final bool suggested;
-  final VoidCallback onTap;
-
-  @override
-  Widget build(BuildContext context) {
-    final isArabic = LocalizeAndTranslate.getLanguageCode() == 'ar';
-    return InkWell(
-      borderRadius: BorderRadius.circular(14.r),
-      onTap: onTap,
-      child: Container(
-        padding: EdgeInsets.all(14.r),
-        decoration: BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.circular(14.r),
-          border: Border.all(color: const Color(0xFFDDE6E0)),
-        ),
-        child: Row(
-          children: [
-            const Icon(Icons.chevron_left_rounded),
-            const Spacer(),
-            Column(
-              crossAxisAlignment: CrossAxisAlignment.end,
-              children: [
-                Text(
-                  isArabic ? plan.nameAr : plan.nameEn,
-                  style: TextStyle(fontSize: 16.sp),
-                ),
-                Text(
-                  isArabic ? plan.quartersPerDayAr : plan.quartersPerDayEn,
-                  style: TextStyle(fontSize: 12.sp, color: Colors.grey[600]),
-                ),
-              ],
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-}
-
-class _PlanRow extends StatelessWidget {
-  const _PlanRow({required this.plan, required this.onTap});
-
-  final MKhatmaMetadata plan;
-  final VoidCallback onTap;
-
-  @override
-  Widget build(BuildContext context) {
-    final isArabic = LocalizeAndTranslate.getLanguageCode() == 'ar';
-    return ListTile(
-      dense: true,
-      leading: const Icon(Icons.chevron_left_rounded, size: 18),
-      title: Text(
-        isArabic ? plan.nameAr : plan.nameEn,
-        textAlign: TextAlign.end,
-        style: TextStyle(fontSize: 15.sp),
-      ),
-      subtitle: Text(
-        isArabic ? plan.quartersPerDayAr : plan.quartersPerDayEn,
-        textAlign: TextAlign.end,
-        style: TextStyle(fontSize: 12.sp),
-      ),
-      onTap: onTap,
     );
   }
 }

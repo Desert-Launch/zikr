@@ -7,6 +7,9 @@ import 'package:quran/core/widgets/w_gradient_app_bar.dart';
 import 'package:quran/modules/khatma/data/datasources/local/ds_local_khatma.dart';
 import 'package:quran/modules/khatma/data/models/m_khatma_metadata.dart';
 import 'package:quran/modules/khatma/presentation/cubits/cb_khatma.dart';
+import 'package:quran/modules/khatma/presentation/widgets/w_khatma_section_label.dart';
+import 'package:quran/modules/khatma/presentation/widgets/w_khatma_suggested_wird.dart';
+import 'package:quran/modules/khatma/presentation/widgets/w_khatma_wird_row.dart';
 
 class SNKhatmaWirds extends StatefulWidget {
   const SNKhatmaWirds({super.key, required this.planId});
@@ -54,13 +57,13 @@ class _SNKhatmaWirdsState extends State<SNKhatmaWirds> {
                 padding: EdgeInsets.fromLTRB(14.w, 12.h, 14.w, 100.h),
                 sliver: SliverList.list(
                   children: [
-                    _SectionLabel('khatma_suggested'.tr()),
-                    _SuggestedWird(
+                    WKhatmaSectionLabel('khatma_suggested'.tr()),
+                    WKhatmaSuggestedWird(
                       wird: data.wirds.first,
                       onTap: () => _openWird(data.wirds.first),
                     ),
                     SizedBox(height: 14.h),
-                    _SectionLabel('khatma_all_wirds'.tr()),
+                    WKhatmaSectionLabel('khatma_all_wirds'.tr()),
                     Container(
                       decoration: BoxDecoration(
                         color: Colors.white,
@@ -70,7 +73,10 @@ class _SNKhatmaWirdsState extends State<SNKhatmaWirds> {
                       child: Column(
                         children: [
                           for (final wird in data.wirds) ...[
-                            _WirdRow(wird: wird, onTap: () => _openWird(wird)),
+                            WKhatmaWirdRow(
+                              wird: wird,
+                              onTap: () => _openWird(wird),
+                            ),
                             if (wird != data.wirds.last)
                               const Divider(
                                 height: 1,
@@ -153,99 +159,6 @@ class _SNKhatmaWirdsState extends State<SNKhatmaWirds> {
     await cubit.startPlan(plan);
     if (!mounted) return;
     Modular.to.pushReplacementNamed(KhatmaRoutes.fullTracker());
-  }
-}
-
-class _SuggestedWird extends StatelessWidget {
-  const _SuggestedWird({required this.wird, required this.onTap});
-
-  final MKhatmaWird wird;
-  final VoidCallback onTap;
-
-  @override
-  Widget build(BuildContext context) {
-    return InkWell(
-      borderRadius: BorderRadius.circular(14.r),
-      onTap: onTap,
-      child: Container(
-        padding: EdgeInsets.symmetric(horizontal: 14.w, vertical: 12.h),
-        decoration: BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.circular(14.r),
-          border: Border.all(color: _SNKhatmaWirdsState._border),
-        ),
-        child: _WirdContent(wird: wird),
-      ),
-    );
-  }
-}
-
-class _WirdRow extends StatelessWidget {
-  const _WirdRow({required this.wird, required this.onTap});
-
-  final MKhatmaWird wird;
-  final VoidCallback onTap;
-
-  @override
-  Widget build(BuildContext context) {
-    return InkWell(
-      onTap: onTap,
-      child: Padding(
-        padding: EdgeInsets.symmetric(horizontal: 14.w, vertical: 8.h),
-        child: _WirdContent(wird: wird),
-      ),
-    );
-  }
-}
-
-class _WirdContent extends StatelessWidget {
-  const _WirdContent({required this.wird});
-
-  final MKhatmaWird wird;
-
-  @override
-  Widget build(BuildContext context) {
-    final isArabic = LocalizeAndTranslate.getLanguageCode() == 'ar';
-    final startSurah = isArabic ? wird.startSurahAr : wird.startSurahEn;
-    final endSurah = isArabic ? wird.endSurahAr : wird.endSurahEn;
-    return Row(
-      children: [
-        const Icon(Icons.chevron_left_rounded, size: 18),
-        const Spacer(),
-        Column(
-          crossAxisAlignment: CrossAxisAlignment.end,
-          children: [
-            Text(
-              '${'khatma_wird_day'.tr()} ${wird.index}',
-              style: TextStyle(fontSize: 15.sp),
-            ),
-            Text(
-              '$startSurah ${wird.startAyahNumber} - '
-              '$endSurah ${wird.endAyahNumber}',
-              style: TextStyle(fontSize: 12.sp, color: Colors.grey[600]),
-            ),
-          ],
-        ),
-      ],
-    );
-  }
-}
-
-class _SectionLabel extends StatelessWidget {
-  const _SectionLabel(this.text);
-
-  final String text;
-
-  @override
-  Widget build(BuildContext context) {
-    return Padding(
-      padding: EdgeInsetsDirectional.only(end: 5.w, bottom: 6.h),
-      child: Text(
-        text,
-        textAlign: TextAlign.end,
-        style: TextStyle(fontSize: 12.sp, color: Colors.grey[600]),
-      ),
-    );
   }
 }
 
