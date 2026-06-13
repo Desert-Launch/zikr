@@ -1,15 +1,15 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_modular/flutter_modular.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
-import 'package:google_fonts/google_fonts.dart';
 import 'package:localize_and_translate/localize_and_translate.dart';
 import 'package:quran/core/services/routes/routes_names.dart';
-import 'package:quran/core/theme/app_text_styles.dart';
 import 'package:quran/modules/azkar/data/datasources/local/ds_local_azkar.dart';
 import 'package:quran/modules/azkar/data/models/m_azkar_catalog.dart';
 import 'package:quran/modules/azkar/data/models/m_azkar_item.dart';
 import 'package:quran/modules/azkar/data/sources/local/box_azkar_favorite.dart';
 import 'package:quran/modules/azkar/data/sources/local/box_azkar_progress.dart';
+import 'package:quran/modules/azkar/presentation/widgets/w_azkar_category_card.dart';
+import 'package:quran/modules/azkar/presentation/widgets/w_azkar_header.dart';
 
 class SNAzkarHome extends StatefulWidget {
   const SNAzkarHome({super.key});
@@ -60,7 +60,7 @@ class _SNAzkarHomeState extends State<SNAzkarHome> {
           return CustomScrollView(
             slivers: [
               SliverToBoxAdapter(
-                child: _AzkarHeader(
+                child: WAzkarHeader(
                   green: _green,
                   categoryCount: data.catalog.length,
                   completedToday: _completedToday(data.daily),
@@ -79,17 +79,19 @@ class _SNAzkarHomeState extends State<SNAzkarHome> {
                   ),
                   delegate: SliverChildListDelegate([
                     ...data.catalog.map(
-                      (entry) => _CategoryCard(
+                      (entry) => WAzkarCategoryCard(
                         title: _catalogName(entry),
                         count: entry.isOther ? -1 : (byId[entry.slug]?.items.length ?? 0),
-                        style: _CategoryStyle(_colorFor(entry.slug), entry.emoji),
+                        color: _colorFor(entry.slug),
+                        emoji: entry.emoji,
                         onTap: entry.isOther ? _openOther : () => _openCategory(entry.slug),
                       ),
                     ),
-                    _CategoryCard(
+                    WAzkarCategoryCard(
                       title: 'azkar_favorites'.tr(),
                       count: _favorites.all().length,
-                      style: const _CategoryStyle(Color(0xFFFF841D), '📖'),
+                      color: const Color(0xFFFF841D),
+                      emoji: '📖',
                       onTap: _openFavorites,
                     ),
                   ]),
@@ -140,231 +142,4 @@ class _AzkarHomeData {
 
   final List<MAzkarCatalog> catalog;
   final List<MAzkarCategory> daily;
-}
-
-class _AzkarHeader extends StatelessWidget {
-  const _AzkarHeader({
-    required this.green,
-    required this.categoryCount,
-    required this.completedToday,
-    required this.favorites,
-    required this.onBack,
-  });
-
-  final Color green;
-  final int categoryCount;
-  final int completedToday;
-  final int favorites;
-  final VoidCallback onBack;
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      height: 228.h,
-      padding: EdgeInsets.fromLTRB(0.w, 8.h, 0.w, 0.h),
-      decoration: BoxDecoration(
-        color: green,
-        borderRadius: BorderRadius.vertical(bottom: Radius.circular(28.r)),
-      ),
-      child: Stack(
-        children: [
-          Positioned(
-            right: -44.w,
-            top: -52.h,
-            child: _OutlineCircle(size: 150.r),
-          ),
-          Positioned(
-            left: -42.w,
-            bottom: -64.h,
-            child: _OutlineCircle(size: 150.r),
-          ),
-          Positioned(
-            right: 105.w,
-            top: 62.h,
-            child: _OutlineCircle(size: 92.r),
-          ),
-          SafeArea(
-            bottom: false,
-            child: Column(
-              children: [
-                Padding(
-                  padding: EdgeInsets.symmetric(horizontal: 20.w),
-                  child: Row(
-                    children: [
-                      CircleAvatar(
-                        radius: 21.r,
-                        backgroundColor: Colors.white.withValues(alpha: 0.16),
-                        child: const Text('🤲', style: TextStyle(fontSize: 20)),
-                      ),
-                      const Spacer(),
-                      Column(
-                        crossAxisAlignment: CrossAxisAlignment.end,
-                        children: [
-                          Text(
-                            'azkar_header_title'.tr(),
-                            style: GoogleFonts.cairo(color: Colors.white, fontSize: 21.sp, fontWeight: FontWeight.w700),
-                          ),
-                          Text(
-                            'azkar_header_subtitle'.tr(),
-                            style: TextStyle(color: Colors.white.withValues(alpha: 0.72), fontSize: 10.sp),
-                          ),
-                        ],
-                      ),
-                      SizedBox(width: 8.w),
-                      IconButton(
-                        onPressed: onBack,
-                        icon: const Icon(Icons.arrow_forward_rounded, color: Colors.white),
-                      ),
-                    ],
-                  ),
-                ),
-                const Spacer(),
-                Padding(
-                  padding: EdgeInsets.symmetric(horizontal: 20.w, vertical: 25.h),
-                  child: Row(
-                    children: [
-                      Expanded(
-                        child: _StatCard(value: favorites, label: 'azkar_favorites'.tr()),
-                      ),
-                      SizedBox(width: 10.w),
-                      Expanded(
-                        child: _StatCard(value: completedToday, label: 'azkar_completed_today'.tr()),
-                      ),
-                      SizedBox(width: 10.w),
-                      Expanded(
-                        child: _StatCard(value: categoryCount, label: 'azkar_categories'.tr()),
-                      ),
-                    ],
-                  ),
-                ),
-              ],
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-}
-
-class _OutlineCircle extends StatelessWidget {
-  const _OutlineCircle({required this.size});
-
-  final double size;
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      width: size,
-      height: size,
-      decoration: BoxDecoration(
-        shape: BoxShape.circle,
-        border: Border.all(color: Colors.white.withValues(alpha: 0.05), width: 4),
-      ),
-    );
-  }
-}
-
-class _StatCard extends StatelessWidget {
-  const _StatCard({required this.value, required this.label});
-
-  final int value;
-  final String label;
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      padding: EdgeInsets.symmetric(vertical: 10.h),
-      decoration: BoxDecoration(color: Colors.white.withValues(alpha: 0.08), borderRadius: BorderRadius.circular(14.r)),
-      child: Column(
-        children: [
-          Text(
-            '$value',
-            style: TextStyle(color: Colors.white, fontSize: 18.sp, fontWeight: FontWeight.w500),
-          ),
-          SizedBox(height: 2.h),
-          Text(
-            label,
-            maxLines: 1,
-            overflow: TextOverflow.ellipsis,
-            style: TextStyle(color: Colors.white.withValues(alpha: 0.76), fontSize: 9.sp),
-          ),
-        ],
-      ),
-    );
-  }
-}
-
-class _CategoryCard extends StatelessWidget {
-  const _CategoryCard({required this.title, required this.count, required this.style, required this.onTap});
-
-  final String title;
-  final int count;
-  final _CategoryStyle style;
-  final VoidCallback onTap;
-
-  @override
-  Widget build(BuildContext context) {
-    return InkWell(
-      borderRadius: BorderRadius.circular(16.r),
-      onTap: onTap,
-      child: Container(
-        decoration: BoxDecoration(
-          color: style.color,
-          borderRadius: BorderRadius.circular(16.r),
-          boxShadow: [BoxShadow(color: style.color.withValues(alpha: 0.25), blurRadius: 9, offset: const Offset(0, 5))],
-        ),
-        child: Stack(
-          children: [
-            PositionedDirectional(
-              top: -7.h,
-              end: -7.w,
-              child: Container(
-                width: 70.r,
-                height: 70.r,
-                decoration: BoxDecoration(shape: BoxShape.circle, color: Colors.white.withValues(alpha: 0.07)),
-              ),
-            ),
-            Padding(
-              padding: EdgeInsets.all(15),
-              child: Align(
-                alignment: Alignment.topRight,
-                child: Text(style.emoji, style: AppTextStyles.white24W400.copyWith(fontSize: 30.sp)),
-              ),
-            ),
-            Padding(
-              padding: const EdgeInsets.all(20.0),
-              child: Align(
-                alignment: Alignment.bottomCenter,
-                child: Row(
-                  children: [
-                    Icon(Icons.chevron_left_rounded, color: Colors.white.withValues(alpha: 0.72), size: 18.r),
-                    const Spacer(),
-                    Column(
-                      mainAxisSize: MainAxisSize.min,
-                      crossAxisAlignment: CrossAxisAlignment.end,
-                      children: [
-                        Text(title, maxLines: 1, overflow: TextOverflow.ellipsis, style: AppTextStyles.white16W500),
-                        SizedBox(height: 2.h),
-                        Text(
-                          count >= 0 ? '$count ${'azkar_items_suffix'.tr()}' : 'azkar_browse'.tr(),
-                          style: AppTextStyles.white12W400,
-                        ),
-                      ],
-                    ),
-                  ],
-                ),
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-}
-
-class _CategoryStyle {
-  const _CategoryStyle(this.color, this.emoji);
-
-  final Color color;
-  final String emoji;
 }
