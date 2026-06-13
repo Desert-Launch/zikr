@@ -6,12 +6,12 @@ import 'package:localize_and_translate/localize_and_translate.dart';
 import 'package:quran/core/config/params/params_custom_input.dart';
 import 'package:quran/core/services/forms/f_forget_password.dart';
 import 'package:quran/core/services/routes/routes_names.dart';
-import 'package:quran/core/theme/app_colors.dart';
 import 'package:quran/modules/auth/presentation/cubits/cb_forgot_form.dart';
 import 'package:quran/modules/auth/presentation/cubits/s_forgot_form.dart';
 import 'package:quran/modules/auth/presentation/widgets/w_auth_button.dart';
 import 'package:quran/modules/auth/presentation/widgets/w_auth_error_banner.dart';
 import 'package:quran/modules/auth/presentation/widgets/w_auth_scaffold.dart';
+import 'package:quran/modules/auth/presentation/widgets/w_auth_success_banner.dart';
 
 class SNForgotPassword extends StatefulWidget {
   const SNForgotPassword({super.key});
@@ -58,7 +58,7 @@ class _SNForgotPasswordState extends State<SNForgotPassword> {
                     SizedBox(height: 12.h),
                   ],
                   if (state.didSend) ...[
-                    _SuccessBanner(message: 'auth_otp_sent'.tr()),
+                    WAuthSuccessBanner(message: 'auth_otp_sent'.tr()),
                     SizedBox(height: 12.h),
                   ],
                   WAuthButton(
@@ -71,39 +71,6 @@ class _SNForgotPasswordState extends State<SNForgotPassword> {
             },
           ),
         ),
-      ),
-    );
-  }
-}
-
-class _SuccessBanner extends StatelessWidget {
-  const _SuccessBanner({required this.message});
-  final String message;
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      width: double.infinity,
-      padding: EdgeInsets.all(12.w),
-      decoration: BoxDecoration(
-        color: AppColorsLight.success.withValues(alpha: 0.1),
-        borderRadius: BorderRadius.circular(10.r),
-        border: Border.all(color: AppColorsLight.success, width: 0.5),
-      ),
-      child: Row(
-        children: [
-          const Icon(
-            Icons.check_circle_outline_rounded,
-            color: AppColorsLight.success,
-          ),
-          SizedBox(width: 8.w),
-          Expanded(
-            child: Text(
-              message,
-              style: TextStyle(fontSize: 12.sp, color: AppColorsLight.success),
-            ),
-          ),
-        ],
       ),
     );
   }
