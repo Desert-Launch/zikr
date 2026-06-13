@@ -6,6 +6,7 @@ import 'package:quran/modules/azkar/presentation/cubits/cb_azkar_session.dart';
 import 'package:quran/modules/azkar/presentation/screens/sn_azkar_category.dart';
 import 'package:quran/modules/azkar/presentation/screens/sn_azkar_favorites.dart';
 import 'package:quran/modules/azkar/presentation/screens/sn_azkar_home.dart';
+import 'package:quran/modules/azkar/presentation/screens/sn_azkar_other.dart';
 import 'package:quran/modules/azkar/presentation/screens/sn_azkar_player.dart';
 
 class AzkarModule extends Module {
@@ -23,6 +24,7 @@ class AzkarModule extends Module {
   @override
   void routes(RouteManager r) {
     r.child(AzkarRoutes.home, child: (_) => const SNAzkarHome());
+    r.child(AzkarRoutes.other, child: (_) => const SNAzkarOther());
     r.child(
       AzkarRoutes.category,
       child: (_) {

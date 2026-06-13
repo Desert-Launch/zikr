@@ -3,49 +3,49 @@
         "id": 4,
         "arName": "أذكار الصباح",
         "enName": "Morning",
-        "filename": "morning_new.json",
-        "image": "morning.jpg"
+        "filename": "morning.json",
+        "emoji": "🌅"
     },
     {
         "id": 2,
         "arName": "أذكار المساء",
         "enName": "Evening",
-        "filename": "evening_new.json",
-        "image": "evening.jpg"
+        "filename": "evening.json",
+        "emoji": "🌙"
     },
     {
         "id": 6,
         "arName": "أذكار الاستيقاظ",
         "enName": "Waking Up",
-        "filename": "wakeing_up_new.json",
-        "image": "wakeing_up.jpg"
+        "filename": "wakeing_up.json",
+        "emoji": "☀️"
     },
     {
         "id": 5,
         "arName": "أذكار النوم",
         "enName": "Sleeping",
-        "filename": "sleeping_new.json",
-        "image": "sleeping.jpg"
+        "filename": "sleeping.json",
+        "emoji": "🛌"
     },
     {
         "id": 1,
         "arName": "أذكار بعد الصلاة",
         "enName": "After Prayer",
-        "filename": "after_pray_new.json",
-        "image": "after_pray.jpg"
+        "filename": "after_pray.json",
+        "emoji": "📿"
     },
     {
         "id": 3,
         "arName": "أذكار المسجد",
         "enName": "Masged",
-        "filename": "masged_new.json",
-        "image": "masged.jpg"
+        "filename": "masged.json",
+        "emoji": "🕌"
     },
     {
         "id": 7,
         "arName": "اذكار اضافية",
         "enName": "Other Azkar",
         "filename": "other_azkar.json",
-        "image": "other_azkar.jpg"
+        "emoji": "🤲"
     }
 ]

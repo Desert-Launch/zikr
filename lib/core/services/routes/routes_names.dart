@@ -64,11 +64,13 @@ class AzkarRoutes {
   AzkarRoutes._();
 
   static const String home = '/';
+  static const String other = '/other';
   static const String category = '/category';
   static const String player = '/player';
   static const String favorites = '/favorites';
 
   static String fullHome() => RoutesNames.azkarBase;
+  static String fullOther() => '${RoutesNames.azkarBase}other';
   static String fullCategory(String categoryId) =>
       '${RoutesNames.azkarBase}category?category=$categoryId';
   static String fullPlayer(String categoryId, {int item = 0}) =>

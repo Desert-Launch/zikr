@@ -23,8 +23,7 @@ class _SNAzkarCategoryState extends State<SNAzkarCategory> {
   static const _gold = Color(0xFFD6A72C);
   static const _canvas = Color(0xFFF8F7F4);
 
-  late final Future<MAzkarCategory?> _future = Modular.get<DSLocalAzkar>()
-      .category(widget.categoryId);
+  late final Future<MAzkarCategory?> _future = Modular.get<DSLocalAzkar>().category(widget.categoryId);
   late final BoxAzkarFavorite _favorites = Modular.get<BoxAzkarFavorite>();
   late final BoxAzkarProgress _progress = Modular.get<BoxAzkarProgress>();
 
@@ -44,11 +43,12 @@ class _SNAzkarCategoryState extends State<SNAzkarCategory> {
           return CustomScrollView(
             slivers: [
               SliverToBoxAdapter(
-                child: _CategoryHeader(
-                  category: category,
-                  completed: completed,
-                  favorites: _favorites.all().length,
+                child: _AzkarHeader(
                   green: _green,
+                  categoryCount: category.items.length,
+                  completedToday: completed,
+                  favorites: _favorites.all().length,
+                  onBack: Modular.to.pop,
                 ),
               ),
               SliverPadding(
@@ -71,9 +71,7 @@ class _SNAzkarCategoryState extends State<SNAzkarCategory> {
                         if (mounted) setState(() {});
                       },
                       onTap: () async {
-                        await Modular.to.pushNamed(
-                          AzkarRoutes.fullPlayer(category.id, item: itemIndex),
-                        );
+                        await Modular.to.pushNamed(AzkarRoutes.fullPlayer(category.id, item: itemIndex));
                         if (mounted) setState(() {});
                       },
                     );
@@ -89,125 +87,157 @@ class _SNAzkarCategoryState extends State<SNAzkarCategory> {
 
   int _completedCount(MAzkarCategory category) {
     final counts = _progress.today(category.id).completedCounts;
-    return category.items
-        .where((item) => (counts[item.id] ?? 0) >= item.repeat)
-        .length;
+    return category.items.where((item) => (counts[item.id] ?? 0) >= item.repeat).length;
   }
 }
 
-class _CategoryHeader extends StatelessWidget {
-  const _CategoryHeader({
-    required this.category,
-    required this.completed,
-    required this.favorites,
+class _AzkarHeader extends StatelessWidget {
+  const _AzkarHeader({
     required this.green,
+    required this.categoryCount,
+    required this.completedToday,
+    required this.favorites,
+    required this.onBack,
   });
 
-  final MAzkarCategory category;
-  final int completed;
-  final int favorites;
   final Color green;
+  final int categoryCount;
+  final int completedToday;
+  final int favorites;
+  final VoidCallback onBack;
 
   @override
   Widget build(BuildContext context) {
     return Container(
-      height: 204.h,
-      padding: EdgeInsets.fromLTRB(16.w, 8.h, 16.w, 18.h),
+      height: 228.h,
+      padding: EdgeInsets.fromLTRB(0.w, 8.h, 0.w, 0.h),
       decoration: BoxDecoration(
         color: green,
         borderRadius: BorderRadius.vertical(bottom: Radius.circular(28.r)),
       ),
-      child: SafeArea(
-        bottom: false,
-        child: Column(
-          children: [
-            Row(
+      child: Stack(
+        children: [
+          Positioned(
+            right: -44.w,
+            top: -52.h,
+            child: _OutlineCircle(size: 150.r),
+          ),
+          Positioned(
+            left: -42.w,
+            bottom: -64.h,
+            child: _OutlineCircle(size: 150.r),
+          ),
+          Positioned(
+            right: 105.w,
+            top: 62.h,
+            child: _OutlineCircle(size: 92.r),
+          ),
+          SafeArea(
+            bottom: false,
+            child: Column(
               children: [
-                CircleAvatar(
-                  radius: 20.r,
-                  backgroundColor: Colors.white.withValues(alpha: 0.16),
-                  child: const Text('🤲'),
+                Padding(
+                  padding: EdgeInsets.symmetric(horizontal: 20.w),
+                  child: Row(
+                    children: [
+                      CircleAvatar(
+                        radius: 21.r,
+                        backgroundColor: Colors.white.withValues(alpha: 0.16),
+                        child: const Text('🤲', style: TextStyle(fontSize: 20)),
+                      ),
+                      const Spacer(),
+                      Column(
+                        crossAxisAlignment: CrossAxisAlignment.end,
+                        children: [
+                          Text(
+                            'azkar_header_title'.tr(),
+                            style: GoogleFonts.cairo(color: Colors.white, fontSize: 21.sp, fontWeight: FontWeight.w700),
+                          ),
+                          Text(
+                            'azkar_header_subtitle'.tr(),
+                            style: TextStyle(color: Colors.white.withValues(alpha: 0.72), fontSize: 10.sp),
+                          ),
+                        ],
+                      ),
+                      SizedBox(width: 8.w),
+                      IconButton(
+                        onPressed: onBack,
+                        icon: const Icon(Icons.arrow_forward_rounded, color: Colors.white),
+                      ),
+                    ],
+                  ),
                 ),
                 const Spacer(),
-                Column(
-                  crossAxisAlignment: CrossAxisAlignment.end,
-                  children: [
-                    Text(
-                      'azkar_header_title'.tr(),
-                      style: GoogleFonts.cairo(
-                        color: Colors.white,
-                        fontSize: 20.sp,
-                        fontWeight: FontWeight.w700,
+                Padding(
+                  padding: EdgeInsets.symmetric(horizontal: 20.w, vertical: 25.h),
+                  child: Row(
+                    children: [
+                      Expanded(
+                        child: _StatCard(value: favorites, label: 'azkar_favorites'.tr()),
                       ),
-                    ),
-                    Text(
-                      'azkar_header_subtitle'.tr(),
-                      style: TextStyle(
-                        color: Colors.white.withValues(alpha: 0.72),
-                        fontSize: 9.sp,
+                      SizedBox(width: 10.w),
+                      Expanded(
+                        child: _StatCard(value: completedToday, label: 'azkar_completed_today'.tr()),
                       ),
-                    ),
-                  ],
-                ),
-                IconButton(
-                  onPressed: Modular.to.pop,
-                  icon: const Icon(
-                    Icons.arrow_forward_rounded,
-                    color: Colors.white,
+                      SizedBox(width: 10.w),
+                      Expanded(
+                        child: _StatCard(value: categoryCount, label: 'azkar_categories'.tr()),
+                      ),
+                    ],
                   ),
                 ),
               ],
             ),
-            const Spacer(),
-            Row(
-              children: [
-                _Stat(value: favorites, label: 'azkar_favorites'.tr()),
-                SizedBox(width: 9.w),
-                _Stat(value: completed, label: 'azkar_completed_today'.tr()),
-                SizedBox(width: 9.w),
-                _Stat(
-                  value: category.items.length,
-                  label: 'azkar_items_suffix'.tr(),
-                ),
-              ],
-            ),
-          ],
-        ),
+          ),
+        ],
       ),
     );
   }
 }
 
-class _Stat extends StatelessWidget {
-  const _Stat({required this.value, required this.label});
+class _OutlineCircle extends StatelessWidget {
+  const _OutlineCircle({required this.size});
+
+  final double size;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      width: size,
+      height: size,
+      decoration: BoxDecoration(
+        shape: BoxShape.circle,
+        border: Border.all(color: Colors.white.withValues(alpha: 0.05), width: 4),
+      ),
+    );
+  }
+}
+
+class _StatCard extends StatelessWidget {
+  const _StatCard({required this.value, required this.label});
 
   final int value;
   final String label;
 
   @override
   Widget build(BuildContext context) {
-    return Expanded(
-      child: Container(
-        padding: EdgeInsets.symmetric(vertical: 10.h),
-        decoration: BoxDecoration(
-          color: Colors.white.withValues(alpha: 0.08),
-          borderRadius: BorderRadius.circular(14.r),
-        ),
-        child: Column(
-          children: [
-            Text(
-              '$value',
-              style: TextStyle(color: Colors.white, fontSize: 18.sp),
-            ),
-            Text(
-              label,
-              style: TextStyle(
-                color: Colors.white.withValues(alpha: 0.72),
-                fontSize: 8.sp,
-              ),
-            ),
-          ],
-        ),
+    return Container(
+      padding: EdgeInsets.symmetric(vertical: 10.h),
+      decoration: BoxDecoration(color: Colors.white.withValues(alpha: 0.08), borderRadius: BorderRadius.circular(14.r)),
+      child: Column(
+        children: [
+          Text(
+            '$value',
+            style: TextStyle(color: Colors.white, fontSize: 18.sp, fontWeight: FontWeight.w500),
+          ),
+          SizedBox(height: 2.h),
+          Text(
+            label,
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+            style: TextStyle(color: Colors.white.withValues(alpha: 0.76), fontSize: 9.sp),
+          ),
+        ],
       ),
     );
   }
@@ -220,9 +250,7 @@ class _ListTitle extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final title = LocalizeAndTranslate.getLanguageCode() == 'ar'
-        ? category.nameAr
-        : category.nameEn;
+    final title = LocalizeAndTranslate.getLanguageCode() == 'ar' ? category.nameAr : category.nameEn;
     return Row(
       children: [
         TextButton.icon(
@@ -265,13 +293,7 @@ class _ZekrListCard extends StatelessWidget {
         decoration: BoxDecoration(
           color: Colors.white,
           borderRadius: BorderRadius.circular(16.r),
-          boxShadow: const [
-            BoxShadow(
-              color: Color(0x0D000000),
-              blurRadius: 10,
-              offset: Offset(0, 4),
-            ),
-          ],
+          boxShadow: const [BoxShadow(color: Color(0x0D000000), blurRadius: 10, offset: Offset(0, 4))],
         ),
         child: Row(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -279,9 +301,7 @@ class _ZekrListCard extends StatelessWidget {
             IconButton(
               onPressed: onFavorite,
               icon: Icon(
-                favorite
-                    ? Icons.favorite_rounded
-                    : Icons.favorite_border_rounded,
+                favorite ? Icons.favorite_rounded : Icons.favorite_border_rounded,
                 size: 18.r,
                 color: favorite ? Colors.red : Colors.grey[600],
               ),
@@ -306,14 +326,9 @@ class _ZekrListCard extends StatelessWidget {
                     runSpacing: 4.h,
                     alignment: WrapAlignment.end,
                     children: [
-                      if (item.source?.isNotEmpty == true)
-                        _Tag(text: item.source!, color: gold),
+                      if (item.source?.isNotEmpty == true) _Tag(text: item.source!, color: gold),
                       if (item.virtueAr?.isNotEmpty == true)
-                        _Tag(
-                          text: item.virtueAr!,
-                          color: const Color(0xFF007A58),
-                          outlined: true,
-                        ),
+                        _Tag(text: item.virtueAr!, color: const Color(0xFF007A58), outlined: true),
                     ],
                   ),
                 ],
@@ -350,18 +365,13 @@ class _Tag extends StatelessWidget {
       decoration: BoxDecoration(
         color: outlined ? Colors.white : color,
         borderRadius: BorderRadius.circular(12.r),
-        border: outlined
-            ? Border.all(color: color.withValues(alpha: 0.25))
-            : null,
+        border: outlined ? Border.all(color: color.withValues(alpha: 0.25)) : null,
       ),
       child: Text(
         text,
         maxLines: 1,
         overflow: TextOverflow.ellipsis,
-        style: TextStyle(
-          color: outlined ? color : Colors.black87,
-          fontSize: 8.sp,
-        ),
+        style: TextStyle(color: outlined ? color : Colors.black87, fontSize: 8.sp),
       ),
     );
   }

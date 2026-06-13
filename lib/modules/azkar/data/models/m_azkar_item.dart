@@ -11,13 +11,25 @@ class MAzkarItem extends Equatable {
     this.virtueAr,
   });
 
-  factory MAzkarItem.fromJson(Map<String, dynamic> json) => MAzkarItem(
-        id: json['id'] as String,
-        textAr: json['text_ar'] as String? ?? '',
-        repeat: (json['repeat'] as int?) ?? 1,
-        source: json['source'] as String?,
-        virtueAr: json['virtue_ar'] as String?,
-      );
+  /// Builds an item from the bundled schema:
+  /// `{ id, count, zekr, reference, category, fadel_zeker[] }`.
+  ///
+  /// [categoryId] is prefixed onto the raw numeric id so item ids stay globally
+  /// unique (the raw ids restart at 1 in every daily file).
+  factory MAzkarItem.fromJson(Map<String, dynamic> json, String categoryId) {
+    final reference = (json['reference'] as String?)?.trim();
+    final virtue = (json['fadel_zeker'] as List<dynamic>?)
+        ?.map((e) => e.toString().trim())
+        .where((e) => e.isNotEmpty)
+        .join('\n');
+    return MAzkarItem(
+      id: '${categoryId}_${json['id']}',
+      textAr: (json['zekr'] as String?)?.trim() ?? '',
+      repeat: (json['count'] as num?)?.toInt() ?? 1,
+      source: (reference?.isEmpty ?? true) ? null : reference,
+      virtueAr: (virtue?.isEmpty ?? true) ? null : virtue,
+    );
+  }
 
   final String id;
   final String textAr;
@@ -37,15 +49,6 @@ class MAzkarCategory extends Equatable {
     required this.nameEn,
     required this.items,
   });
-
-  factory MAzkarCategory.fromJson(Map<String, dynamic> json) => MAzkarCategory(
-        id: json['id'] as String,
-        nameAr: json['name_ar'] as String? ?? '',
-        nameEn: json['name_en'] as String? ?? '',
-        items: (json['items'] as List<dynamic>)
-            .map((e) => MAzkarItem.fromJson(Map<String, dynamic>.from(e as Map)))
-            .toList(growable: false),
-      );
 
   final String id;
   final String nameAr;
