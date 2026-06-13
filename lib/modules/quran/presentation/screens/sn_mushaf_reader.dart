@@ -55,6 +55,11 @@ class _SNMushafReaderState extends State<SNMushafReader> {
       }
     }
     _cubit.openPage(target);
+    if (initialAyah != null) {
+      _cubit.highlightAyah(
+        ParamAyahRef(surah: initialAyah.surah, ayah: initialAyah.ayah),
+      );
+    }
   }
 
   @override

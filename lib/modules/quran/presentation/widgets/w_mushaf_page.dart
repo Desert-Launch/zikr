@@ -222,9 +222,6 @@ class _WMushafPageState extends State<WMushafPage> {
                 : (isPlaying
                       ? AppColors.accentGoldAmber.withValues(alpha: 0.15)
                       : null),
-            decoration: isPlaying ? TextDecoration.underline : null,
-            decorationColor: AppColorsLight.accent,
-            decorationThickness: 2.5,
           ),
         ),
       );

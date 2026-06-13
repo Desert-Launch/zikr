@@ -83,6 +83,12 @@ class CBMushafReader extends Cubit<SMushafReader> {
     return '';
   }
 
+  /// Highlights [ref] without revealing the chrome or opening the action
+  /// sheet. Used when the reader is deep-linked to a specific ayah (e.g. the
+  /// verse-of-the-day card) so the verse is highlighted but nothing pops up.
+  void highlightAyah(ParamAyahRef ref) =>
+      emit(state.copyWith(selectedAyah: ref));
+
   void selectAyah(ParamAyahRef ref) {
     if (state.selectedAyah?.key == ref.key) {
       emit(state.copyWith(clearSelected: true));
