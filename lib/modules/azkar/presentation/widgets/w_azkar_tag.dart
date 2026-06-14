@@ -3,12 +3,7 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 
 /// A small pill label (filled or outlined) used for a zekr's source / virtue.
 class WAzkarTag extends StatelessWidget {
-  const WAzkarTag({
-    super.key,
-    required this.text,
-    required this.color,
-    this.outlined = false,
-  });
+  const WAzkarTag({super.key, required this.text, required this.color, this.outlined = false});
 
   final String text;
   final Color color;

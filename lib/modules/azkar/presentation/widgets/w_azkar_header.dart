@@ -15,6 +15,7 @@ class WAzkarHeader extends StatelessWidget {
     required this.completedToday,
     required this.favorites,
     required this.onBack,
+    this.title,
   });
 
   final Color green;
@@ -22,6 +23,10 @@ class WAzkarHeader extends StatelessWidget {
   final int completedToday;
   final int favorites;
   final VoidCallback onBack;
+
+  /// Overrides the default header title. When null, falls back to the generic
+  /// `azkar_header_title` translation.
+  final String? title;
 
   @override
   Widget build(BuildContext context) {
@@ -67,7 +72,7 @@ class WAzkarHeader extends StatelessWidget {
                         crossAxisAlignment: CrossAxisAlignment.end,
                         children: [
                           Text(
-                            'azkar_header_title'.tr(),
+                            title ?? 'azkar_header_title'.tr(),
                             style: GoogleFonts.cairo(color: Colors.white, fontSize: 21.sp, fontWeight: FontWeight.w700),
                           ),
                           Text(

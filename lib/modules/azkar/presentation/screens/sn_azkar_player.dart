@@ -6,16 +6,12 @@ import 'package:localize_and_translate/localize_and_translate.dart';
 import 'package:quran/modules/azkar/data/sources/local/box_azkar_favorite.dart';
 import 'package:quran/modules/azkar/presentation/cubits/cb_azkar_session.dart';
 import 'package:quran/modules/azkar/presentation/cubits/s_azkar_session.dart';
-import 'package:quran/modules/azkar/presentation/widgets/w_azkar_compact_header.dart';
+import 'package:quran/modules/azkar/presentation/widgets/w_azkar_header.dart';
 import 'package:quran/modules/azkar/presentation/widgets/w_azkar_counter_card.dart';
 import 'package:quran/modules/azkar/presentation/widgets/w_azkar_virtue_card.dart';
 
 class SNAzkarPlayer extends StatefulWidget {
-  const SNAzkarPlayer({
-    super.key,
-    required this.categoryId,
-    this.itemIndex = 0,
-  });
+  const SNAzkarPlayer({super.key, required this.categoryId, this.itemIndex = 0});
 
   final String categoryId;
   final int itemIndex;
@@ -31,11 +27,18 @@ class _SNAzkarPlayerState extends State<SNAzkarPlayer> {
 
   late final CBAzkarSession _cubit = Modular.get<CBAzkarSession>();
   late final BoxAzkarFavorite _favorites = Modular.get<BoxAzkarFavorite>();
+  late final PageController _pageController = PageController(initialPage: widget.itemIndex);
 
   @override
   void initState() {
     super.initState();
     _open();
+  }
+
+  @override
+  void dispose() {
+    _pageController.dispose();
+    super.dispose();
   }
 
   Future<void> _open() async {
@@ -49,64 +52,66 @@ class _SNAzkarPlayerState extends State<SNAzkarPlayer> {
       value: _cubit,
       child: Scaffold(
         backgroundColor: _canvas,
-        body: BlocBuilder<CBAzkarSession, SAzkarSession>(
+        body: BlocConsumer<CBAzkarSession, SAzkarSession>(
+          // Keep the pager in sync when the index changes elsewhere (e.g. the
+          // auto-advance after completing a zekr).
+          listenWhen: (prev, curr) => prev.itemIndex != curr.itemIndex,
+          listener: (_, state) {
+            if (!_pageController.hasClients) return;
+            final current = _pageController.page?.round() ?? _pageController.initialPage;
+            if (current != state.itemIndex) {
+              _pageController.animateToPage(
+                state.itemIndex,
+                duration: const Duration(milliseconds: 350),
+                curve: Curves.easeInOut,
+              );
+            }
+          },
           builder: (_, state) {
             final category = state.category;
-            final item = state.currentItem;
-            if (category == null || item == null) {
+            if (category == null || category.items.isEmpty) {
               return const Center(child: CircularProgressIndicator());
             }
-            final completed = state.countFor(item.id);
-            final virtue = item.virtueAr;
-            return CustomScrollView(
-              slivers: [
-                SliverToBoxAdapter(
-                  child: WAzkarCompactHeader(
-                    itemCount: category.items.length,
-                    completed: category.items
-                        .where((item) => state.isComplete(item))
-                        .length,
-                    favorites: _favorites.all().length,
-                    green: _green,
-                    onBack: Modular.to.pop,
-                  ),
+            return Column(
+              children: [
+                WAzkarHeader(
+                  green: _green,
+                  title: LocalizeAndTranslate.getLanguageCode() == 'ar' ? category.nameAr : category.nameEn,
+                  categoryCount: category.items.length,
+                  completedToday: category.items.where((item) => state.isComplete(item)).length,
+                  favorites: _favorites.all().length,
+                  onBack: Modular.to.pop,
                 ),
-                SliverPadding(
-                  padding: EdgeInsets.fromLTRB(18.w, 8.h, 18.w, 28.h),
-                  sliver: SliverList.list(
-                    children: [
-                      Row(
-                        children: [
-                          TextButton.icon(
-                            onPressed: Modular.to.pop,
-                            icon: const Icon(
-                              Icons.arrow_forward_rounded,
-                              size: 16,
+                Expanded(
+                  child: PageView.builder(
+                    controller: _pageController,
+                    reverse: true,
+                    itemCount: category.items.length,
+                    onPageChanged: _cubit.jumpTo,
+                    itemBuilder: (_, index) {
+                      final item = category.items[index];
+                      final completed = state.countFor(item.id);
+                      final virtue = item.virtueAr;
+                      return SingleChildScrollView(
+                        padding: EdgeInsets.fromLTRB(18.w, 8.h, 18.w, 28.h),
+                        child: Column(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            WAzkarCounterCard(
+                              item: item,
+                              completed: completed,
+                              green: _green,
+                              onTap: _cubit.tap,
+                              onReset: _cubit.resetCurrent,
                             ),
-                            label: Text('azkar_back_list'.tr()),
-                          ),
-                          const Spacer(),
-                          Text(
-                            category.nameAr,
-                            style: TextStyle(
-                              fontSize: 13.sp,
-                              color: Colors.grey[700],
-                            ),
-                          ),
-                        ],
-                      ),
-                      WAzkarCounterCard(
-                        item: item,
-                        completed: completed,
-                        green: _green,
-                        onTap: _cubit.tap,
-                        onReset: _cubit.resetCurrent,
-                      ),
-                      if (virtue != null && virtue.isNotEmpty) ...[
-                        SizedBox(height: 12.h),
-                        WAzkarVirtueCard(text: virtue, gold: _gold),
-                      ],
-                    ],
+                            if (virtue != null && virtue.isNotEmpty) ...[
+                              SizedBox(height: 12.h),
+                              WAzkarVirtueCard(text: virtue, gold: _gold),
+                            ],
+                          ],
+                        ),
+                      );
+                    },
                   ),
                 ),
               ],

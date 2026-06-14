@@ -41,6 +41,14 @@ class CBAzkarSession extends Cubit<SAzkarSession> {
     updated[item.id] = (updated[item.id] ?? 0) + 1;
     emit(state.copyWith(completed: updated));
     await _progress.increment(cat.id, item.id);
+
+    // Reached the last count → pause briefly, then auto-advance to the next zekr.
+    if (state.isComplete(item)) {
+      await Future.delayed(const Duration(milliseconds: 200));
+      if (isClosed) return;
+      // Only advance if we're still sitting on the zekr that just completed.
+      if (state.currentItem?.id == item.id) next();
+    }
   }
 
   void next() {
