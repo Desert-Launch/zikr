@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:quran/core/services/notifications/notifications_service.dart';
 import 'package:quran/modules/adhan/data/datasources/local/ds_local_adhan.dart';
+import 'package:quran/modules/adhan/data/models/m_adhan_settings.dart';
 import 'package:quran/modules/adhan/data/sources/local/box_adhan_preference.dart';
 import 'package:quran/modules/adhan/data/sources/local/box_adhan_settings.dart';
 import 'package:quran/modules/adhan/presentation/cubits/s_adhan_settings.dart';
@@ -134,10 +135,20 @@ class CBAdhanSettings extends Cubit<SAdhanSettings> {
     emit(state.copyWith(playbackMode: mode));
   }
 
+  /// Android-only Tier-2 toggle. Turning it on also flips [playbackMode] to
+  /// `full` so the scheduler routes notifications to the per-voice `_full`
+  /// channel (whose sound is the full adhan); off restores the short clip.
+  /// Either way the window is rescheduled so the channel switch takes effect.
   Future<void> setAndroidBackground(bool value) async {
-    final s = _adhanSettings.current()..androidBackgroundFullAdhan = value;
+    final mode = value
+        ? MAdhanSettings.playbackFull
+        : MAdhanSettings.playbackClip;
+    final s = _adhanSettings.current()
+      ..androidBackgroundFullAdhan = value
+      ..playbackMode = mode;
     await _adhanSettings.save(s);
-    emit(state.copyWith(androidBackgroundFullAdhan: value));
+    emit(state.copyWith(androidBackgroundFullAdhan: value, playbackMode: mode));
+    _scheduleSoon();
   }
 
   Future<void> setVibrate(bool value) async {
