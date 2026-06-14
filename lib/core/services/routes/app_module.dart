@@ -234,6 +234,9 @@ class AppModule extends Module {
         local: i.get<DSLocalAdhan>(),
         notifications: i.get<NotificationsService>(),
         scheduler: i.get<AdhanScheduler>(),
+        fetchCatalog: i.get<UCFetchAdhanCatalog>(),
+        downloadVoice: i.get<UCDownloadAdhanVoice>(),
+        downloads: i.get<BoxAdhanDownload>(),
       ),
     );
     i.addSingleton<CBTasbih>(

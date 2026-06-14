@@ -263,6 +263,8 @@
   "adhan_use_fajr_specific_hint": "Includes 'Prayer is better than sleep'",
   "adhan_download": "Download",
   "adhan_downloaded": "Downloaded",
+  "adhan_default_download_title": "Default adhan not downloaded",
+  "adhan_default_download_hint": "Tap to retry the download",
   "adhan_settings_title": "Adhan settings",
   "adhan_master": "Adhan notifications",
   "adhan_master_hint": "Alert at the start of each prayer time",

@@ -13,6 +13,9 @@ class SAdhanSettings extends Equatable {
     this.voiceIdPerPrayer = const {},
     this.voiceNamePerPrayer = const {},
     this.hasPermission = true,
+    this.needsDefaultDownload = false,
+    this.pendingDownloadVoiceId,
+    this.retryingDownload = false,
     this.error,
   });
 
@@ -29,6 +32,18 @@ class SAdhanSettings extends Equatable {
   final Map<String, String> voiceIdPerPrayer;
   final Map<String, String> voiceNamePerPrayer;
   final bool hasPermission;
+
+  /// True when the selected default voice is a downloadable (remote) voice
+  /// whose full file hasn't been fetched yet — e.g. the first-launch download
+  /// failed offline. Drives the retry prompt.
+  final bool needsDefaultDownload;
+
+  /// The voice id the retry prompt should (re)download. Null when nothing is
+  /// pending.
+  final String? pendingDownloadVoiceId;
+
+  /// True while a retry download is in flight (shows a spinner in the prompt).
+  final bool retryingDownload;
   final String? error;
 
   SAdhanSettings copyWith({
@@ -43,6 +58,9 @@ class SAdhanSettings extends Equatable {
     Map<String, String>? voiceIdPerPrayer,
     Map<String, String>? voiceNamePerPrayer,
     bool? hasPermission,
+    bool? needsDefaultDownload,
+    String? pendingDownloadVoiceId,
+    bool? retryingDownload,
     String? error,
     bool clearError = false,
   }) {
@@ -59,6 +77,11 @@ class SAdhanSettings extends Equatable {
       voiceIdPerPrayer: voiceIdPerPrayer ?? this.voiceIdPerPrayer,
       voiceNamePerPrayer: voiceNamePerPrayer ?? this.voiceNamePerPrayer,
       hasPermission: hasPermission ?? this.hasPermission,
+      needsDefaultDownload:
+          needsDefaultDownload ?? this.needsDefaultDownload,
+      pendingDownloadVoiceId:
+          pendingDownloadVoiceId ?? this.pendingDownloadVoiceId,
+      retryingDownload: retryingDownload ?? this.retryingDownload,
       error: clearError ? null : (error ?? this.error),
     );
   }
@@ -76,6 +99,9 @@ class SAdhanSettings extends Equatable {
     voiceIdPerPrayer,
     voiceNamePerPrayer,
     hasPermission,
+    needsDefaultDownload,
+    pendingDownloadVoiceId,
+    retryingDownload,
     error,
   ];
 }

@@ -44,6 +44,13 @@ class SNAdhanSettings extends StatelessWidget {
             return ListView(
               padding: EdgeInsets.fromLTRB(27.w, 24.h, 27.w, 28.h),
               children: [
+                if (state.needsDefaultDownload) ...[
+                  _DefaultDownloadPrompt(
+                    busy: state.retryingDownload,
+                    onRetry: cubit.retryDefaultDownload,
+                  ),
+                  SizedBox(height: 18.h),
+                ],
                 WAdhanSectionLabel('adhan_prayer_alerts_section'.tr()),
                 WAdhanGroup(
                   children: [
@@ -118,6 +125,83 @@ class SNAdhanSettings extends StatelessWidget {
               ],
             );
           },
+        ),
+      ),
+    );
+  }
+}
+
+/// Amber prompt shown when the selected default voice still needs downloading
+/// (e.g. the first-launch fetch failed offline). Tapping retries.
+class _DefaultDownloadPrompt extends StatelessWidget {
+  const _DefaultDownloadPrompt({required this.busy, required this.onRetry});
+
+  final bool busy;
+  final VoidCallback onRetry;
+
+  @override
+  Widget build(BuildContext context) {
+    return InkWell(
+      onTap: busy ? null : onRetry,
+      borderRadius: BorderRadius.circular(14.r),
+      child: Container(
+        padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 14.h),
+        decoration: BoxDecoration(
+          color: const Color(0xFFFFF4E5),
+          borderRadius: BorderRadius.circular(14.r),
+          border: Border.all(color: const Color(0xFFF0D9B5)),
+        ),
+        child: Row(
+          children: [
+            Icon(
+              Icons.cloud_download_outlined,
+              size: 20.r,
+              color: const Color(0xFFD79A3B),
+            ),
+            SizedBox(width: 12.w),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    'adhan_default_download_title'.tr(),
+                    style: GoogleFonts.cairo(
+                      fontSize: 12.sp,
+                      fontWeight: FontWeight.w600,
+                      color: const Color(0xFF8A6D3B),
+                    ),
+                  ),
+                  SizedBox(height: 2.h),
+                  Text(
+                    'adhan_default_download_hint'.tr(),
+                    style: GoogleFonts.cairo(
+                      fontSize: 9.sp,
+                      color: const Color(0xFFA98B5B),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            SizedBox(width: 10.w),
+            if (busy)
+              SizedBox(
+                width: 18.r,
+                height: 18.r,
+                child: CircularProgressIndicator(
+                  strokeWidth: 2.r,
+                  color: const Color(0xFFD79A3B),
+                ),
+              )
+            else
+              Text(
+                'adhan_download'.tr(),
+                style: GoogleFonts.cairo(
+                  fontSize: 11.sp,
+                  fontWeight: FontWeight.w700,
+                  color: const Color(0xFFC8841F),
+                ),
+              ),
+          ],
         ),
       ),
     );

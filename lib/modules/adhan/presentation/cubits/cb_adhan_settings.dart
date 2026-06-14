@@ -3,9 +3,13 @@ import 'dart:async';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:quran/core/services/notifications/notifications_service.dart';
 import 'package:quran/modules/adhan/data/datasources/local/ds_local_adhan.dart';
+import 'package:quran/modules/adhan/data/models/m_adhan.dart';
 import 'package:quran/modules/adhan/data/models/m_adhan_settings.dart';
+import 'package:quran/modules/adhan/data/sources/local/box_adhan_download.dart';
 import 'package:quran/modules/adhan/data/sources/local/box_adhan_preference.dart';
 import 'package:quran/modules/adhan/data/sources/local/box_adhan_settings.dart';
+import 'package:quran/modules/adhan/domain/usecases/uc_download_adhan_voice.dart';
+import 'package:quran/modules/adhan/domain/usecases/uc_fetch_adhan_catalog.dart';
 import 'package:quran/modules/adhan/presentation/cubits/s_adhan_settings.dart';
 import 'package:quran/modules/adhan/services/adhan_scheduler.dart';
 import 'package:quran/modules/prayer/data/sources/local/box_prayer_settings.dart';
@@ -22,12 +26,18 @@ class CBAdhanSettings extends Cubit<SAdhanSettings> {
     required DSLocalAdhan local,
     required NotificationsService notifications,
     required AdhanScheduler scheduler,
+    required UCFetchAdhanCatalog fetchCatalog,
+    required UCDownloadAdhanVoice downloadVoice,
+    required BoxAdhanDownload downloads,
   }) : _adhanSettings = adhanSettings,
        _prayerSettings = prayerSettings,
        _adhanPrefs = adhanPrefs,
        _local = local,
        _notifications = notifications,
        _scheduler = scheduler,
+       _fetchCatalog = fetchCatalog,
+       _downloadVoice = downloadVoice,
+       _downloads = downloads,
        super(const SAdhanSettings()) {
     load();
   }
@@ -38,6 +48,9 @@ class CBAdhanSettings extends Cubit<SAdhanSettings> {
   final DSLocalAdhan _local;
   final NotificationsService _notifications;
   final AdhanScheduler _scheduler;
+  final UCFetchAdhanCatalog _fetchCatalog;
+  final UCDownloadAdhanVoice _downloadVoice;
+  final BoxAdhanDownload _downloads;
 
   Timer? _debounce;
 
@@ -47,6 +60,7 @@ class CBAdhanSettings extends Cubit<SAdhanSettings> {
     final hasPerm = await _notifications.hasPermission();
     final voiceName = await _selectedVoiceName();
     final voices = await _prayerVoices(p.adhanIdPerPrayer ?? const {});
+    final pendingId = await _pendingDefaultDownloadId();
     emit(
       SAdhanSettings(
         loading: false,
@@ -62,6 +76,47 @@ class CBAdhanSettings extends Cubit<SAdhanSettings> {
         ),
         voiceNamePerPrayer: voices,
         hasPermission: hasPerm,
+        needsDefaultDownload: pendingId != null,
+        pendingDownloadVoiceId: pendingId,
+      ),
+    );
+  }
+
+  /// The selected default voice id when it's a downloadable (remote) voice
+  /// whose full file isn't on disk yet — e.g. the first-launch download failed
+  /// offline. Null when nothing needs downloading (bundled voice, already
+  /// downloaded, or no default chosen). Catalog fetch is best-effort and
+  /// returns the bundled list offline, so this never throws.
+  Future<String?> _pendingDefaultDownloadId() async {
+    final defaultId = _adhanPrefs.current().defaultAdhanId;
+    if (defaultId == null) return null;
+    if (_downloads.isDownloaded(defaultId)) return null;
+    final catalog = await _fetchCatalog();
+    final voices = catalog.getOrElse(() => const <MAdhan>[]);
+    for (final v in voices) {
+      if (v.id == defaultId) {
+        return v.isDownloadable ? defaultId : null;
+      }
+    }
+    return null;
+  }
+
+  /// Re-attempts the default voice download from the settings prompt. Clears
+  /// the prompt on success; leaves it (with an error) on failure.
+  Future<void> retryDefaultDownload() async {
+    final voiceId = state.pendingDownloadVoiceId;
+    if (voiceId == null || state.retryingDownload) return;
+    emit(state.copyWith(retryingDownload: true, clearError: true));
+    final result = await _downloadVoice(voiceId);
+    result.fold(
+      (failure) => emit(
+        state.copyWith(retryingDownload: false, error: failure.message),
+      ),
+      (_) => emit(
+        state.copyWith(
+          retryingDownload: false,
+          needsDefaultDownload: false,
+        ),
       ),
     );
   }
