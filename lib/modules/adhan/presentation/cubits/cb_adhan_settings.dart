@@ -1,6 +1,8 @@
 import 'dart:async';
+import 'dart:io';
 
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:permission_handler/permission_handler.dart';
 import 'package:quran/core/services/notifications/notifications_service.dart';
 import 'package:quran/modules/adhan/data/datasources/local/ds_local_adhan.dart';
 import 'package:quran/modules/adhan/data/models/m_adhan.dart';
@@ -61,6 +63,7 @@ class CBAdhanSettings extends Cubit<SAdhanSettings> {
     final voiceName = await _selectedVoiceName();
     final voices = await _prayerVoices(p.adhanIdPerPrayer ?? const {});
     final pendingId = await _pendingDefaultDownloadId();
+    final showBattery = await _shouldShowBatteryNote();
     emit(
       SAdhanSettings(
         loading: false,
@@ -78,8 +81,35 @@ class CBAdhanSettings extends Cubit<SAdhanSettings> {
         hasPermission: hasPerm,
         needsDefaultDownload: pendingId != null,
         pendingDownloadVoiceId: pendingId,
+        showBatteryNote: showBattery,
       ),
     );
+  }
+
+  /// Android-only: true when the app isn't exempt from battery optimization,
+  /// so aggressive OEM power managers may delay or kill exact alarms. Used to
+  /// surface a guidance note. Never throws.
+  Future<bool> _shouldShowBatteryNote() async {
+    if (!Platform.isAndroid) return false;
+    try {
+      return !await Permission.ignoreBatteryOptimizations.isGranted;
+    } catch (_) {
+      return false;
+    }
+  }
+
+  /// Prompts the user to exempt the app from battery optimization (Android),
+  /// then hides the note if granted.
+  Future<void> requestBatteryExemption() async {
+    if (!Platform.isAndroid) return;
+    try {
+      await Permission.ignoreBatteryOptimizations.request();
+      final granted = await Permission.ignoreBatteryOptimizations.isGranted;
+      emit(state.copyWith(showBatteryNote: !granted));
+    } catch (_) {
+      // Some OEMs reject the direct request; leave the note so the user can
+      // still reach battery settings on a later attempt.
+    }
   }
 
   /// The selected default voice id when it's a downloadable (remote) voice

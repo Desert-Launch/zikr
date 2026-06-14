@@ -120,6 +120,10 @@ class SNAdhanSettings extends StatelessWidget {
                     ),
                   ),
                 ],
+                if (state.showBatteryNote) ...[
+                  SizedBox(height: 18.h),
+                  _BatteryGuidanceNote(onAllow: cubit.requestBatteryExemption),
+                ],
                 SizedBox(height: 76.h),
                 const WAdhanVirtueCard(),
               ],
@@ -203,6 +207,80 @@ class _DefaultDownloadPrompt extends StatelessWidget {
               ),
           ],
         ),
+      ),
+    );
+  }
+}
+
+/// Android-only guidance: aggressive OEM battery managers can delay or kill
+/// exact alarms. Tapping "Allow" requests the battery-optimization exemption.
+class _BatteryGuidanceNote extends StatelessWidget {
+  const _BatteryGuidanceNote({required this.onAllow});
+
+  final VoidCallback onAllow;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: EdgeInsets.fromLTRB(16.w, 14.h, 16.w, 12.h),
+      decoration: BoxDecoration(
+        color: const Color(0xFFEFF4F2),
+        borderRadius: BorderRadius.circular(14.r),
+        border: Border.all(color: const Color(0xFFD8E4DF)),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Icon(
+                Icons.battery_alert_outlined,
+                size: 18.r,
+                color: const Color(0xFF2F7E63),
+              ),
+              SizedBox(width: 10.w),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'adhan_battery_note_title'.tr(),
+                      style: GoogleFonts.cairo(
+                        fontSize: 12.sp,
+                        fontWeight: FontWeight.w600,
+                        color: const Color(0xFF303030),
+                      ),
+                    ),
+                    SizedBox(height: 3.h),
+                    Text(
+                      'adhan_battery_note_hint'.tr(),
+                      style: GoogleFonts.cairo(
+                        fontSize: 10.sp,
+                        height: 1.5,
+                        color: const Color(0xFF6F8079),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+          Align(
+            alignment: AlignmentDirectional.centerEnd,
+            child: TextButton(
+              onPressed: onAllow,
+              child: Text(
+                'adhan_battery_note_action'.tr(),
+                style: GoogleFonts.cairo(
+                  fontSize: 11.sp,
+                  fontWeight: FontWeight.w700,
+                  color: const Color(0xFF2F7E63),
+                ),
+              ),
+            ),
+          ),
+        ],
       ),
     );
   }

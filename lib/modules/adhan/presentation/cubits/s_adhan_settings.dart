@@ -16,6 +16,7 @@ class SAdhanSettings extends Equatable {
     this.needsDefaultDownload = false,
     this.pendingDownloadVoiceId,
     this.retryingDownload = false,
+    this.showBatteryNote = false,
     this.error,
   });
 
@@ -44,6 +45,10 @@ class SAdhanSettings extends Equatable {
 
   /// True while a retry download is in flight (shows a spinner in the prompt).
   final bool retryingDownload;
+
+  /// True on Android when the app isn't exempt from battery optimization, so
+  /// the OS may delay/kill exact alarms. Drives the battery guidance note.
+  final bool showBatteryNote;
   final String? error;
 
   SAdhanSettings copyWith({
@@ -61,6 +66,7 @@ class SAdhanSettings extends Equatable {
     bool? needsDefaultDownload,
     String? pendingDownloadVoiceId,
     bool? retryingDownload,
+    bool? showBatteryNote,
     String? error,
     bool clearError = false,
   }) {
@@ -82,6 +88,7 @@ class SAdhanSettings extends Equatable {
       pendingDownloadVoiceId:
           pendingDownloadVoiceId ?? this.pendingDownloadVoiceId,
       retryingDownload: retryingDownload ?? this.retryingDownload,
+      showBatteryNote: showBatteryNote ?? this.showBatteryNote,
       error: clearError ? null : (error ?? this.error),
     );
   }
@@ -102,6 +109,7 @@ class SAdhanSettings extends Equatable {
     needsDefaultDownload,
     pendingDownloadVoiceId,
     retryingDownload,
+    showBatteryNote,
     error,
   ];
 }
