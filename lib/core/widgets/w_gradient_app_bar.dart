@@ -1,8 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_modular/flutter_modular.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
-import 'package:google_fonts/google_fonts.dart';
 import 'package:quran/core/theme/app_colors.dart';
+import 'package:quran/core/theme/app_text_styles.dart';
+import 'package:quran/core/widgets/w_localize_rotation.dart';
 
 /// Shared green-gradient header used across the app.
 ///
@@ -56,17 +57,6 @@ class WGradientAppBar extends StatelessWidget implements PreferredSizeWidget {
         borderRadius: BorderRadius.vertical(bottom: Radius.circular(28.r)),
         child: Stack(
           children: [
-            // Faint decorative circles, like the reference design.
-            PositionedDirectional(
-              top: -34.h,
-              end: -24.w,
-              child: _Bubble(size: 120.r),
-            ),
-            PositionedDirectional(
-              bottom: -46.h,
-              start: 30.w,
-              child: _Bubble(size: 96.r),
-            ),
             SafeArea(
               bottom: false,
               child: Padding(
@@ -78,44 +68,33 @@ class WGradientAppBar extends StatelessWidget implements PreferredSizeWidget {
                   child: Row(
                     children: [
                       if (showBack)
-                        IconButton(
-                          onPressed: onBack ?? Modular.to.pop,
-                          icon: Icon(backIcon, color: Colors.white),
+                        WLocalizeRotation(
+                          reverse: true,
+                          child: IconButton(
+                            onPressed: onBack ?? Modular.to.pop,
+                            icon: Icon(backIcon, color: Colors.white),
+                          ),
                         )
                       else
                         SizedBox(width: 48.w),
                       Expanded(
                         child: Column(
-                          mainAxisSize: MainAxisSize.min,
+                          crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            Text(
-                              title,
-                              textAlign: TextAlign.center,
-                              style: GoogleFonts.cairo(
-                                color: Colors.white,
-                                fontSize: 17.sp,
-                                fontWeight: FontWeight.w700,
-                              ),
-                            ),
+                            Text(title, textAlign: TextAlign.center, style: AppTextStyles.white24W400),
                             if (subtitle != null) ...[
                               SizedBox(height: 2.h),
                               Text(
                                 subtitle ?? '',
                                 textAlign: TextAlign.center,
-                                style: TextStyle(
-                                  color: Colors.white.withValues(alpha: 0.72),
-                                  fontSize: 9.sp,
-                                ),
+                                style: AppTextStyles.white12W400.copyWith(color: Colors.white70),
                               ),
                             ],
                           ],
                         ),
                       ),
                       if (actions != null && actions!.isNotEmpty)
-                        Row(
-                          mainAxisSize: MainAxisSize.min,
-                          children: actions ?? [],
-                        )
+                        Row(mainAxisSize: MainAxisSize.min, children: actions ?? [])
                       else
                         SizedBox(width: 48.w),
                     ],
@@ -125,24 +104,6 @@ class WGradientAppBar extends StatelessWidget implements PreferredSizeWidget {
             ),
           ],
         ),
-      ),
-    );
-  }
-}
-
-class _Bubble extends StatelessWidget {
-  const _Bubble({required this.size});
-
-  final double size;
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      width: size,
-      height: size,
-      decoration: BoxDecoration(
-        shape: BoxShape.circle,
-        color: Colors.white.withValues(alpha: 0.05),
       ),
     );
   }
