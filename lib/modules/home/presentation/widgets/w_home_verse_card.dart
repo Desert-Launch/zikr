@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_modular/flutter_modular.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:localize_and_translate/localize_and_translate.dart';
 import 'package:quran/core/services/routes/routes_names.dart';
 import 'package:quran/core/theme/app_text_styles.dart';
@@ -113,7 +114,7 @@ class WHomeVerseCard extends StatelessWidget {
 
     return Text.rich(
       TextSpan(
-        style: AppTextStyles.ink18W400,
+        style: GoogleFonts.amiri(textStyle: AppTextStyles.ink18W400, height: 1.6),
         children: [
           ornament('assets/images/verse_ornament_start.png'),
           TextSpan(text: text),
