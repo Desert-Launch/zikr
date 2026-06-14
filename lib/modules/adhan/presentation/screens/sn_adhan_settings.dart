@@ -8,6 +8,7 @@ import 'package:localize_and_translate/localize_and_translate.dart';
 import 'package:quran/core/widgets/w_gradient_app_bar.dart';
 import 'package:quran/modules/adhan/presentation/cubits/cb_adhan_settings.dart';
 import 'package:quran/modules/adhan/presentation/cubits/s_adhan_settings.dart';
+import 'package:quran/modules/adhan/presentation/widgets/w_adhan_before_row.dart';
 import 'package:quran/modules/adhan/presentation/widgets/w_adhan_group.dart';
 import 'package:quran/modules/adhan/presentation/widgets/w_adhan_prayer_row.dart';
 import 'package:quran/modules/adhan/presentation/widgets/w_adhan_section_label.dart';
@@ -44,6 +45,10 @@ class SNAdhanSettings extends StatelessWidget {
             return ListView(
               padding: EdgeInsets.fromLTRB(27.w, 24.h, 27.w, 28.h),
               children: [
+                if (!state.hasPermission) ...[
+                  _PermissionWarning(onFix: cubit.requestPermission),
+                  SizedBox(height: 18.h),
+                ],
                 if (state.needsDefaultDownload) ...[
                   _DefaultDownloadPrompt(
                     busy: state.retryingDownload,
@@ -120,6 +125,27 @@ class SNAdhanSettings extends StatelessWidget {
                     ),
                   ),
                 ],
+                SizedBox(height: 18.h),
+                WAdhanSectionLabel('adhan_prenotify_section'.tr()),
+                WAdhanBeforeRow(state: state, cubit: cubit),
+                SizedBox(height: 14.h),
+                WAdhanGroup(
+                  children: [
+                    WAdhanSettingRow(
+                      icon: Icons.vibration_rounded,
+                      title: 'adhan_vibrate'.tr(),
+                      trailing: Transform.scale(
+                        scale: .75,
+                        child: Switch(
+                          value: state.vibrate,
+                          activeTrackColor: _green,
+                          thumbColor: WidgetStateProperty.all(Colors.white),
+                          onChanged: cubit.setVibrate,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
                 if (state.showBatteryNote) ...[
                   SizedBox(height: 18.h),
                   _BatteryGuidanceNote(onAllow: cubit.requestBatteryExemption),
@@ -205,6 +231,59 @@ class _DefaultDownloadPrompt extends StatelessWidget {
                   color: const Color(0xFFC8841F),
                 ),
               ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+/// Red warning shown when notification permission is denied — nothing fires
+/// without it. Tapping "Enable" re-requests the OS permission.
+class _PermissionWarning extends StatelessWidget {
+  const _PermissionWarning({required this.onFix});
+
+  final VoidCallback onFix;
+
+  @override
+  Widget build(BuildContext context) {
+    return InkWell(
+      onTap: onFix,
+      borderRadius: BorderRadius.circular(14.r),
+      child: Container(
+        padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 14.h),
+        decoration: BoxDecoration(
+          color: const Color(0xFFFCEDED),
+          borderRadius: BorderRadius.circular(14.r),
+          border: Border.all(color: const Color(0xFFF0CECE)),
+        ),
+        child: Row(
+          children: [
+            Icon(
+              Icons.notifications_off_outlined,
+              size: 20.r,
+              color: const Color(0xFFC0473F),
+            ),
+            SizedBox(width: 12.w),
+            Expanded(
+              child: Text(
+                'adhan_permission_denied'.tr(),
+                style: GoogleFonts.cairo(
+                  fontSize: 12.sp,
+                  fontWeight: FontWeight.w600,
+                  color: const Color(0xFF8E3A34),
+                ),
+              ),
+            ),
+            SizedBox(width: 10.w),
+            Text(
+              'adhan_permission_fix'.tr(),
+              style: GoogleFonts.cairo(
+                fontSize: 11.sp,
+                fontWeight: FontWeight.w700,
+                color: const Color(0xFFC0473F),
+              ),
+            ),
           ],
         ),
       ),
