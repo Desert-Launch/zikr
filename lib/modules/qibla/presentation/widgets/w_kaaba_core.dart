@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:flutter_svg/svg.dart';
+import 'package:quran/core/assets/assets.gen.dart';
 
 class WKaabaCore extends StatelessWidget {
   const WKaabaCore({super.key, required this.green, required this.gold});
@@ -17,21 +19,9 @@ class WKaabaCore extends StatelessWidget {
         color: green,
         borderRadius: BorderRadius.circular(28.r),
         border: Border.all(color: Colors.white, width: 6),
-        boxShadow: [
-          BoxShadow(
-            color: green.withValues(alpha: 0.35),
-            blurRadius: 18,
-            offset: const Offset(0, 8),
-          ),
-        ],
+        boxShadow: [BoxShadow(color: green.withValues(alpha: 0.35), blurRadius: 18, offset: const Offset(0, 8))],
       ),
-      child: Stack(
-        alignment: Alignment.center,
-        children: [
-          Icon(Icons.hexagon, color: gold, size: 52.r),
-          Icon(Icons.hexagon_outlined, color: green, size: 26.r),
-        ],
-      ),
+      child: SvgPicture.asset(Assets.icons.hexagon.path),
     );
   }
 }

@@ -40,27 +40,15 @@ class WCompassDial extends StatelessWidget {
                 colors: [Color(0xFFFBFAF6), Color(0xFFE8E5DC)],
               ),
               boxShadow: const [
-                BoxShadow(
-                  color: Color(0x1A000000),
-                  blurRadius: 24,
-                  offset: Offset(0, 12),
-                ),
-                BoxShadow(
-                  color: Color(0xCCFFFFFF),
-                  blurRadius: 18,
-                  offset: Offset(-8, -8),
-                ),
+                BoxShadow(color: Color(0x55000000), blurRadius: 24, offset: Offset(0, 10)),
+                BoxShadow(color: Color(0xCCFFFFFF), blurRadius: 18, offset: Offset(-8, -8)),
               ],
             ),
           ),
           // Rotating rose: cardinals, ticks and intermediate dots.
           Transform.rotate(
             angle: -heading * math.pi / 180.0,
-            child: SizedBox(
-              width: size,
-              height: size,
-              child: const WCompassRose(),
-            ),
+            child: SizedBox(width: size, height: size, child: const WCompassRose()),
           ),
           // Qibla pointer — orbits to point toward Mecca.
           Transform.rotate(
