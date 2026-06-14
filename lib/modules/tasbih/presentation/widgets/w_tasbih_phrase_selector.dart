@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
-import 'package:google_fonts/google_fonts.dart';
+import 'package:quran/core/theme/app_text_styles.dart';
 
 class WTasbihPhraseSelector extends StatelessWidget {
   const WTasbihPhraseSelector({
@@ -45,22 +45,13 @@ class WTasbihPhraseSelector extends StatelessWidget {
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                Text(
-                  phrase,
-                  style: GoogleFonts.amiri(
-                    color: active ? green : Colors.black87,
-                    fontSize: 14.sp,
-                    fontWeight: active ? FontWeight.w700 : FontWeight.w500,
-                  ),
-                ),
+                Text(phrase, style: AppTextStyles.ink14W400),
                 if (active)
                   Container(
                     width: 4.r,
                     height: 4.r,
-                    decoration: BoxDecoration(
-                      color: green,
-                      shape: BoxShape.circle,
-                    ),
+                    margin: EdgeInsets.only(top: 4.h),
+                    decoration: BoxDecoration(color: green, shape: BoxShape.circle),
                   ),
               ],
             ),
