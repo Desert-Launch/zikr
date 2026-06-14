@@ -18,6 +18,7 @@ class MAdhan extends Equatable {
     this.noteEn,
     this.fullUrl,
     this.sizeBytes = 0,
+    this.checksumSha256,
     this.bundled = true,
     this.isDefault = false,
     this.license,
@@ -41,6 +42,7 @@ class MAdhan extends Equatable {
         noteEn: json['note_en'] as String?,
         fullUrl: json['full_url'] as String?,
         sizeBytes: json['size_bytes'] as int? ?? 0,
+        checksumSha256: json['checksum_sha256'] as String?,
         bundled: json['bundled'] as bool? ?? (json['asset'] != null),
         isDefault: json['is_default'] as bool? ?? false,
         license: json['license'] as String?,
@@ -66,6 +68,10 @@ class MAdhan extends Equatable {
 
   /// Download size in bytes (0 when unknown / bundled).
   final int sizeBytes;
+
+  /// Lowercase hex SHA-256 of the full-adhan file, when the catalog provides
+  /// it. Used to reject corrupt/partial downloads. Null → skip verification.
+  final String? checksumSha256;
 
   /// True when a bundled `asset` ships with the app.
   final bool bundled;

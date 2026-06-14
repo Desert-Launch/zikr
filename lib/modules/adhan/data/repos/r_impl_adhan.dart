@@ -1,5 +1,6 @@
 import 'dart:io';
 
+import 'package:crypto/crypto.dart';
 import 'package:dartz/dartz.dart';
 import 'package:dio/dio.dart';
 import 'package:path/path.dart' as p;
@@ -94,6 +95,21 @@ class RImplAdhan implements RAdhan {
 
       await _remote.downloadFile(url, savePath, onProgress: onProgress);
 
+      // Reject corrupt/partial downloads when the catalog ships a checksum.
+      final expected = voice.checksumSha256;
+      if (expected != null && expected.isNotEmpty) {
+        final actual = await _sha256OfFile(target);
+        if (actual.toLowerCase() != expected.toLowerCase()) {
+          await _safeDelete(target);
+          await _safeDelete(File('$savePath.part'));
+          return Left(
+            Failure.validationFailure(
+              message: 'Checksum mismatch for $voiceId',
+            ),
+          );
+        }
+      }
+
       await _downloads.save(MAdhanDownload(
         voiceId: voiceId,
         fullUrl: url,
@@ -132,6 +148,12 @@ class RImplAdhan implements RAdhan {
       );
       return Left(Failure.unexpectedFailure(message: e.toString()));
     }
+  }
+
+  /// Streams [file] through SHA-256 (no full-file buffering) → lowercase hex.
+  Future<String> _sha256OfFile(File file) async {
+    final digest = await sha256.bind(file.openRead()).first;
+    return digest.toString();
   }
 
   Future<void> _safeDelete(File? f) async {
