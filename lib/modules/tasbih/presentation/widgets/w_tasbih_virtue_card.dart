@@ -4,9 +4,18 @@ import 'package:localize_and_translate/localize_and_translate.dart';
 import 'package:quran/core/theme/app_text_styles.dart';
 
 class WTasbihVirtueCard extends StatelessWidget {
-  const WTasbihVirtueCard({super.key, required this.gold});
+  const WTasbihVirtueCard({
+    super.key,
+    required this.gold,
+    this.titleKey = 'tasbih_virtue_title',
+    this.bodyKey = 'tasbih_virtue_body',
+    this.sourceKey = 'tasbih_virtue_source',
+  });
 
   final Color gold;
+  final String titleKey;
+  final String bodyKey;
+  final String sourceKey;
 
   @override
   Widget build(BuildContext context) {
@@ -41,11 +50,11 @@ class WTasbihVirtueCard extends StatelessWidget {
                   child: Icon(Icons.star_rounded, color: Colors.white, size: 20.sp),
                 ),
                 SizedBox(height: 5.h),
-                Text('tasbih_virtue_title'.tr(), style: AppTextStyles.grey12W400),
+                Text(titleKey.tr(), style: AppTextStyles.grey12W400),
                 SizedBox(height: 7.h),
-                Text('tasbih_virtue_body'.tr(), textAlign: TextAlign.center, style: AppTextStyles.ink16W400),
+                Text(bodyKey.tr(), textAlign: TextAlign.center, style: AppTextStyles.ink16W400),
                 SizedBox(height: 5.h),
-                Text('tasbih_virtue_source'.tr(), style: AppTextStyles.grey12W400),
+                Text(sourceKey.tr(), style: AppTextStyles.grey12W400),
               ],
             ),
           ),

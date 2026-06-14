@@ -84,10 +84,12 @@ class TasbihRoutes {
   static const String counter = '/';
   static const String history = '/history';
   static const String hourly = '/hourly';
+  static const String salawat = '/salawat';
 
   static String fullCounter() => RoutesNames.tasbihBase;
   static String fullHistory() => '${RoutesNames.tasbihBase}history';
   static String fullHourly() => '${RoutesNames.tasbihBase}hourly';
+  static String fullSalawat() => '${RoutesNames.tasbihBase}salawat';
 }
 
 class RemindersRoutes {

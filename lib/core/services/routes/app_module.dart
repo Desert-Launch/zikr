@@ -71,6 +71,7 @@ import 'package:quran/modules/settings/settings_module.dart';
 import 'package:quran/modules/tasbih/data/datasources/local/ds_hourly_tasbih.dart';
 import 'package:quran/modules/tasbih/data/sources/local/box_tasbih_counter.dart';
 import 'package:quran/modules/tasbih/data/sources/local/box_tasbih_history.dart';
+import 'package:quran/modules/tasbih/presentation/cubits/cb_salawat.dart';
 import 'package:quran/modules/tasbih/presentation/cubits/cb_tasbih.dart';
 import 'package:quran/modules/tasbih/tasbih_module.dart';
 import 'package:quran/presentation/sn_splash.dart';
@@ -244,6 +245,12 @@ class AppModule extends Module {
         counterBox: i.get<BoxTasbihCounter>(),
         historyBox: i.get<BoxTasbihHistory>(),
         hourly: i.get<DSHourlyTasbih>(),
+      ),
+    );
+    i.addSingleton<CBSalawat>(
+      () => CBSalawat(
+        counterBox: i.get<BoxTasbihCounter>(),
+        historyBox: i.get<BoxTasbihHistory>(),
       ),
     );
     i.addSingleton<CBReminders>(

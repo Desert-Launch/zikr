@@ -197,7 +197,7 @@ class _SNHomeState extends State<SNHome> {
         title: 'home_salawat'.tr(),
         subtitle: 'home_salawat_hint'.tr(),
         color: _gold,
-        route: RoutesNames.azkarBase,
+        route: TasbihRoutes.fullSalawat(),
       ),
     ];
   }
