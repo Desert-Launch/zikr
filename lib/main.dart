@@ -28,7 +28,6 @@ import 'package:quran/modules/khatma/data/models/m_khatma_plan.dart';
 import 'package:quran/modules/prayer/data/models/m_prayer_cache.dart';
 import 'package:quran/modules/prayer/data/models/m_prayer_settings.dart';
 import 'package:quran/modules/quran/data/models/m_bookmark.dart';
-import 'package:quran/modules/quran/data/models/m_download_task.dart';
 import 'package:quran/modules/quran/data/models/m_last_read.dart';
 import 'package:quran/modules/quran/data/models/m_reciter_pref.dart';
 import 'package:quran/modules/quran/data/sources/local/quran_hive_registrar.dart';
@@ -62,7 +61,6 @@ Future<void> main() async {
   await Hive.openBox<MBookmark>('quran_bookmarks');
   await Hive.openBox<MLastRead>('quran_last_read');
   await Hive.openBox<MReciterPref>('quran_reciter_pref');
-  await Hive.openBox<MDownloadTask>('quran_download_tasks');
   await Hive.openBox<MThemePref>('app_theme_pref');
   await Hive.openBox<MAppSettings>('app_settings');
   await Hive.openBox<MUser>('app_user');

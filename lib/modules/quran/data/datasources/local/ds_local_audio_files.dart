@@ -40,6 +40,39 @@ class DSLocalAudioFiles {
     return f.length();
   }
 
+  /// Counts how many `*.mp3` ayah files exist on disk for [surah].
+  /// Used for disk-as-truth status reporting — no separate flag needed.
+  Future<int> countDownloaded(String reciterId, int surah) async {
+    final base = await _baseDir();
+    final s = surah.toString().padLeft(3, '0');
+    final dir = Directory(p.join(base, reciterId, s));
+    if (!await dir.exists()) return 0;
+    var count = 0;
+    await for (final e in dir.list(followLinks: false)) {
+      if (e is File && e.path.endsWith('.mp3')) count++;
+    }
+    return count;
+  }
+
+  /// True when any audio has been downloaded for [reciterId]. Cheap guard that
+  /// lets callers skip a full per-surah scan for reciters with nothing on disk.
+  Future<bool> reciterDirExists(String reciterId) async {
+    final base = await _baseDir();
+    return Directory(p.join(base, reciterId)).exists();
+  }
+
+  /// Total bytes on disk for a single reciter (0 when nothing downloaded).
+  Future<int> bytesForReciter(String reciterId) async {
+    final base = await _baseDir();
+    final dir = Directory(p.join(base, reciterId));
+    if (!await dir.exists()) return 0;
+    var total = 0;
+    await for (final e in dir.list(recursive: true, followLinks: false)) {
+      if (e is File) total += await e.length();
+    }
+    return total;
+  }
+
   Future<void> ensureDir(String reciterId, int surah) async {
     final base = await _baseDir();
     final dir = Directory(p.join(base, reciterId, surah.toString().padLeft(3, '0')));

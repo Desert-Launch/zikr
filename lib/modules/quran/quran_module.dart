@@ -8,28 +8,31 @@ import 'package:quran/modules/quran/data/datasources/local/ds_qpc_font_loader.da
 import 'package:quran/modules/quran/data/datasources/remote/ds_audio_downloader.dart';
 import 'package:quran/modules/quran/data/datasources/remote/ds_remote_audio.dart';
 import 'package:quran/modules/quran/data/repos/r_impl_audio.dart';
+import 'package:quran/modules/quran/data/repos/r_impl_audio_downloads.dart';
 import 'package:quran/modules/quran/data/repos/r_impl_bookmarks.dart';
-import 'package:quran/modules/quran/data/repos/r_impl_downloads.dart';
 import 'package:quran/modules/quran/data/repos/r_impl_quran.dart';
 import 'package:quran/modules/quran/data/repos/r_impl_reciter.dart';
 import 'package:quran/modules/quran/data/sources/local/box_bookmarks.dart';
-import 'package:quran/modules/quran/data/sources/local/box_download_tasks.dart';
 import 'package:quran/modules/quran/data/sources/local/box_last_read.dart';
 import 'package:quran/modules/quran/data/sources/local/box_reciter_pref.dart';
 import 'package:quran/modules/quran/domain/repos/r_audio.dart';
+import 'package:quran/modules/quran/domain/repos/r_audio_downloads.dart';
 import 'package:quran/modules/quran/domain/repos/r_bookmarks.dart';
-import 'package:quran/modules/quran/domain/repos/r_downloads.dart';
 import 'package:quran/modules/quran/domain/repos/r_quran.dart';
 import 'package:quran/modules/quran/domain/repos/r_reciter.dart';
-import 'package:quran/modules/quran/domain/usecases/uc_cancel_download.dart';
-import 'package:quran/modules/quran/domain/usecases/uc_delete_downloaded.dart';
-import 'package:quran/modules/quran/domain/usecases/uc_download_juz.dart';
+import 'package:quran/modules/quran/domain/services/download_notifier.dart';
+import 'package:quran/modules/quran/domain/usecases/uc_delete_reciter_downloads.dart';
+import 'package:quran/modules/quran/domain/usecases/uc_delete_surah_download.dart';
+import 'package:quran/modules/quran/domain/usecases/uc_download_all_surahs.dart';
 import 'package:quran/modules/quran/domain/usecases/uc_download_surah.dart';
+import 'package:quran/modules/quran/domain/usecases/uc_ensure_ayah_downloaded.dart';
+import 'package:quran/modules/quran/domain/usecases/uc_get_all_surahs_status.dart';
 import 'package:quran/modules/quran/domain/usecases/uc_get_bookmarks.dart';
 import 'package:quran/modules/quran/domain/usecases/uc_get_page_layout.dart';
+import 'package:quran/modules/quran/domain/usecases/uc_get_reciter_stats.dart';
 import 'package:quran/modules/quran/domain/usecases/uc_get_reciters.dart';
-import 'package:quran/modules/quran/domain/usecases/uc_get_storage_summary.dart';
 import 'package:quran/modules/quran/domain/usecases/uc_get_surah_list.dart';
+import 'package:quran/modules/quran/domain/usecases/uc_get_surah_status.dart';
 import 'package:quran/modules/quran/domain/usecases/uc_play_ayah.dart';
 import 'package:quran/modules/quran/domain/usecases/uc_play_range.dart';
 import 'package:quran/modules/quran/domain/usecases/uc_resolve_audio_url.dart';
@@ -39,17 +42,21 @@ import 'package:quran/modules/quran/domain/usecases/uc_search_quran.dart';
 import 'package:quran/modules/quran/domain/usecases/uc_set_active_reciter.dart';
 import 'package:quran/modules/quran/presentation/cubits/cb_audio_player.dart';
 import 'package:quran/modules/quran/presentation/cubits/cb_bookmarks.dart';
-import 'package:quran/modules/quran/presentation/cubits/cb_downloads.dart';
 import 'package:quran/modules/quran/presentation/cubits/cb_mushaf_reader.dart';
 import 'package:quran/modules/quran/presentation/cubits/cb_quran_search.dart';
 import 'package:quran/modules/quran/presentation/cubits/cb_reciter.dart';
+import 'package:quran/modules/quran/presentation/cubits/cb_reciter_downloads.dart';
+import 'package:quran/modules/quran/presentation/cubits/cb_reciter_surahs.dart';
 import 'package:quran/modules/quran/presentation/cubits/cb_surah_list.dart';
 import 'package:quran/modules/quran/presentation/screens/sn_bookmarks.dart';
-import 'package:quran/modules/quran/presentation/screens/sn_downloads.dart';
 import 'package:quran/modules/quran/presentation/screens/sn_mushaf_reader.dart';
 import 'package:quran/modules/quran/presentation/screens/sn_quran_search.dart';
+import 'package:quran/modules/quran/presentation/screens/sn_quran_settings.dart';
+import 'package:quran/modules/quran/presentation/screens/sn_reciter_downloads.dart';
 import 'package:quran/modules/quran/presentation/screens/sn_reciter_picker.dart';
+import 'package:quran/modules/quran/presentation/screens/sn_reciter_surahs.dart';
 import 'package:quran/modules/quran/presentation/screens/sn_surah_list.dart';
+import 'package:quran/modules/quran/presentation/services/quran_download_notifier.dart';
 
 class QuranModule extends Module {
   @override
@@ -58,16 +65,11 @@ class QuranModule extends Module {
     i.addSingleton<BoxBookmarks>(BoxBookmarks.new);
     i.addSingleton<BoxLastRead>(BoxLastRead.new);
     i.addSingleton<BoxReciterPref>(BoxReciterPref.new);
-    i.addSingleton<BoxDownloadTasks>(BoxDownloadTasks.new);
 
     // Local data sources
     i.addSingleton<DSLocalQuran>(DSLocalQuran.new);
-    i.addSingleton<DSLocalBookmarks>(
-      () => DSLocalBookmarks(i.get<BoxBookmarks>(), i.get<BoxLastRead>()),
-    );
-    i.addSingleton<DSLocalSettings>(
-      () => DSLocalSettings(i.get<BoxReciterPref>()),
-    );
+    i.addSingleton<DSLocalBookmarks>(() => DSLocalBookmarks(i.get<BoxBookmarks>(), i.get<BoxLastRead>()));
+    i.addSingleton<DSLocalSettings>(() => DSLocalSettings(i.get<BoxReciterPref>()));
     i.addSingleton<DSLocalAudioFiles>(DSLocalAudioFiles.new);
     i.addSingleton<DSQpcFontLoader>(DSQpcFontLoader.new);
 
@@ -78,24 +80,18 @@ class QuranModule extends Module {
     // Repositories (interface → impl)
     i.addSingleton<RQuran>(() => RImplQuran(i.get<DSLocalQuran>()));
     i.addSingleton<RReciter>(() => RImplReciter(i.get<DSLocalSettings>()));
-    i.addSingleton<RAudio>(
-      () => RImplAudio(
-        i.get<DSLocalAudioFiles>(),
-        i.get<DSRemoteAudio>(),
-        i.get<RReciter>(),
+    i.addSingleton<RAudio>(() => RImplAudio(i.get<DSLocalAudioFiles>(), i.get<DSRemoteAudio>(), i.get<RReciter>()));
+    i.addSingleton<DownloadNotifier>(() => QuranDownloadNotifier(i.get<UCGetSurahList>()));
+    i.addSingleton<RAudioDownloads>(
+      () => RImplAudioDownloads(
+        files: i.get<DSLocalAudioFiles>(),
+        remote: i.get<DSRemoteAudio>(),
+        downloader: i.get<DSAudioDownloader>(),
+        reciter: i.get<RReciter>(),
+        notifier: i.get<DownloadNotifier>(),
       ),
     );
     i.addSingleton<RBookmarks>(() => RImplBookmarks(i.get<DSLocalBookmarks>()));
-    i.addSingleton<RDownloads>(
-      () => RImplDownloads(
-        tasksBox: i.get<BoxDownloadTasks>(),
-        downloader: i.get<DSAudioDownloader>(),
-        remote: i.get<DSRemoteAudio>(),
-        files: i.get<DSLocalAudioFiles>(),
-        quran: i.get<RQuran>(),
-        reciter: i.get<RReciter>(),
-      ),
-    );
 
     // Use cases (factory)
     i.add<UCGetSurahList>(() => UCGetSurahList(i.get<RQuran>()));
@@ -104,11 +100,14 @@ class QuranModule extends Module {
     i.add<UCResolveAudioUrl>(() => UCResolveAudioUrl(i.get<RAudio>()));
     i.add<UCPlayAyah>(UCPlayAyah.new);
     i.add<UCPlayRange>(UCPlayRange.new);
-    i.add<UCDownloadSurah>(() => UCDownloadSurah(i.get<RDownloads>()));
-    i.add<UCDownloadJuz>(() => UCDownloadJuz(i.get<RDownloads>()));
-    i.add<UCCancelDownload>(() => UCCancelDownload(i.get<RDownloads>()));
-    i.add<UCDeleteDownloaded>(() => UCDeleteDownloaded(i.get<RDownloads>()));
-    i.add<UCGetStorageSummary>(() => UCGetStorageSummary(i.get<RDownloads>()));
+    i.add<UCEnsureAyahDownloaded>(() => UCEnsureAyahDownloaded(i.get<RAudioDownloads>()));
+    i.add<UCDownloadSurah>(() => UCDownloadSurah(i.get<RAudioDownloads>()));
+    i.add<UCDownloadAllSurahs>(() => UCDownloadAllSurahs(i.get<RAudioDownloads>()));
+    i.add<UCGetSurahStatus>(() => UCGetSurahStatus(i.get<RAudioDownloads>()));
+    i.add<UCGetAllSurahsStatus>(() => UCGetAllSurahsStatus(i.get<RAudioDownloads>()));
+    i.add<UCGetReciterStats>(() => UCGetReciterStats(i.get<RAudioDownloads>()));
+    i.add<UCDeleteSurahDownload>(() => UCDeleteSurahDownload(i.get<RAudioDownloads>()));
+    i.add<UCDeleteReciterDownloads>(() => UCDeleteReciterDownloads(i.get<RAudioDownloads>()));
     i.add<UCSaveBookmark>(() => UCSaveBookmark(i.get<RBookmarks>()));
     i.add<UCGetBookmarks>(() => UCGetBookmarks(i.get<RBookmarks>()));
     i.add<UCSaveLastRead>(() => UCSaveLastRead(i.get<RBookmarks>()));
@@ -118,9 +117,9 @@ class QuranModule extends Module {
     // App-wide cubits (singletons survive navigation).
     i.addSingleton<CBAudioPlayer>(
       () => CBAudioPlayer(
-        audio: i.get<RAudio>(),
         quran: i.get<RQuran>(),
         reciters: i.get<UCGetReciters>(),
+        ensure: i.get<UCEnsureAyahDownloaded>(),
       ),
     );
     i.addSingleton<CBReciter>(
@@ -131,27 +130,9 @@ class QuranModule extends Module {
         audioPlayer: i.get<CBAudioPlayer>(),
       ),
     );
-    i.addSingleton<CBDownloads>(
-      () => CBDownloads(
-        surahs: i.get<UCGetSurahList>(),
-        reciters: i.get<UCGetReciters>(),
-        dSurah: i.get<UCDownloadSurah>(),
-        dJuz: i.get<UCDownloadJuz>(),
-        cancel: i.get<UCCancelDownload>(),
-        delete: i.get<UCDeleteDownloaded>(),
-        storage: i.get<UCGetStorageSummary>(),
-        repo: i.get<RDownloads>(),
-      ),
-    );
 
     // Per-screen cubits (factory).
-    i.add<CBSurahList>(
-      () => CBSurahList(
-        i.get<UCGetSurahList>(),
-        i.get<UCSaveLastRead>(),
-        i.get<UCGetBookmarks>(),
-      ),
-    );
+    i.add<CBSurahList>(() => CBSurahList(i.get<UCGetSurahList>(), i.get<UCSaveLastRead>(), i.get<UCGetBookmarks>()));
     i.add<CBMushafReader>(
       () => CBMushafReader(
         i.get<UCGetPageLayout>(),
@@ -160,10 +141,23 @@ class QuranModule extends Module {
         i.get<DSLocalQuran>(),
       ),
     );
-    i.add<CBBookmarks>(
-      () => CBBookmarks(i.get<UCGetBookmarks>(), i.get<UCSaveBookmark>()),
-    );
+    i.add<CBBookmarks>(() => CBBookmarks(i.get<UCGetBookmarks>(), i.get<UCSaveBookmark>()));
     i.add<CBQuranSearch>(() => CBQuranSearch(i.get<UCSearchQuran>()));
+    i.add<CBReciterDownloads>(
+      () => CBReciterDownloads(reciters: i.get<UCGetReciters>(), stats: i.get<UCGetReciterStats>()),
+    );
+    i.add<CBReciterSurahs>(
+      () => CBReciterSurahs(
+        surahs: i.get<UCGetSurahList>(),
+        allStatus: i.get<UCGetAllSurahsStatus>(),
+        surahStatus: i.get<UCGetSurahStatus>(),
+        download: i.get<UCDownloadSurah>(),
+        downloadAll: i.get<UCDownloadAllSurahs>(),
+        deleteSurah: i.get<UCDeleteSurahDownload>(),
+        stats: i.get<UCGetReciterStats>(),
+        repo: i.get<RAudioDownloads>(),
+      ),
+    );
   }
 
   /// Eagerly opens the Hive boxes the module needs. Call from a screen `initState`
@@ -172,7 +166,6 @@ class QuranModule extends Module {
     await Modular.get<BoxBookmarks>().init();
     await Modular.get<BoxLastRead>().init();
     await Modular.get<BoxReciterPref>().init();
-    await Modular.get<BoxDownloadTasks>().init();
   }
 
   @override
@@ -188,14 +181,14 @@ class QuranModule extends Module {
         final ayah = int.tryParse(params['ayah'] ?? '');
         return SNMushafReader(
           initialPage: page,
-          initialAyah: (surah != null && ayah != null)
-              ? (surah: surah, ayah: ayah)
-              : null,
+          initialAyah: (surah != null && ayah != null) ? (surah: surah, ayah: ayah) : null,
         );
       },
     );
     r.child(QuranRoutes.reciterPicker, child: (_) => const SNReciterPicker());
-    r.child(QuranRoutes.downloads, child: (_) => const SNDownloads());
+    r.child(QuranRoutes.settings, child: (_) => const SNQuranSettings());
+    r.child(QuranRoutes.reciterDownloads, child: (_) => const SNReciterDownloads());
+    r.child(QuranRoutes.reciterSurahs, child: (_) => SNReciterSurahs(reciterId: r.args.queryParams['reciter'] ?? ''));
     r.child(QuranRoutes.bookmarks, child: (_) => const SNBookmarks());
     r.child(QuranRoutes.search, child: (_) => const SNQuranSearch());
   }

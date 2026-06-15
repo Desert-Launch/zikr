@@ -61,6 +61,9 @@ class RImplBookmarks implements RBookmarks {
   }
 
   @override
+  Stream<List<MBookmark>> watch() => _local.watchBookmarks();
+
+  @override
   Future<Either<Failure, MLastRead?>> getLastRead() async {
     try {
       return Right(_local.getLastRead());

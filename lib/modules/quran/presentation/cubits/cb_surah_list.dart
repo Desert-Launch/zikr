@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:quran/modules/quran/domain/usecases/uc_get_bookmarks.dart';
 import 'package:quran/modules/quran/domain/usecases/uc_get_surah_list.dart';
@@ -10,6 +12,8 @@ class CBSurahList extends Cubit<SSurahList> {
   final UCGetSurahList _getSurahs;
   final UCSaveLastRead _lastRead;
   final UCGetBookmarks _bookmarks;
+
+  StreamSubscription<List<dynamic>>? _bookmarksSub;
 
   Future<void> loadInitial() async {
     emit(state.copyWith(status: LoadStatus.loading, clearError: true));
@@ -25,6 +29,17 @@ class CBSurahList extends Cubit<SSurahList> {
         bookmarkCount: bookmarksRes.fold((_) => 0, (l) => l.length),
       )),
     );
+    // Keep the bookmark count live so the summary card updates instantly when a
+    // bookmark is added/removed elsewhere (e.g. from the mushaf reader).
+    _bookmarksSub ??= _bookmarks.watch().listen((list) {
+      if (!isClosed) emit(state.copyWith(bookmarkCount: list.length));
+    });
+  }
+
+  @override
+  Future<void> close() async {
+    await _bookmarksSub?.cancel();
+    return super.close();
   }
 
   void setFilter(SurahFilter filter) => emit(state.copyWith(filter: filter));

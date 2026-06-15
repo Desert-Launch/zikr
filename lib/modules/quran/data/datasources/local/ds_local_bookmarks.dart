@@ -23,6 +23,11 @@ class DSLocalBookmarks {
 
   List<MBookmark> listBookmarks() => _bookmarks.box.values.toList(growable: false);
 
+  /// Emits the full bookmark list whenever the box changes (add/update/delete),
+  /// so listeners can react instantly without re-querying.
+  Stream<List<MBookmark>> watchBookmarks() =>
+      _bookmarks.box.watch().map((_) => listBookmarks());
+
   Future<void> putLastRead(MLastRead value) async {
     await _lastRead.box.put(BoxLastRead.singletonKey, value);
   }

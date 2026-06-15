@@ -17,7 +17,6 @@ import 'package:quran/modules/khatma/data/models/m_khatma_plan.dart';
 import 'package:quran/modules/prayer/data/models/m_prayer_cache.dart';
 import 'package:quran/modules/prayer/data/models/m_prayer_settings.dart';
 import 'package:quran/modules/quran/data/models/m_bookmark.dart';
-import 'package:quran/modules/quran/data/models/m_download_task.dart';
 import 'package:quran/modules/quran/data/models/m_last_read.dart';
 import 'package:quran/modules/quran/data/models/m_reciter_pref.dart';
 import 'package:quran/modules/reminders/data/models/m_reminder.dart';
@@ -35,7 +34,6 @@ extension HiveRegistrar on HiveInterface {
     registerAdapter(MAzkarFavoriteAdapter());
     registerAdapter(MAzkarProgressAdapter());
     registerAdapter(MBookmarkAdapter());
-    registerAdapter(MDownloadTaskAdapter());
     registerAdapter(MKhatmaCompletionAdapter());
     registerAdapter(MKhatmaDayAdapter());
     registerAdapter(MKhatmaPlanAdapter());
@@ -61,7 +59,6 @@ extension IsolatedHiveRegistrar on IsolatedHiveInterface {
     registerAdapter(MAzkarFavoriteAdapter());
     registerAdapter(MAzkarProgressAdapter());
     registerAdapter(MBookmarkAdapter());
-    registerAdapter(MDownloadTaskAdapter());
     registerAdapter(MKhatmaCompletionAdapter());
     registerAdapter(MKhatmaDayAdapter());
     registerAdapter(MKhatmaPlanAdapter());

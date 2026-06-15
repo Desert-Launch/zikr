@@ -45,7 +45,9 @@ class QuranRoutes {
   static const String surahList = '/';
   static const String reader = '/reader';
   static const String reciterPicker = '/reciter';
-  static const String downloads = '/downloads';
+  static const String settings = '/settings';
+  static const String reciterDownloads = '/reciter-downloads';
+  static const String reciterSurahs = '/reciter-surahs';
   static const String bookmarks = '/bookmarks';
   static const String search = '/search';
 
@@ -55,7 +57,11 @@ class QuranRoutes {
   static String readerFromAyah(int surah, int ayah) =>
       '${RoutesNames.quranBase}reader?surah=$surah&ayah=$ayah';
   static String fullReciterPicker() => '${RoutesNames.quranBase}reciter';
-  static String fullDownloads() => '${RoutesNames.quranBase}downloads';
+  static String fullSettings() => '${RoutesNames.quranBase}settings';
+  static String fullReciterDownloads() =>
+      '${RoutesNames.quranBase}reciter-downloads';
+  static String reciterSurahsFor(String reciterId) =>
+      '${RoutesNames.quranBase}reciter-surahs?reciter=$reciterId';
   static String fullBookmarks() => '${RoutesNames.quranBase}bookmarks';
   static String fullSearch() => '${RoutesNames.quranBase}search';
 }

@@ -13,6 +13,9 @@ abstract class RBookmarks {
   });
   Future<Either<Failure, void>> delete(String id);
   Future<Either<Failure, List<MBookmark>>> list();
+
+  /// Emits the bookmark list on every change (add/update/delete).
+  Stream<List<MBookmark>> watch();
   Future<Either<Failure, MLastRead?>> getLastRead();
   Future<Either<Failure, void>> saveLastRead(MLastRead value);
 }

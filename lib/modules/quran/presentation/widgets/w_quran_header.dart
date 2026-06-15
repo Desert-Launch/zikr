@@ -5,10 +5,16 @@ import 'package:localize_and_translate/localize_and_translate.dart';
 import 'package:quran/modules/quran/presentation/cubits/cb_surah_list.dart';
 
 class WQuranHeader extends StatelessWidget {
-  const WQuranHeader({super.key, required this.cubit, required this.onBack});
+  const WQuranHeader({
+    super.key,
+    required this.cubit,
+    required this.onBack,
+    this.onSettings,
+  });
 
   final CBSurahList cubit;
   final VoidCallback onBack;
+  final VoidCallback? onSettings;
 
   @override
   Widget build(BuildContext context) {
@@ -24,7 +30,16 @@ class WQuranHeader extends StatelessWidget {
           children: [
             Row(
               children: [
-                const SizedBox(width: 42),
+                if (onSettings != null)
+                  IconButton(
+                    onPressed: onSettings,
+                    icon: const Icon(
+                      Icons.settings_outlined,
+                      color: Colors.white,
+                    ),
+                  )
+                else
+                  const SizedBox(width: 42),
                 const Spacer(),
                 Column(
                   children: [

@@ -124,11 +124,30 @@ class _SNMushafReaderState extends State<SNMushafReader> {
                 alignment: Alignment.topCenter,
                 child: WReaderTopBar(),
               ),
-              const Align(
+              Align(
                 alignment: Alignment.bottomCenter,
                 child: Column(
                   mainAxisSize: MainAxisSize.min,
-                  children: [WAyahActionSheet(), WMiniPlayer()],
+                  children: [
+                    const WAyahActionSheet(),
+                    // The action sheet hosts its own player bar. Show the
+                    // standalone mini player only when there's no selection and
+                    // the chrome is visible — so tapping the screen (which hides
+                    // the chrome + sheet) hides the player with it.
+                    BlocBuilder<CBMushafReader, SMushafReader>(
+                      buildWhen: (a, b) =>
+                          (a.selectedAyah == null) !=
+                              (b.selectedAyah == null) ||
+                          a.chromeVisible != b.chromeVisible,
+                      builder: (_, s) {
+                        final showMini =
+                            s.chromeVisible && s.selectedAyah == null;
+                        return showMini
+                            ? const WMiniPlayer()
+                            : const SizedBox.shrink();
+                      },
+                    ),
+                  ],
                 ),
               ),
             ],

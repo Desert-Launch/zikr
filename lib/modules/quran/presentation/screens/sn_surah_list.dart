@@ -49,7 +49,12 @@ class _SNSurahListState extends State<SNSurahList> {
               return CustomScrollView(
                 slivers: [
                   SliverToBoxAdapter(
-                    child: WQuranHeader(cubit: _cubit, onBack: _goBack),
+                    child: WQuranHeader(
+                      cubit: _cubit,
+                      onBack: _goBack,
+                      onSettings: () =>
+                          Modular.to.pushNamed(QuranRoutes.fullSettings()),
+                    ),
                   ),
                   SliverToBoxAdapter(
                     child: WSurahFilterBar(

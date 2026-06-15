@@ -270,6 +270,48 @@ class NotificationsService {
     return scheduled;
   }
 
+  /// Shows (or updates in place) an ongoing progress notification — used for
+  /// long-running downloads. Reusing the same [id] replaces the previous one
+  /// rather than stacking. [onlyAlertOnce] + the low-importance `downloads`
+  /// channel keep rapid progress updates silent. Pass a non-positive
+  /// [maxProgress] for an indeterminate spinner. No-op-safe if permission was
+  /// never granted (the OS simply drops it).
+  Future<void> showDownloadProgress({
+    required int id,
+    required String title,
+    required String body,
+    required int maxProgress,
+    required int progress,
+  }) async {
+    final indeterminate = maxProgress <= 0;
+    final clamped = indeterminate ? 0 : progress.clamp(0, maxProgress).toInt();
+    final details = NotificationDetails(
+      android: AndroidNotificationDetails(
+        AppNotificationChannels.downloads.id,
+        AppNotificationChannels.downloads.name,
+        channelDescription: AppNotificationChannels.downloads.description,
+        importance: Importance.low,
+        priority: Priority.low,
+        onlyAlertOnce: true,
+        ongoing: true,
+        autoCancel: false,
+        playSound: false,
+        enableVibration: false,
+        showProgress: true,
+        maxProgress: indeterminate ? 0 : maxProgress,
+        progress: clamped,
+        indeterminate: indeterminate,
+        category: AndroidNotificationCategory.progress,
+      ),
+      iOS: const DarwinNotificationDetails(
+        presentAlert: false,
+        presentBadge: false,
+        presentSound: false,
+      ),
+    );
+    await _plugin.show(id, title, body, details);
+  }
+
   Future<void> cancel(int id) async => _plugin.cancel(id);
   Future<void> cancelAll() async => _plugin.cancelAll();
 

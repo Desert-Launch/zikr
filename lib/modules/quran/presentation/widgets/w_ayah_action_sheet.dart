@@ -10,7 +10,9 @@ import 'package:quran/modules/quran/domain/entities/param_ayah_ref.dart';
 import 'package:quran/modules/quran/domain/usecases/uc_save_bookmark.dart';
 import 'package:quran/modules/quran/presentation/cubits/cb_audio_player.dart';
 import 'package:quran/modules/quran/presentation/cubits/cb_mushaf_reader.dart';
+import 'package:quran/modules/quran/presentation/cubits/s_audio_player.dart';
 import 'package:quran/modules/quran/presentation/cubits/s_mushaf_reader.dart';
+import 'package:quran/modules/quran/presentation/widgets/w_player_bar.dart';
 import 'package:share_plus/share_plus.dart';
 
 class WAyahActionSheet extends StatelessWidget {
@@ -77,7 +79,15 @@ class _SheetBody extends StatelessWidget {
               ),
             ),
             const Spacer(),
-            IconButton(icon: const Icon(Icons.close), onPressed: cubit.clearSelection),
+            IconButton(
+              icon: const Icon(Icons.close),
+              // Closes both: stops playback (hides the bar) and clears the
+              // selection (hides the sheet).
+              onPressed: () {
+                Modular.get<CBAudioPlayer>().stop();
+                cubit.clearSelection();
+              },
+            ),
           ],
         ),
         SizedBox(height: 4.h),
@@ -87,11 +97,8 @@ class _SheetBody extends StatelessWidget {
             _Action(
               icon: Icons.play_arrow_rounded,
               label: 'reader_play'.tr(),
-              onTap: (actionContext) async {
-                await Modular.get<CBAudioPlayer>().playFrom(ref);
-                if (!actionContext.mounted) return;
-                BlocProvider.of<CBMushafReader>(actionContext).clearSelection();
-              },
+              // Keep the sheet open so the merged player bar below stays visible.
+              onTap: (_) => Modular.get<CBAudioPlayer>().playFrom(ref),
             ),
             // _Action(
             //   icon: Icons.repeat_rounded,
@@ -106,6 +113,22 @@ class _SheetBody extends StatelessWidget {
             _Action(icon: Icons.copy_outlined, label: 'reader_copy'.tr(), onTap: _copy),
             _Action(icon: Icons.share_outlined, label: 'reader_share'.tr(), onTap: _share),
           ],
+        ),
+        // Merged playback bar: appears at the bottom of the sheet while audio
+        // is active (e.g. after tapping play above).
+        BlocBuilder<CBAudioPlayer, SAudioPlayer>(
+          bloc: Modular.get<CBAudioPlayer>(),
+          builder: (context, audio) {
+            final active = audio.currentAyah != null && audio.status != PlayerStatus.idle;
+            if (!active) return const SizedBox.shrink();
+            return Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Divider(height: 18.h, color: context.brand.border),
+                WPlayerBar(state: audio, cubit: Modular.get<CBAudioPlayer>()),
+              ],
+            );
+          },
         ),
       ],
     );

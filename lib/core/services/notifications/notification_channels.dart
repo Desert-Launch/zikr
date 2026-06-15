@@ -72,6 +72,17 @@ class AppNotificationChannels {
     importance: Importance.defaultImportance,
   );
 
+  /// Ongoing progress notification while reciter audio downloads run. Low
+  /// importance + silent so live progress updates never buzz or pop a heads-up.
+  static const downloads = AndroidNotificationChannel(
+    'downloads_channel',
+    'Downloads',
+    description: 'Quran audio download progress',
+    importance: Importance.low,
+    playSound: false,
+    enableVibration: false,
+  );
+
   /// All channels in registration order. [NotificationsService.init] iterates
   /// this list once at boot.
   static const List<AndroidNotificationChannel> all = [
@@ -82,5 +93,6 @@ class AppNotificationChannels {
     hourly,
     reminders,
     quranReminders,
+    downloads,
   ];
 }

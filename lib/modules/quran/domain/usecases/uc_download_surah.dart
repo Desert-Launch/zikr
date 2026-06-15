@@ -1,17 +1,12 @@
-import 'package:dartz/dartz.dart';
-import 'package:quran/core/errors/failure.dart';
-import 'package:quran/modules/quran/data/models/m_download_task.dart';
-import 'package:quran/modules/quran/domain/entities/param_download_request.dart';
-import 'package:quran/modules/quran/domain/repos/r_downloads.dart';
+import 'package:quran/modules/quran/domain/entities/e_download_progress.dart';
+import 'package:quran/modules/quran/domain/repos/r_audio_downloads.dart';
 
+/// Downloads every ayah of a surah that is not already on disk (idempotent).
+/// Emits progress; the stream completes when the surah is fully downloaded.
 class UCDownloadSurah {
   UCDownloadSurah(this._repo);
-  final RDownloads _repo;
+  final RAudioDownloads _repo;
 
-  Future<Either<Failure, MDownloadTask>> call({
-    required String reciterId,
-    required int surah,
-  }) {
-    return _repo.start(ParamDownloadRequest.surah(reciterId: reciterId, surah: surah));
-  }
+  Stream<SurahDownloadProgress> call(String reciterId, int surah) =>
+      _repo.downloadSurah(reciterId, surah);
 }

@@ -4,52 +4,61 @@ import 'package:audio_session/audio_session.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:just_audio/just_audio.dart';
 import 'package:just_audio_background/just_audio_background.dart';
+import 'package:localize_and_translate/localize_and_translate.dart';
 import 'package:quran/core/services/logging/app_logger.dart';
 import 'package:quran/modules/quran/data/models/m_surah.dart';
 import 'package:quran/modules/quran/domain/entities/e_playback_options.dart';
 import 'package:quran/modules/quran/domain/entities/param_ayah_ref.dart';
-import 'package:quran/modules/quran/domain/repos/r_audio.dart';
 import 'package:quran/modules/quran/domain/repos/r_quran.dart';
+import 'package:quran/modules/quran/domain/usecases/uc_ensure_ayah_downloaded.dart';
 import 'package:quran/modules/quran/domain/usecases/uc_get_reciters.dart';
 import 'package:quran/modules/quran/presentation/cubits/s_audio_player.dart';
 
 /// App-wide audio player. Singleton (registered via Modular.addSingleton).
+///
+/// Playback is strictly offline and plays **one ayah at a time**: each ayah is
+/// ensured on disk, set as a single local source, and played; on completion we
+/// advance to the next ayah in [SAudioPlayer.queue] (prefetching its file ahead
+/// of time so the gap stays small). We deliberately avoid a growing
+/// `ConcatenatingAudioSource` — appending to one while it plays under
+/// just_audio_background makes the auto-advanced item silent until a manual
+/// pause/resume re-issues `play()`.
 class CBAudioPlayer extends Cubit<SAudioPlayer> {
   CBAudioPlayer({
-    required RAudio audio,
     required RQuran quran,
     required UCGetReciters reciters,
-  }) : _audio = audio,
-       _quran = quran,
+    required UCEnsureAyahDownloaded ensure,
+  }) : _quran = quran,
        _reciters = reciters,
+       _ensure = ensure,
        _player = AudioPlayer(),
        super(const SAudioPlayer()) {
     _hydrate();
     _wireStreams();
   }
 
-  final RAudio _audio;
   final RQuran _quran;
   final UCGetReciters _reciters;
+  final UCEnsureAyahDownloaded _ensure;
   final AudioPlayer _player;
 
   String? _activeReciterId;
   String? _activeReciterName;
 
-  /// Indices in the current concatenating playlist where we have already
-  /// swapped in the AlQuran.cloud fallback URL. Prevents an infinite retry
-  /// loop if the fallback also errors.
-  final Set<int> _fallbackAttempted = <int>{};
+  /// Surah metadata for the active queue (for media-notification titles).
+  MSurah? _activeSurah;
+
+  /// Bumped on every new play session (playFrom/playRange/stop) so stale async
+  /// ensure/advance callbacks from a previous session become no-ops.
+  int _playToken = 0;
   bool _resumeAfterInterruption = false;
 
   StreamSubscription<PlayerState>? _stateSub;
   StreamSubscription<Duration>? _posSub;
   StreamSubscription<Duration?>? _durSub;
-  StreamSubscription<int?>? _idxSub;
   StreamSubscription<PlaybackEvent>? _errSub;
   StreamSubscription<void>? _noisySub;
   StreamSubscription<AudioInterruptionEvent>? _interruptSub;
-  ConcatenatingAudioSource? _playlist;
 
   Future<void> _hydrate() async {
     final res = await _reciters.active();
@@ -62,7 +71,12 @@ class CBAudioPlayer extends Cubit<SAudioPlayer> {
 
   void _wireStreams() {
     _stateSub = _player.playerStateStream.listen((ps) {
-      PlayerStatus next;
+      // End of the current ayah → advance manually (or finish the queue).
+      if (ps.processingState == ProcessingState.completed) {
+        _onTrackCompleted();
+        return;
+      }
+      final PlayerStatus next;
       switch (ps.processingState) {
         case ProcessingState.idle:
           next = PlayerStatus.idle;
@@ -73,7 +87,7 @@ class CBAudioPlayer extends Cubit<SAudioPlayer> {
         case ProcessingState.ready:
           next = ps.playing ? PlayerStatus.playing : PlayerStatus.paused;
         case ProcessingState.completed:
-          next = PlayerStatus.completed;
+          next = PlayerStatus.completed; // handled above
       }
       emit(state.copyWith(status: next));
     });
@@ -83,12 +97,6 @@ class CBAudioPlayer extends Cubit<SAudioPlayer> {
     );
     _durSub = _player.durationStream.listen((d) {
       emit(state.copyWith(duration: d ?? Duration.zero));
-    });
-    _idxSub = _player.currentIndexStream.listen((idx) {
-      if (idx == null) return;
-      final q = state.queue;
-      if (idx < 0 || idx >= q.length) return;
-      emit(state.copyWith(queueIndex: idx, currentAyah: q[idx]));
     });
     // just_audio 0.9.x surfaces playback errors through `playbackEventStream`'s
     // error channel — there is no dedicated `errorStream` until 0.10.x.
@@ -149,64 +157,18 @@ class CBAudioPlayer extends Cubit<SAudioPlayer> {
     }
   }
 
-  /// Called when just_audio fails to load/play the current source.
-  /// We try to swap the current item for its AlQuran.cloud fallback URL once;
-  /// if that also fails (or no fallback exists), we skip to the next ayah.
+  /// just_audio failed to play the current (local) source. Strictly offline, so
+  /// there is no online fallback — skip to the next ayah if there is one.
   Future<void> _handlePlaybackError(PlayerException error) async {
-    final playlist = _playlist;
-    final idx = _player.currentIndex;
     AppLogger.warning(
-      'Audio playback error: ${error.message} (idx=$idx)',
+      'Audio playback error: ${error.message}',
       tag: 'CBAudioPlayer',
     );
-    if (playlist == null ||
-        idx == null ||
-        idx < 0 ||
-        idx >= state.queue.length) {
+    final idx = state.queueIndex;
+    if (idx != null && idx + 1 < state.queue.length) {
+      unawaited(_playAt(idx + 1, _playToken));
+    } else {
       emit(state.copyWith(status: PlayerStatus.error, error: error.message));
-      return;
-    }
-    final ayah = state.queue[idx];
-    if (_fallbackAttempted.contains(idx)) {
-      // Already tried fallback at this index — skip ahead.
-      await _player.seekToNext();
-      return;
-    }
-    final fallback = _audio.fallbackUrlFor(
-      reciterId: _activeReciterId ?? 'alafasy',
-      surah: ayah.surah,
-      ayah: ayah.ayah,
-    );
-    if (fallback == null) {
-      await _player.seekToNext();
-      return;
-    }
-    try {
-      _fallbackAttempted.add(idx);
-      final tag = MediaItem(
-        id: '${ayah.surah}_${ayah.ayah}',
-        album:
-            'القرآن الكريم${_activeReciterName != null ? ' - $_activeReciterName' : ''}',
-        title: '${'سورة'} ${ayah.surah} - الآية ${ayah.ayah}',
-        artist: _activeReciterName ?? '',
-      );
-      final replacement = LockCachingAudioSource(Uri.parse(fallback), tag: tag);
-      await playlist.removeAt(idx);
-      await playlist.insert(idx, replacement);
-      await _player.seek(Duration.zero, index: idx);
-      await _player.play();
-      AppLogger.info(
-        'Swapped to fallback for ${ayah.key}',
-        tag: 'CBAudioPlayer',
-      );
-    } catch (e, st) {
-      AppLogger.error(
-        'Fallback swap failed',
-        error: e,
-        stackTrace: st,
-        tag: 'CBAudioPlayer',
-      );
-      await _player.seekToNext();
     }
   }
 
@@ -215,83 +177,150 @@ class CBAudioPlayer extends Cubit<SAudioPlayer> {
     emit(state.copyWith(reciterId: reciterId));
   }
 
+  /// Builds a local-file audio source (with media-notification metadata) for an
+  /// already-downloaded ayah. `Uri.file` (not `Uri.parse`) is required for
+  /// local files to play on Android.
+  AudioSource _localSource(MSurah? surah, ParamAyahRef ref, String path) {
+    final tag = MediaItem(
+      id: '${ref.surah}_${ref.ayah}',
+      album:
+          'القرآن الكريم${_activeReciterName != null ? ' - $_activeReciterName' : ''}',
+      title: '${surah?.arabic ?? ''} - الآية ${ref.ayah}',
+      artist: _activeReciterName ?? '',
+    );
+    return AudioSource.uri(Uri.file(path), tag: tag);
+  }
+
+  Future<String> _resolveReciterId() async {
+    return _activeReciterId ??
+        (await _reciters.active()).fold<String?>((_) => null, (r) => r.id) ??
+        'alafasy';
+  }
+
+  /// Replaces the queue and starts playing from its first ayah.
+  Future<void> _startQueue(
+    List<ParamAyahRef> queue,
+    MSurah? surah,
+    String reciterId,
+  ) async {
+    if (queue.isEmpty) {
+      emit(state.copyWith(status: PlayerStatus.idle));
+      return;
+    }
+    _activeSurah = surah;
+    _activeReciterId = reciterId;
+    _playToken++;
+    final token = _playToken;
+    emit(state.copyWith(queue: queue, reciterId: reciterId, clearError: true));
+    await _playAt(0, token);
+  }
+
+  /// Ensures the ayah at [index] is on disk, sets it as the single audio source
+  /// and plays it. [token] guards against a superseded play session.
+  Future<void> _playAt(int index, int token) async {
+    if (token != _playToken) return;
+    final queue = state.queue;
+    if (index < 0 || index >= queue.length) {
+      emit(state.copyWith(status: PlayerStatus.completed));
+      return;
+    }
+    final ref = queue[index];
+    final reciterId = _activeReciterId ?? 'alafasy';
+    emit(
+      state.copyWith(
+        queueIndex: index,
+        currentAyah: ref,
+        status: PlayerStatus.loading,
+        clearError: true,
+      ),
+    );
+
+    final res = await _ensure(ref, reciterId);
+    if (token != _playToken) return;
+    final path = res.fold<String?>((failure) {
+      AppLogger.warning(
+        'Ensure ayah ${ref.key} failed: ${failure.message}',
+        tag: 'CBAudioPlayer',
+      );
+      return null;
+    }, (p) => p);
+    if (path == null) {
+      emit(
+        state.copyWith(
+          status: PlayerStatus.error,
+          error: 'quran_audio_offline_error'.tr(),
+        ),
+      );
+      return;
+    }
+
+    try {
+      await _player.setAudioSource(_localSource(_activeSurah, ref, path));
+      if (token != _playToken) return;
+      await _player.setSpeed(state.options.speed);
+      await _player.setLoopMode(
+        state.options.repeatMode == RepeatMode.singleAyah
+            ? LoopMode.one
+            : LoopMode.off,
+      );
+      await _player.play();
+    } catch (e, st) {
+      if (token != _playToken) return;
+      AppLogger.error(
+        'playAt failed',
+        error: e,
+        stackTrace: st,
+        tag: 'CBAudioPlayer',
+      );
+      emit(state.copyWith(status: PlayerStatus.error, error: e.toString()));
+      return;
+    }
+
+    // Prefetch the next ayah's file so auto-advance stays near-gapless.
+    unawaited(_prefetch(index + 1, token));
+  }
+
+  /// Best-effort background download of the ayah at [index] (skips if already on
+  /// disk). Not done while repeating a single ayah.
+  Future<void> _prefetch(int index, int token) async {
+    if (token != _playToken) return;
+    if (state.options.repeatMode == RepeatMode.singleAyah) return;
+    final queue = state.queue;
+    if (index < 0 || index >= queue.length) return;
+    await _ensure(queue[index], _activeReciterId ?? 'alafasy');
+  }
+
+  /// Reached the end of the current ayah → advance, loop, or finish.
+  void _onTrackCompleted() {
+    final idx = state.queueIndex;
+    if (idx == null) {
+      emit(state.copyWith(status: PlayerStatus.completed));
+      return;
+    }
+    final nextIndex = idx + 1;
+    if (nextIndex < state.queue.length) {
+      unawaited(_playAt(nextIndex, _playToken));
+    } else if (state.options.repeatMode == RepeatMode.range &&
+        state.queue.isNotEmpty) {
+      unawaited(_playAt(0, _playToken));
+    } else {
+      emit(state.copyWith(status: PlayerStatus.completed));
+    }
+  }
+
   Future<void> playFrom(ParamAyahRef ref, {bool toEndOfSurah = true}) async {
     try {
       emit(state.copyWith(status: PlayerStatus.loading, clearError: true));
-      final reciterId =
-          _activeReciterId ??
-          (await _reciters.active()).fold<String?>((_) => null, (r) => r.id) ??
-          'alafasy';
-      _activeReciterId = reciterId;
-
-      // Build the ayah queue: from selected ayah to end of surah (or to whatever scope).
-      final surahsRes = await _quran.getSurah(ref.surah);
-      final surah = surahsRes.fold<MSurah?>((_) => null, (s) => s);
+      final reciterId = await _resolveReciterId();
+      final surahRes = await _quran.getSurah(ref.surah);
+      final surah = surahRes.fold<MSurah?>((_) => null, (s) => s);
       final endAyah = toEndOfSurah ? (surah?.totalAyah ?? ref.ayah) : ref.ayah;
 
-      final queue = <ParamAyahRef>[];
-      for (int a = ref.ayah; a <= endAyah; a++) {
-        queue.add(ParamAyahRef(surah: ref.surah, ayah: a));
-      }
-
-      // Resolve URLs in parallel.
-      final sources = <AudioSource>[];
-      for (final ayahRef in queue) {
-        final urlRes = await _audio.resolveAyahAudio(
-          reciterId: reciterId,
-          surah: ayahRef.surah,
-          ayah: ayahRef.ayah,
-        );
-        urlRes.fold(
-          (failure) {
-            AppLogger.warning(
-              'Audio resolve failed: ${failure.message}',
-              tag: 'CBAudioPlayer',
-            );
-          },
-          (url) {
-            final tag = MediaItem(
-              id: '${ayahRef.surah}_${ayahRef.ayah}',
-              album:
-                  'القرآن الكريم${_activeReciterName != null ? ' - $_activeReciterName' : ''}',
-              title: '${surah?.arabic ?? ''} - الآية ${ayahRef.ayah}',
-              artist: _activeReciterName ?? '',
-            );
-            final uri = Uri.parse(url);
-            final source = url.startsWith('file://')
-                ? AudioSource.uri(uri, tag: tag)
-                : LockCachingAudioSource(uri, tag: tag);
-            sources.add(source);
-          },
-        );
-      }
-
-      if (sources.isEmpty) {
-        emit(
-          state.copyWith(
-            status: PlayerStatus.error,
-            error: 'No audio sources resolved',
-          ),
-        );
-        return;
-      }
-
-      final playlist = ConcatenatingAudioSource(children: sources);
-      _playlist = playlist;
-      _fallbackAttempted.clear();
-      await _player.setAudioSource(playlist, initialIndex: 0);
-      await _player.setSpeed(state.options.speed);
-      await _applyLoopMode();
-      emit(
-        state.copyWith(
-          queue: queue,
-          queueIndex: 0,
-          currentAyah: queue.first,
-          reciterId: reciterId,
-          status: PlayerStatus.loading,
-        ),
-      );
-      await _player.play();
+      final queue = <ParamAyahRef>[
+        for (int a = ref.ayah; a <= endAyah; a++)
+          ParamAyahRef(surah: ref.surah, ayah: a),
+      ];
+      await _startQueue(queue, surah, reciterId);
     } catch (e, st) {
       AppLogger.error(
         'playFrom failed',
@@ -314,6 +343,10 @@ class CBAudioPlayer extends Cubit<SAudioPlayer> {
         );
         return;
       }
+      emit(state.copyWith(status: PlayerStatus.loading, clearError: true));
+      final reciterId = await _resolveReciterId();
+      final surahRes = await _quran.getSurah(from.surah);
+      final surah = surahRes.fold<MSurah?>((_) => null, (s) => s);
       final ayatRes = await _quran.ayatOfSurah(from.surah);
       final queue = ayatRes.fold<List<ParamAyahRef>>(
         (_) => [],
@@ -321,12 +354,7 @@ class CBAudioPlayer extends Cubit<SAudioPlayer> {
             .where((r) => r.ayah >= from.ayah && r.ayah <= to.ayah)
             .toList(),
       );
-      if (queue.isEmpty) return;
-      await playFrom(queue.first, toEndOfSurah: false);
-      // Override the queue produced by playFrom with the precise range.
-      emit(
-        state.copyWith(queue: queue, queueIndex: 0, currentAyah: queue.first),
-      );
+      await _startQueue(queue, surah, reciterId);
     } catch (e, st) {
       AppLogger.error(
         'playRange failed',
@@ -334,6 +362,7 @@ class CBAudioPlayer extends Cubit<SAudioPlayer> {
         stackTrace: st,
         tag: 'CBAudioPlayer',
       );
+      emit(state.copyWith(status: PlayerStatus.error, error: e.toString()));
     }
   }
 
@@ -344,12 +373,12 @@ class CBAudioPlayer extends Cubit<SAudioPlayer> {
       ),
     );
     await playFrom(ref, toEndOfSurah: false);
-    await _player.setLoopMode(LoopMode.one);
   }
 
   Future<void> pause() => _player.pause();
   Future<void> resume() => _player.play();
   Future<void> stop() async {
+    _playToken++; // invalidate any in-flight ensure/advance
     await _player.stop();
     emit(
       state.copyWith(
@@ -361,8 +390,25 @@ class CBAudioPlayer extends Cubit<SAudioPlayer> {
     );
   }
 
-  Future<void> next() => _player.seekToNext();
-  Future<void> previous() => _player.seekToPrevious();
+  Future<void> next() async {
+    final idx = state.queueIndex;
+    if (idx != null && idx + 1 < state.queue.length) {
+      await _playAt(idx + 1, _playToken);
+    }
+  }
+
+  Future<void> previous() async {
+    final idx = state.queueIndex;
+    if (idx == null) return;
+    // Restart the current ayah if we're well into it, otherwise step back.
+    if (idx == 0 || state.position > const Duration(seconds: 3)) {
+      await _player.seek(Duration.zero);
+      if (!_player.playing) await _player.play();
+    } else {
+      await _playAt(idx - 1, _playToken);
+    }
+  }
+
   Future<void> seekTo(Duration position) => _player.seek(position);
 
   Future<void> setSpeed(double speed) async {
@@ -372,18 +418,9 @@ class CBAudioPlayer extends Cubit<SAudioPlayer> {
 
   Future<void> setRepeatMode(RepeatMode mode) async {
     emit(state.copyWith(options: state.options.copyWith(repeatMode: mode)));
-    await _applyLoopMode();
-  }
-
-  Future<void> _applyLoopMode() async {
-    switch (state.options.repeatMode) {
-      case RepeatMode.off:
-        await _player.setLoopMode(LoopMode.off);
-      case RepeatMode.singleAyah:
-        await _player.setLoopMode(LoopMode.one);
-      case RepeatMode.range:
-        await _player.setLoopMode(LoopMode.all);
-    }
+    await _player.setLoopMode(
+      mode == RepeatMode.singleAyah ? LoopMode.one : LoopMode.off,
+    );
   }
 
   Stream<ParamAyahRef?> get currentAyahStream =>
@@ -396,7 +433,6 @@ class CBAudioPlayer extends Cubit<SAudioPlayer> {
     await _stateSub?.cancel();
     await _posSub?.cancel();
     await _durSub?.cancel();
-    await _idxSub?.cancel();
     await _errSub?.cancel();
     await _noisySub?.cancel();
     await _interruptSub?.cancel();
