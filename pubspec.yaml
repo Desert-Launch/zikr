@@ -2,7 +2,7 @@ name: quran
 description: "قرآن — Quran companion mobile app (Mushaf reader + per-ayah audio + downloads + azkar)."
 publish_to: 'none'
 
-version: 1.0.0+1
+version: 0.0.1+1
 
 environment:
   sdk: ^3.9.2
@@ -99,6 +99,29 @@ dev_dependencies:
   hive_ce_generator: ^1.7.2
   json_serializable: ^6.8.0
   flutter_gen_runner: ^5.8.0
+
+  # Native splash + launcher icon generators (config below).
+  flutter_native_splash: ^2.4.0
+  flutter_launcher_icons: ^0.14.0
+
+# App launcher icons (run: dart run flutter_launcher_icons).
+flutter_launcher_icons:
+  image_path: "assets/images/app_icon.png"
+  android: "ic_launcher"
+  ios: true
+  remove_alpha_ios: true
+
+# Native splash: solid green, no logo, and no icon on the Android 12 splash
+# (transparent image). The branded splash_screen.png is shown by SNSplash for
+# 1s once Flutter is up. Run: dart run flutter_native_splash:create.
+flutter_native_splash:
+  color: "#0D7E5E"
+  android: true
+  ios: true
+  web: false
+  android_12:
+    color: "#0D7E5E"
+    image: assets/images/transparent.png
 
 flutter_gen:
   output: lib/core/assets

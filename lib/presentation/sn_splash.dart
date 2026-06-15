@@ -2,15 +2,12 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_modular/flutter_modular.dart';
-import 'package:flutter_screenutil/flutter_screenutil.dart';
-import 'package:google_fonts/google_fonts.dart';
 import 'package:quran/core/data/sources/local/box_app_settings.dart';
 import 'package:quran/core/services/routes/routes_names.dart';
-import 'package:quran/core/theme/app_colors.dart';
 
-/// Boot screen. Shows onboarding on first install, then opens the guest-friendly
-/// home screen. Authentication is requested only when a protected feature is
-/// opened.
+/// Boot screen. Shows the branded splash image for ~1s, then opens onboarding
+/// on first install, otherwise the guest-friendly home screen. Authentication
+/// is requested only when a protected feature is opened.
 class SNSplash extends StatefulWidget {
   const SNSplash({super.key});
 
@@ -19,6 +16,9 @@ class SNSplash extends StatefulWidget {
 }
 
 class _SNSplashState extends State<SNSplash> {
+  /// Brand green — matches the native splash so the hand-off is seamless.
+  static const Color _bg = Color(0xFF0D7E5E);
+
   @override
   void initState() {
     super.initState();
@@ -26,47 +26,25 @@ class _SNSplashState extends State<SNSplash> {
   }
 
   Future<void> _routeWhenReady() async {
-    // First-run check — no auth state needed.
-    final settings = Modular.get<BoxAppSettings>().current();
-    if (!settings.hasSeenOnboarding) {
-      Modular.to.navigate(RoutesNames.onboardingBase);
-      return;
-    }
-
+    // Hold the splash image on screen for one second before routing.
+    await Future<void>.delayed(const Duration(seconds: 1));
     if (!mounted) return;
-    Modular.to.navigate(RoutesNames.homeBase);
+
+    final settings = Modular.get<BoxAppSettings>().current();
+    final target = settings.hasSeenOnboarding
+        ? RoutesNames.homeBase
+        : RoutesNames.onboardingBase;
+    Modular.to.navigate(target);
   }
 
   @override
   Widget build(BuildContext context) {
-    final cs = Theme.of(context).colorScheme;
-    return Scaffold(
-      backgroundColor: cs.surface,
-      body: Center(
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Icon(
-              Icons.menu_book_rounded,
-              size: 96.r,
-              color: AppColorsLight.primary,
-            ),
-            SizedBox(height: 24.h),
-            Text(
-              'القرآن الكريم',
-              style: GoogleFonts.amiri(
-                fontSize: 32.sp,
-                fontWeight: FontWeight.w700,
-                color: AppColorsLight.primaryDark,
-              ),
-            ),
-            SizedBox(height: 32.h),
-            const SizedBox(
-              width: 28,
-              height: 28,
-              child: CircularProgressIndicator(strokeWidth: 2.5),
-            ),
-          ],
+    return const Scaffold(
+      backgroundColor: _bg,
+      body: SizedBox.expand(
+        child: Image(
+          image: AssetImage('assets/images/splash_screen.png'),
+          fit: BoxFit.cover,
         ),
       ),
     );
