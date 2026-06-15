@@ -139,6 +139,7 @@ class QuranModule extends Module {
         i.get<UCSaveLastRead>(),
         i.get<DSQpcFontLoader>(),
         i.get<DSLocalQuran>(),
+        i.get<RBookmarks>(),
       ),
     );
     i.add<CBBookmarks>(() => CBBookmarks(i.get<UCGetBookmarks>(), i.get<UCSaveBookmark>()));

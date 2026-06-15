@@ -12,6 +12,7 @@ import 'package:quran/modules/quran/presentation/cubits/cb_audio_player.dart';
 import 'package:quran/modules/quran/presentation/cubits/cb_mushaf_reader.dart';
 import 'package:quran/modules/quran/presentation/cubits/s_audio_player.dart';
 import 'package:quran/modules/quran/presentation/cubits/s_mushaf_reader.dart';
+import 'package:quran/modules/quran/presentation/widgets/w_bookmark_color_picker.dart';
 import 'package:quran/modules/quran/presentation/widgets/w_player_bar.dart';
 import 'package:share_plus/share_plus.dart';
 
@@ -146,10 +147,13 @@ class _SheetBody extends StatelessWidget {
   }
 
   Future<void> _bookmark(BuildContext context) async {
+    // Let the user pick a colour first; dismissing the picker cancels the save.
+    final colorHex = await showBookmarkColorPicker(context);
+    if (colorHex == null || !context.mounted) return;
     final uc = Modular.get<UCSaveBookmark>();
-    final result = await uc(ref: ref);
+    final result = await uc(ref: ref, colorHex: colorHex);
     if (!context.mounted) return;
-    final msg = result.fold((l) => 'common_error'.tr(), (r) => 'reader_bookmark'.tr());
+    final msg = result.fold((l) => 'common_error'.tr(), (r) => 'bookmark_saved'.tr());
     ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(msg)));
     BlocProvider.of<CBMushafReader>(context).clearSelection();
   }

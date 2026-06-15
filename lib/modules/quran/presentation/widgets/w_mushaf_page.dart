@@ -15,6 +15,7 @@ import 'package:quran/modules/quran/presentation/cubits/cb_mushaf_reader.dart';
 import 'package:quran/modules/quran/presentation/cubits/s_audio_player.dart';
 import 'package:quran/modules/quran/presentation/cubits/s_mushaf_reader.dart';
 import 'package:quran/modules/quran/presentation/widgets/w_basmala_line.dart';
+import 'package:quran/modules/quran/presentation/widgets/w_bookmark_color_picker.dart';
 import 'package:quran/modules/quran/presentation/widgets/w_surah_header.dart';
 
 /// Renders one Mushaf page from its [MPageLayout].
@@ -73,10 +74,14 @@ class _WMushafPageState extends State<WMushafPage> {
     return BlocSelector<
       CBMushafReader,
       SMushafReader,
-      ({ParamAyahRef? selected, double scale, ReaderTheme theme})
+      ({ParamAyahRef? selected, double scale, ReaderTheme theme, Map<String, String?> bookmarks})
     >(
-      selector: (s) =>
-          (selected: s.selectedAyah, scale: s.fontScale, theme: s.theme),
+      selector: (s) => (
+        selected: s.selectedAyah,
+        scale: s.fontScale,
+        theme: s.theme,
+        bookmarks: s.bookmarks,
+      ),
       builder: (context, view) {
         // QPC V1 glyphs have hair-thin strokes by design — keep the text in a
         // saturated near-black so they remain readable over the cream paper.
@@ -110,6 +115,7 @@ class _WMushafPageState extends State<WMushafPage> {
                         cubit: cubit,
                         selected: view.selected,
                         playing: playing,
+                        bookmarks: view.bookmarks,
                         fontFamily: pageFamily,
                         scale: view.scale,
                         color: fg,
@@ -185,6 +191,7 @@ class _WMushafPageState extends State<WMushafPage> {
     required CBMushafReader cubit,
     required ParamAyahRef? selected,
     required ParamAyahRef? playing,
+    required Map<String, String?> bookmarks,
     required String fontFamily,
     required double scale,
     required Color color,
@@ -207,6 +214,7 @@ class _WMushafPageState extends State<WMushafPage> {
       final group = groups[i];
       final isSelected = selected?.key == group.ref.key;
       final isPlaying = playing?.key == group.ref.key;
+      final isBookmarked = bookmarks.containsKey(group.ref.key);
       spans.add(
         TextSpan(
           text: group.glyphs.join(' '),
@@ -217,11 +225,14 @@ class _WMushafPageState extends State<WMushafPage> {
             color: isPlaying ? AppColorsLight.accent : color,
             fontWeight: FontWeight.w500,
             height: 1.0,
+            // Priority: live selection → now-playing → saved bookmark colour.
             backgroundColor: isSelected
                 ? AppColors.surfaceLightGreen
                 : (isPlaying
                       ? AppColors.accentGoldAmber.withValues(alpha: 0.15)
-                      : null),
+                      : (isBookmarked
+                            ? bookmarkHighlightFromHex(bookmarks[group.ref.key])
+                            : null)),
           ),
         ),
       );

@@ -19,6 +19,7 @@ class SMushafReader extends Equatable {
     this.surahName = '',
     this.juz = 1,
     this.chromeVisible = false,
+    this.bookmarks = const <String, String?>{},
   });
 
   final int currentPage;
@@ -40,6 +41,11 @@ class SMushafReader extends Equatable {
   /// the page toggles it; selecting an ayah forces it on.
   final bool chromeVisible;
 
+  /// Bookmarked ayahs on any page, keyed by `surah:ayah` → stored `colorHex`
+  /// (may be null for colourless bookmarks). Kept live from the bookmarks box
+  /// so saved ayahs stay highlighted in their colour.
+  final Map<String, String?> bookmarks;
+
   SMushafReader copyWith({
     int? currentPage,
     MPageLayout? layout,
@@ -53,6 +59,7 @@ class SMushafReader extends Equatable {
     String? surahName,
     int? juz,
     bool? chromeVisible,
+    Map<String, String?>? bookmarks,
   }) {
     return SMushafReader(
       currentPage: currentPage ?? this.currentPage,
@@ -66,6 +73,7 @@ class SMushafReader extends Equatable {
       surahName: surahName ?? this.surahName,
       juz: juz ?? this.juz,
       chromeVisible: chromeVisible ?? this.chromeVisible,
+      bookmarks: bookmarks ?? this.bookmarks,
     );
   }
 
@@ -82,5 +90,6 @@ class SMushafReader extends Equatable {
     surahName,
     juz,
     chromeVisible,
+    bookmarks,
   ];
 }

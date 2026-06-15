@@ -70,8 +70,11 @@
   "reciter_style_mujawwad": "Mujawwad",
 
   "bookmarks_title": "Bookmarks",
+  "bookmarks_subtitle": "Your saved verses",
   "bookmarks_empty": "No bookmarks yet",
   "bookmarks_add_note": "Add a note",
+  "bookmarks_color_title": "Choose a colour",
+  "bookmark_saved": "Bookmark saved",
 
   "search_title": "Search the Quran",
   "search_hint": "Search for a verse or word...",

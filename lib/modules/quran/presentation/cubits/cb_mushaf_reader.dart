@@ -3,7 +3,9 @@ import 'dart:async';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:quran/modules/quran/data/datasources/local/ds_local_quran.dart';
 import 'package:quran/modules/quran/data/datasources/local/ds_qpc_font_loader.dart';
+import 'package:quran/modules/quran/data/models/m_bookmark.dart';
 import 'package:quran/modules/quran/domain/entities/param_ayah_ref.dart';
+import 'package:quran/modules/quran/domain/repos/r_bookmarks.dart';
 import 'package:quran/modules/quran/domain/usecases/uc_get_page_layout.dart';
 import 'package:quran/modules/quran/domain/usecases/uc_save_last_read.dart';
 import 'package:quran/modules/quran/presentation/cubits/s_mushaf_reader.dart';
@@ -11,15 +13,41 @@ import 'package:quran/modules/quran/presentation/cubits/s_surah_list.dart'
     show LoadStatus;
 
 class CBMushafReader extends Cubit<SMushafReader> {
-  CBMushafReader(this._getPage, this._saveLastRead, this._fonts, this._local)
-    : super(const SMushafReader());
+  CBMushafReader(
+    this._getPage,
+    this._saveLastRead,
+    this._fonts,
+    this._local,
+    this._bookmarks,
+  ) : super(const SMushafReader()) {
+    _watchBookmarks();
+  }
 
   final UCGetPageLayout _getPage;
   final UCSaveLastRead _saveLastRead;
   final DSQpcFontLoader _fonts;
   final DSLocalQuran _local;
+  final RBookmarks _bookmarks;
 
   Timer? _saveDebounce;
+  StreamSubscription<List<MBookmark>>? _bookmarkSub;
+
+  /// Seeds the bookmark highlights, then keeps them in sync with the box so a
+  /// verse saved from the action sheet lights up immediately and stays lit.
+  void _watchBookmarks() {
+    _bookmarks.list().then((res) {
+      res.fold((_) {}, (all) {
+        if (!isClosed) emit(state.copyWith(bookmarks: _mapOf(all)));
+      });
+    });
+    _bookmarkSub = _bookmarks.watch().listen((all) {
+      if (!isClosed) emit(state.copyWith(bookmarks: _mapOf(all)));
+    });
+  }
+
+  Map<String, String?> _mapOf(List<MBookmark> all) => {
+    for (final b in all) b.ayahKey: b.colorHex,
+  };
 
   /// First page of every juz' in the 604-page Madani Mushaf. Index 0 → juz' 1.
   static const List<int> _juzStartPages = [
@@ -132,6 +160,7 @@ class CBMushafReader extends Cubit<SMushafReader> {
   @override
   Future<void> close() {
     _saveDebounce?.cancel();
+    _bookmarkSub?.cancel();
     return super.close();
   }
 }

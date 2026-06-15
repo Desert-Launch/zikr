@@ -70,8 +70,11 @@
   "reciter_style_mujawwad": "مجوّد",
 
   "bookmarks_title": "العلامات المرجعية",
+  "bookmarks_subtitle": "علاماتك المحفوظة",
   "bookmarks_empty": "لا توجد علامات مرجعية بعد",
   "bookmarks_add_note": "إضافة ملاحظة",
+  "bookmarks_color_title": "اختر لون العلامة",
+  "bookmark_saved": "تم حفظ العلامة",
 
   "search_title": "بحث في القرآن",
   "search_hint": "ابحث عن آية أو كلمة...",
