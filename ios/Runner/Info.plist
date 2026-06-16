@@ -49,6 +49,8 @@
 		<string>تحديد موقعك يُستخدم لحساب مواقيت الصلاة وعرض المساجد القريبة. Your location is used to calculate prayer times and show nearby mosques.</string>
 		<key>NSLocationAlwaysAndWhenInUseUsageDescription</key>
 		<string>تحديد موقعك يُستخدم لحساب مواقيت الصلاة وعرض المساجد القريبة. Your location is used to calculate prayer times and show nearby mosques.</string>
+		<key>NSMicrophoneUsageDescription</key>
+		<string>لا يستخدم هذا التطبيق الميكروفون. This app does not use the microphone; this permission is only required by the audio playback library.</string>
 		<key>UIBackgroundModes</key>
 		<array>
 			<string>audio</string>
