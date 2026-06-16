@@ -2,8 +2,10 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_modular/flutter_modular.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:flutter_svg/svg.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:localize_and_translate/localize_and_translate.dart';
+import 'package:quran/core/assets/assets.gen.dart';
 import 'package:quran/core/services/routes/routes_names.dart';
 import 'package:quran/core/theme/app_colors.dart';
 import 'package:quran/core/theme/brand_colors.dart';
@@ -19,19 +21,19 @@ import 'package:quran/modules/onboarding/presentation/widgets/w_onboarding_backd
 class SNLocationPermission extends StatelessWidget {
   const SNLocationPermission({super.key});
 
-  static const _features = [
+  static final _features = [
     FeatureData(
-      icon: Icons.location_on_outlined,
+      icon: Assets.icons.location.path,
       titleKey: 'onboarding_location_feat1_title',
       bodyKey: 'onboarding_location_feat1_body',
     ),
     FeatureData(
-      icon: Icons.near_me_outlined,
+      icon: Assets.icons.send.path,
       titleKey: 'onboarding_location_feat2_title',
       bodyKey: 'onboarding_location_feat2_body',
     ),
     FeatureData(
-      icon: Icons.shield_outlined,
+      icon: Assets.icons.shield.path,
       titleKey: 'onboarding_location_feat3_title',
       bodyKey: 'onboarding_location_feat3_body',
     ),
@@ -62,12 +64,10 @@ class SNLocationPermission extends StatelessWidget {
                     Container(
                       width: 96.r,
                       height: 96.r,
+                      padding: EdgeInsets.all(14.r),
                       decoration: BoxDecoration(
                         gradient: const LinearGradient(
-                          colors: [
-                            AppColorsLight.primary,
-                            AppColorsLight.primaryDark,
-                          ],
+                          colors: [Color(0xff0D7E5E), Color(0xff0A6349)],
                           begin: Alignment.topLeft,
                           end: Alignment.bottomRight,
                         ),
@@ -80,59 +80,52 @@ class SNLocationPermission extends StatelessWidget {
                           ),
                         ],
                       ),
-                      child: Icon(Icons.location_on_outlined,
-                          color: Colors.white, size: 46.r),
+                      child: SvgPicture.asset(Assets.icons.location.path),
                     ),
                     SizedBox(height: 20.h),
                     Text(
                       'onboarding_location_title'.tr(),
                       textAlign: TextAlign.center,
-                      style: GoogleFonts.cairo(
-                        fontSize: 24.sp,
-                        fontWeight: FontWeight.w800,
-                      ),
+                      style: GoogleFonts.cairo(fontSize: 24.sp, fontWeight: FontWeight.w800),
                     ),
                     SizedBox(height: 10.h),
-                    Text(
-                      'onboarding_location_body'.tr(),
-                      textAlign: TextAlign.center,
-                      style: TextStyle(
-                        fontSize: 13.sp,
-                        color: context.brand.muted,
-                        height: 1.6,
+                    SizedBox(
+                      width: 300.w,
+                      child: Text(
+                        'onboarding_location_body'.tr(),
+                        textAlign: TextAlign.center,
+                        style: TextStyle(fontSize: 13.sp, color: context.brand.muted, height: 1.6),
                       ),
                     ),
                     SizedBox(height: 28.h),
                     ..._features.map((f) => WFeatureCard(data: f)),
-                    const Spacer(),
+                    SizedBox(height: 28.h),
                     WAllowButton(onTap: () => _finish(context, granted: true)),
                     SizedBox(height: 10.h),
                     TextButton(
                       onPressed: () => _finish(context, granted: false),
                       child: Text(
                         'onboarding_location_skip'.tr(),
-                        style: TextStyle(
-                          fontSize: 14.sp,
-                          color: context.brand.muted,
-                        ),
+                        style: TextStyle(fontSize: 14.sp, color: context.brand.muted),
                       ),
                     ),
                     SizedBox(height: 4.h),
                     Row(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
-                        Icon(Icons.info_outline_rounded,
-                            size: 14.r, color: context.brand.muted),
-                        SizedBox(width: 6.w),
                         Flexible(
                           child: Text(
                             'onboarding_location_note'.tr(),
                             textAlign: TextAlign.center,
-                            style: TextStyle(
-                              fontSize: 11.sp,
-                              color: context.brand.muted,
-                            ),
+                            style: TextStyle(fontSize: 11.sp, color: context.brand.muted),
                           ),
+                        ),
+                        SizedBox(width: 6.w),
+                        SvgPicture.asset(
+                          Assets.icons.shield.path,
+                          colorFilter: ColorFilter.mode(context.brand.muted, BlendMode.srcIn),
+                          width: 12.r,
+                          height: 12.r,
                         ),
                       ],
                     ),

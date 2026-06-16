@@ -124,23 +124,23 @@ class _SNHomeState extends State<SNHome> {
           route: RoutesNames.azkarBase,
         ),
       ),
-      gap(),
-      row(
-        WHomeFeatureCard(
-          icon: Assets.icons.bookOpen.path,
-          title: 'home_tahfeez'.tr(),
-          subtitle: 'home_tahfeez_hint'.tr(),
-          color: _gold,
-          route: RoutesNames.quranBase,
-        ),
-        WHomeFeatureCard(
-          icon: Assets.icons.microphone.path,
-          title: 'home_tasmee'.tr(),
-          subtitle: 'home_tasmee_hint'.tr(),
-          color: _green,
-          route: QuranRoutes.fullReciterPicker(),
-        ),
-      ),
+      // gap(),
+      // row(
+      //   WHomeFeatureCard(
+      //     icon: Assets.icons.bookOpen.path,
+      //     title: 'home_tahfeez'.tr(),
+      //     subtitle: 'home_tahfeez_hint'.tr(),
+      //     color: _gold,
+      //     route: RoutesNames.quranBase,
+      //   ),
+      //   WHomeFeatureCard(
+      //     icon: Assets.icons.microphone.path,
+      //     title: 'home_tasmee'.tr(),
+      //     subtitle: 'home_tasmee_hint'.tr(),
+      //     color: _green,
+      //     route: QuranRoutes.fullReciterPicker(),
+      //   ),
+      // ),
       gap(),
       WHomeWideFeature(
         icon: Assets.icons.circle.path,
@@ -157,23 +157,23 @@ class _SNHomeState extends State<SNHome> {
         color: _gold,
         route: RoutesNames.qiblaBase,
       ),
-      gap(),
-      row(
-        WHomeFeatureCard(
-          icon: Assets.icons.signal.path,
-          title: 'home_radio'.tr(),
-          subtitle: 'home_radio_hint'.tr(),
-          color: _gold,
-          route: RoutesNames.adhanBase,
-        ),
-        WHomeFeatureCard(
-          icon: Assets.icons.tv.path,
-          title: 'home_live'.tr(),
-          subtitle: 'home_live_hint'.tr(),
-          color: _green,
-          route: RoutesNames.adhanBase,
-        ),
-      ),
+      // gap(),
+      // row(
+      //   WHomeFeatureCard(
+      //     icon: Assets.icons.signal.path,
+      //     title: 'home_radio'.tr(),
+      //     subtitle: 'home_radio_hint'.tr(),
+      //     color: _gold,
+      //     route: RoutesNames.adhanBase,
+      //   ),
+      //   WHomeFeatureCard(
+      //     icon: Assets.icons.tv.path,
+      //     title: 'home_live'.tr(),
+      //     subtitle: 'home_live_hint'.tr(),
+      //     color: _green,
+      //     route: RoutesNames.adhanBase,
+      //   ),
+      // ),
       gap(),
       row(
         WHomeFeatureCard(

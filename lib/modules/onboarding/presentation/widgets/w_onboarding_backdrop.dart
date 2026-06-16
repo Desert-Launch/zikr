@@ -18,15 +18,17 @@ class WOnboardingBackdrop extends StatelessWidget {
             end: -60.w,
             child: _circle(230.r, AppColorsLight.primary.withValues(alpha: 0.05)),
           ),
+
           PositionedDirectional(
-            top: 120.h,
-            start: -90.w,
-            child: _circle(180.r, AppColorsLight.accent.withValues(alpha: 0.04)),
+            top: 290.h,
+            end: 30.w,
+            child: _circle(330.r, AppColorsLight.primary.withValues(alpha: 0.05)),
           ),
+
           PositionedDirectional(
             bottom: -90.h,
             start: -50.w,
-            child: _circle(260.r, AppColorsLight.primary.withValues(alpha: 0.04)),
+            child: _circle(260.r, AppColorsLight.primary.withValues(alpha: 0.03)),
           ),
         ],
       ),
@@ -34,8 +36,11 @@ class WOnboardingBackdrop extends StatelessWidget {
   }
 
   Widget _circle(double size, Color color) => Container(
-        width: size,
-        height: size,
-        decoration: BoxDecoration(shape: BoxShape.circle, color: color),
-      );
+    width: size,
+    height: size,
+    decoration: BoxDecoration(
+      border: Border.all(color: color, width: 3),
+      shape: BoxShape.circle,
+    ),
+  );
 }

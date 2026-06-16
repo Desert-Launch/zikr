@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_modular/flutter_modular.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:quran/core/assets/assets.gen.dart';
 import 'package:quran/core/services/routes/routes_names.dart';
 import 'package:quran/core/theme/app_colors.dart';
 import 'package:quran/modules/onboarding/presentation/cubits/cb_onboarding.dart';
@@ -28,21 +29,21 @@ class _SNOnboardingPagerState extends State<SNOnboardingPager> {
     super.dispose();
   }
 
-  static const _slides = [
+  static final _slides = [
     SlideData(
-      icon: Icons.menu_book_rounded,
+      icon: Assets.icons.bookClose.path,
       titleKey: 'onboarding_slide1_title',
       bodyKey: 'onboarding_slide1_body',
       gold: false,
     ),
     SlideData(
-      icon: Icons.access_time_rounded,
+      icon: Assets.icons.clock.path,
       titleKey: 'onboarding_slide2_title',
       bodyKey: 'onboarding_slide2_body',
       gold: true,
     ),
     SlideData(
-      icon: Icons.favorite_rounded,
+      icon: Assets.icons.heart.path,
       titleKey: 'onboarding_slide3_title',
       bodyKey: 'onboarding_slide3_body',
       gold: false,
@@ -51,20 +52,14 @@ class _SNOnboardingPagerState extends State<SNOnboardingPager> {
 
   void _next() {
     if (_pageController.page!.round() < _slides.length - 1) {
-      _pageController.nextPage(
-        duration: const Duration(milliseconds: 280),
-        curve: Curves.easeOut,
-      );
+      _pageController.nextPage(duration: const Duration(milliseconds: 280), curve: Curves.easeOut);
     } else {
       Modular.to.pushNamed(OnboardingRoutes.fullLanguage());
     }
   }
 
   void _back() {
-    _pageController.previousPage(
-      duration: const Duration(milliseconds: 280),
-      curve: Curves.easeOut,
-    );
+    _pageController.previousPage(duration: const Duration(milliseconds: 280), curve: Curves.easeOut);
   }
 
   void _skip() => Modular.to.pushNamed(OnboardingRoutes.fullLanguage());
@@ -81,12 +76,11 @@ class _SNOnboardingPagerState extends State<SNOnboardingPager> {
               child: BlocBuilder<CBOnboarding, SOnboarding>(
                 builder: (context, state) {
                   final isLast = state.pageIndex == _slides.length - 1;
-                  final accent = _slides[state.pageIndex].gold
-                      ? AppColorsLight.accent
-                      : AppColorsLight.primary;
+                  final accent = _slides[state.pageIndex].gold ? AppColorsLight.accent : AppColorsLight.primary;
                   return Column(
                     children: [
-                      Expanded(
+                      SizedBox(
+                        height: 600.h,
                         child: PageView.builder(
                           controller: _pageController,
                           itemCount: _slides.length,
@@ -96,6 +90,7 @@ class _SNOnboardingPagerState extends State<SNOnboardingPager> {
                       ),
                       WDots(count: _slides.length, index: state.pageIndex, color: accent),
                       SizedBox(height: 24.h),
+                      Spacer(),
                       WBottomBar(
                         accent: accent,
                         isLast: isLast,

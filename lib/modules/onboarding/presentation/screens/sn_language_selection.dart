@@ -42,19 +42,18 @@ class _SNLanguageSelectionState extends State<SNLanguageSelection> {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.stretch,
                       children: [
-                        SizedBox(height: 32.h),
+                        SizedBox(height: 62.h),
                         const WOnboardingHeader(),
                         SizedBox(height: 28.h),
-                        ..._languages.map((l) => WLangTile(
-                              opt: l,
-                              selected: state.languageCode == l.code,
-                              onTap: () => _cubit.setLanguage(l.code),
-                            )),
-                        const Spacer(),
-                        WOnboardingContinueButton(
-                          onTap: () => Modular.to
-                              .pushNamed(OnboardingRoutes.fullLocation()),
+                        ..._languages.map(
+                          (l) => WLangTile(
+                            opt: l,
+                            selected: state.languageCode == l.code,
+                            onTap: () => _cubit.setLanguage(l.code),
+                          ),
                         ),
+                        const Spacer(),
+                        WOnboardingContinueButton(onTap: () => Modular.to.pushNamed(OnboardingRoutes.fullLocation())),
                         SizedBox(height: 24.h),
                       ],
                     ),

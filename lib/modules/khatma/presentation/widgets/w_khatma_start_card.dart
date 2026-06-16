@@ -22,27 +22,26 @@ class WKhatmaStartCard extends StatelessWidget {
           border: Border.all(color: const Color(0xFFE0E7E2)),
         ),
         child: Row(
+          mainAxisAlignment: MainAxisAlignment.end,
           children: [
-            Container(
-              width: 52.r,
-              height: 52.r,
-              decoration: const BoxDecoration(
-                color: gold,
-                shape: BoxShape.circle,
-              ),
-              child: const Icon(
-                Icons.arrow_forward_rounded,
-                color: Colors.white,
-              ),
-            ),
-            const Spacer(),
             Text(
               title,
               textAlign: TextAlign.end,
-              style: TextStyle(
-                fontSize: 16.sp,
-                color: const Color(0xFF1F2A24),
+              style: TextStyle(fontSize: 16.sp, color: const Color(0xFF1F2A24)),
+            ),
+            SizedBox(width: 12.w),
+            Container(
+              width: 52.r,
+              height: 52.r,
+              decoration: BoxDecoration(
+                gradient: const LinearGradient(
+                  colors: [gold, Color(0xFFA8851C)],
+                  begin: Alignment.topCenter,
+                  end: Alignment.bottomCenter,
+                ),
+                borderRadius: BorderRadius.circular(20.r),
               ),
+              child: const Icon(Icons.arrow_forward_rounded, color: Colors.white),
             ),
           ],
         ),

@@ -30,30 +30,23 @@ class WBottomBar extends StatelessWidget {
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
+          Row(
+            children: [
+              WOnboardingNextButton(
+                accent: accent,
+                label: isLast ? 'onboarding_get_started'.tr() : 'onboarding_next'.tr(),
+                onTap: onNext,
+              ),
+              if (showBack) ...[SizedBox(width: 12.w), WCircleButton(accent: accent, onTap: onBack)],
+            ],
+          ),
+
           TextButton(
             onPressed: onSkip,
             child: Text(
               'onboarding_skip'.tr(),
-              style: TextStyle(
-                fontSize: 14.sp,
-                color: context.brand.muted,
-              ),
+              style: TextStyle(fontSize: 14.sp, color: context.brand.muted),
             ),
-          ),
-          Row(
-            children: [
-              if (showBack) ...[
-                WCircleButton(accent: accent, onTap: onBack),
-                SizedBox(width: 12.w),
-              ],
-              WOnboardingNextButton(
-                accent: accent,
-                label: isLast
-                    ? 'onboarding_get_started'.tr()
-                    : 'onboarding_next'.tr(),
-                onTap: onNext,
-              ),
-            ],
           ),
         ],
       ),

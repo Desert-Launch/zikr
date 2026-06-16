@@ -10,19 +10,21 @@ class WCheckCircle extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      width: 26.r,
-      height: 26.r,
+      width: 30.r,
+      height: 30.r,
       decoration: BoxDecoration(
         shape: BoxShape.circle,
         color: selected ? AppColorsLight.primary : Colors.transparent,
-        border: Border.all(
-          color: selected ? AppColorsLight.primary : context.brand.border,
-          width: 1.6,
-        ),
+        border: Border.all(color: selected ? AppColorsLight.primary : context.brand.border, width: 1.6),
+        gradient: selected
+            ? LinearGradient(
+                colors: [const Color(0xff0D7E5E), const Color(0xff0A6349)],
+                begin: Alignment.topCenter,
+                end: Alignment.bottomCenter,
+              )
+            : null,
       ),
-      child: selected
-          ? Icon(Icons.check_rounded, color: Colors.white, size: 16.r)
-          : null,
+      child: selected ? Icon(Icons.check_rounded, color: Colors.white, size: 16.r) : null,
     );
   }
 }

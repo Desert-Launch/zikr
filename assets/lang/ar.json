@@ -12,7 +12,6 @@
   "common_resume": "استئناف",
   "common_search": "بحث",
   "common_all": "الكل",
-
   "surah_list_title": "السور",
   "surah_list_continue": "متابعة القراءة",
   "surah_list_filter_makki": "مكية",
@@ -24,7 +23,6 @@
   "quran_surah_total": "114 سورة",
   "quran_surah_label": "سورة",
   "quran_ayah_label": "آية",
-
   "reader_play": "تشغيل",
   "reader_pause": "إيقاف",
   "reader_repeat": "تكرار",
@@ -33,25 +31,21 @@
   "reader_copy": "نسخ",
   "reader_share": "مشاركة",
   "reader_settings": "الإعدادات",
-
   "reciter_picker_title": "اختر القارئ",
   "reciter_picker_preview": "معاينة",
   "reciter_picker_set_default": "تعيين كافتراضي",
   "reciter_picker_downloaded": "تم تنزيله",
-
   "downloads_title": "التنزيلات",
   "downloads_available": "المتاح",
   "downloads_downloaded": "تم التنزيل",
   "downloads_by_surah": "حسب السورة",
   "downloads_by_juz": "حسب الجزء",
   "downloads_low_storage": "مساحة التخزين منخفضة",
-
   "quran_settings_title": "إعدادات القرآن",
   "quran_settings_audio_downloads": "تنزيلات الصوت",
   "quran_settings_audio_downloads_hint": "إدارة تنزيل تلاوات القرّاء للاستماع دون اتصال",
   "quran_settings_choose_reciter": "اختيار القارئ",
   "quran_settings_choose_reciter_hint": "تحديد القارئ الافتراضي للتلاوة",
-
   "quran_downloads_title": "تنزيل التلاوات",
   "quran_downloads_downloaded_label": "تم التنزيل",
   "quran_downloads_download_all": "تحميل كل السور",
@@ -65,23 +59,19 @@
   "quran_downloads_mb": "م.ب",
   "quran_download_notification_title": "تنزيل التلاوة",
   "quran_audio_offline_error": "تعذر تحميل الآية — تحقق من اتصال الإنترنت",
-
   "reciter_style_murattal": "مرتل",
   "reciter_style_mujawwad": "مجوّد",
-
   "bookmarks_title": "العلامات المرجعية",
   "bookmarks_subtitle": "علاماتك المحفوظة",
   "bookmarks_empty": "لا توجد علامات مرجعية بعد",
   "bookmarks_add_note": "إضافة ملاحظة",
   "bookmarks_color_title": "اختر لون العلامة",
   "bookmark_saved": "تم حفظ العلامة",
-
   "search_title": "بحث في القرآن",
   "search_hint": "ابحث عن آية أو كلمة...",
   "search_no_results": "لا توجد نتائج",
   "search_results_count": "{{count}} نتيجة",
   "search_min_chars": "اكتب حرفين على الأقل",
-
   "player_now_playing": "قيد التشغيل",
   "player_surah_label": "سورة",
   "player_ayah_label": "الآية",
@@ -98,7 +88,6 @@
   "player_range_play": "تشغيل المقطع",
   "audio_offline_warning": "وضع الطيران — لا يمكن تشغيل ما لم يُنزَّل",
   "audio_fallback_used": "تم التبديل إلى مصدر بديل",
-
   "auth_login": "تسجيل الدخول",
   "auth_login_title": "مرحباً بعودتك",
   "auth_login_subtitle": "سجّل دخولك لمتابعة قراءتك",
@@ -138,7 +127,6 @@
   "auth_demo_creds": "بيانات تجريبية",
   "auth_birth_date": "تاريخ الميلاد",
   "auth_resend_code": "إعادة إرسال الكود؟",
-
   "onboarding_skip": "تخطٍ",
   "onboarding_next": "التالي",
   "onboarding_get_started": "ابدأ الآن",
@@ -152,7 +140,7 @@
   "onboarding_language_subtitle": "اختر لغتك المفضلة",
   "onboarding_language_body": "يمكنك تغييرها لاحقاً من الإعدادات.",
   "onboarding_location_title": "تحديد الموقع",
-  "onboarding_location_body": "نحتاج إلى موقعك لحساب أوقات الصلاة الدقيقة في منطقتك وإظهار المساجد القريبة منك.",
+  "onboarding_location_body": "نحتاج إلى موقعك لحساب أوقات الصلاة الدقيقة في منطقتك وإظهار المساجد القريبة منك",
   "onboarding_location_allow": "السماح بالوصول للموقع",
   "onboarding_location_skip": "تخطي الآن",
   "onboarding_location_feat1_title": "أوقات الصلاة الدقيقة",
@@ -162,7 +150,6 @@
   "onboarding_location_feat3_title": "خصوصية محمية",
   "onboarding_location_feat3_body": "بياناتك آمنة ومحمية",
   "onboarding_location_note": "يمكنك تغيير الإعدادات لاحقاً من الإعدادات.",
-
   "home_greeting_morning": "صباح الخير",
   "home_greeting_afternoon": "مساء الخير",
   "home_greeting_evening": "مساء الخير",
@@ -220,7 +207,6 @@
   "shortcut_khatma": "الختمة",
   "shortcut_mosques": "المساجد",
   "shortcut_reminders": "التذكيرات",
-
   "settings_title": "الإعدادات",
   "settings_subtitle": "خصص تجربتك",
   "settings_general": "الإعدادات العامة",
@@ -258,7 +244,6 @@
   "settings_theme_light_hint": "وضع النهار",
   "settings_theme_dark": "داكن",
   "settings_theme_dark_hint": "وضع الليل",
-
   "prayer_title": "مواقيت الصلاة",
   "prayer_header_subtitle": "أوقات دقيقة حسب موقعك",
   "prayer_location_unknown": "اضغط لتحديد موقعك",
@@ -279,7 +264,6 @@
   "prayer_all_done_today": "انتهت صلوات اليوم — بارك الله فيك",
   "prayer_permission_title": "الموقع مطلوب",
   "prayer_permission_body": "نحتاج موقعك لحساب المواقيت. فعّل الموقع من إعدادات النظام ثم أعد المحاولة.",
-
   "adhan_picker_title": "اختر الأذان",
   "adhan_regular_section": "الأذان الافتراضي",
   "adhan_fajr_section": "أذان الفجر",
@@ -331,7 +315,6 @@
   "adhan_before_alert": "تنبيه قبل الأذان",
   "adhan_sound_section": "صوت تنبيه الصلاة",
   "adhan_off": "إيقاف",
-
   "azkar_title": "الأذكار",
   "azkar_header_title": "الأدعية والأذكار",
   "azkar_header_subtitle": "حصن المسلم اليومي",
@@ -350,7 +333,6 @@
   "azkar_virtue": "فضل التسبيح",
   "azkar_other_title": "أذكار متنوعة",
   "azkar_browse": "تصفح الأذكار",
-
   "tasbih_title": "التسبيح",
   "tasbih_digital_title": "المسبحة الإلكترونية",
   "tasbih_digital_subtitle": "سبّح واذكر الله في كل وقت",
@@ -376,7 +358,6 @@
   "tasbih_hourly_enable": "تفعيل التذكير الساعي",
   "tasbih_hourly_hint": "تذكير صامت كل ساعة من 8 صباحاً حتى 10 مساءً",
   "tasbih_hourly_explainer": "نعرض ذكرًا مختلفًا في كل ساعة. الإشعار صامت ولا يهتز كي لا يقاطعك خلال يومك.",
-
   "reminders_title": "التذكيرات",
   "reminders_add": "إضافة",
   "reminders_edit": "تعديل",
@@ -415,7 +396,6 @@
   "reminders_permission_denied": "الإشعارات معطّلة. فعّلها من الإعدادات لاستلام التذكيرات.",
   "reminders_permission_title": "الإشعارات معطّلة",
   "reminders_open_settings": "فتح الإعدادات",
-
   "qibla_title": "القبلة",
   "qibla_heading_label": "اتجاهك الحالي",
   "qibla_bearing_label": "اتجاه القبلة: {{deg}}° من الشمال",
@@ -438,7 +418,6 @@
   "qibla_dir_sw": "جنوب غرب",
   "qibla_dir_w": "غرب",
   "qibla_dir_nw": "شمال غرب",
-
   "khatma_title": "الختمة",
   "khatma_history": "السجل",
   "khatma_history_empty": "لم تكمل ختمة بعد. ابدأ خطتك الأولى!",
@@ -494,7 +473,6 @@
   "khatma_from": "من",
   "khatma_to": "إلى",
   "khatma_ayah": "الآية",
-
   "legal_privacy": "سياسة الخصوصية",
   "legal_terms": "شروط الاستخدام",
   "legal_about": "عن التطبيق"

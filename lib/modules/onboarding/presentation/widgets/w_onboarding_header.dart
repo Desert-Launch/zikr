@@ -17,7 +17,7 @@ class WOnboardingHeader extends StatelessWidget {
           height: 84.r,
           decoration: BoxDecoration(
             gradient: const LinearGradient(
-              colors: [AppColorsLight.primary, AppColorsLight.primaryDark],
+              colors: [Color(0xff0D7E5E), Color(0xff0A6349)],
               begin: Alignment.topLeft,
               end: Alignment.bottomRight,
             ),
@@ -32,13 +32,10 @@ class WOnboardingHeader extends StatelessWidget {
           ),
           child: Icon(Icons.language_rounded, color: Colors.white, size: 42.r),
         ),
-        SizedBox(height: 16.h),
+        SizedBox(height: 26.h),
         Text(
           'onboarding_language_title'.tr(),
-          style: GoogleFonts.cairo(
-            fontSize: 24.sp,
-            fontWeight: FontWeight.w800,
-          ),
+          style: GoogleFonts.cairo(fontSize: 24.sp, fontWeight: FontWeight.w800),
         ),
         SizedBox(height: 4.h),
         Text(

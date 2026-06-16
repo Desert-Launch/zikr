@@ -18,9 +18,9 @@ class SNKhatmaEmpty extends StatelessWidget {
 
   // Surah Fatir (35:29) — Quranic text is not localized.
   static const _verse =
-      '﴿ إِنَّ الَّذِينَ يَتْلُونَ كِتَابَ اللَّهِ وَأَقَامُوا الصَّلَاةَ '
+      'إِنَّ الَّذِينَ يَتْلُونَ كِتَابَ اللَّهِ وَأَقَامُوا الصَّلَاةَ '
       'وَأَنْفَقُوا مِمَّا رَزَقْنَاهُمْ سِرًّا وَعَلَانِيَةً يَرْجُونَ '
-      'تِجَارَةً لَنْ تَبُورَ ﴾';
+      'تِجَارَةً لَنْ تَبُورَ';
 
   @override
   Widget build(BuildContext context) {
@@ -30,9 +30,7 @@ class SNKhatmaEmpty extends StatelessWidget {
       child: BlocBuilder<CBKhatma, SKhatma>(
         builder: (_, state) {
           if (state.isLoading) {
-            return const Scaffold(
-              body: Center(child: CircularProgressIndicator()),
-            );
+            return const Scaffold(body: Center(child: CircularProgressIndicator()));
           }
           if (state.hasActivePlan) {
             WidgetsBinding.instance.addPostFrameCallback((_) {
@@ -54,21 +52,14 @@ class SNKhatmaEmpty extends StatelessWidget {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.stretch,
                       children: [
-                        WKhatmaDescriptionCard(
-                          text: 'khatma_empty_desc'.tr(),
-                        ),
+                        WKhatmaDescriptionCard(text: 'khatma_empty_desc'.tr()),
                         SizedBox(height: 16.h),
                         WKhatmaStartCard(
                           title: 'khatma_start_new'.tr(),
-                          onTap: () =>
-                              Modular.to.pushNamed(KhatmaRoutes.fullPlans()),
+                          onTap: () => Modular.to.pushNamed(KhatmaRoutes.fullPlans()),
                         ),
                         SizedBox(height: 16.h),
-                        WKhatmaVirtueCard(
-                          title: 'khatma_virtue_title'.tr(),
-                          verse: _verse,
-                          reference: '[فاطر: 29]',
-                        ),
+                        WKhatmaVirtueCard(title: 'khatma_virtue_title'.tr(), verse: _verse, reference: '[فاطر: 29]'),
                       ],
                     ),
                   ),

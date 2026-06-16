@@ -10,7 +10,7 @@ class WKhatmaDescriptionCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: EdgeInsets.symmetric(horizontal: 18.w, vertical: 22.h),
+      padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 22.h),
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(16.r),
@@ -19,11 +19,7 @@ class WKhatmaDescriptionCard extends StatelessWidget {
       child: Text(
         text,
         textAlign: TextAlign.center,
-        style: TextStyle(
-          fontSize: 15.sp,
-          height: 1.7,
-          color: const Color(0xFF3A463F),
-        ),
+        style: TextStyle(fontSize: 15.sp, height: 1.7, color: const Color(0xFF3A463F)),
       ),
     );
   }
