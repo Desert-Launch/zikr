@@ -17,9 +17,7 @@ class KhatmaModule extends Module {
     r.child(KhatmaRoutes.plans, child: (_) => const SNKhatmaPlans());
     r.child(
       KhatmaRoutes.wirds,
-      child: (_) => SNKhatmaWirds(
-        planId: int.tryParse(r.args.queryParams['plan'] ?? '') ?? 0,
-      ),
+      child: (_) => SNKhatmaWirds(planId: int.tryParse(r.args.queryParams['plan'] ?? '') ?? 0),
     );
     r.child(KhatmaRoutes.tracker, child: (_) => const SNKhatmaTracker());
     r.child(KhatmaRoutes.completed, child: (_) => const SNKhatmaCompleted());

@@ -27,9 +27,7 @@ class SNKhatmaPlans extends StatelessWidget {
       child: BlocBuilder<CBKhatma, SKhatma>(
         builder: (_, state) {
           if (state.isLoading) {
-            return const Scaffold(
-              body: Center(child: CircularProgressIndicator()),
-            );
+            return const Scaffold(body: Center(child: CircularProgressIndicator()));
           }
           return Scaffold(
             backgroundColor: _canvas,
@@ -44,9 +42,7 @@ class SNKhatmaPlans extends StatelessWidget {
                 final others = plans.where((plan) => !plan.isSuggested);
                 return CustomScrollView(
                   slivers: [
-                    SliverToBoxAdapter(
-                      child: WGradientAppBar(title: 'khatma_new_title'.tr()),
-                    ),
+                    SliverToBoxAdapter(child: WGradientAppBar(title: 'khatma_new_title'.tr())),
                     SliverPadding(
                       padding: EdgeInsets.fromLTRB(16.w, 12.h, 16.w, 28.h),
                       sliver: SliverList.list(
@@ -54,52 +50,46 @@ class SNKhatmaPlans extends StatelessWidget {
                           if (suggested.isNotEmpty) ...[
                             WKhatmaSectionLabel(
                               'khatma_suggested'.tr(),
-                              padding: EdgeInsetsDirectional.only(
-                                start: 5.w,
-                                bottom: 6.h,
-                              ),
+                              padding: EdgeInsetsDirectional.only(start: 5.w, bottom: 6.h),
                             ),
                             ...suggested.map(
                               (plan) => WKhatmaPlanCard(
                                 plan: plan,
                                 suggested: true,
-                                onTap: () => Modular.to.pushNamed(
-                                  KhatmaRoutes.fullWirds(plan.id),
-                                ),
+                                onTap: () => Modular.to.pushNamed(KhatmaRoutes.fullWirds(plan.id)),
                               ),
                             ),
                             SizedBox(height: 12.h),
                           ],
                           WKhatmaSectionLabel(
                             'khatma_all_plans'.tr(),
-                            padding: EdgeInsetsDirectional.only(
-                              start: 5.w,
-                              bottom: 6.h,
-                            ),
+                            padding: EdgeInsetsDirectional.only(start: 5.w, bottom: 6.h),
                           ),
                           Container(
                             decoration: BoxDecoration(
                               color: Colors.white,
                               borderRadius: BorderRadius.circular(14.r),
-                              border: Border.all(
-                                color: const Color(0xFFE0E7E2),
-                              ),
+                              border: Border.all(color: const Color(0xFFE0E7E2)),
+                              boxShadow: [
+                                BoxShadow(
+                                  color: Colors.black.withValues(alpha: 0.04),
+                                  blurRadius: 10,
+                                  offset: const Offset(0, 4),
+                                ),
+                              ],
                             ),
                             child: Column(
                               children: [
                                 for (final plan in others) ...[
-                                  WKhatmaPlanRow(
-                                    plan: plan,
-                                    onTap: () => Modular.to.pushNamed(
-                                      KhatmaRoutes.fullWirds(plan.id),
+                                  Padding(
+                                    padding: EdgeInsets.symmetric(vertical: 12.h, horizontal: 20.w),
+                                    child: WKhatmaPlanRow(
+                                      plan: plan,
+                                      onTap: () => Modular.to.pushNamed(KhatmaRoutes.fullWirds(plan.id)),
                                     ),
                                   ),
                                   if (plan != others.last)
-                                    const Divider(
-                                      height: 1,
-                                      indent: 12,
-                                      endIndent: 12,
-                                    ),
+                                    const Divider(height: 0.7, indent: 20, endIndent: 20, color: Color(0xFFE0E7E2)),
                                 ],
                               ],
                             ),

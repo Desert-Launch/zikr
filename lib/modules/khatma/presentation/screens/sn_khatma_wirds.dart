@@ -8,7 +8,6 @@ import 'package:quran/modules/khatma/data/datasources/local/ds_local_khatma.dart
 import 'package:quran/modules/khatma/data/models/m_khatma_metadata.dart';
 import 'package:quran/modules/khatma/presentation/cubits/cb_khatma.dart';
 import 'package:quran/modules/khatma/presentation/widgets/w_khatma_section_label.dart';
-import 'package:quran/modules/khatma/presentation/widgets/w_khatma_suggested_wird.dart';
 import 'package:quran/modules/khatma/presentation/widgets/w_khatma_wird_row.dart';
 
 class SNKhatmaWirds extends StatefulWidget {
@@ -50,19 +49,11 @@ class _SNKhatmaWirdsState extends State<SNKhatmaWirds> {
           }
           return CustomScrollView(
             slivers: [
-              SliverToBoxAdapter(
-                child: WGradientAppBar(title: 'khatma_start_title'.tr()),
-              ),
+              SliverToBoxAdapter(child: WGradientAppBar(title: 'khatma_start_title'.tr())),
               SliverPadding(
                 padding: EdgeInsets.fromLTRB(14.w, 12.h, 14.w, 100.h),
                 sliver: SliverList.list(
                   children: [
-                    WKhatmaSectionLabel('khatma_suggested'.tr()),
-                    WKhatmaSuggestedWird(
-                      wird: data.wirds.first,
-                      onTap: () => _openWird(data.wirds.first),
-                    ),
-                    SizedBox(height: 14.h),
                     WKhatmaSectionLabel('khatma_all_wirds'.tr()),
                     Container(
                       decoration: BoxDecoration(
@@ -73,16 +64,12 @@ class _SNKhatmaWirdsState extends State<SNKhatmaWirds> {
                       child: Column(
                         children: [
                           for (final wird in data.wirds) ...[
-                            WKhatmaWirdRow(
-                              wird: wird,
-                              onTap: () => _openWird(wird),
+                            Padding(
+                              padding: EdgeInsets.symmetric(vertical: 5.h, horizontal: 14.w),
+                              child: WKhatmaWirdRow(wird: wird, onTap: () => _openWird(wird)),
                             ),
                             if (wird != data.wirds.last)
-                              const Divider(
-                                height: 1,
-                                indent: 12,
-                                endIndent: 12,
-                              ),
+                              const Divider(height: 0.7, indent: 24, endIndent: 24, color: _border),
                           ],
                         ],
                       ),
@@ -100,25 +87,17 @@ class _SNKhatmaWirdsState extends State<SNKhatmaWirds> {
           final data = snapshot.data;
           if (data == null) return const SizedBox.shrink();
           final cubit = Modular.get<CBKhatma>();
-          final isCurrent =
-              cubit.state.plan?.planId == data.plan.id &&
-              cubit.state.hasActivePlan;
+          final isCurrent = cubit.state.plan?.planId == data.plan.id && cubit.state.hasActivePlan;
           return SafeArea(
             minimum: EdgeInsets.fromLTRB(14.w, 8.h, 14.w, 12.h),
             child: FilledButton(
               style: FilledButton.styleFrom(
                 backgroundColor: _green,
                 padding: EdgeInsets.symmetric(vertical: 13.h),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(25.r),
-                ),
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(25.r)),
               ),
               onPressed: () => _start(data.plan),
-              child: Text(
-                isCurrent
-                    ? 'khatma_continue_plan'.tr()
-                    : 'khatma_start_plan'.tr(),
-              ),
+              child: Text(isCurrent ? 'khatma_continue_plan'.tr() : 'khatma_start_plan'.tr()),
             ),
           );
         },
@@ -143,14 +122,8 @@ class _SNKhatmaWirdsState extends State<SNKhatmaWirds> {
           title: Text('khatma_replace_plan_title'.tr()),
           content: Text('khatma_replace_plan_body'.tr()),
           actions: [
-            TextButton(
-              onPressed: () => Navigator.pop(dialogContext, false),
-              child: Text('common_cancel'.tr()),
-            ),
-            FilledButton(
-              onPressed: () => Navigator.pop(dialogContext, true),
-              child: Text('khatma_start_plan'.tr()),
-            ),
+            TextButton(onPressed: () => Navigator.pop(dialogContext, false), child: Text('common_cancel'.tr())),
+            FilledButton(onPressed: () => Navigator.pop(dialogContext, true), child: Text('khatma_start_plan'.tr())),
           ],
         ),
       );
