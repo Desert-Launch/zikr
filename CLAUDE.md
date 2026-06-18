@@ -296,3 +296,25 @@ Things **I (the AI) should never run** in this project:
 3. Grep the codebase for a similar pattern before inventing one.
 4. If you must guess, **ask** rather than assume.
 5. Never abandon a task half-done. If `flutter analyze` shows new errors after your edit, you're not done.
+
+## Where to look
+- Full roadmap → `docs/TALIAH_BUILD_PLAN.md`
+- Detailed conventions → `docs/INSTRUCTIONS.md`
+- Theme tokens & rules → `docs/THEME_GUIDE.md`
+- Skills (task playbooks) → `.claude/skills/`
+- Subagents → `.claude/agents/`
+
+# Commit message format
+Conventional commits. Subject `type(scope): summary` (≤50 chars), blank line, body wrapped at 72.
+
+```
+feat|fix|refactor|docs|style|test|chore(scope): Short description (max 50 chars)
+Detailed description, if needed. Wrap at 72 chars. Include relevant links/refs.
+- Bullet points for complex changes or rationale
+```
+
+**Hard rules (never violate)**
+- **Never** add a `Co-Authored-By`, "Generated with", or any Claude/AI/self attribution line — even if a tool default suggests one.
+- Don't write "this commit" / "I changed" — describe the change, not the actor.
+- Commit **only when asked**; gate on `flutter analyze` = 0 first; never push unless asked.
+- Use the **`/commit`** skill (`.claude/skills/commit/`) to do this consistently.
