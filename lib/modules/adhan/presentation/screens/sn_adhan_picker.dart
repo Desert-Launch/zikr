@@ -4,8 +4,10 @@ import 'package:flutter_modular/flutter_modular.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:localize_and_translate/localize_and_translate.dart';
 import 'package:quran/core/widgets/w_gradient_app_bar.dart';
+import 'package:quran/modules/adhan/presentation/cubits/cb_adhan_download.dart';
 import 'package:quran/modules/adhan/presentation/cubits/cb_adhan_player.dart';
 import 'package:quran/modules/adhan/presentation/cubits/cb_adhan_settings.dart';
+import 'package:quran/modules/adhan/presentation/cubits/s_adhan_download.dart';
 import 'package:quran/modules/adhan/presentation/cubits/s_adhan_player.dart';
 import 'package:quran/modules/adhan/presentation/cubits/s_adhan_settings.dart';
 import 'package:quran/modules/adhan/presentation/widgets/w_adhan_audio_row.dart';
@@ -26,10 +28,12 @@ class SNAdhanPicker extends StatelessWidget {
   Widget build(BuildContext context) {
     final player = Modular.get<CBAdhanPlayer>();
     final settings = Modular.get<CBAdhanSettings>();
+    final download = Modular.get<CBAdhanDownload>();
     return MultiBlocProvider(
       providers: [
         BlocProvider.value(value: player),
         BlocProvider.value(value: settings),
+        BlocProvider.value(value: download),
       ],
       child: Scaffold(
         backgroundColor: _canvas,
@@ -67,33 +71,65 @@ class SNAdhanPicker extends StatelessWidget {
                     WAdhanBeforeRow(state: settingsState, cubit: settings),
                     SizedBox(height: 18.h),
                     WAdhanSectionLabel('adhan_sound_section'.tr()),
-                    WAdhanGroup(
-                      children: [
-                        WAdhanOffRow(
-                          selected: !prayerEnabled,
-                          onTap: () => settings.togglePrayer(prayerIndex, false),
-                        ),
-                        for (var i = 0; i < playerState.allAdhans.length; i++)
-                          WAdhanAudioRow(
-                            adhan: playerState.allAdhans[i],
-                            selected: selectedId == playerState.allAdhans[i].id,
-                            playing:
-                                playerState.currentPreview?.id ==
-                                    playerState.allAdhans[i].id &&
-                                playerState.status == AdhanPlayerStatus.playing,
-                            onSelect: () async {
-                              await settings.setPrayerVoice(
-                                prayerKey,
-                                playerState.allAdhans[i].id,
-                              );
-                              if (!prayerEnabled) {
-                                await settings.togglePrayer(prayerIndex, true);
-                              }
-                            },
-                            onPlay: () => player.play(playerState.allAdhans[i]),
-                            onStop: player.stop,
-                          ),
-                      ],
+                    BlocConsumer<CBAdhanDownload, SAdhanDownload>(
+                      listener: (context, dl) {
+                        if (dl.status == AdhanDownloadStatus.failure) {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            SnackBar(
+                              content: Text('adhan_download_failed'.tr()),
+                            ),
+                          );
+                        }
+                      },
+                      builder: (context, dl) {
+                        return WAdhanGroup(
+                          children: [
+                            WAdhanOffRow(
+                              selected: !prayerEnabled,
+                              onTap: () =>
+                                  settings.togglePrayer(prayerIndex, false),
+                            ),
+                            for (final adhan in playerState.allAdhans)
+                              WAdhanAudioRow(
+                                adhan: adhan,
+                                selected: selectedId == adhan.id,
+                                playing:
+                                    playerState.currentPreview?.id == adhan.id &&
+                                    playerState.status ==
+                                        AdhanPlayerStatus.playing,
+                                downloadable: adhan.isDownloadable,
+                                downloaded: download.isDownloaded(adhan.id),
+                                downloading:
+                                    dl.status ==
+                                        AdhanDownloadStatus.downloading &&
+                                    dl.voiceId == adhan.id,
+                                progress: dl.voiceId == adhan.id
+                                    ? dl.progress
+                                    : null,
+                                onSelect: () async {
+                                  await settings.setPrayerVoice(
+                                    prayerKey,
+                                    adhan.id,
+                                  );
+                                  if (!prayerEnabled) {
+                                    await settings.togglePrayer(
+                                      prayerIndex,
+                                      true,
+                                    );
+                                  }
+                                },
+                                onPlay: () => player.play(adhan),
+                                onStop: player.stop,
+                                onDownload: () => download.download(adhan.id),
+                                onDelete: () => _confirmDelete(
+                                  context,
+                                  download,
+                                  adhan.id,
+                                ),
+                              ),
+                          ],
+                        );
+                      },
                     ),
                     SizedBox(height: 76.h),
                     const WAdhanVirtueCard(),
@@ -105,6 +141,33 @@ class SNAdhanPicker extends StatelessWidget {
         ),
       ),
     );
+  }
+
+  /// Confirms before removing a downloaded full adhan from disk. Bundled voices
+  /// never reach here (they expose no delete control).
+  Future<void> _confirmDelete(
+    BuildContext context,
+    CBAdhanDownload download,
+    String voiceId,
+  ) async {
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (dctx) => AlertDialog(
+        title: Text('adhan_delete_confirm_title'.tr()),
+        content: Text('adhan_delete_confirm_hint'.tr()),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(dctx, false),
+            child: Text('common_cancel'.tr()),
+          ),
+          TextButton(
+            onPressed: () => Navigator.pop(dctx, true),
+            child: Text('common_delete'.tr()),
+          ),
+        ],
+      ),
+    );
+    if (confirmed ?? false) await download.remove(voiceId);
   }
 
   String _prayerName(String key) => switch (key) {

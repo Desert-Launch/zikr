@@ -220,7 +220,9 @@ class AppModule extends Module {
         local: i.get<DSLocalAdhan>(),
         prefs: i.get<BoxAdhanPreference>(),
         prayerSettings: i.get<BoxPrayerSettings>(),
-        localeTag: 'ar-EG',
+        downloads: i.get<BoxAdhanDownload>(),
+        localeTag:
+            WidgetsBinding.instance.platformDispatcher.locale.toLanguageTag(),
       ),
     );
     i.addSingleton<CBAdhanDownload>(

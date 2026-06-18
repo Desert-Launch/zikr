@@ -5,6 +5,7 @@ import 'package:just_audio/just_audio.dart';
 import 'package:quran/core/services/logging/app_logger.dart';
 import 'package:quran/modules/adhan/data/datasources/local/ds_local_adhan.dart';
 import 'package:quran/modules/adhan/data/models/m_adhan.dart';
+import 'package:quran/modules/adhan/data/sources/local/box_adhan_download.dart';
 import 'package:quran/modules/adhan/data/sources/local/box_adhan_preference.dart';
 import 'package:quran/modules/adhan/presentation/cubits/s_adhan_player.dart';
 import 'package:quran/modules/prayer/data/sources/local/box_prayer_settings.dart';
@@ -21,10 +22,12 @@ class CBAdhanPlayer extends Cubit<SAdhanPlayer> {
     required DSLocalAdhan local,
     required BoxAdhanPreference prefs,
     required BoxPrayerSettings prayerSettings,
+    required BoxAdhanDownload downloads,
     required String localeTag,
   }) : _local = local,
        _prefs = prefs,
        _prayerSettings = prayerSettings,
+       _downloads = downloads,
        _localeTag = localeTag,
        _player = AudioPlayer(),
        super(const SAdhanPlayer()) {
@@ -35,6 +38,7 @@ class CBAdhanPlayer extends Cubit<SAdhanPlayer> {
   final DSLocalAdhan _local;
   final BoxAdhanPreference _prefs;
   final BoxPrayerSettings _prayerSettings;
+  final BoxAdhanDownload _downloads;
   final String _localeTag;
   final AudioPlayer _player;
 
@@ -97,8 +101,11 @@ class CBAdhanPlayer extends Cubit<SAdhanPlayer> {
     });
   }
 
-  /// Plays the bundled MP3 for [adhan]. Used both for the preview button in
-  /// settings and the actual prayer-time playback handler.
+  /// Plays the full adhan for [adhan]. Used both for the preview button in the
+  /// picker and the actual prayer-time playback handler. The source is resolved
+  /// in order: a downloaded full file on disk → the bundled asset → streaming
+  /// the remote [MAdhan.fullUrl] (preview before download). This lets remote
+  /// voices preview/play even when they ship no bundled asset.
   Future<void> play(MAdhan adhan) async {
     try {
       emit(
@@ -108,7 +115,16 @@ class CBAdhanPlayer extends Cubit<SAdhanPlayer> {
           clearError: true,
         ),
       );
-      await _player.setAsset(adhan.asset);
+      final localPath = _downloads.localPath(adhan.id);
+      if (localPath != null) {
+        await _player.setFilePath(localPath);
+      } else if (adhan.asset.isNotEmpty) {
+        await _player.setAsset(adhan.asset);
+      } else if (adhan.fullUrl?.isNotEmpty ?? false) {
+        await _player.setUrl(adhan.fullUrl ?? '');
+      } else {
+        throw StateError('No playable source for adhan ${adhan.id}');
+      }
       await _player.play();
     } catch (e, st) {
       AppLogger.warning(
