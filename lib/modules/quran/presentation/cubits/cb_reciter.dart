@@ -5,7 +5,8 @@ import 'package:quran/modules/quran/domain/usecases/uc_get_reciters.dart';
 import 'package:quran/modules/quran/domain/usecases/uc_set_active_reciter.dart';
 import 'package:quran/modules/quran/presentation/cubits/cb_audio_player.dart';
 import 'package:quran/modules/quran/presentation/cubits/s_reciter.dart';
-import 'package:quran/modules/quran/presentation/cubits/s_surah_list.dart' show LoadStatus;
+import 'package:quran/modules/quran/presentation/cubits/s_surah_list.dart'
+    show LoadStatus;
 
 class CBReciter extends Cubit<SReciter> {
   CBReciter({
@@ -13,30 +14,37 @@ class CBReciter extends Cubit<SReciter> {
     required UCSetActiveReciter setActive,
     required DSRemoteAudio remote,
     required CBAudioPlayer audioPlayer,
-  })  : _getReciters = getReciters,
-        _setActive = setActive,
-        _remote = remote,
-        _audioPlayer = audioPlayer,
-        _previewPlayer = AudioPlayer(),
-        super(const SReciter());
+  }) : _getReciters = getReciters,
+       _setActive = setActive,
+       _remote = remote,
+       _audioPlayer = audioPlayer,
+       super(const SReciter());
 
   final UCGetReciters _getReciters;
   final UCSetActiveReciter _setActive;
   final DSRemoteAudio _remote;
   final CBAudioPlayer _audioPlayer;
-  final AudioPlayer _previewPlayer;
+
+  /// Lazily created so constructing this cubit never spawns a second just_audio
+  /// player — just_audio_background allows only one. Built on first preview use.
+  AudioPlayer? _previewPlayer;
+  AudioPlayer get _preview => _previewPlayer ??= AudioPlayer();
 
   Future<void> load() async {
     emit(state.copyWith(status: LoadStatus.loading));
     final listRes = await _getReciters();
     final activeRes = await _getReciters.active();
     listRes.fold(
-      (failure) => emit(state.copyWith(status: LoadStatus.error, error: failure.message)),
-      (list) => emit(state.copyWith(
-        status: LoadStatus.success,
-        all: list,
-        activeId: activeRes.fold((_) => list.first.id, (r) => r.id),
-      )),
+      (failure) => emit(
+        state.copyWith(status: LoadStatus.error, error: failure.message),
+      ),
+      (list) => emit(
+        state.copyWith(
+          status: LoadStatus.success,
+          all: list,
+          activeId: activeRes.fold((_) => list.first.id, (r) => r.id),
+        ),
+      ),
     );
   }
 
@@ -54,9 +62,9 @@ class CBReciter extends Cubit<SReciter> {
     final url = _remote.primaryUrl(folder: reciter.folder, surah: 1, ayah: 1);
     try {
       emit(state.copyWith(previewingId: reciterId));
-      await _previewPlayer.stop();
-      await _previewPlayer.setUrl(url);
-      await _previewPlayer.play();
+      await _preview.stop();
+      await _preview.setUrl(url);
+      await _preview.play();
       // Auto-clear after ~7s.
       await Future<void>.delayed(const Duration(seconds: 7));
       await stopPreview();
@@ -66,13 +74,13 @@ class CBReciter extends Cubit<SReciter> {
   }
 
   Future<void> stopPreview() async {
-    await _previewPlayer.stop();
+    await _previewPlayer?.stop();
     emit(state.copyWith(clearPreviewing: true));
   }
 
   @override
   Future<void> close() async {
-    await _previewPlayer.dispose();
+    await _previewPlayer?.dispose();
     return super.close();
   }
 }
