@@ -19,22 +19,16 @@ class DSLocalAdhan {
     return list;
   }
 
-  /// Locale-aware default. Egyptian Arabic → Sheikh Rifat;
-  /// other Arabic locales → Makkah; non-Arabic → Alafasy.
+  /// Locale-aware default: the first voice whose `default_for_locales` matches
+  /// [localeTag] (e.g. ar-EG → Egypt, ar-SA → Makkah), falling back to the
+  /// catalog's `is_default` voice and finally the first entry.
   Future<MAdhan> defaultForLocale(String localeTag) async {
     final list = await all();
-    final hit = list.firstWhere(
+    return list.firstWhere(
       (a) => a.defaultForLocales.contains(localeTag),
-      orElse: () {
-        if (localeTag.startsWith('ar')) {
-          return list.firstWhere((a) => a.id == 'adhan_mecca',
-              orElse: () => list.first);
-        }
-        return list.firstWhere((a) => a.id == 'adhan_aaqib',
-            orElse: () => list.first);
-      },
+      orElse: () =>
+          list.firstWhere((a) => a.isDefault, orElse: () => list.first),
     );
-    return hit;
   }
 
   Future<MAdhan> fajrDefault() async {

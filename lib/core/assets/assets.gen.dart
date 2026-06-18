@@ -345,28 +345,24 @@ class $AssetsMockGen {
 class $AssetsAudioAdhanGen {
   const $AssetsAudioAdhanGen();
 
-  /// File path: assets/audio/adhan/CREDITS.md
-  String get credits => 'assets/audio/adhan/CREDITS.md';
+  /// File path: assets/audio/adhan/adhan_abdulbasit.mp3
+  String get adhanAbdulbasit => 'assets/audio/adhan/adhan_abdulbasit.mp3';
 
-  /// File path: assets/audio/adhan/adhan_aaqib.mp3
-  String get adhanAaqib => 'assets/audio/adhan/adhan_aaqib.mp3';
+  /// File path: assets/audio/adhan/adhan_egypt.mp3
+  String get adhanEgypt => 'assets/audio/adhan/adhan_egypt.mp3';
 
-  /// File path: assets/audio/adhan/adhan_hassan2.mp3
-  String get adhanHassan2 => 'assets/audio/adhan/adhan_hassan2.mp3';
+  /// File path: assets/audio/adhan/adhan_madinah.mp3
+  String get adhanMadinah => 'assets/audio/adhan/adhan_madinah.mp3';
 
-  /// File path: assets/audio/adhan/adhan_mecca.mp3
-  String get adhanMecca => 'assets/audio/adhan/adhan_mecca.mp3';
-
-  /// File path: assets/audio/adhan/adhan_wiki.mp3
-  String get adhanWiki => 'assets/audio/adhan/adhan_wiki.mp3';
+  /// File path: assets/audio/adhan/adhan_makkah.mp3
+  String get adhanMakkah => 'assets/audio/adhan/adhan_makkah.mp3';
 
   /// List of all assets
   List<String> get values => [
-    credits,
-    adhanAaqib,
-    adhanHassan2,
-    adhanMecca,
-    adhanWiki,
+    adhanAbdulbasit,
+    adhanEgypt,
+    adhanMadinah,
+    adhanMakkah,
   ];
 }
 
