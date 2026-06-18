@@ -66,6 +66,7 @@ Future<void> main() async {
   await Hive.openBox<MAuthToken>('app_auth_token');
   await Hive.openBox<MPrayerSettings>('prayer_settings');
   await Hive.openBox<MPrayerCache>('prayer_cache');
+  await Hive.openBox<String>('prayer_timings_cache');
   await Hive.openBox<MAdhanPreference>('adhan_preference');
   await Hive.openBox<MAdhanSettings>('adhan_settings');
   await Hive.openBox<MAdhanDownload>('adhan_downloads');

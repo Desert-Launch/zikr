@@ -49,6 +49,7 @@ import 'package:quran/modules/khatma/presentation/cubits/cb_khatma.dart';
 import 'package:quran/modules/legal/legal_module.dart';
 import 'package:quran/modules/onboarding/onboarding_module.dart';
 import 'package:quran/modules/prayer/data/datasources/local/ds_location.dart';
+import 'package:quran/modules/prayer/data/datasources/local/ds_prayer_cache.dart';
 import 'package:quran/modules/prayer/data/datasources/remote/ds_remote_prayer.dart';
 import 'package:quran/modules/prayer/data/repos/r_impl_prayer.dart';
 import 'package:quran/modules/prayer/data/sources/local/box_prayer_cache.dart';
@@ -150,7 +151,13 @@ class AppModule extends Module {
     // Prayer data + repo (Aladhan remote API). DSRemotePrayer owns its own
     // Dio, so it does not depend on BaseDio.
     i.addSingleton<DSRemotePrayer>(DSRemotePrayer.new);
-    i.addSingleton<RPrayer>(() => RImplPrayer(remote: i.get<DSRemotePrayer>()));
+    i.addSingleton<DSPrayerCache>(DSPrayerCache.new);
+    i.addSingleton<RPrayer>(
+      () => RImplPrayer(
+        remote: i.get<DSRemotePrayer>(),
+        cache: i.get<DSPrayerCache>(),
+      ),
+    );
     i.add<UCGetPrayerTimes>(() => UCGetPrayerTimes(i.get<RPrayer>()));
 
     // Adhan catalog + download (own Dio, falls back to bundled adhans.json).
