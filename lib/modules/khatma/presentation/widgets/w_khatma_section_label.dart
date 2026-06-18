@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:quran/core/theme/app_text_styles.dart';
 
 /// Shared section label used across the khatma screens (plans, tracker, wirds).
 ///
@@ -26,13 +27,10 @@ class WKhatmaSectionLabel extends StatelessWidget {
     final label = Text(
       text,
       textAlign: aligned ? null : TextAlign.end,
-      style: TextStyle(fontSize: 12.sp, color: Colors.grey[600]),
+      style: AppTextStyles.grey14W400,
     );
     final padded = Padding(padding: effectivePadding, child: label);
     if (!aligned) return padded;
-    return Align(
-      alignment: AlignmentDirectional.centerEnd,
-      child: padded,
-    );
+    return Align(alignment: AlignmentDirectional.centerEnd, child: padded);
   }
 }

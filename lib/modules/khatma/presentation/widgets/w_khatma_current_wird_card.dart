@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:localize_and_translate/localize_and_translate.dart';
+import 'package:quran/core/theme/app_text_styles.dart';
 import 'package:quran/modules/khatma/presentation/cubits/s_khatma.dart';
 import 'package:quran/modules/khatma/presentation/widgets/w_khatma_range_row.dart';
 
@@ -9,6 +10,7 @@ class WKhatmaCurrentWirdCard extends StatelessWidget {
   const WKhatmaCurrentWirdCard({super.key, required this.state});
 
   final SKhatma state;
+  static const _border = Color(0xFFDDE6E0);
 
   @override
   Widget build(BuildContext context) {
@@ -24,28 +26,41 @@ class WKhatmaCurrentWirdCard extends StatelessWidget {
           padding: EdgeInsetsDirectional.only(end: 5.w, bottom: 6.h),
           child: Text(
             '${'khatma_wird_day'.tr()} ${wird.index}',
-            style: TextStyle(fontSize: 12.sp, color: Colors.grey[600]),
+            style: AppTextStyles.grey14W400,
           ),
         ),
         Container(
-          padding: EdgeInsets.symmetric(horizontal: 14.w, vertical: 4.h),
+          padding: EdgeInsets.zero,
           decoration: BoxDecoration(
             color: Colors.white,
-            borderRadius: BorderRadius.circular(14.r),
-            border: Border.all(color: const Color(0xFFDDE6E0)),
+            borderRadius: BorderRadius.circular(22.r),
+            border: Border.all(color: _border),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withValues(alpha: 0.07),
+                blurRadius: 8,
+                offset: const Offset(0, 3),
+              ),
+            ],
           ),
           child: Column(
             children: [
-              WKhatmaRangeRow(
-                title: '${'khatma_from'.tr()} $startSurah',
-                subtitle: '${'khatma_ayah'.tr()} ${wird.startAyahNumber}',
-                pageNumber: wird.startPageNumber,
+              Padding(
+                padding: EdgeInsets.symmetric(horizontal: 24.w),
+                child: WKhatmaRangeRow(
+                  title: '${'khatma_from'.tr()} $startSurah',
+                  subtitle: wird.startAyahText,
+                  pageNumber: wird.startPageNumber,
+                ),
               ),
-              const Divider(height: 1),
-              WKhatmaRangeRow(
-                title: '${'khatma_to'.tr()} $endSurah',
-                subtitle: '${'khatma_ayah'.tr()} ${wird.endAyahNumber}',
-                pageNumber: wird.endPageNumber,
+              const Divider(height: 1, color: _border),
+              Padding(
+                padding: EdgeInsets.symmetric(horizontal: 24.w),
+                child: WKhatmaRangeRow(
+                  title: '${'khatma_to'.tr()} $endSurah: ${wird.endAyahNumber}',
+                  subtitle: wird.endAyahText,
+                  pageNumber: wird.endPageNumber,
+                ),
               ),
             ],
           ),

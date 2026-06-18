@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_modular/flutter_modular.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:quran/core/theme/app_text_styles.dart';
 import 'package:quran/core/services/routes/routes_names.dart';
 
 /// A tappable "from/to" range row opening the mushaf at [pageNumber].
@@ -21,20 +22,36 @@ class WKhatmaRangeRow extends StatelessWidget {
     return InkWell(
       onTap: () => Modular.to.pushNamed(QuranRoutes.readerFromPage(pageNumber)),
       child: Padding(
-        padding: EdgeInsets.symmetric(vertical: 10.h),
+        padding: EdgeInsets.symmetric(vertical: 20.h),
         child: Row(
           children: [
-            const Icon(Icons.chevron_left_rounded, size: 22),
-            const Spacer(),
-            Column(
-              crossAxisAlignment: CrossAxisAlignment.end,
-              children: [
-                Text(title, style: TextStyle(fontSize: 15.sp)),
-                Text(
-                  subtitle,
-                  style: TextStyle(fontSize: 12.sp, color: Colors.grey[600]),
-                ),
-              ],
+            Icon(
+              Icons.chevron_left_rounded,
+              size: 30.r,
+              color: const Color(0xFF6B6B6B),
+            ),
+            SizedBox(width: 20.w),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.end,
+                children: [
+                  Text(
+                    title,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    textAlign: TextAlign.end,
+                    style: AppTextStyles.ink18W500,
+                  ),
+                  SizedBox(height: 2.h),
+                  Text(
+                    subtitle,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    textAlign: TextAlign.end,
+                    style: AppTextStyles.grey14W400,
+                  ),
+                ],
+              ),
             ),
           ],
         ),
