@@ -107,6 +107,11 @@ class SNAdhanPicker extends StatelessWidget {
                                           adhan.id &&
                                       playerState.status ==
                                           AdhanPlayerStatus.playing,
+                                  loading:
+                                      playerState.currentPreview?.id ==
+                                          adhan.id &&
+                                      playerState.status ==
+                                          AdhanPlayerStatus.loading,
                                   downloadable: adhan.isDownloadable,
                                   downloaded: download.isDownloaded(adhan.id),
                                   downloading:

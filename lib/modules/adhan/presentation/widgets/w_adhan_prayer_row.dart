@@ -16,22 +16,32 @@ class WAdhanPrayerRow extends StatelessWidget {
     required this.prayerKey,
     required this.title,
     required this.state,
-    required this.index,
     required this.cubit,
   });
 
   final String prayerKey;
   final String title;
   final SAdhanSettings state;
-  final int index;
   final CBAdhanSettings cubit;
+
+  /// Position in `notifyForPrayer` (the 5 salah). Sunrise isn't a salah and
+  /// has no slot → -1.
+  int get _notifyIndex => switch (prayerKey) {
+    'fajr' => 0,
+    'dhuhr' => 1,
+    'asr' => 2,
+    'maghrib' => 3,
+    'isha' => 4,
+    _ => -1,
+  };
 
   bool get isSunrise => prayerKey == 'sunrise';
   bool get enabled =>
       !isSunrise &&
       state.enabled &&
-      index < state.notifyForPrayer.length &&
-      state.notifyForPrayer[index];
+      _notifyIndex >= 0 &&
+      _notifyIndex < state.notifyForPrayer.length &&
+      state.notifyForPrayer[_notifyIndex];
 
   @override
   Widget build(BuildContext context) {
@@ -51,33 +61,47 @@ class WAdhanPrayerRow extends StatelessWidget {
             children: [
               InkWell(
                 borderRadius: BorderRadius.circular(22.r),
-                onTap: isSunrise ? null : () => cubit.togglePrayer(index, !enabled),
+                onTap: isSunrise
+                    ? null
+                    : () => cubit.togglePrayer(_notifyIndex, !enabled),
                 child: WAdhanIconCircle(
                   icon: enabled
                       ? Icons.notifications_none_rounded
                       : Icons.notifications_off_outlined,
-                  color: enabled ? const Color(0xFF2F7E63) : const Color(0xFF8B8B8B),
+                  color: enabled
+                      ? const Color(0xFF2F7E63)
+                      : const Color(0xFF8B8B8B),
                 ),
               ),
               SizedBox(width: 13.w),
               Text(
                 title,
-                style: GoogleFonts.cairo(fontSize: 14.sp, color: const Color(0xFF303030)),
+                style: GoogleFonts.cairo(
+                  fontSize: 14.sp,
+                  color: const Color(0xFF303030),
+                ),
               ),
               const Spacer(),
               Text(
                 isSunrise
                     ? 'adhan_off'.tr()
                     : (voice?.isNotEmpty ?? false)
-                        ? voice ?? ''
-                        : 'adhan_voice_none'.tr(),
+                    ? voice ?? ''
+                    : 'adhan_voice_none'.tr(),
                 maxLines: 1,
                 overflow: TextOverflow.ellipsis,
-                style: GoogleFonts.cairo(fontSize: 9.sp, color: const Color(0xFF777777)),
+                style: GoogleFonts.cairo(
+                  fontSize: 9.sp,
+                  color: const Color(0xFF777777),
+                ),
               ),
               if (!isSunrise) ...[
                 SizedBox(width: 4.w),
-                Icon(Icons.chevron_left_rounded, color: const Color(0xFF777777), size: 21.r),
+                Icon(
+                  Icons.chevron_left_rounded,
+                  color: const Color(0xFF777777),
+                  size: 21.r,
+                ),
               ],
             ],
           ),

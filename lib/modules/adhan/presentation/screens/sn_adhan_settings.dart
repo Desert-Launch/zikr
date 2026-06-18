@@ -64,7 +64,6 @@ class SNAdhanSettings extends StatelessWidget {
                         prayerKey: _prayers[i].$1,
                         title: _prayers[i].$2.tr(),
                         state: state,
-                        index: i == 0 ? 0 : i - 1,
                         cubit: cubit,
                       ),
                   ],

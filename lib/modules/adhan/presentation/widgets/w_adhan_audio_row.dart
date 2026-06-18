@@ -20,6 +20,7 @@ class WAdhanAudioRow extends StatelessWidget {
     required this.onSelect,
     required this.onPlay,
     required this.onStop,
+    this.loading = false,
     this.downloadable = false,
     this.downloaded = false,
     this.downloading = false,
@@ -34,6 +35,9 @@ class WAdhanAudioRow extends StatelessWidget {
   final VoidCallback onSelect;
   final VoidCallback onPlay;
   final VoidCallback onStop;
+
+  /// Preview audio for this voice is buffering/loading.
+  final bool loading;
 
   /// Remote voice that can be fetched (non-bundled with a full URL).
   final bool downloadable;
@@ -83,14 +87,27 @@ class WAdhanAudioRow extends StatelessWidget {
                 SizedBox(width: 8.w),
               ],
               _manageControl(),
-              IconButton(
-                onPressed: playing ? onStop : onPlay,
-                icon: Icon(
-                  playing ? Icons.stop_rounded : Icons.play_arrow_rounded,
-                  color: _teal,
-                  size: 27.r,
+              if (loading)
+                Padding(
+                  padding: EdgeInsets.all(12.r),
+                  child: SizedBox(
+                    width: 22.r,
+                    height: 22.r,
+                    child: CircularProgressIndicator(
+                      strokeWidth: 2.5,
+                      color: _teal,
+                    ),
+                  ),
+                )
+              else
+                IconButton(
+                  onPressed: playing ? onStop : onPlay,
+                  icon: Icon(
+                    playing ? Icons.stop_rounded : Icons.play_arrow_rounded,
+                    color: _teal,
+                    size: 27.r,
+                  ),
                 ),
-              ),
             ],
           ),
         ),
