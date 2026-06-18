@@ -13,7 +13,10 @@ import 'package:quran/modules/quran/domain/entities/e_sleep_timer.dart';
 import 'package:quran/modules/quran/domain/entities/param_ayah_ref.dart';
 import 'package:quran/modules/quran/domain/repos/r_quran.dart';
 import 'package:quran/modules/quran/presentation/cubits/cb_audio_player.dart';
+import 'package:quran/modules/quran/presentation/cubits/cb_reciter.dart';
 import 'package:quran/modules/quran/presentation/cubits/s_audio_player.dart';
+import 'package:quran/modules/quran/presentation/cubits/s_reciter.dart';
+import 'package:quran/modules/quran/presentation/widgets/w_reciter_sheet.dart';
 
 /// Expanded playback UI. Opens as a modal bottom sheet from the mini-player.
 ///
@@ -61,13 +64,16 @@ class WFullPlayer extends StatelessWidget {
                 SizedBox(height: 8),
                 _Transport(),
                 SizedBox(height: 16),
-                // Basic controls reachable now; the full repeat sheet (surah
-                // mode, repeat-count stepper, after-repeat) lands in Phase 4.
+                // Repeat (mode + count + after-repeat + auto-advance), speed,
+                // sleep timer, reciter, and the range picker.
                 _RepeatRow(),
+                _RepeatExtras(),
                 SizedBox(height: 8),
                 _SpeedRow(),
                 SizedBox(height: 8),
                 _SleepRow(),
+                SizedBox(height: 8),
+                _ReciterRow(),
                 SizedBox(height: 8),
                 _RangePicker(),
               ],
@@ -367,22 +373,33 @@ class _RepeatRow extends StatelessWidget {
       builder: (context, state) {
         final cubit = BlocProvider.of<CBAudioPlayer>(context);
         final mode = state.options.repeatMode;
-        return Padding(
-          padding: EdgeInsets.symmetric(horizontal: 4.w),
-          child: Row(
-            children: [
-              Icon(
-                Icons.repeat_rounded,
-                size: 18.r,
-                color: context.brand.muted,
+        return Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Padding(
+              padding: EdgeInsets.symmetric(horizontal: 4.w),
+              child: Row(
+                children: [
+                  Icon(
+                    Icons.repeat_rounded,
+                    size: 18.r,
+                    color: context.brand.muted,
+                  ),
+                  SizedBox(width: 8.w),
+                  Text(
+                    'player_repeat'.tr(),
+                    style: TextStyle(
+                      fontSize: 13.sp,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                ],
               ),
-              SizedBox(width: 8.w),
-              Text(
-                'player_repeat'.tr(),
-                style: TextStyle(fontSize: 13.sp, fontWeight: FontWeight.w600),
-              ),
-              const Spacer(),
-              SegmentedButton<RepeatMode>(
+            ),
+            SizedBox(height: 8.h),
+            SizedBox(
+              width: double.infinity,
+              child: SegmentedButton<RepeatMode>(
                 showSelectedIcon: false,
                 style: ButtonStyle(
                   visualDensity: VisualDensity.compact,
@@ -401,11 +418,208 @@ class _RepeatRow extends StatelessWidget {
                     value: RepeatMode.range,
                     label: Text('player_repeat_range'.tr()),
                   ),
+                  ButtonSegment(
+                    value: RepeatMode.surah,
+                    label: Text('player_repeat_surah'.tr()),
+                  ),
                 ],
                 selected: {mode},
                 onSelectionChanged: (s) => cubit.setRepeatMode(s.first),
               ),
+            ),
+          ],
+        );
+      },
+    );
+  }
+}
+
+/// Repeat-count stepper, after-repeat toggle (shown only when a repeat mode is
+/// active), plus the auto-advance-surah switch.
+class _RepeatExtras extends StatelessWidget {
+  const _RepeatExtras();
+
+  @override
+  Widget build(BuildContext context) {
+    return BlocBuilder<CBAudioPlayer, SAudioPlayer>(
+      buildWhen: (a, b) =>
+          a.options.repeatMode != b.options.repeatMode ||
+          a.options.repeatCount != b.options.repeatCount ||
+          a.options.afterRepeat != b.options.afterRepeat ||
+          a.options.autoAdvanceSurah != b.options.autoAdvanceSurah,
+      builder: (context, state) {
+        final cubit = BlocProvider.of<CBAudioPlayer>(context);
+        final opts = state.options;
+        return Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            if (opts.repeatMode != RepeatMode.off) ...[
+              SizedBox(height: 4.h),
+              _countRow(context, opts.repeatCount, cubit.setRepeatCount),
+              _afterRow(context, opts.afterRepeat, cubit.setAfterRepeat),
             ],
+            SwitchListTile(
+              contentPadding: EdgeInsets.symmetric(horizontal: 4.w),
+              dense: true,
+              title: Text(
+                'player_auto_advance'.tr(),
+                style: TextStyle(fontSize: 13.sp),
+              ),
+              value: opts.autoAdvanceSurah,
+              onChanged: (_) => cubit.toggleAutoAdvanceSurah(),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  Widget _countRow(
+    BuildContext context,
+    int count,
+    ValueChanged<int> onChanged,
+  ) {
+    return Padding(
+      padding: EdgeInsets.symmetric(horizontal: 4.w),
+      child: Row(
+        children: [
+          Text(
+            'player_repeat_count'.tr(),
+            style: TextStyle(fontSize: 13.sp, fontWeight: FontWeight.w600),
+          ),
+          const Spacer(),
+          IconButton(
+            visualDensity: VisualDensity.compact,
+            onPressed: count <= 0 ? null : () => onChanged(count - 1),
+            icon: const Icon(Icons.remove_circle_outline_rounded),
+          ),
+          SizedBox(
+            width: 36.w,
+            child: Text(
+              count == 0 ? 'player_repeat_infinite'.tr() : '$count',
+              textAlign: TextAlign.center,
+              style: TextStyle(
+                fontSize: 15.sp,
+                fontWeight: FontWeight.w700,
+                color: AppColorsLight.primary,
+              ),
+            ),
+          ),
+          IconButton(
+            visualDensity: VisualDensity.compact,
+            onPressed: () => onChanged(count + 1),
+            icon: const Icon(Icons.add_circle_outline_rounded),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _afterRow(
+    BuildContext context,
+    EAfterRepeat value,
+    ValueChanged<EAfterRepeat> onChanged,
+  ) {
+    return Padding(
+      padding: EdgeInsets.symmetric(horizontal: 4.w),
+      child: Row(
+        children: [
+          Text(
+            'player_repeat_after'.tr(),
+            style: TextStyle(fontSize: 13.sp, fontWeight: FontWeight.w600),
+          ),
+          const Spacer(),
+          SegmentedButton<EAfterRepeat>(
+            showSelectedIcon: false,
+            style: ButtonStyle(
+              visualDensity: VisualDensity.compact,
+              textStyle: WidgetStatePropertyAll(TextStyle(fontSize: 11.sp)),
+            ),
+            segments: [
+              ButtonSegment(
+                value: EAfterRepeat.stop,
+                label: Text('player_after_stop'.tr()),
+              ),
+              ButtonSegment(
+                value: EAfterRepeat.continueNext,
+                label: Text('player_after_continue'.tr()),
+              ),
+            ],
+            selected: {value},
+            onSelectionChanged: (s) => onChanged(s.first),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+/// Shows the active reciter and opens [WReciterSheet] to switch.
+class _ReciterRow extends StatefulWidget {
+  const _ReciterRow();
+
+  @override
+  State<_ReciterRow> createState() => _ReciterRowState();
+}
+
+class _ReciterRowState extends State<_ReciterRow> {
+  final CBReciter _reciter = Modular.get<CBReciter>();
+
+  @override
+  void initState() {
+    super.initState();
+    if (_reciter.state.all.isEmpty) _reciter.load();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return BlocBuilder<CBReciter, SReciter>(
+      bloc: _reciter,
+      buildWhen: (a, b) =>
+          a.activeId != b.activeId || a.all.length != b.all.length,
+      builder: (context, state) {
+        var name = '';
+        for (final r in state.all) {
+          if (r.id == state.activeId) {
+            name = r.arabic.isNotEmpty ? r.arabic : r.name;
+            break;
+          }
+        }
+        return InkWell(
+          onTap: () => WReciterSheet.show(context),
+          borderRadius: BorderRadius.circular(10.r),
+          child: Padding(
+            padding: EdgeInsets.symmetric(horizontal: 4.w, vertical: 8.h),
+            child: Row(
+              children: [
+                Icon(
+                  Icons.record_voice_over_rounded,
+                  size: 18.r,
+                  color: context.brand.muted,
+                ),
+                SizedBox(width: 8.w),
+                Text(
+                  'player_reciter'.tr(),
+                  style: TextStyle(
+                    fontSize: 13.sp,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+                SizedBox(width: 12.w),
+                Expanded(
+                  child: Text(
+                    name,
+                    overflow: TextOverflow.ellipsis,
+                    textAlign: TextAlign.end,
+                    style: TextStyle(
+                      fontSize: 12.sp,
+                      fontWeight: FontWeight.w700,
+                      color: AppColorsLight.primary,
+                    ),
+                  ),
+                ),
+              ],
+            ),
           ),
         );
       },
