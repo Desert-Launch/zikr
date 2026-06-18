@@ -336,6 +336,7 @@
   "adhan_playback_clip": "Short clip",
   "adhan_playback_full": "Full adhan",
   "adhan_ios_full_note": "iOS can't play the full adhan in the background; it will play when the app is open.",
+  "adhan_full_background_hint": "At prayer time only a short clip plays, unless 'Play full adhan in background' is enabled in alerts settings.",
   "adhan_background_full": "Play full adhan in background",
   "adhan_background_full_hint": "Android only — may increase battery use.",
   "adhan_prenotify_section": "Reminder before adhan",

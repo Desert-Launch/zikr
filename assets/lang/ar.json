@@ -320,6 +320,7 @@
   "adhan_playback_clip": "مقطع قصير",
   "adhan_playback_full": "الأذان كامل",
   "adhan_ios_full_note": "لا يدعم نظام iOS تشغيل الأذان كاملًا في الخلفية؛ سيُشغَّل عند فتح التطبيق فقط.",
+  "adhan_full_background_hint": "عند دخول الوقت يُشغَّل مقطع قصير فقط، ما لم تُفعِّل «تشغيل الأذان كاملًا في الخلفية» من إعدادات التنبيهات.",
   "adhan_background_full": "تشغيل الأذان كاملًا في الخلفية",
   "adhan_background_full_hint": "أندرويد فقط — قد يزيد استهلاك البطارية.",
   "adhan_prenotify_section": "تذكير قبل الأذان",
