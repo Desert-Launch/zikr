@@ -2,11 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_modular/flutter_modular.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
-import 'package:google_fonts/google_fonts.dart';
 import 'package:localize_and_translate/localize_and_translate.dart';
 import 'package:quran/core/theme/app_colors.dart';
 import 'package:quran/core/theme/brand_colors.dart';
-import 'package:quran/modules/quran/data/datasources/local/ds_local_quran.dart';
 import 'package:quran/modules/quran/data/models/m_surah.dart';
 import 'package:quran/modules/quran/domain/entities/e_playback_options.dart';
 import 'package:quran/modules/quran/domain/entities/e_sleep_timer.dart';
@@ -41,9 +39,9 @@ class WFullPlayer extends StatelessWidget {
       value: Modular.get<CBAudioPlayer>(),
       child: DraggableScrollableSheet(
         expand: false,
-        initialChildSize: 0.65,
+        initialChildSize: 0.72,
         minChildSize: 0.5,
-        maxChildSize: 0.65,
+        maxChildSize: 0.95,
         builder: (context, scrollController) {
           return Container(
             decoration: BoxDecoration(
@@ -113,7 +111,12 @@ class _Header extends StatelessWidget {
         Expanded(
           child: Text(
             'player_now_playing'.tr(),
-            style: TextStyle(fontWeight: FontWeight.w700, fontSize: 16.sp),
+            style: TextStyle(
+              fontWeight: FontWeight.w700,
+              fontSize: 14.sp,
+              letterSpacing: 0.4,
+              color: context.brand.muted,
+            ),
           ),
         ),
         IconButton(
@@ -134,90 +137,151 @@ class _ArtworkBlock extends StatelessWidget {
       buildWhen: (a, b) => a.currentAyah?.key != b.currentAyah?.key,
       builder: (context, state) {
         final ayah = state.currentAyah;
-        return Column(
-          children: [
-            SizedBox(
-              width: double.infinity,
-              height: 160.h,
-              child: Container(
-                padding: EdgeInsets.symmetric(horizontal: 20.w, vertical: 16.h),
-                decoration: BoxDecoration(
-                  gradient: const LinearGradient(
-                    colors: [AppColorsLight.primary, AppColorsLight.accent],
-                    begin: Alignment.topLeft,
-                    end: Alignment.bottomRight,
-                  ),
-                  borderRadius: BorderRadius.circular(24.r),
-                ),
-                child: ayah == null
-                    ? const SizedBox.shrink()
-                    : _AyahText(ref: ayah),
+        return Container(
+          width: double.infinity,
+          height: 232.h,
+          clipBehavior: Clip.antiAlias,
+          decoration: BoxDecoration(
+            gradient: const LinearGradient(
+              colors: [Color(0xFF0A5639), Color(0xFF0E6B47), Color(0xFF12826E)],
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+            ),
+            borderRadius: BorderRadius.circular(28.r),
+            boxShadow: [
+              BoxShadow(
+                color: AppColorsLight.primary.withValues(alpha: 0.32),
+                blurRadius: 24,
+                offset: const Offset(0, 12),
               ),
-            ),
-            SizedBox(height: 14.h),
-            Text(
-              ayah == null ? '—' : '${'player_surah_label'.tr()} ${ayah.surah}',
-              style: TextStyle(fontWeight: FontWeight.w700, fontSize: 18.sp),
-            ),
-            SizedBox(height: 2.h),
-            Text(
-              ayah == null ? '' : '${'player_ayah_label'.tr()} ${ayah.ayah}',
-              style: TextStyle(color: context.brand.muted, fontSize: 13.sp),
-            ),
-          ],
+            ],
+          ),
+          child: ayah == null
+              ? const SizedBox.shrink()
+              : _NowPlayingCard(ref: ayah),
         );
       },
     );
   }
 }
 
-class _AyahText extends StatefulWidget {
-  const _AyahText({required this.ref});
+/// Self-contained "now playing" artwork: a gold book emblem, the surah name,
+/// and a gold ayah-number star medallion.
+class _NowPlayingCard extends StatefulWidget {
+  const _NowPlayingCard({required this.ref});
 
   final ParamAyahRef ref;
 
   @override
-  State<_AyahText> createState() => _AyahTextState();
+  State<_NowPlayingCard> createState() => _NowPlayingCardState();
 }
 
-class _AyahTextState extends State<_AyahText> {
-  late Future<String> _text = _load();
-
-  Future<String> _load() => Modular.get<DSLocalQuran>().ayahText(widget.ref);
+class _NowPlayingCardState extends State<_NowPlayingCard> {
+  String _surahName = '';
 
   @override
-  void didUpdateWidget(covariant _AyahText oldWidget) {
+  void initState() {
+    super.initState();
+    _load();
+  }
+
+  @override
+  void didUpdateWidget(covariant _NowPlayingCard oldWidget) {
     super.didUpdateWidget(oldWidget);
-    if (oldWidget.ref.key != widget.ref.key) {
-      _text = _load();
-    }
+    if (oldWidget.ref.surah != widget.ref.surah) _load();
+  }
+
+  Future<void> _load() async {
+    final res = await Modular.get<RQuran>().getSurah(widget.ref.surah);
+    if (!mounted) return;
+    res.fold(
+      (_) {},
+      (s) =>
+          setState(() => _surahName = s.arabic.isNotEmpty ? s.arabic : s.name),
+    );
+  }
+
+  static String _arabicDigits(int n) {
+    const eastern = ['٠', '١', '٢', '٣', '٤', '٥', '٦', '٧', '٨', '٩'];
+    return '$n'.split('').map((c) {
+      final d = int.tryParse(c);
+      return d == null ? c : eastern[d];
+    }).join();
   }
 
   @override
   Widget build(BuildContext context) {
-    return FutureBuilder<String>(
-      future: _text,
-      builder: (context, snapshot) {
-        if (snapshot.connectionState != ConnectionState.done) {
-          return const Center(
-            child: CircularProgressIndicator(color: Colors.white),
-          );
-        }
-        final text = snapshot.data ?? '';
-        return SingleChildScrollView(
-          child: Text(
-            text.isEmpty ? '—' : text,
-            textAlign: TextAlign.center,
-            textDirection: TextDirection.rtl,
-            style: GoogleFonts.amiri(
-              color: Colors.white,
-              fontSize: 22.sp,
-              fontWeight: FontWeight.w600,
-              height: 1.8,
+    final name = _surahName.isEmpty
+        ? '${'player_surah_label'.tr()} ${widget.ref.surah}'
+        : _surahName;
+    return Padding(
+      padding: EdgeInsets.symmetric(horizontal: 22.w, vertical: 12.h),
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          // Emblem — the focal "cover art".
+          Container(
+            width: 82.r,
+            height: 82.r,
+            decoration: BoxDecoration(
+              shape: BoxShape.circle,
+              color: Colors.white.withValues(alpha: 0.12),
+              border: Border.all(
+                color: Colors.white.withValues(alpha: 0.30),
+                width: 1.5,
+              ),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withValues(alpha: 0.18),
+                  blurRadius: 16,
+                  offset: const Offset(0, 6),
+                ),
+              ],
+            ),
+            child: Icon(
+              Icons.menu_book_rounded,
+              size: 40.r,
+              color: AppColorsLight.accent,
             ),
           ),
-        );
-      },
+          SizedBox(height: 14.h),
+          // Surah name.
+          Text(
+            name,
+            textAlign: TextAlign.center,
+            style: TextStyle(
+              color: Colors.white,
+              fontSize: 22.sp,
+              fontWeight: FontWeight.w800,
+              letterSpacing: 0.3,
+            ),
+          ),
+          SizedBox(height: 8.h),
+          // Ayah marker.
+          SizedBox(
+            width: 42.r,
+            height: 42.r,
+            child: Stack(
+              alignment: Alignment.center,
+              children: [
+                Icon(
+                  Icons.star_rounded,
+                  size: 42.r,
+                  color: AppColorsLight.accent,
+                ),
+                Text(
+                  _arabicDigits(widget.ref.ayah),
+                  style: TextStyle(
+                    color: AppColorsLight.primaryDark,
+                    fontSize: 11.sp,
+                    fontWeight: FontWeight.w800,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
     );
   }
 }
@@ -238,11 +302,14 @@ class _Scrubber extends StatelessWidget {
           children: [
             SliderTheme(
               data: SliderTheme.of(context).copyWith(
-                thumbShape: RoundSliderThumbShape(enabledThumbRadius: 6.r),
-                trackHeight: 3.h,
+                trackHeight: 4.h,
+                trackShape: const RoundedRectSliderTrackShape(),
+                thumbShape: RoundSliderThumbShape(enabledThumbRadius: 7.r),
+                overlayShape: RoundSliderOverlayShape(overlayRadius: 16.r),
                 activeTrackColor: AppColorsLight.primary,
                 inactiveTrackColor: context.brand.border,
                 thumbColor: AppColorsLight.primary,
+                overlayColor: AppColorsLight.primary.withValues(alpha: 0.15),
               ),
               child: Slider(
                 value: posMs.toDouble().clamp(0, sliderMax),
@@ -262,6 +329,8 @@ class _Scrubber extends StatelessWidget {
                     style: TextStyle(
                       fontSize: 11.sp,
                       color: context.brand.muted,
+                      fontWeight: FontWeight.w600,
+                      fontFeatures: const [FontFeature.tabularFigures()],
                     ),
                   ),
                   Text(
@@ -269,6 +338,8 @@ class _Scrubber extends StatelessWidget {
                     style: TextStyle(
                       fontSize: 11.sp,
                       color: context.brand.muted,
+                      fontWeight: FontWeight.w600,
+                      fontFeatures: const [FontFeature.tabularFigures()],
                     ),
                   ),
                 ],
@@ -317,11 +388,18 @@ class _Transport extends StatelessWidget {
               icon: const Icon(Icons.replay_10_rounded),
             ),
             Container(
-              decoration: const BoxDecoration(
-                gradient: LinearGradient(
+              decoration: BoxDecoration(
+                gradient: const LinearGradient(
                   colors: [AppColorsLight.primary, AppColorsLight.accent],
                 ),
                 shape: BoxShape.circle,
+                boxShadow: [
+                  BoxShadow(
+                    color: AppColorsLight.primary.withValues(alpha: 0.4),
+                    blurRadius: 16,
+                    offset: const Offset(0, 6),
+                  ),
+                ],
               ),
               child: IconButton(
                 iconSize: 44.r,
