@@ -8,6 +8,7 @@ import 'package:localize_and_translate/localize_and_translate.dart';
 import 'package:quran/core/services/logging/app_logger.dart';
 import 'package:quran/modules/quran/data/models/m_surah.dart';
 import 'package:quran/modules/quran/domain/entities/e_playback_options.dart';
+import 'package:quran/modules/quran/domain/entities/e_sleep_timer.dart';
 import 'package:quran/modules/quran/domain/entities/param_ayah_ref.dart';
 import 'package:quran/modules/quran/domain/repos/r_quran.dart';
 import 'package:quran/modules/quran/domain/usecases/uc_ensure_ayah_downloaded.dart';
@@ -65,6 +66,13 @@ class CBAudioPlayer extends Cubit<SAudioPlayer> {
   /// a new queue starts; compared against [EPlaybackOptions.repeatCount].
   int _completedPasses = 0;
   bool _resumeAfterInterruption = false;
+
+  /// Active timed sleep-timer; fires once to fade out and stop.
+  Timer? _sleepTimer;
+
+  /// When set, playback stops at the next ayah/surah boundary (checked in
+  /// [_onTrackCompleted]). Null when no boundary sleep mode is armed.
+  ESleepTimer? _stopAtBoundary;
 
   StreamSubscription<PlayerState>? _stateSub;
   StreamSubscription<Duration>? _posSub;
@@ -322,6 +330,18 @@ class CBAudioPlayer extends Cubit<SAudioPlayer> {
       emit(state.copyWith(status: PlayerStatus.completed));
       return;
     }
+    // Sleep timer (boundary modes) wins over repeat: stop at this ayah/surah.
+    if (_stopAtBoundary != null) {
+      final stopNow =
+          _stopAtBoundary == ESleepTimer.endOfAyah ||
+          (_stopAtBoundary == ESleepTimer.endOfSurah &&
+              _isCurrentAyahSurahEnd());
+      if (stopNow) {
+        _stopAtBoundary = null;
+        unawaited(stop());
+        return;
+      }
+    }
     // Still inside the current block → play its next ayah.
     if (idx + 1 < state.queue.length) {
       unawaited(_playAt(idx + 1, _playToken));
@@ -535,10 +555,14 @@ class CBAudioPlayer extends Cubit<SAudioPlayer> {
   Future<void> resume() => _player.play();
   Future<void> stop() async {
     _playToken++; // invalidate any in-flight ensure/advance
+    _sleepTimer?.cancel();
+    _sleepTimer = null;
+    _stopAtBoundary = null;
     await _player.stop();
     emit(
       state.copyWith(
         status: PlayerStatus.idle,
+        sleepTimer: ESleepTimer.off,
         clearCurrentAyah: true,
         clearQueueIndex: true,
         queue: const [],
@@ -617,6 +641,52 @@ class CBAudioPlayer extends Cubit<SAudioPlayer> {
   Future<void> setRepeatRange(ParamAyahRef from, ParamAyahRef to) =>
       playRange(from, to);
 
+  /// Arms, changes, or clears the sleep timer. Timed options start a countdown
+  /// that fades out and stops; boundary options stop at the next ayah / surah
+  /// boundary (handled in [_onTrackCompleted]) and beat an active repeat.
+  Future<void> setSleepTimer(ESleepTimer timer) async {
+    _sleepTimer?.cancel();
+    _sleepTimer = null;
+    _stopAtBoundary = null;
+    emit(state.copyWith(sleepTimer: timer));
+    if (timer == ESleepTimer.off) return;
+    if (timer.isBoundary) {
+      _stopAtBoundary = timer;
+      return;
+    }
+    final d = timer.duration;
+    if (d != null) {
+      _sleepTimer = Timer(d, () => unawaited(_fadeOutAndStop()));
+    }
+  }
+
+  /// Gently fades the volume to zero over ~3s, then stops. Aborts (restoring
+  /// full volume) if a new play session starts mid-fade.
+  Future<void> _fadeOutAndStop() async {
+    final token = _playToken;
+    for (double v = 1.0; v > 0; v -= 0.1) {
+      if (token != _playToken) {
+        await _player.setVolume(1);
+        return;
+      }
+      await _player.setVolume(v.clamp(0.0, 1.0));
+      await Future<void>.delayed(const Duration(milliseconds: 250));
+    }
+    if (token != _playToken) {
+      await _player.setVolume(1);
+      return;
+    }
+    await stop();
+    await _player.setVolume(1);
+  }
+
+  /// True when the current ayah is the last of its surah.
+  bool _isCurrentAyahSurahEnd() {
+    final cur = state.currentAyah;
+    final total = _activeSurah?.totalAyah;
+    return cur != null && total != null && cur.ayah >= total;
+  }
+
   Stream<ParamAyahRef?> get currentAyahStream =>
       stream.map((s) => s.currentAyah).distinct((a, b) => a?.key == b?.key);
 
@@ -630,6 +700,7 @@ class CBAudioPlayer extends Cubit<SAudioPlayer> {
     await _errSub?.cancel();
     await _noisySub?.cancel();
     await _interruptSub?.cancel();
+    _sleepTimer?.cancel();
     await _player.dispose();
     return super.close();
   }

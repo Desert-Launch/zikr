@@ -1,8 +1,17 @@
 import 'package:equatable/equatable.dart';
 import 'package:quran/modules/quran/domain/entities/e_playback_options.dart';
+import 'package:quran/modules/quran/domain/entities/e_sleep_timer.dart';
 import 'package:quran/modules/quran/domain/entities/param_ayah_ref.dart';
 
-enum PlayerStatus { idle, loading, playing, paused, buffering, completed, error }
+enum PlayerStatus {
+  idle,
+  loading,
+  playing,
+  paused,
+  buffering,
+  completed,
+  error,
+}
 
 class SAudioPlayer extends Equatable {
   const SAudioPlayer({
@@ -12,6 +21,7 @@ class SAudioPlayer extends Equatable {
     this.duration = Duration.zero,
     this.reciterId,
     this.options = const EPlaybackOptions(),
+    this.sleepTimer = ESleepTimer.off,
     this.queue = const <ParamAyahRef>[],
     this.queueIndex,
     this.error,
@@ -23,6 +33,7 @@ class SAudioPlayer extends Equatable {
   final Duration duration;
   final String? reciterId;
   final EPlaybackOptions options;
+  final ESleepTimer sleepTimer;
   final List<ParamAyahRef> queue;
   final int? queueIndex;
   final String? error;
@@ -39,6 +50,7 @@ class SAudioPlayer extends Equatable {
     Duration? duration,
     String? reciterId,
     EPlaybackOptions? options,
+    ESleepTimer? sleepTimer,
     List<ParamAyahRef>? queue,
     int? queueIndex,
     bool clearQueueIndex = false,
@@ -52,6 +64,7 @@ class SAudioPlayer extends Equatable {
       duration: duration ?? this.duration,
       reciterId: reciterId ?? this.reciterId,
       options: options ?? this.options,
+      sleepTimer: sleepTimer ?? this.sleepTimer,
       queue: queue ?? this.queue,
       queueIndex: clearQueueIndex ? null : (queueIndex ?? this.queueIndex),
       error: clearError ? null : (error ?? this.error),
@@ -59,6 +72,16 @@ class SAudioPlayer extends Equatable {
   }
 
   @override
-  List<Object?> get props =>
-      [status, currentAyah, position, duration, reciterId, options, queue, queueIndex, error];
+  List<Object?> get props => [
+    status,
+    currentAyah,
+    position,
+    duration,
+    reciterId,
+    options,
+    sleepTimer,
+    queue,
+    queueIndex,
+    error,
+  ];
 }
