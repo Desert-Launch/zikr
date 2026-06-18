@@ -183,7 +183,10 @@ class AppModule extends Module {
         settings: i.get<BoxAdhanSettings>(),
         prefs: i.get<BoxAdhanPreference>(),
         local: i.get<DSLocalAdhan>(),
-        localeTag: 'ar-EG',
+        // Device locale (e.g. ar-EG, ar-SA, en-US) picks the regional default
+        // adhan; defaultForLocale degrades gracefully for partial/unknown tags.
+        localeTag:
+            WidgetsBinding.instance.platformDispatcher.locale.toLanguageTag(),
       ),
     );
 
