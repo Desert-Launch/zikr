@@ -21,6 +21,7 @@ import 'package:quran/modules/adhan/data/models/m_adhan_preference.dart';
 import 'package:quran/modules/adhan/data/models/m_adhan_settings.dart';
 import 'package:quran/modules/adhan/services/adhan_background.dart';
 import 'package:quran/modules/adhan/services/adhan_bootstrap.dart';
+import 'package:quran/modules/adhan/services/adhan_scheduler.dart';
 import 'package:quran/modules/azkar/data/models/m_azkar_favorite.dart';
 import 'package:quran/modules/azkar/data/models/m_azkar_progress.dart';
 import 'package:quran/modules/khatma/data/models/m_khatma_completion.dart';
@@ -103,10 +104,15 @@ class _Root extends StatefulWidget {
   State<_Root> createState() => _RootState();
 }
 
-class _RootState extends State<_Root> {
+class _RootState extends State<_Root> with WidgetsBindingObserver {
+  /// Throttle for resume-triggered reschedules (keeps the advance window fresh
+  /// without churning the schedule on every app switch).
+  DateTime? _lastResumeReschedule;
+
   @override
   void initState() {
     super.initState();
+    WidgetsBinding.instance.addObserver(this);
     // Load theme + auth state in parallel before the first frame paints.
     Modular.get<CBTheme>().load();
     Modular.get<CBAuth>().bootstrap();
@@ -116,9 +122,29 @@ class _RootState extends State<_Root> {
     Modular.get<NotificationsService>().init().then((_) async {
       await Modular.get<CBReminders>().rescheduleAll();
       await Modular.get<AdhanBootstrap>().run();
-      // Arm the weekly Saturday background refresh (Android only).
+      // Arm the weekly Saturday background refresh (Android), and the
+      // best-effort iOS background refresh.
       await initAdhanBackground();
+      await initIosBackground();
     });
+  }
+
+  @override
+  void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
+    super.dispose();
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    if (state != AppLifecycleState.resumed) return;
+    // Rebuild the advance window on resume so it stays fresh between opens —
+    // the reliable path on iOS (and a useful backstop on Android). Throttled.
+    final now = DateTime.now();
+    final last = _lastResumeReschedule;
+    if (last != null && now.difference(last) < const Duration(hours: 6)) return;
+    _lastResumeReschedule = now;
+    Modular.get<AdhanScheduler>().reschedule();
   }
 
   @override

@@ -22,6 +22,7 @@ import 'package:quran/modules/prayer/data/repos/r_impl_prayer.dart';
 import 'package:quran/modules/prayer/data/sources/local/box_prayer_settings.dart';
 import 'package:quran/modules/prayer/domain/usecases/uc_get_prayer_times.dart';
 import 'package:quran/modules/quran/data/sources/local/quran_hive_registrar.dart';
+import 'package:workmanager/workmanager.dart';
 
 /// Weekly background refresh of the adhan schedule (Android only).
 ///
@@ -30,6 +31,10 @@ import 'package:quran/modules/quran/data/sources/local/quran_hive_registrar.dart
 /// — and the callback re-arms the following Saturday. iOS can't run code on a
 /// schedule when killed; it relies on rescheduling on app open instead.
 const int _weeklyAlarmId = 920001;
+
+/// iOS BGTask identifier. Must match `BGTaskSchedulerPermittedIdentifiers` in
+/// Info.plist and the `WorkmanagerPlugin.register…` call in AppDelegate.swift.
+const String _iosTaskId = 'com.app.quran.adhanRefresh';
 
 /// Initialises the alarm plugin and arms the first weekly refresh. Call once
 /// from `main` (no-op off Android).
@@ -46,6 +51,42 @@ Future<void> initAdhanBackground() async {
       tag: 'AdhanBackground',
     );
   }
+}
+
+/// iOS only: registers a best-effort background refresh (BGAppRefreshTask via
+/// workmanager). iOS decides when this actually runs and never on a schedule
+/// you choose — the reliable iOS path is rescheduling on app open/resume. The
+/// native side (Info.plist + AppDelegate) must register [_iosTaskId] or the
+/// submit below is logged-and-ignored. Errors are swallowed so a missing
+/// native registration can't crash startup.
+Future<void> initIosBackground() async {
+  if (!Platform.isIOS) return;
+  try {
+    await Workmanager().initialize(callbackDispatcher);
+    await Workmanager().registerPeriodicTask(
+      _iosTaskId,
+      _iosTaskId,
+      frequency: const Duration(hours: 12),
+      initialDelay: const Duration(hours: 6),
+    );
+  } catch (e, st) {
+    AppLogger.error(
+      'iOS background init failed (best-effort)',
+      error: e,
+      stackTrace: st,
+      tag: 'AdhanBackground',
+    );
+  }
+}
+
+/// workmanager entry point (iOS). Runs the shared reschedule and reports
+/// success so iOS keeps scheduling future refreshes.
+@pragma('vm:entry-point')
+void callbackDispatcher() {
+  Workmanager().executeTask((taskName, inputData) async {
+    await runAdhanBackgroundReschedule();
+    return true;
+  });
 }
 
 /// Arms (or re-arms) the weekly refresh at the next Saturday 00:00. Idempotent:
@@ -74,15 +115,26 @@ DateTime _nextSaturdayMidnight(DateTime now) {
       : DateTime(now.year, now.month, now.day + 7);
 }
 
-/// Runs in a background isolate. Rebuilds the adhan window from the last-known
-/// location (no live GPS here) using the cache-first repo, then re-arms next
-/// week. Everything the scheduler needs is re-initialised because the isolate
-/// shares no state with the app.
+/// Android alarm entry point. Rebuilds the adhan window, then re-arms next week
+/// (even on failure, so one bad run doesn't end the loop).
 @pragma('vm:entry-point')
 Future<void> adhanWeeklyAlarmCallback() async {
+  AppLogger.info('Weekly adhan alarm fired', tag: 'AdhanBackground');
+  try {
+    await runAdhanBackgroundReschedule();
+  } finally {
+    await armWeeklyAdhanRefresh();
+  }
+}
+
+/// Rebuilds the adhan window from a fresh, headless isolate: re-initialises
+/// Hive, localization and notifications (the isolate shares no state with the
+/// app), then reschedules from the last-known location (no live GPS here) via
+/// the cache-first repo. Shared by the Android alarm and the iOS background
+/// task. Never throws.
+Future<void> runAdhanBackgroundReschedule() async {
   WidgetsFlutterBinding.ensureInitialized();
   AppLogger.init();
-  AppLogger.info('Weekly adhan alarm fired', tag: 'AdhanBackground');
   try {
     await Hive.initFlutter();
     QuranHiveRegistrar.registerAdapters();
@@ -109,17 +161,14 @@ Future<void> adhanWeeklyAlarmCallback() async {
       lastLocation: DSLastLocation(),
     );
     await scheduler.reschedule(useCachedLocation: true);
-    AppLogger.info('Weekly adhan refresh done', tag: 'AdhanBackground');
+    AppLogger.info('Background adhan refresh done', tag: 'AdhanBackground');
   } catch (e, st) {
     AppLogger.error(
-      'Weekly adhan refresh failed',
+      'Background adhan refresh failed',
       error: e,
       stackTrace: st,
       tag: 'AdhanBackground',
     );
-  } finally {
-    // Always re-arm, even on failure, so a single bad run doesn't end the loop.
-    await armWeeklyAdhanRefresh();
   }
 }
 
