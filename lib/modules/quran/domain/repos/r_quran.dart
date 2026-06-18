@@ -3,6 +3,7 @@ import 'package:quran/core/errors/failure.dart';
 import 'package:quran/modules/quran/data/models/m_page_layout.dart';
 import 'package:quran/modules/quran/data/models/m_surah.dart';
 import 'package:quran/modules/quran/domain/entities/e_daily_verse.dart';
+import 'package:quran/modules/quran/domain/entities/e_quran_font_mode.dart';
 import 'package:quran/modules/quran/domain/entities/param_ayah_ref.dart';
 
 class QuranSearchHit {
@@ -14,7 +15,10 @@ class QuranSearchHit {
 abstract class RQuran {
   Future<Either<Failure, List<MSurah>>> getSurahs();
   Future<Either<Failure, MSurah>> getSurah(int number);
-  Future<Either<Failure, MPageLayout>> getPage(int page);
+  Future<Either<Failure, MPageLayout>> getPage(
+    int page, {
+    EQuranFontMode mode,
+  });
 
   /// Returns the page number where the given ayah lives.
   Future<Either<Failure, int>> pageOfAyah(ParamAyahRef ref);

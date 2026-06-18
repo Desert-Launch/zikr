@@ -8,7 +8,9 @@ import 'package:quran/modules/quran/domain/entities/param_ayah_ref.dart';
 import 'package:quran/modules/quran/domain/repos/r_bookmarks.dart';
 import 'package:quran/modules/quran/domain/usecases/uc_get_page_layout.dart';
 import 'package:quran/modules/quran/domain/usecases/uc_save_last_read.dart';
+import 'package:quran/modules/quran/presentation/cubits/cb_reader_settings.dart';
 import 'package:quran/modules/quran/presentation/cubits/s_mushaf_reader.dart';
+import 'package:quran/modules/quran/presentation/cubits/s_reader_settings.dart';
 import 'package:quran/modules/quran/presentation/cubits/s_surah_list.dart'
     show LoadStatus;
 
@@ -19,8 +21,10 @@ class CBMushafReader extends Cubit<SMushafReader> {
     this._fonts,
     this._local,
     this._bookmarks,
-  ) : super(const SMushafReader()) {
+    this._settings,
+  ) : super(SMushafReader(fontMode: _settings.state.fontMode)) {
     _watchBookmarks();
+    _watchFontMode();
   }
 
   final UCGetPageLayout _getPage;
@@ -28,9 +32,19 @@ class CBMushafReader extends Cubit<SMushafReader> {
   final DSQpcFontLoader _fonts;
   final DSLocalQuran _local;
   final RBookmarks _bookmarks;
+  final CBReaderSettings _settings;
 
   Timer? _saveDebounce;
   StreamSubscription<List<MBookmark>>? _bookmarkSub;
+  StreamSubscription<SReaderSettings>? _fontModeSub;
+
+  /// Reloads the current page when the font mode changes so the open reader
+  /// re-renders with the new glyphs/layout (the V4 layout differs from V1/V2).
+  void _watchFontMode() {
+    _fontModeSub = _settings.stream.listen((s) {
+      if (!isClosed && s.fontMode != state.fontMode) openPage(state.currentPage);
+    });
+  }
 
   /// Seeds the bookmark highlights, then keeps them in sync with the box so a
   /// verse saved from the action sheet lights up immediately and stays lit.
@@ -70,10 +84,17 @@ class CBMushafReader extends Cubit<SMushafReader> {
 
   Future<void> openPage(int page) async {
     if (page < 1 || page > 604) return;
-    emit(state.copyWith(currentPage: page, status: LoadStatus.loading));
+    final mode = _settings.state.fontMode;
+    emit(
+      state.copyWith(
+        currentPage: page,
+        status: LoadStatus.loading,
+        fontMode: mode,
+      ),
+    );
     // Preload fonts in parallel with layout JSON fetch.
-    final preloadFut = _fonts.preloadWindow(page);
-    final layoutRes = await _getPage(page);
+    final preloadFut = _fonts.preloadWindow(page, mode: mode);
+    final layoutRes = await _getPage(page, mode: mode);
     await preloadFut;
     await layoutRes.fold(
       (failure) async {
@@ -90,6 +111,7 @@ class CBMushafReader extends Cubit<SMushafReader> {
             layout: layout,
             surahName: surahName,
             juz: _juzForPage(page),
+            fontMode: mode,
           ),
         );
       },
@@ -161,6 +183,7 @@ class CBMushafReader extends Cubit<SMushafReader> {
   Future<void> close() {
     _saveDebounce?.cancel();
     _bookmarkSub?.cancel();
+    _fontModeSub?.cancel();
     return super.close();
   }
 }

@@ -9,9 +9,11 @@ import 'package:quran/modules/quran/data/datasources/local/ds_local_quran.dart';
 import 'package:quran/modules/quran/data/datasources/local/ds_qpc_font_loader.dart';
 import 'package:quran/modules/quran/data/models/m_page_layout.dart';
 import 'package:quran/modules/quran/data/models/m_surah.dart';
+import 'package:quran/modules/quran/domain/entities/e_quran_font_mode.dart';
 import 'package:quran/modules/quran/domain/entities/param_ayah_ref.dart';
 import 'package:quran/modules/quran/presentation/cubits/cb_audio_player.dart';
 import 'package:quran/modules/quran/presentation/cubits/cb_mushaf_reader.dart';
+import 'package:quran/modules/quran/presentation/cubits/cb_reader_settings.dart';
 import 'package:quran/modules/quran/presentation/cubits/s_audio_player.dart';
 import 'package:quran/modules/quran/presentation/cubits/s_mushaf_reader.dart';
 import 'package:quran/modules/quran/presentation/widgets/w_basmala_line.dart';
@@ -40,7 +42,10 @@ class _WMushafPageState extends State<WMushafPage> {
   @override
   void initState() {
     super.initState();
-    _fonts.preloadWindow(widget.layout.page);
+    _fonts.preloadWindow(
+      widget.layout.page,
+      mode: Modular.get<CBReaderSettings>().state.fontMode,
+    );
     _loadSurahs();
   }
 
@@ -69,25 +74,28 @@ class _WMushafPageState extends State<WMushafPage> {
   @override
   Widget build(BuildContext context) {
     final cubit = BlocProvider.of<CBMushafReader>(context);
-    final pageFamily = DSQpcFontLoader.pageFamily(widget.layout.page);
 
     return BlocSelector<
       CBMushafReader,
       SMushafReader,
-      ({ParamAyahRef? selected, double scale, ReaderTheme theme, Map<String, String?> bookmarks})
+      ({ParamAyahRef? selected, double scale, ReaderTheme theme, EQuranFontMode mode, Map<String, String?> bookmarks})
     >(
       selector: (s) => (
         selected: s.selectedAyah,
         scale: s.fontScale,
         theme: s.theme,
+        mode: s.fontMode,
         bookmarks: s.bookmarks,
       ),
       builder: (context, view) {
+        final fontFamily = view.mode.fontFamilyForPage(widget.layout.page);
+        final isColored = view.mode.isColored;
         // QPC V1 glyphs have hair-thin strokes by design — keep the text in a
         // saturated near-black so they remain readable over the cream paper.
         // Theme.onSurface (#1A1A1A) is technically dark but loses contrast on
-        // cream once anti-aliasing thins the strokes further.
-        final fg = view.theme == ReaderTheme.dark
+        // cream once anti-aliasing thins the strokes further. Coloured (V4)
+        // glyphs always sit on a cream surface (sepia lock), so keep them dark.
+        final fg = (view.theme == ReaderTheme.dark && !isColored)
             ? Colors.white
             : const Color(0xFF0A0A0A);
         return BlocSelector<CBAudioPlayer, SAudioPlayer, ParamAyahRef?>(
@@ -100,10 +108,16 @@ class _WMushafPageState extends State<WMushafPage> {
                     case LineType.surahHeader:
                       final surah = _surahs[line.surahNumber];
                       return WSurahHeader(
-                        title: line.text,
+                        // V4 header lines carry no text — fall back to the
+                        // surah's name from the loaded surah list.
+                        title: line.text.isNotEmpty
+                            ? line.text
+                            : (surah?.arabicLong.isNotEmpty ?? false
+                                  ? surah?.arabicLong ?? ''
+                                  : surah?.arabic ?? ''),
                         surahNumber: surah?.number ?? line.surahNumber,
                         ayahCount: surah?.totalAyah,
-                        dark: view.theme == ReaderTheme.dark,
+                        dark: view.theme == ReaderTheme.dark && !isColored,
                       );
                     case LineType.basmala:
                       return WBasmalaLine(fontSize: 28.sp * view.scale);
@@ -116,7 +130,8 @@ class _WMushafPageState extends State<WMushafPage> {
                         selected: view.selected,
                         playing: playing,
                         bookmarks: view.bookmarks,
-                        fontFamily: pageFamily,
+                        fontFamily: fontFamily,
+                        mode: view.mode,
                         scale: view.scale,
                         color: fg,
                       );
@@ -142,7 +157,7 @@ class _WMushafPageState extends State<WMushafPage> {
                 .toList(growable: false);
 
             return Container(
-              color: _bgFor(view.theme),
+              color: _bgFor(view.theme, isColored),
               padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 8.h),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -175,7 +190,10 @@ class _WMushafPageState extends State<WMushafPage> {
     );
   }
 
-  Color _bgFor(ReaderTheme theme) {
+  Color _bgFor(ReaderTheme theme, bool isColored) {
+    // Sepia lock: V4 tajweed colours are tuned for a warm/light page, so keep
+    // the reading surface cream even when the app is in dark mode.
+    if (isColored && theme == ReaderTheme.dark) return AppColors.paperCream;
     switch (theme) {
       case ReaderTheme.light:
         return AppColors.paperWarm;
@@ -193,9 +211,11 @@ class _WMushafPageState extends State<WMushafPage> {
     required ParamAyahRef? playing,
     required Map<String, String?> bookmarks,
     required String fontFamily,
+    required EQuranFontMode mode,
     required double scale,
     required Color color,
   }) {
+    final isColored = mode.isColored;
     final groups = <_AyahGroup>[];
     _AyahGroup? current;
     for (final w in line.words) {
@@ -206,7 +226,7 @@ class _WMushafPageState extends State<WMushafPage> {
         groups.add(group);
         current = group;
       }
-      group.glyphs.add(w.qpcV1);
+      group.glyphs.add(_glyphFor(w, mode));
     }
 
     final spans = <InlineSpan>[];
@@ -222,7 +242,10 @@ class _WMushafPageState extends State<WMushafPage> {
           style: TextStyle(
             fontFamily: fontFamily,
             fontSize: 28.sp * scale,
-            color: isPlaying ? AppColorsLight.accent : color,
+            // Coloured (V4) glyphs supply their own colour via the font's
+            // palette — never override it, just tint the background for
+            // selection/playback. Plain modes recolour the now-playing ayah.
+            color: isColored ? color : (isPlaying ? AppColorsLight.accent : color),
             fontWeight: FontWeight.w500,
             height: 1.0,
             // Priority: live selection → now-playing → saved bookmark colour.
@@ -249,6 +272,20 @@ class _WMushafPageState extends State<WMushafPage> {
         text: TextSpan(children: spans),
       ),
     );
+  }
+}
+
+/// The glyph string to render for [w] under [mode]: V4 colour glyphs, V2
+/// glyphs (falling back to V1 when absent), or V1.
+String _glyphFor(MWord w, EQuranFontMode mode) {
+  switch (mode) {
+    case EQuranFontMode.tajweedV4:
+      return w.qpcV4 ?? '';
+    case EQuranFontMode.plainV2:
+      final v2 = w.qpcV2;
+      return (v2 != null && v2.isNotEmpty) ? v2 : w.qpcV1;
+    case EQuranFontMode.plainV1:
+      return w.qpcV1;
   }
 }
 

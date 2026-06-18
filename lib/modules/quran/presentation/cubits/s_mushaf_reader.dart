@@ -1,5 +1,6 @@
 import 'package:equatable/equatable.dart';
 import 'package:quran/modules/quran/data/models/m_page_layout.dart';
+import 'package:quran/modules/quran/domain/entities/e_quran_font_mode.dart';
 import 'package:quran/modules/quran/domain/entities/param_ayah_ref.dart';
 import 'package:quran/modules/quran/presentation/cubits/s_surah_list.dart'
     show LoadStatus;
@@ -16,6 +17,7 @@ class SMushafReader extends Equatable {
     this.multiSelection = const <String>{},
     this.fontScale = 1.0,
     this.theme = ReaderTheme.light,
+    this.fontMode = EQuranFontMode.plainV1,
     this.surahName = '',
     this.juz = 1,
     this.chromeVisible = false,
@@ -30,6 +32,10 @@ class SMushafReader extends Equatable {
   final Set<String> multiSelection;
   final double fontScale;
   final ReaderTheme theme;
+
+  /// Which QPC font set the current [layout] was loaded for. Drives glyph
+  /// selection + font family in the renderer; mirrors [CBReaderSettings].
+  final EQuranFontMode fontMode;
 
   /// Arabic name of the surah the current page belongs to (for the top bar).
   final String surahName;
@@ -56,6 +62,7 @@ class SMushafReader extends Equatable {
     Set<String>? multiSelection,
     double? fontScale,
     ReaderTheme? theme,
+    EQuranFontMode? fontMode,
     String? surahName,
     int? juz,
     bool? chromeVisible,
@@ -70,6 +77,7 @@ class SMushafReader extends Equatable {
       multiSelection: multiSelection ?? this.multiSelection,
       fontScale: fontScale ?? this.fontScale,
       theme: theme ?? this.theme,
+      fontMode: fontMode ?? this.fontMode,
       surahName: surahName ?? this.surahName,
       juz: juz ?? this.juz,
       chromeVisible: chromeVisible ?? this.chromeVisible,
@@ -87,6 +95,7 @@ class SMushafReader extends Equatable {
     multiSelection,
     fontScale,
     theme,
+    fontMode,
     surahName,
     juz,
     chromeVisible,

@@ -4,6 +4,7 @@ import 'dart:convert';
 import 'package:flutter/services.dart' show rootBundle;
 import 'package:quran/modules/quran/data/models/m_page_layout.dart';
 import 'package:quran/modules/quran/data/models/m_surah.dart';
+import 'package:quran/modules/quran/domain/entities/e_quran_font_mode.dart';
 import 'package:quran/modules/quran/domain/entities/param_ayah_ref.dart';
 
 /// Loads bundled Quran assets from `assets/data/`.
@@ -36,6 +37,28 @@ class DSLocalQuran {
     if (_pageCache.length > 12) {
       final firstKey = _pageCache.keys.first;
       _pageCache.remove(firstKey);
+    }
+    return layout;
+  }
+
+  // Per-mode layout cache (only the Tajweed V4 layout differs from the base
+  // layout; V1/V2 reuse [loadPage] above). Text/search ops always use V1.
+  final Map<int, MPageLayout> _v4PageCache = {};
+
+  /// Loads the page layout for the active [mode]. V1/V2 share the base layout;
+  /// V4 reads its own line/word layout from `assets/data/mushaf_v4/`.
+  Future<MPageLayout> loadPageForMode(int page, EQuranFontMode mode) async {
+    if (mode != EQuranFontMode.tajweedV4) return loadPage(page);
+    final cached = _v4PageCache[page];
+    if (cached != null) return cached;
+    final path =
+        '${mode.datasetFolder}/page-${page.toString().padLeft(3, '0')}.json';
+    final raw = await rootBundle.loadString(path);
+    final layout =
+        MPageLayout.fromJson(Map<String, dynamic>.from(jsonDecode(raw) as Map));
+    _v4PageCache[page] = layout;
+    if (_v4PageCache.length > 12) {
+      _v4PageCache.remove(_v4PageCache.keys.first);
     }
     return layout;
   }

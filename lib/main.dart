@@ -61,6 +61,7 @@ Future<void> main() async {
   await Hive.openBox<MBookmark>('quran_bookmarks');
   await Hive.openBox<MLastRead>('quran_last_read');
   await Hive.openBox<MReciterPref>('quran_reciter_pref');
+  await Hive.openBox<String>('quran_reader_settings');
   await Hive.openBox<MThemePref>('app_theme_pref');
   await Hive.openBox<MAppSettings>('app_settings');
   await Hive.openBox<MUser>('app_user');

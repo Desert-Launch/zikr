@@ -5,6 +5,7 @@ import 'package:quran/modules/quran/data/datasources/local/ds_local_quran.dart';
 import 'package:quran/modules/quran/data/models/m_page_layout.dart';
 import 'package:quran/modules/quran/data/models/m_surah.dart';
 import 'package:quran/modules/quran/domain/entities/e_daily_verse.dart';
+import 'package:quran/modules/quran/domain/entities/e_quran_font_mode.dart';
 import 'package:quran/modules/quran/domain/entities/param_ayah_ref.dart';
 import 'package:quran/modules/quran/domain/repos/r_quran.dart';
 
@@ -38,12 +39,15 @@ class RImplQuran implements RQuran {
   }
 
   @override
-  Future<Either<Failure, MPageLayout>> getPage(int page) async {
+  Future<Either<Failure, MPageLayout>> getPage(
+    int page, {
+    EQuranFontMode mode = EQuranFontMode.plainV1,
+  }) async {
     if (page < 1 || page > 604) {
       return Left(Failure.validationFailure(message: 'Page must be 1..604'));
     }
     try {
-      return Right(await _local.loadPage(page));
+      return Right(await _local.loadPageForMode(page, mode));
     } catch (e, st) {
       ErrorHelper.printDebugError(name: 'RImplQuran.getPage', error: e, stackTrace: st);
       return Left(Failure.cacheFailure(message: e.toString()));

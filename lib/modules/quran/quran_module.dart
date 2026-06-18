@@ -3,6 +3,7 @@ import 'package:quran/core/services/routes/routes_names.dart';
 import 'package:quran/modules/quran/data/datasources/local/ds_local_audio_files.dart';
 import 'package:quran/modules/quran/data/datasources/local/ds_local_bookmarks.dart';
 import 'package:quran/modules/quran/data/datasources/local/ds_local_quran.dart';
+import 'package:quran/modules/quran/data/datasources/local/ds_local_reader_settings.dart';
 import 'package:quran/modules/quran/data/datasources/local/ds_local_settings.dart';
 import 'package:quran/modules/quran/data/datasources/local/ds_qpc_font_loader.dart';
 import 'package:quran/modules/quran/data/datasources/remote/ds_audio_downloader.dart';
@@ -11,14 +12,17 @@ import 'package:quran/modules/quran/data/repos/r_impl_audio.dart';
 import 'package:quran/modules/quran/data/repos/r_impl_audio_downloads.dart';
 import 'package:quran/modules/quran/data/repos/r_impl_bookmarks.dart';
 import 'package:quran/modules/quran/data/repos/r_impl_quran.dart';
+import 'package:quran/modules/quran/data/repos/r_impl_reader_settings.dart';
 import 'package:quran/modules/quran/data/repos/r_impl_reciter.dart';
 import 'package:quran/modules/quran/data/sources/local/box_bookmarks.dart';
 import 'package:quran/modules/quran/data/sources/local/box_last_read.dart';
+import 'package:quran/modules/quran/data/sources/local/box_reader_settings.dart';
 import 'package:quran/modules/quran/data/sources/local/box_reciter_pref.dart';
 import 'package:quran/modules/quran/domain/repos/r_audio.dart';
 import 'package:quran/modules/quran/domain/repos/r_audio_downloads.dart';
 import 'package:quran/modules/quran/domain/repos/r_bookmarks.dart';
 import 'package:quran/modules/quran/domain/repos/r_quran.dart';
+import 'package:quran/modules/quran/domain/repos/r_reader_settings.dart';
 import 'package:quran/modules/quran/domain/repos/r_reciter.dart';
 import 'package:quran/modules/quran/domain/services/download_notifier.dart';
 import 'package:quran/modules/quran/domain/usecases/uc_delete_reciter_downloads.dart';
@@ -28,6 +32,7 @@ import 'package:quran/modules/quran/domain/usecases/uc_download_surah.dart';
 import 'package:quran/modules/quran/domain/usecases/uc_ensure_ayah_downloaded.dart';
 import 'package:quran/modules/quran/domain/usecases/uc_get_all_surahs_status.dart';
 import 'package:quran/modules/quran/domain/usecases/uc_get_bookmarks.dart';
+import 'package:quran/modules/quran/domain/usecases/uc_get_font_mode.dart';
 import 'package:quran/modules/quran/domain/usecases/uc_get_page_layout.dart';
 import 'package:quran/modules/quran/domain/usecases/uc_get_reciter_stats.dart';
 import 'package:quran/modules/quran/domain/usecases/uc_get_reciters.dart';
@@ -40,10 +45,12 @@ import 'package:quran/modules/quran/domain/usecases/uc_save_bookmark.dart';
 import 'package:quran/modules/quran/domain/usecases/uc_save_last_read.dart';
 import 'package:quran/modules/quran/domain/usecases/uc_search_quran.dart';
 import 'package:quran/modules/quran/domain/usecases/uc_set_active_reciter.dart';
+import 'package:quran/modules/quran/domain/usecases/uc_set_font_mode.dart';
 import 'package:quran/modules/quran/presentation/cubits/cb_audio_player.dart';
 import 'package:quran/modules/quran/presentation/cubits/cb_bookmarks.dart';
 import 'package:quran/modules/quran/presentation/cubits/cb_mushaf_reader.dart';
 import 'package:quran/modules/quran/presentation/cubits/cb_quran_search.dart';
+import 'package:quran/modules/quran/presentation/cubits/cb_reader_settings.dart';
 import 'package:quran/modules/quran/presentation/cubits/cb_reciter.dart';
 import 'package:quran/modules/quran/presentation/cubits/cb_reciter_downloads.dart';
 import 'package:quran/modules/quran/presentation/cubits/cb_reciter_surahs.dart';
@@ -65,11 +72,13 @@ class QuranModule extends Module {
     i.addSingleton<BoxBookmarks>(BoxBookmarks.new);
     i.addSingleton<BoxLastRead>(BoxLastRead.new);
     i.addSingleton<BoxReciterPref>(BoxReciterPref.new);
+    i.addSingleton<BoxReaderSettings>(BoxReaderSettings.new);
 
     // Local data sources
     i.addSingleton<DSLocalQuran>(DSLocalQuran.new);
     i.addSingleton<DSLocalBookmarks>(() => DSLocalBookmarks(i.get<BoxBookmarks>(), i.get<BoxLastRead>()));
     i.addSingleton<DSLocalSettings>(() => DSLocalSettings(i.get<BoxReciterPref>()));
+    i.addSingleton<DSLocalReaderSettings>(() => DSLocalReaderSettings(i.get<BoxReaderSettings>()));
     i.addSingleton<DSLocalAudioFiles>(DSLocalAudioFiles.new);
     i.addSingleton<DSQpcFontLoader>(DSQpcFontLoader.new);
 
@@ -92,6 +101,7 @@ class QuranModule extends Module {
       ),
     );
     i.addSingleton<RBookmarks>(() => RImplBookmarks(i.get<DSLocalBookmarks>()));
+    i.addSingleton<RReaderSettings>(() => RImplReaderSettings(i.get<DSLocalReaderSettings>()));
 
     // Use cases (factory)
     i.add<UCGetSurahList>(() => UCGetSurahList(i.get<RQuran>()));
@@ -113,6 +123,8 @@ class QuranModule extends Module {
     i.add<UCSaveLastRead>(() => UCSaveLastRead(i.get<RBookmarks>()));
     i.add<UCGetReciters>(() => UCGetReciters(i.get<RReciter>()));
     i.add<UCSetActiveReciter>(() => UCSetActiveReciter(i.get<RReciter>()));
+    i.add<UCGetFontMode>(() => UCGetFontMode(i.get<RReaderSettings>()));
+    i.add<UCSetFontMode>(() => UCSetFontMode(i.get<RReaderSettings>()));
 
     // App-wide cubits (singletons survive navigation).
     i.addSingleton<CBAudioPlayer>(
@@ -130,6 +142,11 @@ class QuranModule extends Module {
         audioPlayer: i.get<CBAudioPlayer>(),
       ),
     );
+    // Reader display settings (font mode) — shared by the reader + settings
+    // screen so a mode change re-renders an open reader instantly.
+    i.addSingleton<CBReaderSettings>(
+      () => CBReaderSettings(i.get<UCGetFontMode>(), i.get<UCSetFontMode>()),
+    );
 
     // Per-screen cubits (factory).
     i.add<CBSurahList>(() => CBSurahList(i.get<UCGetSurahList>(), i.get<UCSaveLastRead>(), i.get<UCGetBookmarks>()));
@@ -140,6 +157,7 @@ class QuranModule extends Module {
         i.get<DSQpcFontLoader>(),
         i.get<DSLocalQuran>(),
         i.get<RBookmarks>(),
+        i.get<CBReaderSettings>(),
       ),
     );
     i.add<CBBookmarks>(() => CBBookmarks(i.get<UCGetBookmarks>(), i.get<UCSaveBookmark>()));
@@ -167,6 +185,7 @@ class QuranModule extends Module {
     await Modular.get<BoxBookmarks>().init();
     await Modular.get<BoxLastRead>().init();
     await Modular.get<BoxReciterPref>().init();
+    await Modular.get<BoxReaderSettings>().init();
   }
 
   @override

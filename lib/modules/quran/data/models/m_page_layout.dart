@@ -8,6 +8,8 @@ class MWord extends Equatable {
     required this.word,
     required this.qpcV1,
     this.qpcV2,
+    this.qpcV4,
+    this.charType = 'word',
   });
 
   factory MWord.fromJson(Map<String, dynamic> json) => MWord(
@@ -15,6 +17,8 @@ class MWord extends Equatable {
         word: json['word'] as String? ?? '',
         qpcV1: json['qpcV1'] as String? ?? '',
         qpcV2: json['qpcV2'] as String?,
+        qpcV4: json['qpcV4'] as String?,
+        charType: json['charType'] as String? ?? 'word',
       );
 
   /// "S:V:W" — surah:ayah:word index. e.g. "1:1:3".
@@ -23,6 +27,11 @@ class MWord extends Equatable {
   /// QPC V1 glyph for this word (PUA codepoints — render with the per-page font).
   final String qpcV1;
   final String? qpcV2;
+  /// QPC V4 tajweed (coloured) glyph(s) for this word — render with the V4
+  /// per-page colour font. Present only in the V4 dataset.
+  final String? qpcV4;
+  /// 'word' or 'end' (ayah-end marker glyph). From the V4 dataset.
+  final String charType;
 
   int get surah => int.tryParse(location.split(':').first) ?? 0;
   int get ayah => int.tryParse(location.split(':').elementAt(1)) ?? 0;
