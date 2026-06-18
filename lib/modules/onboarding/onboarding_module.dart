@@ -1,5 +1,6 @@
 import 'package:flutter_modular/flutter_modular.dart';
 import 'package:quran/core/data/sources/local/box_app_settings.dart';
+import 'package:quran/core/services/notifications/notifications_service.dart';
 import 'package:quran/core/services/routes/routes_names.dart';
 import 'package:quran/modules/onboarding/presentation/cubits/cb_onboarding.dart';
 import 'package:quran/modules/onboarding/presentation/screens/sn_language_selection.dart';
@@ -11,7 +12,12 @@ class OnboardingModule extends Module {
   void binds(Injector i) {
     // CBOnboarding is shared across the 3 onboarding screens, so register
     // it as a singleton scoped to the onboarding module's lifetime.
-    i.addSingleton<CBOnboarding>(() => CBOnboarding(Modular.get<BoxAppSettings>()));
+    i.addSingleton<CBOnboarding>(
+      () => CBOnboarding(
+        Modular.get<BoxAppSettings>(),
+        Modular.get<NotificationsService>(),
+      ),
+    );
   }
 
   @override

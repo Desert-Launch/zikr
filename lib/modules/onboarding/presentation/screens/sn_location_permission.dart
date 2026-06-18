@@ -41,6 +41,9 @@ class SNLocationPermission extends StatelessWidget {
 
   Future<void> _finish(BuildContext context, {required bool granted}) async {
     final cubit = Modular.get<CBOnboarding>();
+    // Ask for notification permission up front so adhan/prayer alerts can be
+    // scheduled on first launch; Home then requests location + fetches times.
+    await cubit.requestNotificationPermission();
     await cubit.setLocationOptIn(granted);
     await cubit.markComplete();
     if (!context.mounted) return;

@@ -1,9 +1,12 @@
+import 'dart:io';
+
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:localize_and_translate/localize_and_translate.dart';
 import 'package:quran/core/services/logging/app_logger.dart';
 import 'package:quran/core/services/notifications/notification_channels.dart';
 import 'package:quran/core/services/notifications/notification_payload.dart';
 import 'package:quran/core/services/notifications/notifications_service.dart';
+import 'package:quran/modules/adhan/data/datasources/local/ds_local_adhan.dart';
 import 'package:quran/modules/adhan/data/sources/local/box_adhan_preference.dart';
 import 'package:quran/modules/adhan/data/sources/local/box_adhan_settings.dart';
 import 'package:quran/modules/prayer/data/datasources/local/ds_location.dart';
@@ -14,14 +17,15 @@ import 'package:quran/modules/prayer/domain/entities/param_prayer_times.dart';
 import 'package:quran/modules/prayer/domain/usecases/uc_get_prayer_times.dart';
 import 'package:quran/modules/prayer/utils/prayer_method_mapper.dart';
 
-/// Orchestrates prayer-time → adhan-notification scheduling over a rolling
-/// window. Call [reschedule] on app launch, after a settings change, and
-/// after the prayer location/timezone changes.
+/// Orchestrates prayer-time → adhan-notification scheduling. [reschedule]
+/// builds the current week (Saturday–Friday) plus the next week as a buffer,
+/// so the schedule survives until the next weekly refresh. Call it on app
+/// launch, after a settings change, and after the location/timezone changes.
 ///
-/// iOS hard-caps pending notifications at 64, so the window is bounded:
-/// 7 days × 5 prayers = 35 alerts, plus optional pre-reminders for the first
-/// [_preWindowDays] days. Re-running [reschedule] overwrites cleanly because
-/// notification ids are deterministic (day-of-year derived).
+/// iOS hard-caps pending notifications at 64 across the whole app, so the
+/// window is trimmed to [_iosBudget] there; Android has no such cap.
+/// Re-running [reschedule] overwrites cleanly because notification ids are
+/// deterministic (day-of-year derived).
 class AdhanScheduler {
   AdhanScheduler({
     required NotificationsService notifications,
@@ -30,12 +34,14 @@ class AdhanScheduler {
     required BoxPrayerSettings prayerSettings,
     required BoxAdhanSettings adhanSettings,
     required BoxAdhanPreference adhanPrefs,
+    required DSLocalAdhan local,
   }) : _notifications = notifications,
        _location = location,
        _getTimes = getTimes,
        _prayerSettings = prayerSettings,
        _adhanSettings = adhanSettings,
-       _adhanPrefs = adhanPrefs;
+       _adhanPrefs = adhanPrefs,
+       _local = local;
 
   final NotificationsService _notifications;
   final DSLocation _location;
@@ -43,9 +49,16 @@ class AdhanScheduler {
   final BoxPrayerSettings _prayerSettings;
   final BoxAdhanSettings _adhanSettings;
   final BoxAdhanPreference _adhanPrefs;
+  final DSLocalAdhan _local;
 
-  static const int _windowDays = 7;
-  static const int _preWindowDays = 4; // keeps total pending ≤ 64 on iOS
+  static const int _preWindowDays = 4; // pre-reminders only for the near days
+
+  /// Adhan's slice of iOS's 64 pending-notification budget (the rest is left
+  /// for reminders/azkar/etc.). Ignored on Android.
+  static const int _iosBudget = 56;
+
+  /// Notifications still allowed in the current [reschedule] run (iOS budget).
+  int _remaining = 0;
 
   // Dedicated id bands so cancelling our window never touches other features.
   static const int _mainBandStart = 200000;
@@ -105,6 +118,7 @@ class AdhanScheduler {
       final prayer = _prayerSettings.current();
       final notify = prayer.notifyForPrayer;
       final method = PrayerMethodMapper.methodForCountry(loc.countryCode);
+      final pref = _adhanPrefs.current();
 
       // Resolve the adhan voice → its bundled clip (or full clip when the user
       // opted into Android background full-adhan). iOS always uses the short
@@ -112,9 +126,26 @@ class AdhanScheduler {
       final bgFull =
           settings.androidBackgroundFullAdhan &&
           settings.playbackMode == 'full';
-      final now = DateTime.now();
 
-      for (var dayOffset = 0; dayOffset < _windowDays; dayOffset++) {
+      // Effective Fajr voice (a per-prayer override still wins per day below).
+      String? fajrVoiceId;
+      if (pref.useFajrSpecific) {
+        final explicit = pref.fajrAdhanId;
+        fajrVoiceId = (explicit != null && explicit.isNotEmpty)
+            ? explicit
+            : (await _local.fajrDefault()).id;
+      }
+
+      // Window: today → end of next week (weeks run Saturday–Friday), trimmed
+      // to the iOS budget; Android schedules the whole window. Pure integer
+      // day-counting keeps the horizon DST-safe.
+      final now = DateTime.now();
+      final daysIntoWeek = (now.weekday - DateTime.saturday) % 7; // 0 = Saturday
+      final totalDays = 14 - daysIntoWeek; // 8..14
+      _remaining = Platform.isIOS ? _iosBudget : 1 << 30;
+
+      for (var dayOffset = 0; dayOffset < totalDays; dayOffset++) {
+        if (_remaining <= 0) break;
         final date = DateTime(now.year, now.month, now.day + dayOffset);
         final result = await _getTimes(
           ParamPrayerTimes(
@@ -137,7 +168,8 @@ class AdhanScheduler {
           notify: notify,
           settings: settings,
           voiceIdPerPrayer: prayer.adhanIdPerPrayer ?? const {},
-          defaultVoiceId: _adhanPrefs.current().defaultAdhanId,
+          defaultVoiceId: pref.defaultAdhanId,
+          fajrVoiceId: fajrVoiceId,
           bgFull: bgFull,
           scheduledPre: dayOffset < _preWindowDays,
           now: now,
@@ -159,6 +191,7 @@ class AdhanScheduler {
     required dynamic settings,
     required Map<String, String> voiceIdPerPrayer,
     required String? defaultVoiceId,
+    required String? fajrVoiceId,
     required bool bgFull,
     required bool scheduledPre,
     required DateTime now,
@@ -168,11 +201,17 @@ class AdhanScheduler {
     final vibrate = settings.vibrate as bool;
 
     for (var i = 0; i < _salah.length; i++) {
+      if (_remaining <= 0) return;
       if (i >= notify.length || !notify[i]) continue;
       final prayer = _salah[i];
       final time = _timeFor(timings, prayer);
       if (time.isBefore(now)) continue;
-      final voiceId = voiceIdPerPrayer[prayer.key] ?? defaultVoiceId;
+      final voiceId = _voiceForPrayer(
+        prayer,
+        voiceIdPerPrayer,
+        defaultVoiceId,
+        fajrVoiceId,
+      );
       final channel = await _resolveChannel(voiceId, bgFull);
       final iosSound = _iosClipFor(voiceId);
 
@@ -192,8 +231,9 @@ class AdhanScheduler {
           data: {'prayer': prayer.key},
         ),
       );
+      _remaining--;
 
-      if (scheduledPre && preMinutes > 0) {
+      if (scheduledPre && preMinutes > 0 && _remaining > 0) {
         final preTime = time.subtract(Duration(minutes: preMinutes));
         if (preTime.isAfter(now)) {
           await _notifications.scheduleAt(
@@ -214,9 +254,26 @@ class AdhanScheduler {
               data: {'prayer': prayer.key},
             ),
           );
+          _remaining--;
         }
       }
     }
+  }
+
+  /// Per-prayer voice: an explicit per-prayer override wins; otherwise Fajr
+  /// uses the Fajr-specific voice (when enabled) and every other prayer falls
+  /// back to the default. Mirrors `CBAdhanPlayer.adhanForPrayer` so the
+  /// notification sound matches the in-app playback.
+  String? _voiceForPrayer(
+    EPrayer prayer,
+    Map<String, String> perPrayer,
+    String? defaultVoiceId,
+    String? fajrVoiceId,
+  ) {
+    final override = perPrayer[prayer.key];
+    if (override != null && override.isNotEmpty) return override;
+    if (prayer == EPrayer.fajr && fajrVoiceId != null) return fajrVoiceId;
+    return defaultVoiceId;
   }
 
   Future<void> _cancelWindow() async {

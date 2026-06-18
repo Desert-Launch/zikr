@@ -175,6 +175,7 @@ class AppModule extends Module {
         prayerSettings: i.get<BoxPrayerSettings>(),
         adhanSettings: i.get<BoxAdhanSettings>(),
         adhanPrefs: i.get<BoxAdhanPreference>(),
+        local: i.get<DSLocalAdhan>(),
       ),
     );
     i.addSingleton<AdhanBootstrap>(
