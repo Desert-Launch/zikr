@@ -1,4 +1,5 @@
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
+import 'package:localize_and_translate/localize_and_translate.dart';
 import 'package:quran/core/services/logging/app_logger.dart';
 import 'package:quran/core/services/notifications/notification_channels.dart';
 import 'package:quran/core/services/notifications/notification_payload.dart';
@@ -176,11 +177,12 @@ class AdhanScheduler {
       final iosSound = _iosClipFor(voiceId);
 
       final id = _mainBandStart + doy * 10 + i;
+      final prayerName = 'prayer_${prayer.key}'.tr();
       await _notifications.scheduleAt(
         id: id,
         when: time,
-        title: 'حان الآن موعد صلاة ${_arabicName(prayer)}',
-        body: 'اضغط للاستماع إلى الأذان',
+        title: 'adhan_notif_title'.tr().replaceFirst('{{prayer}}', prayerName),
+        body: 'adhan_notif_body'.tr(),
         channel: channel,
         iosSound: iosSound,
         enableVibration: vibrate,
@@ -197,8 +199,14 @@ class AdhanScheduler {
           await _notifications.scheduleAt(
             id: _preBandStart + doy * 10 + i,
             when: preTime,
-            title: 'اقترب موعد صلاة ${_arabicName(prayer)}',
-            body: 'باقٍ $preMinutes دقيقة',
+            title: 'adhan_notif_pre_title'.tr().replaceFirst(
+              '{{prayer}}',
+              prayerName,
+            ),
+            body: 'adhan_notif_pre_body'.tr().replaceFirst(
+              '{{m}}',
+              '$preMinutes',
+            ),
             channel: AppNotificationChannels.adhanPre,
             enableVibration: vibrate,
             payload: NotificationPayload(
@@ -231,15 +239,6 @@ class AdhanScheduler {
     EPrayer.maghrib => t.maghrib,
     EPrayer.isha => t.isha,
     EPrayer.sunrise => t.sunrise,
-  };
-
-  String _arabicName(EPrayer p) => switch (p) {
-    EPrayer.fajr => 'الفجر',
-    EPrayer.dhuhr => 'الظهر',
-    EPrayer.asr => 'العصر',
-    EPrayer.maghrib => 'المغرب',
-    EPrayer.isha => 'العشاء',
-    EPrayer.sunrise => 'الشروق',
   };
 
   int _dayOfYear(DateTime d) => d.difference(DateTime(d.year)).inDays + 1;
