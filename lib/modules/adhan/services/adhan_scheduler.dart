@@ -9,6 +9,7 @@ import 'package:quran/core/services/notifications/notifications_service.dart';
 import 'package:quran/modules/adhan/data/datasources/local/ds_local_adhan.dart';
 import 'package:quran/modules/adhan/data/sources/local/box_adhan_preference.dart';
 import 'package:quran/modules/adhan/data/sources/local/box_adhan_settings.dart';
+import 'package:quran/modules/prayer/data/datasources/local/ds_last_location.dart';
 import 'package:quran/modules/prayer/data/datasources/local/ds_location.dart';
 import 'package:quran/modules/prayer/data/models/m_prayer_timings.dart';
 import 'package:quran/modules/prayer/data/sources/local/box_prayer_settings.dart';
@@ -35,13 +36,15 @@ class AdhanScheduler {
     required BoxAdhanSettings adhanSettings,
     required BoxAdhanPreference adhanPrefs,
     required DSLocalAdhan local,
+    required DSLastLocation lastLocation,
   }) : _notifications = notifications,
        _location = location,
        _getTimes = getTimes,
        _prayerSettings = prayerSettings,
        _adhanSettings = adhanSettings,
        _adhanPrefs = adhanPrefs,
-       _local = local;
+       _local = local,
+       _lastLocation = lastLocation;
 
   final NotificationsService _notifications;
   final DSLocation _location;
@@ -50,6 +53,7 @@ class AdhanScheduler {
   final BoxAdhanSettings _adhanSettings;
   final BoxAdhanPreference _adhanPrefs;
   final DSLocalAdhan _local;
+  final DSLastLocation _lastLocation;
 
   static const int _preWindowDays = 4; // pre-reminders only for the near days
 
@@ -78,9 +82,14 @@ class AdhanScheduler {
 
   bool _running = false;
 
-  /// Cancels the current adhan window and rebuilds it from fresh prayer times.
+  /// Cancels the current adhan window and rebuilds it from prayer times.
   /// Safe to call repeatedly; concurrent calls are coalesced.
-  Future<void> reschedule() async {
+  ///
+  /// [useCachedLocation] skips the live GPS fix and uses the last-known
+  /// location instead — required from the weekly background isolate, which
+  /// can't acquire a fresh fix. The foreground path persists each fresh fix so
+  /// the background path has something to read.
+  Future<void> reschedule({bool useCachedLocation = false}) async {
     if (_running) return;
     _running = true;
     try {
@@ -104,16 +113,27 @@ class AdhanScheduler {
       }
 
       LocationResult? loc;
-      try {
-        loc = await _location.currentPosition();
-      } catch (e) {
-        AppLogger.warning(
-          'Adhan scheduling: location failed ($e)',
+      if (useCachedLocation) {
+        loc = _lastLocation.read();
+      } else {
+        try {
+          loc = await _location.currentPosition();
+          if (loc != null) await _lastLocation.write(loc);
+        } catch (e) {
+          AppLogger.warning(
+            'Adhan scheduling: live location failed ($e) — using cached',
+            tag: 'AdhanScheduler',
+          );
+          loc = _lastLocation.read();
+        }
+      }
+      if (loc == null) {
+        AppLogger.info(
+          'Adhan scheduling: no location available — skip',
           tag: 'AdhanScheduler',
         );
         return;
       }
-      if (loc == null) return;
 
       final prayer = _prayerSettings.current();
       final notify = prayer.notifyForPrayer;

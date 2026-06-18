@@ -19,6 +19,7 @@ import 'package:quran/modules/auth/presentation/cubits/cb_auth.dart';
 import 'package:quran/modules/adhan/data/models/m_adhan_download.dart';
 import 'package:quran/modules/adhan/data/models/m_adhan_preference.dart';
 import 'package:quran/modules/adhan/data/models/m_adhan_settings.dart';
+import 'package:quran/modules/adhan/services/adhan_background.dart';
 import 'package:quran/modules/adhan/services/adhan_bootstrap.dart';
 import 'package:quran/modules/azkar/data/models/m_azkar_favorite.dart';
 import 'package:quran/modules/azkar/data/models/m_azkar_progress.dart';
@@ -67,6 +68,7 @@ Future<void> main() async {
   await Hive.openBox<MPrayerSettings>('prayer_settings');
   await Hive.openBox<MPrayerCache>('prayer_cache');
   await Hive.openBox<String>('prayer_timings_cache');
+  await Hive.openBox<String>('last_location');
   await Hive.openBox<MAdhanPreference>('adhan_preference');
   await Hive.openBox<MAdhanSettings>('adhan_settings');
   await Hive.openBox<MAdhanDownload>('adhan_downloads');
@@ -114,6 +116,8 @@ class _RootState extends State<_Root> {
     Modular.get<NotificationsService>().init().then((_) async {
       await Modular.get<CBReminders>().rescheduleAll();
       await Modular.get<AdhanBootstrap>().run();
+      // Arm the weekly Saturday background refresh (Android only).
+      await initAdhanBackground();
     });
   }
 

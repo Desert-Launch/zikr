@@ -88,6 +88,7 @@ dependencies:
 
   # Markdown rendering for legal pages
   flutter_markdown: ^0.7.4+1
+  android_alarm_manager_plus: ^5.0.0
 
 dev_dependencies:
   flutter_test:
