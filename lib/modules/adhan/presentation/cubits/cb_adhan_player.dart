@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:just_audio/just_audio.dart';
+import 'package:just_audio_background/just_audio_background.dart';
 import 'package:quran/core/services/logging/app_logger.dart';
 import 'package:quran/modules/adhan/data/datasources/local/ds_local_adhan.dart';
 import 'package:quran/modules/adhan/data/models/m_adhan.dart';
@@ -115,16 +116,27 @@ class CBAdhanPlayer extends Cubit<SAdhanPlayer> {
           clearError: true,
         ),
       );
+      // just_audio_background is initialised app-wide, so every AudioSource
+      // must carry a MediaItem tag (used for the lock-screen / notification).
+      final tag = MediaItem(
+        id: adhan.id,
+        album: 'الأذان',
+        title: adhan.nameAr,
+        artist: adhan.muezzinAr,
+        artUri: Uri.parse('asset:///assets/images/app_icon.png'),
+      );
       final localPath = _downloads.localPath(adhan.id);
+      final AudioSource source;
       if (localPath != null) {
-        await _player.setFilePath(localPath);
+        source = AudioSource.uri(Uri.file(localPath), tag: tag);
       } else if (adhan.asset.isNotEmpty) {
-        await _player.setAsset(adhan.asset);
+        source = AudioSource.asset(adhan.asset, tag: tag);
       } else if (adhan.fullUrl?.isNotEmpty ?? false) {
-        await _player.setUrl(adhan.fullUrl ?? '');
+        source = AudioSource.uri(Uri.parse(adhan.fullUrl ?? ''), tag: tag);
       } else {
         throw StateError('No playable source for adhan ${adhan.id}');
       }
+      await _player.setAudioSource(source);
       await _player.play();
     } catch (e, st) {
       AppLogger.warning(
