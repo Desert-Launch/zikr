@@ -60,11 +60,13 @@ class WFullPlayer extends StatelessWidget {
                 SizedBox(height: 8),
                 _Transport(),
                 SizedBox(height: 16),
-                // Phase 1 smoke test: speed persists across restarts.
-                // Repeat/range rows land in Phase 4.
+                // Basic controls reachable now; the full repeat sheet (surah
+                // mode, repeat-count stepper, after-repeat) lands in Phase 4.
+                _RepeatRow(),
+                SizedBox(height: 8),
                 _SpeedRow(),
-                // _RepeatRow(),
-                // _RangePicker(),
+                SizedBox(height: 8),
+                _RangePicker(),
               ],
             ),
           );

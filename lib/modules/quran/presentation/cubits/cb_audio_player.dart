@@ -60,6 +60,10 @@ class CBAudioPlayer extends Cubit<SAudioPlayer> {
   /// Bumped on every new play session (playFrom/playRange/stop) so stale async
   /// ensure/advance callbacks from a previous session become no-ops.
   int _playToken = 0;
+
+  /// Completed passes of the current repeat unit (ayah/range/surah). Reset when
+  /// a new queue starts; compared against [EPlaybackOptions.repeatCount].
+  int _completedPasses = 0;
   bool _resumeAfterInterruption = false;
 
   StreamSubscription<PlayerState>? _stateSub;
@@ -230,6 +234,7 @@ class CBAudioPlayer extends Cubit<SAudioPlayer> {
     _activeSurah = surah;
     _activeReciterId = reciterId;
     _playToken++;
+    _completedPasses = 0;
     final token = _playToken;
     emit(state.copyWith(queue: queue, reciterId: reciterId, clearError: true));
     await _playAt(0, token);
@@ -278,11 +283,10 @@ class CBAudioPlayer extends Cubit<SAudioPlayer> {
       await _player.setAudioSource(_localSource(_activeSurah, ref, path));
       if (token != _playToken) return;
       await _player.setSpeed(state.options.speed);
-      await _player.setLoopMode(
-        state.options.repeatMode == RepeatMode.singleAyah
-            ? LoopMode.one
-            : LoopMode.off,
-      );
+      // All looping is handled manually in _onUnitCompleted so every track
+      // fires `completed`. LoopMode.one would suppress that event and break
+      // finite repeat counts.
+      await _player.setLoopMode(LoopMode.off);
       await _player.play();
     } catch (e, st) {
       if (token != _playToken) return;
@@ -310,21 +314,148 @@ class CBAudioPlayer extends Cubit<SAudioPlayer> {
     await _ensure(queue[index], _activeReciterId ?? 'alafasy');
   }
 
-  /// Reached the end of the current ayah → advance, loop, or finish.
+  /// Reached the end of the current ayah. Advances within the unit, loops the
+  /// unit, advances to the next unit, or finishes — per the active repeat mode.
   void _onTrackCompleted() {
     final idx = state.queueIndex;
     if (idx == null) {
       emit(state.copyWith(status: PlayerStatus.completed));
       return;
     }
-    final nextIndex = idx + 1;
-    if (nextIndex < state.queue.length) {
-      unawaited(_playAt(nextIndex, _playToken));
-    } else if (state.options.repeatMode == RepeatMode.range &&
-        state.queue.isNotEmpty) {
-      unawaited(_playAt(0, _playToken));
+    // Still inside the current block → play its next ayah.
+    if (idx + 1 < state.queue.length) {
+      unawaited(_playAt(idx + 1, _playToken));
+      return;
+    }
+    // End of the queue (singleAyah always lands here — its queue is length 1).
+    if (state.options.repeatMode == RepeatMode.off) {
+      unawaited(_advanceToNextSurahOrStop());
+      return;
+    }
+    _onUnitCompleted();
+  }
+
+  /// One full pass of the repeat unit (ayah / range / surah) just finished.
+  /// Replays it until [EPlaybackOptions.repeatCount] passes are done (0 means
+  /// infinite), then stops or advances per [EPlaybackOptions.afterRepeat].
+  void _onUnitCompleted() {
+    _completedPasses++;
+    final target = state.options.repeatCount;
+    if (target == 0 || _completedPasses < target) {
+      unawaited(_playAt(0, _playToken)); // replay the unit from its start
+      return;
+    }
+    if (state.options.afterRepeat == EAfterRepeat.continueNext) {
+      unawaited(_advanceAfterRepeat());
     } else {
       emit(state.copyWith(status: PlayerStatus.completed));
+    }
+  }
+
+  /// Repeat-off reached the end of the surah → roll into the next surah (when
+  /// [EPlaybackOptions.autoAdvanceSurah]) or finish at the end of the Qur'an.
+  Future<void> _advanceToNextSurahOrStop() async {
+    final cur = state.currentAyah;
+    if (!state.options.autoAdvanceSurah || cur == null || cur.surah >= 114) {
+      emit(state.copyWith(status: PlayerStatus.completed));
+      return;
+    }
+    await playFrom(ParamAyahRef(surah: cur.surah + 1, ayah: 1));
+  }
+
+  /// A finite repeat finished and the user chose to continue. Moves to the next
+  /// unit for the mode: singleAyah → next ayah (repeated again — a memorisation
+  /// march), surah → next surah (repeated again), range → a plain play-through
+  /// past the range to the end of the surah.
+  Future<void> _advanceAfterRepeat() async {
+    final cur = state.currentAyah;
+    if (cur == null) {
+      emit(state.copyWith(status: PlayerStatus.completed));
+      return;
+    }
+    switch (state.options.repeatMode) {
+      case RepeatMode.singleAyah:
+        final next = await _nextAyahRef(cur);
+        if (next == null) {
+          emit(state.copyWith(status: PlayerStatus.completed));
+          return;
+        }
+        await playFrom(next);
+      case RepeatMode.surah:
+        if (!state.options.autoAdvanceSurah || cur.surah >= 114) {
+          emit(state.copyWith(status: PlayerStatus.completed));
+          return;
+        }
+        await playFrom(ParamAyahRef(surah: cur.surah + 1, ayah: 1));
+      case RepeatMode.range:
+        final last = state.queue.isNotEmpty ? state.queue.last : cur;
+        final next = await _nextAyahRef(last);
+        if (next == null) {
+          emit(state.copyWith(status: PlayerStatus.completed));
+          return;
+        }
+        // The range repeat is done; continue as a normal play-through. The mode
+        // flip is in-memory only (not persisted).
+        emit(
+          state.copyWith(
+            options: state.options.copyWith(repeatMode: RepeatMode.off),
+          ),
+        );
+        await playFrom(next);
+      case RepeatMode.off:
+        emit(state.copyWith(status: PlayerStatus.completed));
+    }
+  }
+
+  /// The ayah after [ref], crossing into the next surah when
+  /// [EPlaybackOptions.autoAdvanceSurah] allows. Null at the end of the Qur'an.
+  Future<ParamAyahRef?> _nextAyahRef(ParamAyahRef ref) async {
+    final surah = (await _quran.getSurah(
+      ref.surah,
+    )).fold<MSurah?>((_) => null, (s) => s);
+    final last = surah?.totalAyah ?? ref.ayah;
+    if (ref.ayah < last) {
+      return ParamAyahRef(surah: ref.surah, ayah: ref.ayah + 1);
+    }
+    if (state.options.autoAdvanceSurah && ref.surah < 114) {
+      return ParamAyahRef(surah: ref.surah + 1, ayah: 1);
+    }
+    return null;
+  }
+
+  /// Builds the queue (= the repeat unit) for [ref] under the current mode.
+  List<ParamAyahRef> _buildUnit(
+    ParamAyahRef ref,
+    MSurah? surah, {
+    bool toEndOfSurah = true,
+  }) {
+    final last = surah?.totalAyah ?? ref.ayah;
+    switch (state.options.repeatMode) {
+      case RepeatMode.singleAyah:
+        return [ref];
+      case RepeatMode.range:
+        final from = state.options.rangeFrom;
+        final to = state.options.rangeTo;
+        if (from != null && to != null && from.surah == ref.surah) {
+          final lo = from.ayah <= to.ayah ? from.ayah : to.ayah;
+          final hi = from.ayah <= to.ayah ? to.ayah : from.ayah;
+          return [
+            for (int a = lo; a <= hi; a++)
+              ParamAyahRef(surah: ref.surah, ayah: a),
+          ];
+        }
+        return [ref];
+      case RepeatMode.surah:
+        return [
+          for (int a = 1; a <= last; a++)
+            ParamAyahRef(surah: ref.surah, ayah: a),
+        ];
+      case RepeatMode.off:
+        final end = toEndOfSurah ? last : ref.ayah;
+        return [
+          for (int a = ref.ayah; a <= end; a++)
+            ParamAyahRef(surah: ref.surah, ayah: a),
+        ];
     }
   }
 
@@ -334,12 +465,7 @@ class CBAudioPlayer extends Cubit<SAudioPlayer> {
       final reciterId = await _resolveReciterId();
       final surahRes = await _quran.getSurah(ref.surah);
       final surah = surahRes.fold<MSurah?>((_) => null, (s) => s);
-      final endAyah = toEndOfSurah ? (surah?.totalAyah ?? ref.ayah) : ref.ayah;
-
-      final queue = <ParamAyahRef>[
-        for (int a = ref.ayah; a <= endAyah; a++)
-          ParamAyahRef(surah: ref.surah, ayah: a),
-      ];
+      final queue = _buildUnit(ref, surah, toEndOfSurah: toEndOfSurah);
       await _startQueue(queue, surah, reciterId);
     } catch (e, st) {
       AppLogger.error(
@@ -363,17 +489,26 @@ class CBAudioPlayer extends Cubit<SAudioPlayer> {
         );
         return;
       }
-      emit(state.copyWith(status: PlayerStatus.loading, clearError: true));
+      final lo = from.ayah <= to.ayah ? from.ayah : to.ayah;
+      final hi = from.ayah <= to.ayah ? to.ayah : from.ayah;
+      // Set range mode (in-memory) so the repeat engine loops the block.
+      emit(
+        state.copyWith(
+          status: PlayerStatus.loading,
+          clearError: true,
+          options: state.options.copyWith(
+            repeatMode: RepeatMode.range,
+            rangeFrom: ParamAyahRef(surah: from.surah, ayah: lo),
+            rangeTo: ParamAyahRef(surah: from.surah, ayah: hi),
+          ),
+        ),
+      );
       final reciterId = await _resolveReciterId();
       final surahRes = await _quran.getSurah(from.surah);
       final surah = surahRes.fold<MSurah?>((_) => null, (s) => s);
-      final ayatRes = await _quran.ayatOfSurah(from.surah);
-      final queue = ayatRes.fold<List<ParamAyahRef>>(
-        (_) => [],
-        (list) => list
-            .where((r) => r.ayah >= from.ayah && r.ayah <= to.ayah)
-            .toList(),
-      );
+      final queue = <ParamAyahRef>[
+        for (int a = lo; a <= hi; a++) ParamAyahRef(surah: from.surah, ayah: a),
+      ];
       await _startQueue(queue, surah, reciterId);
     } catch (e, st) {
       AppLogger.error(
@@ -392,7 +527,8 @@ class CBAudioPlayer extends Cubit<SAudioPlayer> {
         options: state.options.copyWith(repeatMode: RepeatMode.singleAyah),
       ),
     );
-    await playFrom(ref, toEndOfSurah: false);
+    _persistOptions();
+    await playFrom(ref); // mode is singleAyah → builds a [ref] unit
   }
 
   Future<void> pause() => _player.pause();
@@ -437,13 +573,49 @@ class CBAudioPlayer extends Cubit<SAudioPlayer> {
     await _player.setSpeed(speed);
   }
 
+  /// Switches repeat mode. If something is playing, the unit is rebuilt around
+  /// the current ayah and restarted so the new mode takes effect immediately.
   Future<void> setRepeatMode(RepeatMode mode) async {
     emit(state.copyWith(options: state.options.copyWith(repeatMode: mode)));
     _persistOptions();
-    await _player.setLoopMode(
-      mode == RepeatMode.singleAyah ? LoopMode.one : LoopMode.off,
+    final ref = state.currentAyah;
+    if (ref == null) return;
+    final surahRes = await _quran.getSurah(ref.surah);
+    final surah = surahRes.fold<MSurah?>((_) => null, (s) => s);
+    final queue = _buildUnit(ref, surah);
+    await _startQueue(
+      queue,
+      surah,
+      _activeReciterId ?? await _resolveReciterId(),
     );
   }
+
+  Future<void> setRepeatCount(int count) async {
+    final clamped = count < 0 ? 0 : count;
+    emit(state.copyWith(options: state.options.copyWith(repeatCount: clamped)));
+    _persistOptions();
+    _completedPasses = 0; // restart the counting window
+  }
+
+  Future<void> setAfterRepeat(EAfterRepeat value) async {
+    emit(state.copyWith(options: state.options.copyWith(afterRepeat: value)));
+    _persistOptions();
+  }
+
+  void toggleAutoAdvanceSurah() {
+    emit(
+      state.copyWith(
+        options: state.options.copyWith(
+          autoAdvanceSurah: !state.options.autoAdvanceSurah,
+        ),
+      ),
+    );
+    _persistOptions();
+  }
+
+  /// Sets a from–to repeat range (single surah) and starts looping it.
+  Future<void> setRepeatRange(ParamAyahRef from, ParamAyahRef to) =>
+      playRange(from, to);
 
   Stream<ParamAyahRef?> get currentAyahStream =>
       stream.map((s) => s.currentAyah).distinct((a, b) => a?.key == b?.key);
