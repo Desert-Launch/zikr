@@ -22,8 +22,13 @@ class WAyahActionSheet extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return BlocSelector<CBMushafReader, SMushafReader, ({ParamAyahRef? selected, bool chromeVisible})>(
-      selector: (s) => (selected: s.selectedAyah, chromeVisible: s.chromeVisible),
+    return BlocSelector<
+      CBMushafReader,
+      SMushafReader,
+      ({ParamAyahRef? selected, bool chromeVisible})
+    >(
+      selector: (s) =>
+          (selected: s.selectedAyah, chromeVisible: s.chromeVisible),
       builder: (context, state) {
         final selected = state.selected;
         final visible = selected != null && state.chromeVisible;
@@ -44,8 +49,13 @@ class WAyahActionSheet extends StatelessWidget {
                   borderRadius: BorderRadius.circular(16.r),
                   shadowColor: Colors.black.withValues(alpha: 0.2),
                   child: Padding(
-                    padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 12.h),
-                    child: selected == null ? const SizedBox.shrink() : _SheetBody(ref: selected),
+                    padding: EdgeInsets.symmetric(
+                      horizontal: 12.w,
+                      vertical: 12.h,
+                    ),
+                    child: selected == null
+                        ? const SizedBox.shrink()
+                        : _SheetBody(ref: selected),
                   ),
                 ),
               ),
@@ -77,18 +87,19 @@ class _SheetBody extends StatelessWidget {
               ),
               child: Text(
                 '${ref.surah}:${ref.ayah}',
-                style: TextStyle(color: AppColorsLight.primary, fontWeight: FontWeight.w700, fontSize: 13.sp),
+                style: TextStyle(
+                  color: AppColorsLight.primary,
+                  fontWeight: FontWeight.w700,
+                  fontSize: 13.sp,
+                ),
               ),
             ),
             const Spacer(),
             IconButton(
               icon: const Icon(Icons.close),
-              // Closes both: stops playback (hides the bar) and clears the
-              // selection (hides the sheet).
-              onPressed: () {
-                Modular.get<CBAudioPlayer>().stop();
-                cubit.clearSelection();
-              },
+              // Closes the sheet only; playback keeps going and the mini player
+              // takes over. Stop from the mini player to end playback.
+              onPressed: cubit.clearSelection,
             ),
           ],
         ),
@@ -111,9 +122,21 @@ class _SheetBody extends StatelessWidget {
             //     BlocProvider.of<CBMushafReader>(actionContext).clearSelection();
             //   },
             // ),
-            _Action(icon: Icons.bookmark_add_outlined, label: 'reader_bookmark'.tr(), onTap: _bookmark),
-            _Action(icon: Icons.copy_outlined, label: 'reader_copy'.tr(), onTap: _copy),
-            _Action(icon: Icons.share_outlined, label: 'reader_share'.tr(), onTap: _share),
+            _Action(
+              icon: Icons.bookmark_add_outlined,
+              label: 'reader_bookmark'.tr(),
+              onTap: _bookmark,
+            ),
+            _Action(
+              icon: Icons.copy_outlined,
+              label: 'reader_copy'.tr(),
+              onTap: _copy,
+            ),
+            _Action(
+              icon: Icons.share_outlined,
+              label: 'reader_share'.tr(),
+              onTap: _share,
+            ),
           ],
         ),
         // Merged playback bar: appears at the bottom of the sheet while audio
@@ -121,7 +144,8 @@ class _SheetBody extends StatelessWidget {
         BlocBuilder<CBAudioPlayer, SAudioPlayer>(
           bloc: Modular.get<CBAudioPlayer>(),
           builder: (context, audio) {
-            final active = audio.currentAyah != null && audio.status != PlayerStatus.idle;
+            final active =
+                audio.currentAyah != null && audio.status != PlayerStatus.idle;
             if (!active) return const SizedBox.shrink();
             return Column(
               mainAxisSize: MainAxisSize.min,
@@ -163,15 +187,22 @@ class _SheetBody extends StatelessWidget {
     final uc = Modular.get<UCSaveBookmark>();
     final result = await uc(ref: ref, colorHex: colorHex);
     if (!context.mounted) return;
-    final msg = result.fold((l) => 'common_error'.tr(), (r) => 'bookmark_saved'.tr());
+    final msg = result.fold(
+      (l) => 'common_error'.tr(),
+      (r) => 'bookmark_saved'.tr(),
+    );
     ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(msg)));
     BlocProvider.of<CBMushafReader>(context).clearSelection();
   }
 
   Future<void> _copy(BuildContext context) async {
-    await Clipboard.setData(ClipboardData(text: '${_plainText(context)}\n(${ref.surah}:${ref.ayah})'));
+    await Clipboard.setData(
+      ClipboardData(text: '${_plainText(context)}\n(${ref.surah}:${ref.ayah})'),
+    );
     if (!context.mounted) return;
-    ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('reader_copy'.tr())));
+    ScaffoldMessenger.of(
+      context,
+    ).showSnackBar(SnackBar(content: Text('reader_copy'.tr())));
     BlocProvider.of<CBMushafReader>(context).clearSelection();
   }
 
@@ -179,10 +210,14 @@ class _SheetBody extends StatelessWidget {
     final text = _plainText(context);
     final box = context.findRenderObject() as RenderBox?;
     final screenSize = MediaQuery.sizeOf(context);
-    final origin = box != null && box.hasSize && box.size.width > 0 && box.size.height > 0
+    final origin =
+        box != null && box.hasSize && box.size.width > 0 && box.size.height > 0
         ? box.localToGlobal(Offset.zero) & box.size
         : Rect.fromLTWH(screenSize.width / 2, screenSize.height / 2, 1, 1);
-    await Share.share('$text\n— سورة ${ref.surah}، آية ${ref.ayah}', sharePositionOrigin: origin);
+    await Share.share(
+      '$text\n— سورة ${ref.surah}، آية ${ref.ayah}',
+      sharePositionOrigin: origin,
+    );
   }
 }
 

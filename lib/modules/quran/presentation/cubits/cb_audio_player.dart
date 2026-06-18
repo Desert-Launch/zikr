@@ -219,6 +219,7 @@ class CBAudioPlayer extends Cubit<SAudioPlayer> {
           'القرآن الكريم${_activeReciterName != null ? ' - $_activeReciterName' : ''}',
       title: '${surah?.arabic ?? ''} - الآية ${ref.ayah}',
       artist: _activeReciterName ?? '',
+      artUri: Uri.parse('asset:///assets/images/app_icon.png'),
     );
     return AudioSource.uri(Uri.file(path), tag: tag);
   }
@@ -481,6 +482,24 @@ class CBAudioPlayer extends Cubit<SAudioPlayer> {
 
   Future<void> playFrom(ParamAyahRef ref, {bool toEndOfSurah = true}) async {
     try {
+      // An explicit tap outside an active repeat-range cancels the range so the
+      // tapped ayah actually plays (rather than re-looping the old block).
+      final opts = state.options;
+      if (opts.repeatMode == RepeatMode.range) {
+        final from = opts.rangeFrom;
+        final to = opts.rangeTo;
+        final inRange =
+            from != null &&
+            to != null &&
+            ref.surah == from.surah &&
+            ref.ayah >= from.ayah &&
+            ref.ayah <= to.ayah;
+        if (!inRange) {
+          emit(
+            state.copyWith(options: opts.copyWith(repeatMode: RepeatMode.off)),
+          );
+        }
+      }
       emit(state.copyWith(status: PlayerStatus.loading, clearError: true));
       final reciterId = await _resolveReciterId();
       final surahRes = await _quran.getSurah(ref.surah);

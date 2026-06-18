@@ -18,7 +18,8 @@ class WMiniPlayer extends StatelessWidget {
       value: Modular.get<CBAudioPlayer>(),
       child: BlocBuilder<CBAudioPlayer, SAudioPlayer>(
         builder: (context, state) {
-          final isActive = state.currentAyah != null && state.status != PlayerStatus.idle;
+          final isActive =
+              state.currentAyah != null && state.status != PlayerStatus.idle;
           return AnimatedSlide(
             offset: Offset(0, isActive ? 0 : 1.2),
             duration: const Duration(milliseconds: 200),
@@ -63,7 +64,7 @@ class _Bar extends StatelessWidget {
           onTap: () => WFullPlayer.show(context),
           child: Padding(
             padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 10.h),
-            child: WPlayerBar(state: state, cubit: cubit),
+            child: WPlayerBar(state: state, cubit: cubit, onStop: cubit.stop),
           ),
         ),
       ),

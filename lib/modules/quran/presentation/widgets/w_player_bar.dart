@@ -10,10 +10,18 @@ import 'package:quran/modules/quran/presentation/cubits/s_audio_player.dart';
 /// Reused by the floating [WMiniPlayer] and embedded at the bottom of the ayah
 /// action sheet, so the same controls appear wherever playback is shown.
 class WPlayerBar extends StatelessWidget {
-  const WPlayerBar({super.key, required this.state, required this.cubit});
+  const WPlayerBar({
+    super.key,
+    required this.state,
+    required this.cubit,
+    this.onStop,
+  });
 
   final SAudioPlayer state;
   final CBAudioPlayer cubit;
+
+  /// When provided, a stop/dismiss button is shown (used by the mini player).
+  final VoidCallback? onStop;
 
   @override
   Widget build(BuildContext context) {
@@ -73,6 +81,12 @@ class WPlayerBar extends StatelessWidget {
           icon: const Icon(Icons.skip_next_rounded),
           onPressed: cubit.next,
         ),
+        if (onStop != null)
+          IconButton(
+            icon: const Icon(Icons.close_rounded),
+            color: context.brand.muted,
+            onPressed: onStop,
+          ),
       ],
     );
   }
