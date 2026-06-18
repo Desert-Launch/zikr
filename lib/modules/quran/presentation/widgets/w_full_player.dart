@@ -59,11 +59,11 @@ class WFullPlayer extends StatelessWidget {
                 _Scrubber(),
                 SizedBox(height: 8),
                 _Transport(),
-                // SizedBox(height: 16),
+                SizedBox(height: 16),
+                // Phase 1 smoke test: speed persists across restarts.
+                // Repeat/range rows land in Phase 4.
+                _SpeedRow(),
                 // _RepeatRow(),
-                // SizedBox(height: 8),
-                // _SpeedRow(),
-                // SizedBox(height: 8),
                 // _RangePicker(),
               ],
             ),

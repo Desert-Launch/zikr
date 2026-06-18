@@ -2,6 +2,7 @@ import 'package:flutter_modular/flutter_modular.dart';
 import 'package:quran/core/services/routes/routes_names.dart';
 import 'package:quran/modules/quran/data/datasources/local/ds_local_audio_files.dart';
 import 'package:quran/modules/quran/data/datasources/local/ds_local_bookmarks.dart';
+import 'package:quran/modules/quran/data/datasources/local/ds_local_playback_prefs.dart';
 import 'package:quran/modules/quran/data/datasources/local/ds_local_quran.dart';
 import 'package:quran/modules/quran/data/datasources/local/ds_local_reader_settings.dart';
 import 'package:quran/modules/quran/data/datasources/local/ds_local_settings.dart';
@@ -11,16 +12,19 @@ import 'package:quran/modules/quran/data/datasources/remote/ds_remote_audio.dart
 import 'package:quran/modules/quran/data/repos/r_impl_audio.dart';
 import 'package:quran/modules/quran/data/repos/r_impl_audio_downloads.dart';
 import 'package:quran/modules/quran/data/repos/r_impl_bookmarks.dart';
+import 'package:quran/modules/quran/data/repos/r_impl_playback_prefs.dart';
 import 'package:quran/modules/quran/data/repos/r_impl_quran.dart';
 import 'package:quran/modules/quran/data/repos/r_impl_reader_settings.dart';
 import 'package:quran/modules/quran/data/repos/r_impl_reciter.dart';
 import 'package:quran/modules/quran/data/sources/local/box_bookmarks.dart';
 import 'package:quran/modules/quran/data/sources/local/box_last_read.dart';
+import 'package:quran/modules/quran/data/sources/local/box_playback_prefs.dart';
 import 'package:quran/modules/quran/data/sources/local/box_reader_settings.dart';
 import 'package:quran/modules/quran/data/sources/local/box_reciter_pref.dart';
 import 'package:quran/modules/quran/domain/repos/r_audio.dart';
 import 'package:quran/modules/quran/domain/repos/r_audio_downloads.dart';
 import 'package:quran/modules/quran/domain/repos/r_bookmarks.dart';
+import 'package:quran/modules/quran/domain/repos/r_playback_prefs.dart';
 import 'package:quran/modules/quran/domain/repos/r_quran.dart';
 import 'package:quran/modules/quran/domain/repos/r_reader_settings.dart';
 import 'package:quran/modules/quran/domain/repos/r_reciter.dart';
@@ -34,6 +38,7 @@ import 'package:quran/modules/quran/domain/usecases/uc_get_all_surahs_status.dar
 import 'package:quran/modules/quran/domain/usecases/uc_get_bookmarks.dart';
 import 'package:quran/modules/quran/domain/usecases/uc_get_font_mode.dart';
 import 'package:quran/modules/quran/domain/usecases/uc_get_page_layout.dart';
+import 'package:quran/modules/quran/domain/usecases/uc_get_playback_prefs.dart';
 import 'package:quran/modules/quran/domain/usecases/uc_get_reciter_stats.dart';
 import 'package:quran/modules/quran/domain/usecases/uc_get_reciters.dart';
 import 'package:quran/modules/quran/domain/usecases/uc_get_surah_list.dart';
@@ -43,6 +48,7 @@ import 'package:quran/modules/quran/domain/usecases/uc_play_range.dart';
 import 'package:quran/modules/quran/domain/usecases/uc_resolve_audio_url.dart';
 import 'package:quran/modules/quran/domain/usecases/uc_save_bookmark.dart';
 import 'package:quran/modules/quran/domain/usecases/uc_save_last_read.dart';
+import 'package:quran/modules/quran/domain/usecases/uc_save_playback_prefs.dart';
 import 'package:quran/modules/quran/domain/usecases/uc_search_quran.dart';
 import 'package:quran/modules/quran/domain/usecases/uc_set_active_reciter.dart';
 import 'package:quran/modules/quran/domain/usecases/uc_set_font_mode.dart';
@@ -73,12 +79,14 @@ class QuranModule extends Module {
     i.addSingleton<BoxLastRead>(BoxLastRead.new);
     i.addSingleton<BoxReciterPref>(BoxReciterPref.new);
     i.addSingleton<BoxReaderSettings>(BoxReaderSettings.new);
+    i.addSingleton<BoxPlaybackPrefs>(BoxPlaybackPrefs.new);
 
     // Local data sources
     i.addSingleton<DSLocalQuran>(DSLocalQuran.new);
     i.addSingleton<DSLocalBookmarks>(() => DSLocalBookmarks(i.get<BoxBookmarks>(), i.get<BoxLastRead>()));
     i.addSingleton<DSLocalSettings>(() => DSLocalSettings(i.get<BoxReciterPref>()));
     i.addSingleton<DSLocalReaderSettings>(() => DSLocalReaderSettings(i.get<BoxReaderSettings>()));
+    i.addSingleton<DSLocalPlaybackPrefs>(() => DSLocalPlaybackPrefs(i.get<BoxPlaybackPrefs>()));
     i.addSingleton<DSLocalAudioFiles>(DSLocalAudioFiles.new);
     i.addSingleton<DSQpcFontLoader>(DSQpcFontLoader.new);
 
@@ -102,6 +110,7 @@ class QuranModule extends Module {
     );
     i.addSingleton<RBookmarks>(() => RImplBookmarks(i.get<DSLocalBookmarks>()));
     i.addSingleton<RReaderSettings>(() => RImplReaderSettings(i.get<DSLocalReaderSettings>()));
+    i.addSingleton<RPlaybackPrefs>(() => RImplPlaybackPrefs(i.get<DSLocalPlaybackPrefs>()));
 
     // Use cases (factory)
     i.add<UCGetSurahList>(() => UCGetSurahList(i.get<RQuran>()));
@@ -125,6 +134,8 @@ class QuranModule extends Module {
     i.add<UCSetActiveReciter>(() => UCSetActiveReciter(i.get<RReciter>()));
     i.add<UCGetFontMode>(() => UCGetFontMode(i.get<RReaderSettings>()));
     i.add<UCSetFontMode>(() => UCSetFontMode(i.get<RReaderSettings>()));
+    i.add<UCGetPlaybackPrefs>(() => UCGetPlaybackPrefs(i.get<RPlaybackPrefs>()));
+    i.add<UCSavePlaybackPrefs>(() => UCSavePlaybackPrefs(i.get<RPlaybackPrefs>()));
 
     // App-wide cubits (singletons survive navigation).
     i.addSingleton<CBAudioPlayer>(
@@ -132,6 +143,8 @@ class QuranModule extends Module {
         quran: i.get<RQuran>(),
         reciters: i.get<UCGetReciters>(),
         ensure: i.get<UCEnsureAyahDownloaded>(),
+        getPrefs: i.get<UCGetPlaybackPrefs>(),
+        savePrefs: i.get<UCSavePlaybackPrefs>(),
       ),
     );
     i.addSingleton<CBReciter>(
@@ -186,6 +199,7 @@ class QuranModule extends Module {
     await Modular.get<BoxLastRead>().init();
     await Modular.get<BoxReciterPref>().init();
     await Modular.get<BoxReaderSettings>().init();
+    await Modular.get<BoxPlaybackPrefs>().init();
   }
 
   @override

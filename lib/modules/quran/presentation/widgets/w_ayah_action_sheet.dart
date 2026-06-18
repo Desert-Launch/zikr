@@ -13,6 +13,7 @@ import 'package:quran/modules/quran/presentation/cubits/cb_mushaf_reader.dart';
 import 'package:quran/modules/quran/presentation/cubits/s_audio_player.dart';
 import 'package:quran/modules/quran/presentation/cubits/s_mushaf_reader.dart';
 import 'package:quran/modules/quran/presentation/widgets/w_bookmark_color_picker.dart';
+import 'package:quran/modules/quran/presentation/widgets/w_full_player.dart';
 import 'package:quran/modules/quran/presentation/widgets/w_player_bar.dart';
 import 'package:share_plus/share_plus.dart';
 
@@ -126,7 +127,16 @@ class _SheetBody extends StatelessWidget {
               mainAxisSize: MainAxisSize.min,
               children: [
                 Divider(height: 18.h, color: context.brand.border),
-                WPlayerBar(state: audio, cubit: Modular.get<CBAudioPlayer>()),
+                // Tap the bar to expand into the full player (speed, repeat,
+                // range, …) — same affordance as the floating mini player.
+                InkWell(
+                  borderRadius: BorderRadius.circular(12.r),
+                  onTap: () => WFullPlayer.show(context),
+                  child: WPlayerBar(
+                    state: audio,
+                    cubit: Modular.get<CBAudioPlayer>(),
+                  ),
+                ),
               ],
             );
           },

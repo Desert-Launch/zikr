@@ -11,7 +11,9 @@ import 'package:quran/modules/quran/domain/entities/e_playback_options.dart';
 import 'package:quran/modules/quran/domain/entities/param_ayah_ref.dart';
 import 'package:quran/modules/quran/domain/repos/r_quran.dart';
 import 'package:quran/modules/quran/domain/usecases/uc_ensure_ayah_downloaded.dart';
+import 'package:quran/modules/quran/domain/usecases/uc_get_playback_prefs.dart';
 import 'package:quran/modules/quran/domain/usecases/uc_get_reciters.dart';
+import 'package:quran/modules/quran/domain/usecases/uc_save_playback_prefs.dart';
 import 'package:quran/modules/quran/presentation/cubits/s_audio_player.dart';
 
 /// App-wide audio player. Singleton (registered via Modular.addSingleton).
@@ -28,18 +30,25 @@ class CBAudioPlayer extends Cubit<SAudioPlayer> {
     required RQuran quran,
     required UCGetReciters reciters,
     required UCEnsureAyahDownloaded ensure,
+    required UCGetPlaybackPrefs getPrefs,
+    required UCSavePlaybackPrefs savePrefs,
   }) : _quran = quran,
        _reciters = reciters,
        _ensure = ensure,
+       _getPrefs = getPrefs,
+       _savePrefs = savePrefs,
        _player = AudioPlayer(),
        super(const SAudioPlayer()) {
     _hydrate();
+    _hydratePrefs();
     _wireStreams();
   }
 
   final RQuran _quran;
   final UCGetReciters _reciters;
   final UCEnsureAyahDownloaded _ensure;
+  final UCGetPlaybackPrefs _getPrefs;
+  final UCSavePlaybackPrefs _savePrefs;
   final AudioPlayer _player;
 
   String? _activeReciterId;
@@ -68,6 +77,17 @@ class CBAudioPlayer extends Cubit<SAudioPlayer> {
       emit(state.copyWith(reciterId: r.id));
     });
   }
+
+  /// Loads persisted playback preferences (speed, repeat mode/count, …) into
+  /// state. The player speed itself is (re)applied per ayah in [_playAt], so no
+  /// source needs to be loaded at construction time.
+  Future<void> _hydratePrefs() async {
+    final res = await _getPrefs();
+    res.fold((_) {}, (opts) => emit(state.copyWith(options: opts)));
+  }
+
+  /// Persists the current durable playback options (fire-and-forget).
+  void _persistOptions() => unawaited(_savePrefs(state.options));
 
   void _wireStreams() {
     _stateSub = _player.playerStateStream.listen((ps) {
@@ -413,11 +433,13 @@ class CBAudioPlayer extends Cubit<SAudioPlayer> {
 
   Future<void> setSpeed(double speed) async {
     emit(state.copyWith(options: state.options.copyWith(speed: speed)));
+    _persistOptions();
     await _player.setSpeed(speed);
   }
 
   Future<void> setRepeatMode(RepeatMode mode) async {
     emit(state.copyWith(options: state.options.copyWith(repeatMode: mode)));
+    _persistOptions();
     await _player.setLoopMode(
       mode == RepeatMode.singleAyah ? LoopMode.one : LoopMode.off,
     );

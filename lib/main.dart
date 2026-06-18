@@ -43,10 +43,7 @@ Future<void> main() async {
   AppLogger.init();
   AppLogger.info('Boot start', tag: 'main');
 
-  await SystemChrome.setPreferredOrientations([
-    DeviceOrientation.portraitUp,
-    DeviceOrientation.portraitDown,
-  ]);
+  await SystemChrome.setPreferredOrientations([DeviceOrientation.portraitUp, DeviceOrientation.portraitDown]);
 
   await LocalizeAndTranslate.init(
     supportedLocales: const [Locale('ar'), Locale('en')],
@@ -62,6 +59,7 @@ Future<void> main() async {
   await Hive.openBox<MLastRead>('quran_last_read');
   await Hive.openBox<MReciterPref>('quran_reciter_pref');
   await Hive.openBox<String>('quran_reader_settings');
+  await Hive.openBox<dynamic>('quran_playback_prefs');
   await Hive.openBox<MThemePref>('app_theme_pref');
   await Hive.openBox<MAppSettings>('app_settings');
   await Hive.openBox<MUser>('app_user');
@@ -88,7 +86,10 @@ Future<void> main() async {
 
   AppLogger.info('Boot done — runApp', tag: 'main');
   runApp(
-    ModularApp(module: AppModule(), child: const LocalizedApp(child: _Root())),
+    ModularApp(
+      module: AppModule(),
+      child: const LocalizedApp(child: _Root()),
+    ),
   );
 }
 
