@@ -7,6 +7,7 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:localize_and_translate/localize_and_translate.dart';
 import 'package:quran/core/assets/assets.gen.dart';
 import 'package:quran/core/services/routes/routes_names.dart';
+import 'package:quran/core/widgets/w_shared_scaffold.dart';
 import 'package:quran/modules/home/presentation/widgets/w_home_feature_card.dart';
 import 'package:quran/modules/home/presentation/widgets/w_home_header_banner.dart';
 import 'package:quran/modules/home/presentation/widgets/w_home_wide_feature.dart';
@@ -47,8 +48,10 @@ class _SNHomeState extends State<SNHome> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
+    return WSharedScaffold(
       backgroundColor: _canvas,
+      withSafeArea: false,
+      padding: EdgeInsets.zero,
       body: BlocProvider.value(
         value: _prayerCubit,
         child: RefreshIndicator(

@@ -5,6 +5,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_modular/flutter_modular.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:localize_and_translate/localize_and_translate.dart';
+import 'package:quran/core/widgets/w_shared_scaffold.dart';
 import 'package:quran/modules/adhan/services/adhan_scheduler.dart';
 import 'package:quran/modules/prayer/data/models/m_prayer_settings.dart';
 import 'package:quran/modules/prayer/data/sources/local/box_prayer_settings.dart';
@@ -51,8 +52,10 @@ class _SNPrayerTimesState extends State<SNPrayerTimes> {
   Widget build(BuildContext context) {
     return BlocProvider.value(
       value: _cubit,
-      child: Scaffold(
+      child: WSharedScaffold(
         backgroundColor: _canvas,
+        withSafeArea: false,
+        padding: EdgeInsets.zero,
         body: BlocBuilder<CBPrayerTimes, SPrayerTimes>(
           builder: (context, state) => RefreshIndicator(
             color: _green,
@@ -61,11 +64,19 @@ class _SNPrayerTimesState extends State<SNPrayerTimes> {
               physics: const AlwaysScrollableScrollPhysics(),
               slivers: [
                 SliverToBoxAdapter(
-                  child: WPrayerHeader(state: state, green: _green, onRefresh: _cubit.refresh),
+                  child: WPrayerHeader(
+                    state: state,
+                    green: _green,
+                    onRefresh: _cubit.refresh,
+                  ),
                 ),
-                if (state.slots.isEmpty && state.status == PrayerLoadStatus.loading)
-                  const SliverFillRemaining(child: Center(child: CircularProgressIndicator()))
-                else if (state.slots.isEmpty && state.status == PrayerLoadStatus.permissionDenied)
+                if (state.slots.isEmpty &&
+                    state.status == PrayerLoadStatus.loading)
+                  const SliverFillRemaining(
+                    child: Center(child: CircularProgressIndicator()),
+                  )
+                else if (state.slots.isEmpty &&
+                    state.status == PrayerLoadStatus.permissionDenied)
                   SliverFillRemaining(
                     child: WPrayerMessageView(
                       icon: Icons.location_off_rounded,
@@ -74,7 +85,8 @@ class _SNPrayerTimesState extends State<SNPrayerTimes> {
                       onRetry: _cubit.refresh,
                     ),
                   )
-                else if (state.slots.isEmpty && state.status == PrayerLoadStatus.error)
+                else if (state.slots.isEmpty &&
+                    state.status == PrayerLoadStatus.error)
                   SliverFillRemaining(
                     child: WPrayerMessageView(
                       icon: Icons.error_outline_rounded,
@@ -95,7 +107,9 @@ class _SNPrayerTimesState extends State<SNPrayerTimes> {
                           slot: slot,
                           isNext: state.nextPrayer?.prayer == slot.prayer,
                           isCurrent: state.currentSalah?.prayer == slot.prayer,
-                          notificationEnabled: _notificationEnabled(slot.prayer),
+                          notificationEnabled: _notificationEnabled(
+                            slot.prayer,
+                          ),
                           green: _green,
                           gold: _gold,
                           onNotificationChanged: slot.prayer.isSalah

@@ -3,6 +3,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_modular/flutter_modular.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:localize_and_translate/localize_and_translate.dart';
+import 'package:quran/core/widgets/w_shared_scaffold.dart';
 import 'package:quran/modules/azkar/data/sources/local/box_azkar_favorite.dart';
 import 'package:quran/modules/azkar/presentation/cubits/cb_azkar_session.dart';
 import 'package:quran/modules/azkar/presentation/cubits/s_azkar_session.dart';
@@ -11,7 +12,11 @@ import 'package:quran/modules/azkar/presentation/widgets/w_azkar_counter_card.da
 import 'package:quran/modules/azkar/presentation/widgets/w_azkar_virtue_card.dart';
 
 class SNAzkarPlayer extends StatefulWidget {
-  const SNAzkarPlayer({super.key, required this.categoryId, this.itemIndex = 0});
+  const SNAzkarPlayer({
+    super.key,
+    required this.categoryId,
+    this.itemIndex = 0,
+  });
 
   final String categoryId;
   final int itemIndex;
@@ -27,7 +32,9 @@ class _SNAzkarPlayerState extends State<SNAzkarPlayer> {
 
   late final CBAzkarSession _cubit = Modular.get<CBAzkarSession>();
   late final BoxAzkarFavorite _favorites = Modular.get<BoxAzkarFavorite>();
-  late final PageController _pageController = PageController(initialPage: widget.itemIndex);
+  late final PageController _pageController = PageController(
+    initialPage: widget.itemIndex,
+  );
 
   @override
   void initState() {
@@ -50,15 +57,18 @@ class _SNAzkarPlayerState extends State<SNAzkarPlayer> {
   Widget build(BuildContext context) {
     return BlocProvider.value(
       value: _cubit,
-      child: Scaffold(
+      child: WSharedScaffold(
         backgroundColor: _canvas,
+        withSafeArea: false,
+        padding: EdgeInsets.zero,
         body: BlocConsumer<CBAzkarSession, SAzkarSession>(
           // Keep the pager in sync when the index changes elsewhere (e.g. the
           // auto-advance after completing a zekr).
           listenWhen: (prev, curr) => prev.itemIndex != curr.itemIndex,
           listener: (_, state) {
             if (!_pageController.hasClients) return;
-            final current = _pageController.page?.round() ?? _pageController.initialPage;
+            final current =
+                _pageController.page?.round() ?? _pageController.initialPage;
             if (current != state.itemIndex) {
               _pageController.animateToPage(
                 state.itemIndex,
@@ -76,9 +86,13 @@ class _SNAzkarPlayerState extends State<SNAzkarPlayer> {
               children: [
                 WAzkarHeader(
                   green: _green,
-                  title: LocalizeAndTranslate.getLanguageCode() == 'ar' ? category.nameAr : category.nameEn,
+                  title: LocalizeAndTranslate.getLanguageCode() == 'ar'
+                      ? category.nameAr
+                      : category.nameEn,
                   categoryCount: category.items.length,
-                  completedToday: category.items.where((item) => state.isComplete(item)).length,
+                  completedToday: category.items
+                      .where((item) => state.isComplete(item))
+                      .length,
                   favorites: _favorites.all().length,
                   onBack: Modular.to.pop,
                 ),

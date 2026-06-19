@@ -3,6 +3,7 @@ import 'package:flutter_modular/flutter_modular.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:localize_and_translate/localize_and_translate.dart';
 import 'package:quran/core/services/routes/routes_names.dart';
+import 'package:quran/core/widgets/w_shared_scaffold.dart';
 import 'package:quran/modules/azkar/data/datasources/local/ds_local_azkar.dart';
 import 'package:quran/modules/azkar/data/models/m_azkar_catalog.dart';
 import 'package:quran/modules/azkar/data/models/m_azkar_item.dart';
@@ -47,8 +48,10 @@ class _SNAzkarHomeState extends State<SNAzkarHome> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
+    return WSharedScaffold(
       backgroundColor: _canvas,
+      withSafeArea: false,
+      padding: EdgeInsets.zero,
       body: FutureBuilder<_AzkarHomeData>(
         future: _future,
         builder: (context, snapshot) {
@@ -81,10 +84,14 @@ class _SNAzkarHomeState extends State<SNAzkarHome> {
                     ...data.catalog.map(
                       (entry) => WAzkarCategoryCard(
                         title: _catalogName(entry),
-                        count: entry.isOther ? -1 : (byId[entry.slug]?.items.length ?? 0),
+                        count: entry.isOther
+                            ? -1
+                            : (byId[entry.slug]?.items.length ?? 0),
                         color: _colorFor(entry.slug),
                         emoji: entry.emoji,
-                        onTap: entry.isOther ? _openOther : () => _openCategory(entry.slug),
+                        onTap: entry.isOther
+                            ? _openOther
+                            : () => _openCategory(entry.slug),
                       ),
                     ),
                     WAzkarCategoryCard(
@@ -107,7 +114,9 @@ class _SNAzkarHomeState extends State<SNAzkarHome> {
   Color _colorFor(String slug) => _colors[slug] ?? _green;
 
   String _catalogName(MAzkarCatalog entry) {
-    return LocalizeAndTranslate.getLanguageCode() == 'ar' ? entry.nameAr : entry.nameEn;
+    return LocalizeAndTranslate.getLanguageCode() == 'ar'
+        ? entry.nameAr
+        : entry.nameEn;
   }
 
   int _completedToday(List<MAzkarCategory> categories) {

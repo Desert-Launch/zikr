@@ -5,6 +5,7 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:localize_and_translate/localize_and_translate.dart';
 import 'package:quran/core/services/routes/routes_names.dart';
 import 'package:quran/core/widgets/w_gradient_app_bar.dart';
+import 'package:quran/core/widgets/w_shared_scaffold.dart';
 import 'package:quran/modules/tasbih/presentation/cubits/cb_tasbih.dart';
 import 'package:quran/modules/tasbih/presentation/cubits/s_tasbih.dart';
 import 'package:quran/modules/tasbih/presentation/widgets/w_tasbih_counter_card.dart';
@@ -30,8 +31,10 @@ class SNTasbih extends StatelessWidget {
     final cubit = Modular.get<CBTasbih>();
     return BlocProvider.value(
       value: cubit,
-      child: Scaffold(
+      child: WSharedScaffold(
         backgroundColor: _canvas,
+        withSafeArea: false,
+        padding: EdgeInsets.zero,
         body: BlocBuilder<CBTasbih, STasbih>(
           builder: (_, state) => CustomScrollView(
             slivers: [

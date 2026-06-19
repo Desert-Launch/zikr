@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_modular/flutter_modular.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:quran/core/services/routes/routes_names.dart';
+import 'package:quran/core/widgets/w_shared_scaffold.dart';
 import 'package:quran/modules/azkar/data/datasources/local/ds_local_azkar.dart';
 import 'package:quran/modules/azkar/data/models/m_azkar_item.dart';
 import 'package:quran/modules/azkar/presentation/widgets/w_azkar_category_tile.dart';
@@ -20,13 +21,15 @@ class _SNAzkarOtherState extends State<SNAzkarOther> {
   static const _green = Color(0xFF007A58);
   static const _canvas = Color(0xFFF8F7F4);
 
-  late final Future<List<MAzkarCategory>> _future =
-      Modular.get<DSLocalAzkar>().otherCategories();
+  late final Future<List<MAzkarCategory>> _future = Modular.get<DSLocalAzkar>()
+      .otherCategories();
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
+    return WSharedScaffold(
       backgroundColor: _canvas,
+      withSafeArea: false,
+      padding: EdgeInsets.zero,
       body: FutureBuilder<List<MAzkarCategory>>(
         future: _future,
         builder: (_, snapshot) {

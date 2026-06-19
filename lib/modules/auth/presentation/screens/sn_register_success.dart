@@ -5,13 +5,16 @@ import 'package:localize_and_translate/localize_and_translate.dart';
 import 'package:quran/core/services/routes/routes_names.dart';
 import 'package:quran/core/theme/app_colors.dart';
 import 'package:quran/core/theme/brand_colors.dart';
+import 'package:quran/core/widgets/w_shared_scaffold.dart';
 
 class SNRegisterSuccess extends StatelessWidget {
   const SNRegisterSuccess({super.key});
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
+    return WSharedScaffold(
+      withSafeArea: false,
+      padding: EdgeInsets.zero,
       body: SafeArea(
         child: Center(
           child: Padding(

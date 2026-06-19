@@ -7,6 +7,7 @@ import 'package:permission_handler/permission_handler.dart';
 import 'package:quran/core/services/routes/routes_names.dart';
 import 'package:quran/core/theme/app_colors.dart';
 import 'package:quran/core/theme/brand_colors.dart';
+import 'package:quran/core/widgets/w_shared_scaffold.dart';
 import 'package:quran/modules/reminders/presentation/cubits/cb_reminders.dart';
 import 'package:quran/modules/reminders/presentation/cubits/s_reminders.dart';
 import 'package:quran/modules/reminders/presentation/widgets/w_reminder_add_card.dart';
@@ -24,7 +25,9 @@ class SNReminders extends StatelessWidget {
       context: context,
       builder: (ctx) => AlertDialog(
         backgroundColor: ctx.brand.surface,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20.r)),
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(20.r),
+        ),
         titlePadding: EdgeInsets.fromLTRB(20.w, 20.h, 20.w, 0),
         contentPadding: EdgeInsets.fromLTRB(20.w, 12.h, 20.w, 0),
         actionsPadding: EdgeInsets.fromLTRB(12.w, 8.h, 12.w, 12.h),
@@ -38,8 +41,11 @@ class SNReminders extends StatelessWidget {
                 color: AppColorsLight.primary.withValues(alpha: 0.14),
                 shape: BoxShape.circle,
               ),
-              child: Icon(Icons.notifications_off_rounded,
-                  color: AppColorsLight.primary, size: 22.r),
+              child: Icon(
+                Icons.notifications_off_rounded,
+                color: AppColorsLight.primary,
+                size: 22.r,
+              ),
             ),
             SizedBox(width: 12.w),
             Expanded(
@@ -76,8 +82,9 @@ class SNReminders extends StatelessWidget {
           FilledButton(
             style: FilledButton.styleFrom(
               backgroundColor: AppColorsLight.primary,
-              shape:
-                  RoundedRectangleBorder(borderRadius: BorderRadius.circular(12.r)),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(12.r),
+              ),
             ),
             onPressed: () {
               Navigator.pop(ctx);
@@ -95,9 +102,9 @@ class SNReminders extends StatelessWidget {
 
   void _openForm(BuildContext context, SReminders state, {String? id}) {
     if (id == null && state.isAtCap) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('reminders_max_reached'.tr())),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text('reminders_max_reached'.tr())));
       return;
     }
     Modular.to.pushNamed(RemindersRoutes.fullForm(id: id));
@@ -108,8 +115,10 @@ class SNReminders extends StatelessWidget {
     final cb = Modular.get<CBReminders>();
     return BlocProvider.value(
       value: cb,
-      child: Scaffold(
+      child: WSharedScaffold(
         backgroundColor: context.brand.background,
+        withSafeArea: false,
+        padding: EdgeInsets.zero,
         body: BlocConsumer<CBReminders, SReminders>(
           listenWhen: (prev, curr) =>
               curr.error == 'reminders_permission_denied' &&

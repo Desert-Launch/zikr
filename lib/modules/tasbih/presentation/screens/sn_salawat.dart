@@ -4,6 +4,7 @@ import 'package:flutter_modular/flutter_modular.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:localize_and_translate/localize_and_translate.dart';
 import 'package:quran/core/widgets/w_gradient_app_bar.dart';
+import 'package:quran/core/widgets/w_shared_scaffold.dart';
 import 'package:quran/modules/tasbih/presentation/cubits/cb_salawat.dart';
 import 'package:quran/modules/tasbih/presentation/cubits/s_tasbih.dart';
 import 'package:quran/modules/tasbih/presentation/widgets/w_tasbih_counter_card.dart';
@@ -22,8 +23,10 @@ class SNSalawat extends StatelessWidget {
     final cubit = Modular.get<CBSalawat>();
     return BlocProvider.value(
       value: cubit,
-      child: Scaffold(
+      child: WSharedScaffold(
         backgroundColor: _canvas,
+        withSafeArea: false,
+        padding: EdgeInsets.zero,
         body: BlocBuilder<CBSalawat, STasbih>(
           builder: (_, state) => CustomScrollView(
             slivers: [

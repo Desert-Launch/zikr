@@ -5,6 +5,8 @@ import 'package:localize_and_translate/localize_and_translate.dart';
 import 'package:quran/core/services/routes/routes_names.dart';
 import 'package:quran/core/theme/brand_colors.dart';
 import 'package:quran/core/widgets/w_gradient_app_bar.dart';
+import 'package:quran/core/widgets/w_localize_rotation.dart';
+import 'package:quran/core/widgets/w_shared_scaffold.dart';
 import 'package:quran/modules/quran/presentation/widgets/w_font_mode_picker.dart';
 
 /// Quran-specific settings hub, reached from the gear icon on the surah list.
@@ -16,30 +18,39 @@ class SNQuranSettings extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
+    return WSharedScaffold(
       backgroundColor: _canvas,
-      appBar: WGradientAppBar(title: 'quran_settings_title'.tr()),
-      body: ListView(
-        padding: EdgeInsets.fromLTRB(16.w, 16.h, 16.w, 28.h),
+      withSafeArea: false,
+      padding: EdgeInsets.zero,
+      body: Column(
         children: [
-          _SettingsTile(
-            icon: Icons.download_for_offline_rounded,
-            title: 'quran_settings_audio_downloads'.tr(),
-            hint: 'quran_settings_audio_downloads_hint'.tr(),
-            onTap: () =>
-                Modular.to.pushNamed(QuranRoutes.fullReciterDownloads()),
+          WGradientAppBar(title: 'quran_settings_title'.tr()),
+          Expanded(
+            child: ListView(
+              padding: EdgeInsets.fromLTRB(16.w, 16.h, 16.w, 28.h),
+              children: [
+                _SettingsTile(
+                  icon: Icons.download_for_offline_rounded,
+                  title: 'quran_settings_audio_downloads'.tr(),
+                  hint: 'quran_settings_audio_downloads_hint'.tr(),
+                  onTap: () =>
+                      Modular.to.pushNamed(QuranRoutes.fullReciterDownloads()),
+                ),
+                SizedBox(height: 10.h),
+                _SettingsTile(
+                  icon: Icons.record_voice_over_rounded,
+                  title: 'quran_settings_choose_reciter'.tr(),
+                  hint: 'quran_settings_choose_reciter_hint'.tr(),
+                  onTap: () =>
+                      Modular.to.pushNamed(QuranRoutes.fullReciterPicker()),
+                ),
+                SizedBox(height: 22.h),
+                _SectionLabel('quran_settings_font_mode'.tr()),
+                SizedBox(height: 8.h),
+                const WFontModePicker(),
+              ],
+            ),
           ),
-          SizedBox(height: 10.h),
-          _SettingsTile(
-            icon: Icons.record_voice_over_rounded,
-            title: 'quran_settings_choose_reciter'.tr(),
-            hint: 'quran_settings_choose_reciter_hint'.tr(),
-            onTap: () => Modular.to.pushNamed(QuranRoutes.fullReciterPicker()),
-          ),
-          SizedBox(height: 22.h),
-          _SectionLabel('quran_settings_font_mode'.tr()),
-          SizedBox(height: 8.h),
-          const WFontModePicker(),
         ],
       ),
     );
@@ -129,7 +140,14 @@ class _SettingsTile extends StatelessWidget {
                   ],
                 ),
               ),
-              Icon(Icons.chevron_left_rounded, color: brand.muted, size: 24.r),
+              WLocalizeRotation(
+                reverse: true,
+                child: Icon(
+                  Icons.chevron_left_rounded,
+                  color: brand.muted,
+                  size: 24.r,
+                ),
+              ),
             ],
           ),
         ),

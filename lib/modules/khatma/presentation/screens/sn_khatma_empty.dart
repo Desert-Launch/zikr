@@ -5,6 +5,7 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:localize_and_translate/localize_and_translate.dart';
 import 'package:quran/core/services/routes/routes_names.dart';
 import 'package:quran/core/widgets/w_gradient_app_bar.dart';
+import 'package:quran/core/widgets/w_shared_scaffold.dart';
 import 'package:quran/modules/khatma/presentation/cubits/cb_khatma.dart';
 import 'package:quran/modules/khatma/presentation/cubits/s_khatma.dart';
 import 'package:quran/modules/khatma/presentation/widgets/w_khatma_description_card.dart';
@@ -30,7 +31,9 @@ class SNKhatmaEmpty extends StatelessWidget {
       child: BlocBuilder<CBKhatma, SKhatma>(
         builder: (_, state) {
           if (state.isLoading) {
-            return const Scaffold(body: Center(child: CircularProgressIndicator()));
+            return const Scaffold(
+              body: Center(child: CircularProgressIndicator()),
+            );
           }
           if (state.hasActivePlan) {
             WidgetsBinding.instance.addPostFrameCallback((_) {
@@ -40,8 +43,10 @@ class SNKhatmaEmpty extends StatelessWidget {
             });
             return const Scaffold(body: SizedBox.shrink());
           }
-          return Scaffold(
+          return WSharedScaffold(
             backgroundColor: _canvas,
+            withSafeArea: false,
+            padding: EdgeInsets.zero,
             body: Column(
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
@@ -56,10 +61,15 @@ class SNKhatmaEmpty extends StatelessWidget {
                         SizedBox(height: 16.h),
                         WKhatmaStartCard(
                           title: 'khatma_start_new'.tr(),
-                          onTap: () => Modular.to.pushNamed(KhatmaRoutes.fullPlans()),
+                          onTap: () =>
+                              Modular.to.pushNamed(KhatmaRoutes.fullPlans()),
                         ),
                         SizedBox(height: 16.h),
-                        WKhatmaVirtueCard(title: 'khatma_virtue_title'.tr(), verse: _verse, reference: '[فاطر: 29]'),
+                        WKhatmaVirtueCard(
+                          title: 'khatma_virtue_title'.tr(),
+                          verse: _verse,
+                          reference: '[فاطر: 29]',
+                        ),
                       ],
                     ),
                   ),

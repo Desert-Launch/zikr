@@ -4,6 +4,7 @@ import 'package:flutter_modular/flutter_modular.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:localize_and_translate/localize_and_translate.dart';
 import 'package:quran/core/services/routes/routes_names.dart';
+import 'package:quran/core/widgets/w_shared_scaffold.dart';
 import 'package:quran/modules/quran/presentation/cubits/cb_surah_list.dart';
 import 'package:quran/modules/quran/presentation/cubits/s_surah_list.dart';
 import 'package:quran/modules/quran/presentation/widgets/w_quran_header.dart';
@@ -42,8 +43,10 @@ class _SNSurahListState extends State<SNSurahList> {
         onPopInvokedWithResult: (didPop, _) {
           if (!didPop) Modular.to.navigate(RoutesNames.homeBase);
         },
-        child: Scaffold(
+        child: WSharedScaffold(
           backgroundColor: _canvas,
+          withSafeArea: false,
+          padding: EdgeInsets.zero,
           body: BlocBuilder<CBSurahList, SSurahList>(
             builder: (context, state) {
               return CustomScrollView(

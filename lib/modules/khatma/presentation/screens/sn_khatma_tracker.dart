@@ -6,6 +6,7 @@ import 'package:localize_and_translate/localize_and_translate.dart';
 import 'package:quran/core/services/routes/routes_names.dart';
 import 'package:quran/core/theme/app_text_styles.dart';
 import 'package:quran/core/widgets/w_gradient_app_bar.dart';
+import 'package:quran/core/widgets/w_shared_scaffold.dart';
 import 'package:quran/modules/khatma/presentation/cubits/cb_khatma.dart';
 import 'package:quran/modules/khatma/presentation/cubits/s_khatma.dart';
 import 'package:quran/modules/khatma/presentation/widgets/w_khatma_current_wird_card.dart';
@@ -46,8 +47,10 @@ class SNKhatmaTracker extends StatelessWidget {
             });
             return const Scaffold(body: SizedBox.shrink());
           }
-          return Scaffold(
+          return WSharedScaffold(
             backgroundColor: _canvas,
+            withSafeArea: false,
+            padding: EdgeInsets.zero,
             body: ListView(
               padding: EdgeInsets.zero,
               children: [

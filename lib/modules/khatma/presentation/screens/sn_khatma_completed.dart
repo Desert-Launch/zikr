@@ -6,6 +6,7 @@ import 'package:localize_and_translate/localize_and_translate.dart';
 import 'package:quran/core/services/routes/routes_names.dart';
 import 'package:quran/core/theme/app_colors.dart';
 import 'package:quran/core/theme/brand_colors.dart';
+import 'package:quran/core/widgets/w_shared_scaffold.dart';
 import 'package:quran/modules/khatma/presentation/cubits/cb_khatma.dart';
 import 'package:quran/modules/khatma/presentation/widgets/w_khatma_stat_row.dart';
 import 'package:share_plus/share_plus.dart';
@@ -18,7 +19,9 @@ class SNKhatmaCompleted extends StatelessWidget {
     final cb = Modular.get<CBKhatma>();
     final history = cb.history();
     final latest = history.isNotEmpty ? history.first : null;
-    return Scaffold(
+    return WSharedScaffold(
+      withSafeArea: false,
+      padding: EdgeInsets.zero,
       body: SafeArea(
         child: ListView(
           padding: EdgeInsets.all(24.w),
@@ -36,23 +39,28 @@ class SNKhatmaCompleted extends StatelessWidget {
                 ),
                 shape: BoxShape.circle,
               ),
-              child: Icon(Icons.auto_awesome_rounded,
-                  color: Colors.white, size: 80.r),
+              child: Icon(
+                Icons.auto_awesome_rounded,
+                color: Colors.white,
+                size: 80.r,
+              ),
             ),
             SizedBox(height: 24.h),
-            Text('khatma_done_headline'.tr(),
-                textAlign: TextAlign.center,
-                style: GoogleFonts.amiri(
-                  fontSize: 26.sp,
-                  fontWeight: FontWeight.w800,
-                  color: AppColorsLight.primaryDark,
-                )),
+            Text(
+              'khatma_done_headline'.tr(),
+              textAlign: TextAlign.center,
+              style: GoogleFonts.amiri(
+                fontSize: 26.sp,
+                fontWeight: FontWeight.w800,
+                color: AppColorsLight.primaryDark,
+              ),
+            ),
             SizedBox(height: 8.h),
-            Text('khatma_done_blessing'.tr(),
-                textAlign: TextAlign.center,
-                style: TextStyle(
-                  fontSize: 14.sp, color: context.brand.muted,
-                )),
+            Text(
+              'khatma_done_blessing'.tr(),
+              textAlign: TextAlign.center,
+              style: TextStyle(fontSize: 14.sp, color: context.brand.muted),
+            ),
             SizedBox(height: 28.h),
             if (latest != null)
               Container(
@@ -84,10 +92,10 @@ class SNKhatmaCompleted extends StatelessWidget {
             SizedBox(height: 24.h),
             FilledButton.icon(
               icon: const Icon(Icons.refresh_rounded),
-              label: Text('khatma_start_new'.tr(),
-                  style: TextStyle(
-                    fontSize: 15.sp, fontWeight: FontWeight.w700,
-                  )),
+              label: Text(
+                'khatma_start_new'.tr(),
+                style: TextStyle(fontSize: 15.sp, fontWeight: FontWeight.w700),
+              ),
               onPressed: () =>
                   Modular.to.pushReplacementNamed(KhatmaRoutes.fullPlans()),
               style: FilledButton.styleFrom(
@@ -109,8 +117,7 @@ class SNKhatmaCompleted extends StatelessWidget {
             ),
             SizedBox(height: 4.h),
             TextButton(
-              onPressed: () =>
-                  Modular.to.pushNamed(KhatmaRoutes.fullHistory()),
+              onPressed: () => Modular.to.pushNamed(KhatmaRoutes.fullHistory()),
               child: Text('khatma_view_history'.tr()),
             ),
           ],

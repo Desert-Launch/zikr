@@ -7,6 +7,7 @@ import 'package:flutter_modular/flutter_modular.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:localize_and_translate/localize_and_translate.dart';
 import 'package:quran/core/widgets/w_gradient_app_bar.dart';
+import 'package:quran/core/widgets/w_shared_scaffold.dart';
 import 'package:quran/modules/prayer/data/datasources/local/ds_location.dart';
 import 'package:quran/modules/prayer/data/sources/local/box_prayer_cache.dart';
 import 'package:quran/modules/qibla/presentation/widgets/w_compass_dial.dart';
@@ -101,13 +102,20 @@ class _SNQiblaState extends State<SNQibla> {
     final phi2 = lat2 * math.pi / 180.0;
     final dLambda = (lng2 - lng1) * math.pi / 180.0;
     final y = math.sin(dLambda) * math.cos(phi2);
-    final x = math.cos(phi1) * math.sin(phi2) - math.sin(phi1) * math.cos(phi2) * math.cos(dLambda);
+    final x =
+        math.cos(phi1) * math.sin(phi2) -
+        math.sin(phi1) * math.cos(phi2) * math.cos(dLambda);
     final theta = math.atan2(y, x);
     return (theta * 180.0 / math.pi + 360.0) % 360.0;
   }
 
   /// Great-circle distance between two coordinates in kilometres.
-  static double _haversineKm(double lat1, double lng1, double lat2, double lng2) {
+  static double _haversineKm(
+    double lat1,
+    double lng1,
+    double lat2,
+    double lng2,
+  ) {
     const r = 6371.0;
     final dPhi = (lat2 - lat1) * math.pi / 180.0;
     final dLambda = (lng2 - lng1) * math.pi / 180.0;
@@ -115,14 +123,19 @@ class _SNQiblaState extends State<SNQibla> {
     final phi2 = lat2 * math.pi / 180.0;
     final a =
         math.sin(dPhi / 2) * math.sin(dPhi / 2) +
-        math.cos(phi1) * math.cos(phi2) * math.sin(dLambda / 2) * math.sin(dLambda / 2);
+        math.cos(phi1) *
+            math.cos(phi2) *
+            math.sin(dLambda / 2) *
+            math.sin(dLambda / 2);
     return r * 2 * math.atan2(math.sqrt(a), math.sqrt(1 - a));
   }
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
+    return WSharedScaffold(
       backgroundColor: _canvas,
+      withSafeArea: false,
+      padding: EdgeInsets.zero,
       body: Column(
         children: [
           WGradientAppBar(subtitle: _city ?? '', title: 'home_qibla'.tr()),
@@ -172,9 +185,19 @@ class _SNQiblaState extends State<SNQibla> {
     final qiblaAngle = (bearing - _heading) * math.pi / 180.0;
     return Column(
       children: [
-        WCompassDial(heading: _heading, qiblaAngle: qiblaAngle, green: _green, gold: _gold),
+        WCompassDial(
+          heading: _heading,
+          qiblaAngle: qiblaAngle,
+          green: _green,
+          gold: _gold,
+        ),
         SizedBox(height: 26.h),
-        WQiblaInfoCard(bearing: bearing, distanceKm: _distanceKm ?? 0, green: _green, gold: _gold),
+        WQiblaInfoCard(
+          bearing: bearing,
+          distanceKm: _distanceKm ?? 0,
+          green: _green,
+          gold: _gold,
+        ),
         SizedBox(height: 14.h),
         WQiblaStatusPill(
           text: 'qibla_success'.tr(),

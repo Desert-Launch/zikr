@@ -3,6 +3,7 @@ import 'package:flutter_modular/flutter_modular.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:localize_and_translate/localize_and_translate.dart';
 import 'package:quran/core/services/routes/routes_names.dart';
+import 'package:quran/core/widgets/w_shared_scaffold.dart';
 import 'package:quran/modules/azkar/data/datasources/local/ds_local_azkar.dart';
 import 'package:quran/modules/azkar/data/models/m_azkar_item.dart';
 import 'package:quran/modules/azkar/data/sources/local/box_azkar_favorite.dart';
@@ -25,14 +26,17 @@ class _SNAzkarCategoryState extends State<SNAzkarCategory> {
   static const _gold = Color(0xFFD6A72C);
   static const _canvas = Color(0xFFF8F7F4);
 
-  late final Future<MAzkarCategory?> _future = Modular.get<DSLocalAzkar>().category(widget.categoryId);
+  late final Future<MAzkarCategory?> _future = Modular.get<DSLocalAzkar>()
+      .category(widget.categoryId);
   late final BoxAzkarFavorite _favorites = Modular.get<BoxAzkarFavorite>();
   late final BoxAzkarProgress _progress = Modular.get<BoxAzkarProgress>();
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
+    return WSharedScaffold(
       backgroundColor: _canvas,
+      withSafeArea: false,
+      padding: EdgeInsets.zero,
       body: FutureBuilder<MAzkarCategory?>(
         future: _future,
         builder: (_, snapshot) {
@@ -60,7 +64,10 @@ class _SNAzkarCategoryState extends State<SNAzkarCategory> {
                   separatorBuilder: (_, __) => SizedBox(height: 10.h),
                   itemBuilder: (_, index) {
                     if (index == 0) {
-                      return WAzkarListTitle(title: _categoryName(category), onBack: Modular.to.pop);
+                      return WAzkarListTitle(
+                        title: _categoryName(category),
+                        onBack: Modular.to.pop,
+                      );
                     }
                     final itemIndex = index - 1;
                     final item = category.items[itemIndex];
@@ -73,7 +80,9 @@ class _SNAzkarCategoryState extends State<SNAzkarCategory> {
                         if (mounted) setState(() {});
                       },
                       onTap: () async {
-                        await Modular.to.pushNamed(AzkarRoutes.fullPlayer(category.id, item: itemIndex));
+                        await Modular.to.pushNamed(
+                          AzkarRoutes.fullPlayer(category.id, item: itemIndex),
+                        );
                         if (mounted) setState(() {});
                       },
                     );
@@ -88,11 +97,15 @@ class _SNAzkarCategoryState extends State<SNAzkarCategory> {
   }
 
   String _categoryName(MAzkarCategory category) {
-    return LocalizeAndTranslate.getLanguageCode() == 'ar' ? category.nameAr : category.nameEn;
+    return LocalizeAndTranslate.getLanguageCode() == 'ar'
+        ? category.nameAr
+        : category.nameEn;
   }
 
   int _completedCount(MAzkarCategory category) {
     final counts = _progress.today(category.id).completedCounts;
-    return category.items.where((item) => (counts[item.id] ?? 0) >= item.repeat).length;
+    return category.items
+        .where((item) => (counts[item.id] ?? 0) >= item.repeat)
+        .length;
   }
 }
