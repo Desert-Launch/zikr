@@ -80,6 +80,7 @@ class WGradientAppBar extends StatelessWidget implements PreferredSizeWidget {
                       Expanded(
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
+                          mainAxisAlignment: MainAxisAlignment.center,
                           children: [
                             Text(title, textAlign: TextAlign.center, style: AppTextStyles.white24W400),
                             if (subtitle != null) ...[

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
-import 'package:google_fonts/google_fonts.dart';
+import 'package:quran/core/theme/app_text_styles.dart';
+import 'package:quran/core/widgets/w_localize_rotation.dart';
 import 'package:quran/modules/adhan/presentation/widgets/w_adhan_icon_circle.dart';
 
 /// A generic icon + title (+ optional subtitle / trailing) settings row used in
@@ -39,22 +40,15 @@ class WAdhanSettingRow extends StatelessWidget {
                   mainAxisAlignment: MainAxisAlignment.center,
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text(
-                      title,
-                      style: GoogleFonts.cairo(fontSize: 14.sp, color: const Color(0xFF303030)),
-                    ),
-                    if (subtitle != null) ...[
-                      SizedBox(height: 3.h),
-                      Text(
-                        subtitle,
-                        style: GoogleFonts.cairo(fontSize: 9.sp, color: const Color(0xFF858585)),
-                      ),
-                    ],
+                    Text(title, style: AppTextStyles.ink16W500),
+                    if (subtitle != null) ...[SizedBox(height: 3.h), Text(subtitle, style: AppTextStyles.grey12W400)],
                   ],
                 ),
               ),
-              trailing ??
-                  Icon(Icons.chevron_left_rounded, color: const Color(0xFF777777), size: 22.r),
+              WLocalizeRotation(
+                reverse: true,
+                child: trailing ?? Icon(Icons.chevron_left_rounded, color: const Color(0xFF777777), size: 22.r),
+              ),
             ],
           ),
         ),

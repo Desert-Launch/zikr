@@ -4,6 +4,7 @@ import 'package:flutter_modular/flutter_modular.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:localize_and_translate/localize_and_translate.dart';
 import 'package:quran/core/theme/brand_colors.dart';
+import 'package:quran/core/widgets/w_localize_rotation.dart';
 import 'package:quran/modules/quran/domain/entities/e_quran_font_mode.dart';
 import 'package:quran/modules/quran/presentation/cubits/cb_reader_settings.dart';
 import 'package:quran/modules/quran/presentation/cubits/s_reader_settings.dart';
@@ -18,16 +19,8 @@ class WFontModePicker extends StatelessWidget {
 
   // V2 is intentionally omitted until the V2 font set is bundled.
   static const _options = <(EQuranFontMode, String, String)>[
-    (
-      EQuranFontMode.plainV1,
-      'quran_font_mode_plain',
-      'Standard Mushaf',
-    ),
-    (
-      EQuranFontMode.tajweedV4,
-      'quran_font_mode_tajweed',
-      'Tajweed (coloured)',
-    ),
+    (EQuranFontMode.plainV1, 'quran_font_mode_plain', 'Standard Mushaf'),
+    (EQuranFontMode.tajweedV4, 'quran_font_mode_tajweed', 'Tajweed (coloured)'),
   ];
 
   @override
@@ -61,22 +54,18 @@ class WFontModePicker extends StatelessWidget {
                       padding: EdgeInsets.fromLTRB(16.w, 13.h, 16.w, 13.h),
                       child: Row(
                         children: [
-                          Icon(Icons.palette_outlined,
-                              color: brand.primary, size: 22.r),
+                          Icon(Icons.palette_outlined, color: brand.primary, size: 22.r),
                           SizedBox(width: 12.w),
                           Expanded(
                             child: Text(
-                              _t('quran_tajweed_legend_title',
-                                  'Tajweed colour guide'),
-                              style: TextStyle(
-                                fontSize: 14.sp,
-                                fontWeight: FontWeight.w600,
-                                color: brand.onSurface,
-                              ),
+                              _t('quran_tajweed_legend_title', 'Tajweed colour guide'),
+                              style: TextStyle(fontSize: 14.sp, fontWeight: FontWeight.w600, color: brand.onSurface),
                             ),
                           ),
-                          Icon(Icons.chevron_left_rounded,
-                              color: brand.muted, size: 22.r),
+                          WLocalizeRotation(
+                            reverse: true,
+                            child: Icon(Icons.chevron_left_rounded, color: brand.muted, size: 22.r),
+                          ),
                         ],
                       ),
                     ),
@@ -97,11 +86,7 @@ class WFontModePicker extends StatelessWidget {
 }
 
 class _ModeRow extends StatelessWidget {
-  const _ModeRow({
-    required this.label,
-    required this.selected,
-    required this.onTap,
-  });
+  const _ModeRow({required this.label, required this.selected, required this.onTap});
 
   final String label;
   final bool selected;
@@ -117,9 +102,7 @@ class _ModeRow extends StatelessWidget {
         child: Row(
           children: [
             Icon(
-              selected
-                  ? Icons.radio_button_checked_rounded
-                  : Icons.radio_button_off_rounded,
+              selected ? Icons.radio_button_checked_rounded : Icons.radio_button_off_rounded,
               color: selected ? brand.primary : brand.muted,
               size: 22.r,
             ),
