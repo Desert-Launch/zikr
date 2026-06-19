@@ -4,10 +4,11 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:localize_and_translate/localize_and_translate.dart';
 import 'package:package_info_plus/package_info_plus.dart';
 import 'package:quran/core/services/routes/routes_names.dart';
+import 'package:quran/core/widgets/w_gradient_app_bar.dart';
+import 'package:quran/core/widgets/w_shared_scaffold.dart';
 import 'package:quran/modules/settings/presentation/widgets/w_app_footer.dart';
 import 'package:quran/modules/settings/presentation/widgets/w_profile_card.dart';
 import 'package:quran/modules/settings/presentation/widgets/w_settings_group.dart';
-import 'package:quran/modules/settings/presentation/widgets/w_settings_header.dart';
 import 'package:quran/modules/settings/presentation/widgets/w_settings_row.dart';
 import 'package:quran/modules/settings/presentation/widgets/w_settings_section_label.dart';
 
@@ -32,83 +33,86 @@ class _SNSettingsState extends State<SNSettings> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
+    return WSharedScaffold(
       backgroundColor: _canvas,
-      body: CustomScrollView(
-        slivers: [
-          const SliverToBoxAdapter(child: WSettingsHeader()),
-          SliverPadding(
-            padding: EdgeInsets.fromLTRB(19.w, 18.h, 19.w, 24.h),
-            sliver: SliverList.list(
-              children: [
-                const WProfileCard(),
-                SizedBox(height: 15.h),
-                WSettingsSectionLabel('settings_general'.tr()),
-                WSettingsGroup(
-                  children: [
-                    WSettingsRow(
-                      icon: Icons.language_rounded,
-                      title: 'settings_language'.tr(),
-                      subtitle: 'settings_language_hint'.tr(),
-                      value: LocalizeAndTranslate.getLanguageCode() == 'ar'
-                          ? 'العربية'
-                          : 'English',
-                      onTap: _showLanguagePicker,
-                    ),
-                    WSettingsRow(
-                      icon: Icons.notifications_none_rounded,
-                      title: 'settings_notifications'.tr(),
-                      subtitle: 'settings_notifications_hint'.tr(),
-                      onTap: () =>
-                          Modular.to.pushNamed(RoutesNames.remindersBase),
-                    ),
-                    WSettingsRow(
-                      icon: Icons.access_time_rounded,
-                      title: 'prayer_settings_title'.tr(),
-                      subtitle: 'settings_adhan_hint'.tr(),
-                      onTap: () => Modular.to.pushNamed(AdhanRoutes.overview()),
-                    ),
-                  ],
-                ),
-                SizedBox(height: 15.h),
-                WSettingsSectionLabel('settings_quran_section'.tr()),
-                WSettingsGroup(
-                  children: [
-                    WSettingsRow(
-                      icon: Icons.menu_book_outlined,
-                      title: 'settings_mushaf_type'.tr(),
-                      subtitle: 'settings_mushaf_type_hint'.tr(),
-                      value: 'settings_mushaf_madani'.tr(),
-                      onTap: () => Modular.to.pushNamed(RoutesNames.quranBase),
-                    ),
-                  ],
-                ),
-                SizedBox(height: 15.h),
-                WSettingsSectionLabel('settings_about_app'.tr()),
-                WSettingsGroup(
-                  children: [
-                    WSettingsRow(
-                      icon: Icons.info_outline_rounded,
-                      title: 'legal_about'.tr(),
-                      subtitle: 'settings_about_hint'.tr(),
-                      onTap: () =>
-                          Modular.to.pushNamed(LegalRoutes.fullAbout()),
-                    ),
-                    WSettingsRow(
-                      icon: Icons.info_outline_rounded,
-                      title: 'settings_version'.tr(),
-                      subtitle: 'settings_version_hint'.tr(),
-                      value: _version,
-                      showChevron: false,
-                    ),
-                  ],
-                ),
-                SizedBox(height: 19.h),
-                const WAppFooter(),
-              ],
+      withSafeArea: false,
+      padding: EdgeInsets.zero,
+      body: Directionality(
+        textDirection: context.isRTL ? TextDirection.rtl : TextDirection.ltr,
+        child: CustomScrollView(
+          slivers: [
+            SliverToBoxAdapter(
+              child: WGradientAppBar(title: 'settings_title'.tr(), subtitle: 'settings_subtitle'.tr()),
             ),
-          ),
-        ],
+            SliverPadding(
+              padding: EdgeInsets.fromLTRB(19.w, 18.h, 19.w, 24.h),
+              sliver: SliverList.list(
+                children: [
+                  const WProfileCard(),
+                  SizedBox(height: 15.h),
+                  WSettingsSectionLabel('settings_general'.tr()),
+                  WSettingsGroup(
+                    children: [
+                      WSettingsRow(
+                        icon: Icons.language_rounded,
+                        title: 'settings_language'.tr(),
+                        subtitle: 'settings_language_hint'.tr(),
+                        value: LocalizeAndTranslate.getLanguageCode() == 'ar' ? 'العربية' : 'English',
+                        onTap: _showLanguagePicker,
+                      ),
+                      WSettingsRow(
+                        icon: Icons.notifications_none_rounded,
+                        title: 'settings_notifications'.tr(),
+                        subtitle: 'settings_notifications_hint'.tr(),
+                        onTap: () => Modular.to.pushNamed(RoutesNames.remindersBase),
+                      ),
+                      WSettingsRow(
+                        icon: Icons.access_time_rounded,
+                        title: 'prayer_settings_title'.tr(),
+                        subtitle: 'settings_adhan_hint'.tr(),
+                        onTap: () => Modular.to.pushNamed(AdhanRoutes.overview()),
+                      ),
+                    ],
+                  ),
+                  SizedBox(height: 15.h),
+                  WSettingsSectionLabel('settings_quran_section'.tr()),
+                  WSettingsGroup(
+                    children: [
+                      WSettingsRow(
+                        icon: Icons.menu_book_outlined,
+                        title: 'settings_mushaf_type'.tr(),
+                        subtitle: 'settings_mushaf_type_hint'.tr(),
+                        value: 'settings_mushaf_madani'.tr(),
+                        onTap: () => Modular.to.pushNamed(RoutesNames.quranBase),
+                      ),
+                    ],
+                  ),
+                  SizedBox(height: 15.h),
+                  WSettingsSectionLabel('settings_about_app'.tr()),
+                  WSettingsGroup(
+                    children: [
+                      WSettingsRow(
+                        icon: Icons.info_outline_rounded,
+                        title: 'legal_about'.tr(),
+                        subtitle: 'settings_about_hint'.tr(),
+                        onTap: () => Modular.to.pushNamed(LegalRoutes.fullAbout()),
+                      ),
+                      WSettingsRow(
+                        icon: Icons.info_outline_rounded,
+                        title: 'settings_version'.tr(),
+                        subtitle: 'settings_version_hint'.tr(),
+                        value: _version,
+                        showChevron: false,
+                      ),
+                    ],
+                  ),
+                  SizedBox(height: 19.h),
+                  const WAppFooter(),
+                ],
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }
