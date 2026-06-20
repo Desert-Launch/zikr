@@ -106,7 +106,6 @@ class _SNPrayerTimesState extends State<SNPrayerTimes> {
                         return WPrayerTile(
                           slot: slot,
                           isNext: state.nextPrayer?.prayer == slot.prayer,
-                          isCurrent: state.currentSalah?.prayer == slot.prayer,
                           notificationEnabled: _notificationEnabled(
                             slot.prayer,
                           ),

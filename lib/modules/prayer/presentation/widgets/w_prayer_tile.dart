@@ -11,7 +11,6 @@ class WPrayerTile extends StatelessWidget {
     super.key,
     required this.slot,
     required this.isNext,
-    required this.isCurrent,
     required this.notificationEnabled,
     required this.green,
     required this.gold,
@@ -20,15 +19,17 @@ class WPrayerTile extends StatelessWidget {
 
   final PrayerSlot slot;
   final bool isNext;
-  final bool isCurrent;
   final bool notificationEnabled;
   final Color green;
   final Color gold;
   final ValueChanged<bool>? onNotificationChanged;
 
+  /// True once the prayer's time has elapsed and it is not the next prayer.
+  bool get _isPast => !isNext && slot.time.isBefore(DateTime.now());
+
   @override
   Widget build(BuildContext context) {
-    return Container(
+    final tile = Container(
       padding: EdgeInsets.symmetric(horizontal: 18.w, vertical: 18.h),
       decoration: BoxDecoration(
         color: isNext ? null : Colors.white,
@@ -45,6 +46,7 @@ class WPrayerTile extends StatelessWidget {
       ),
       child: isNext ? _nextContent(context) : _normalContent(context),
     );
+    return _isPast ? Opacity(opacity: 0.5, child: tile) : tile;
   }
 
   Widget _normalContent(BuildContext context) {
@@ -78,8 +80,7 @@ class WPrayerTile extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.end,
           children: [
             Text(_label(slot.prayer), style: AppTextStyles.ink16W700),
-            SizedBox(height: 3.h),
-            Text(isCurrent ? 'prayer_current_window'.tr() : 'prayer_upcoming'.tr(), style: AppTextStyles.grey12W400),
+            if (!_isPast) ...[SizedBox(height: 3.h), Text('prayer_upcoming'.tr(), style: AppTextStyles.grey12W400)],
           ],
         ),
         SizedBox(width: 10.w),
