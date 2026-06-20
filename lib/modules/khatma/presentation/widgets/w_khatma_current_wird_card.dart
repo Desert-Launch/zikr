@@ -24,10 +24,7 @@ class WKhatmaCurrentWirdCard extends StatelessWidget {
       children: [
         Padding(
           padding: EdgeInsetsDirectional.only(end: 5.w, bottom: 6.h),
-          child: Text(
-            '${'khatma_wird_day'.tr()} ${wird.index}',
-            style: AppTextStyles.grey14W400,
-          ),
+          child: Text('${'khatma_wird_day'.tr()} ${wird.index}', style: AppTextStyles.grey12W500),
         ),
         Container(
           padding: EdgeInsets.zero,
@@ -36,11 +33,7 @@ class WKhatmaCurrentWirdCard extends StatelessWidget {
             borderRadius: BorderRadius.circular(22.r),
             border: Border.all(color: _border),
             boxShadow: [
-              BoxShadow(
-                color: Colors.black.withValues(alpha: 0.07),
-                blurRadius: 8,
-                offset: const Offset(0, 3),
-              ),
+              BoxShadow(color: Colors.black.withValues(alpha: 0.07), blurRadius: 8, offset: const Offset(0, 3)),
             ],
           ),
           child: Column(

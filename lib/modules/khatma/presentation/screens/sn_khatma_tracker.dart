@@ -18,7 +18,7 @@ import 'package:quran/modules/khatma/presentation/widgets/w_khatma_section_label
 class SNKhatmaTracker extends StatelessWidget {
   const SNKhatmaTracker({super.key});
 
-  static const _green = Color(0xFF347B60);
+  static const _green = Color(0xFF0A6349);
   static const _canvas = Color(0xFFF8F7F4);
   static const _border = Color(0xFFDDE6E0);
 
@@ -28,8 +28,7 @@ class SNKhatmaTracker extends StatelessWidget {
     return BlocProvider.value(
       value: cubit,
       child: BlocConsumer<CBKhatma, SKhatma>(
-        listenWhen: (previous, current) =>
-            previous.justCompletedId != current.justCompletedId,
+        listenWhen: (previous, current) => previous.justCompletedId != current.justCompletedId,
         listener: (_, state) {
           if (state.justCompletedId == null) return;
           cubit.acknowledgeCompletion();
@@ -37,9 +36,7 @@ class SNKhatmaTracker extends StatelessWidget {
         },
         builder: (_, state) {
           if (state.isLoading) {
-            return const Scaffold(
-              body: Center(child: CircularProgressIndicator()),
-            );
+            return const Scaffold(body: Center(child: CircularProgressIndicator()));
           }
           if (!state.hasActivePlan || state.currentWird == null) {
             WidgetsBinding.instance.addPostFrameCallback((_) {
@@ -56,14 +53,14 @@ class SNKhatmaTracker extends StatelessWidget {
               children: [
                 WGradientAppBar(title: 'khatma_wird_title'.tr()),
                 Padding(
-                  padding: EdgeInsets.fromLTRB(28.w, 30.h, 28.w, 28.h),
+                  padding: EdgeInsets.fromLTRB(20.w, 30.h, 20.w, 28.h),
                   child: Column(
                     children: [
                       WKhatmaCurrentWirdCard(state: state),
                       SizedBox(height: 30.h),
                       SizedBox(
                         width: double.infinity,
-                        height: 75.h,
+                        height: 55.h,
                         child: FilledButton(
                           style: FilledButton.styleFrom(
                             backgroundColor: _green,
@@ -71,9 +68,7 @@ class SNKhatmaTracker extends StatelessWidget {
                             elevation: 8,
                             shadowColor: Colors.black.withValues(alpha: 0.22),
                             padding: EdgeInsets.zero,
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(28.r),
-                            ),
+                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(28.r)),
                           ),
                           onPressed: () => _complete(context, cubit, state),
                           child: Directionality(
@@ -81,58 +76,39 @@ class SNKhatmaTracker extends StatelessWidget {
                             child: Row(
                               mainAxisAlignment: MainAxisAlignment.center,
                               children: [
-                                const Icon(
-                                  Icons.check_circle_outline_rounded,
-                                  size: 28,
-                                ),
+                                Icon(Icons.check_circle_outline_rounded, size: 24.r),
                                 SizedBox(width: 12.w),
-                                Text(
-                                  'khatma_complete_wird'.tr(),
-                                  style: AppTextStyles.white20W700,
-                                ),
+                                Text('khatma_complete_wird'.tr(), style: AppTextStyles.white16W500),
                               ],
                             ),
                           ),
                         ),
                       ),
                       SizedBox(height: 28.h),
-                      WKhatmaSectionLabel(
-                        'khatma_reminder'.tr(),
-                        aligned: true,
-                      ),
+                      WKhatmaSectionLabel('khatma_reminder'.tr(), aligned: true),
                       WKhatmaReminderCard(cubit: cubit, state: state),
                       SizedBox(height: 28.h),
-                      WKhatmaSectionLabel(
-                        'khatma_current_plan'.tr(),
-                        aligned: true,
-                      ),
+                      WKhatmaSectionLabel('khatma_current_plan'.tr(), aligned: true),
                       WKhatmaProgressCard(state: state),
                       SizedBox(height: 28.h),
-                      WKhatmaSectionLabel(
-                        'khatma_current_plan'.tr(),
-                        aligned: true,
-                      ),
                       WKhatmaPlanSummaryCard(state: state),
                       SizedBox(height: 18.h),
                       SizedBox(
                         width: double.infinity,
-                        height: 96.h,
+                        height: 75.h,
                         child: OutlinedButton(
                           style: OutlinedButton.styleFrom(
                             foregroundColor: const Color(0xFFFF3B3B),
                             side: const BorderSide(color: _border),
                             backgroundColor: Colors.white,
-                            padding: EdgeInsets.symmetric(vertical: 13.h),
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(20.r),
-                            ),
+                            padding: EdgeInsets.symmetric(vertical: 13.h, horizontal: 20.w),
+                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20.r)),
+                            alignment: context.isRTL ? Alignment.centerRight : Alignment.centerLeft,
                           ),
                           onPressed: () => _cancel(context, cubit),
                           child: Text(
                             'khatma_cancel_plan'.tr(),
-                            style: AppTextStyles.ink16W700.copyWith(
-                              color: const Color(0xFFFF3B3B),
-                            ),
+                            style: AppTextStyles.ink16W700.copyWith(color: const Color(0xFFFF3B3B)),
                           ),
                         ),
                       ),
@@ -147,37 +123,21 @@ class SNKhatmaTracker extends StatelessWidget {
     );
   }
 
-  Future<void> _complete(
-    BuildContext context,
-    CBKhatma cubit,
-    SKhatma state,
-  ) async {
+  Future<void> _complete(BuildContext context, CBKhatma cubit, SKhatma state) async {
     if (state.completedToday > 0) {
       final confirmed = await showDialog<bool>(
         context: context,
         builder: (dialogContext) => AlertDialog(
-          title: Text(
-            'khatma_second_today_warning_title'.tr(),
-            style: AppTextStyles.ink18W700,
-          ),
-          content: Text(
-            'khatma_second_today_warning_body'.tr(),
-            style: AppTextStyles.grey14W400,
-          ),
+          title: Text('khatma_second_today_warning_title'.tr(), style: AppTextStyles.ink18W700),
+          content: Text('khatma_second_today_warning_body'.tr(), style: AppTextStyles.grey14W400),
           actions: [
             TextButton(
               onPressed: () => Navigator.pop(dialogContext, false),
-              child: Text(
-                'common_cancel'.tr(),
-                style: AppTextStyles.grey14W500,
-              ),
+              child: Text('common_cancel'.tr(), style: AppTextStyles.grey14W500),
             ),
             FilledButton(
               onPressed: () => Navigator.pop(dialogContext, true),
-              child: Text(
-                'khatma_continue_completion'.tr(),
-                style: AppTextStyles.white14W700,
-              ),
+              child: Text('khatma_continue_completion'.tr(), style: AppTextStyles.white14W700),
             ),
           ],
         ),
@@ -191,10 +151,7 @@ class SNKhatmaTracker extends StatelessWidget {
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (dialogContext) => AlertDialog(
-        title: Text(
-          'khatma_cancel_confirm'.tr(),
-          style: AppTextStyles.ink18W700,
-        ),
+        title: Text('khatma_cancel_confirm'.tr(), style: AppTextStyles.ink18W700),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(dialogContext, false),
@@ -202,12 +159,7 @@ class SNKhatmaTracker extends StatelessWidget {
           ),
           TextButton(
             onPressed: () => Navigator.pop(dialogContext, true),
-            child: Text(
-              'common_delete'.tr(),
-              style: AppTextStyles.ink14W700.copyWith(
-                color: const Color(0xFFFF3B3B),
-              ),
-            ),
+            child: Text('common_delete'.tr(), style: AppTextStyles.ink14W700.copyWith(color: const Color(0xFFFF3B3B))),
           ),
         ],
       ),

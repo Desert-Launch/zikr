@@ -6,12 +6,7 @@ import 'package:quran/core/services/routes/routes_names.dart';
 
 /// A tappable "from/to" range row opening the mushaf at [pageNumber].
 class WKhatmaRangeRow extends StatelessWidget {
-  const WKhatmaRangeRow({
-    super.key,
-    required this.title,
-    required this.subtitle,
-    required this.pageNumber,
-  });
+  const WKhatmaRangeRow({super.key, required this.title, required this.subtitle, required this.pageNumber});
 
   final String title;
   final String subtitle;
@@ -25,11 +20,7 @@ class WKhatmaRangeRow extends StatelessWidget {
         padding: EdgeInsets.symmetric(vertical: 20.h),
         child: Row(
           children: [
-            Icon(
-              Icons.chevron_left_rounded,
-              size: 30.r,
-              color: const Color(0xFF6B6B6B),
-            ),
+            Icon(Icons.chevron_left_rounded, size: 30.r, color: const Color(0xFF6B6B6B)),
             SizedBox(width: 20.w),
             Expanded(
               child: Column(
@@ -40,7 +31,7 @@ class WKhatmaRangeRow extends StatelessWidget {
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
                     textAlign: TextAlign.end,
-                    style: AppTextStyles.ink18W500,
+                    style: AppTextStyles.ink16W400,
                   ),
                   SizedBox(height: 2.h),
                   Text(
@@ -48,7 +39,8 @@ class WKhatmaRangeRow extends StatelessWidget {
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
                     textAlign: TextAlign.end,
-                    style: AppTextStyles.grey14W400,
+                    textDirection: TextDirection.rtl,
+                    style: AppTextStyles.grey12W400,
                   ),
                 ],
               ),

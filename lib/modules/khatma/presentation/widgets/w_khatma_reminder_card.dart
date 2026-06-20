@@ -7,11 +7,7 @@ import 'package:quran/modules/khatma/presentation/cubits/s_khatma.dart';
 
 /// Reminder enable/time card on the tracker screen.
 class WKhatmaReminderCard extends StatelessWidget {
-  const WKhatmaReminderCard({
-    super.key,
-    required this.cubit,
-    required this.state,
-  });
+  const WKhatmaReminderCard({super.key, required this.cubit, required this.state});
 
   final CBKhatma cubit;
   final SKhatma state;
@@ -21,10 +17,7 @@ class WKhatmaReminderCard extends StatelessWidget {
     const green = Color(0xFF347B60);
     final plan = state.plan;
     if (plan == null) return const SizedBox.shrink();
-    final time = TimeOfDay(
-      hour: plan.reminderHour,
-      minute: plan.reminderMinute,
-    );
+    final time = TimeOfDay(hour: plan.reminderHour, minute: plan.reminderMinute);
     return InkWell(
       borderRadius: BorderRadius.circular(20.r),
       onTap: () => _pickTime(context, cubit, time),
@@ -36,42 +29,28 @@ class WKhatmaReminderCard extends StatelessWidget {
           borderRadius: BorderRadius.circular(20.r),
           border: Border.all(color: const Color(0xFFDDE6E0)),
           boxShadow: [
-            BoxShadow(
-              color: Colors.black.withValues(alpha: 0.07),
-              blurRadius: 8,
-              offset: const Offset(0, 3),
-            ),
+            BoxShadow(color: Colors.black.withValues(alpha: 0.07), blurRadius: 8, offset: const Offset(0, 3)),
           ],
         ),
         child: Row(
           children: [
-            Transform.scale(
-              scale: 0.88,
-              child: Switch.adaptive(
-                value: plan.reminderEnabled,
-                activeThumbColor: Colors.white,
-                activeTrackColor: green,
-                inactiveThumbColor: Colors.white,
-                inactiveTrackColor: const Color(0xFFE6E6E6),
-                onChanged: cubit.setReminderEnabled,
-              ),
+            Switch.adaptive(
+              value: plan.reminderEnabled,
+              activeThumbColor: Colors.white,
+              activeTrackColor: green,
+              inactiveThumbColor: Colors.white,
+              inactiveTrackColor: const Color(0xFFE6E6E6),
+              onChanged: cubit.setReminderEnabled,
             ),
+
             const Spacer(),
             Column(
               mainAxisAlignment: MainAxisAlignment.center,
               crossAxisAlignment: CrossAxisAlignment.end,
               children: [
-                Text(
-                  'khatma_daily_wird'.tr(),
-                  textAlign: TextAlign.end,
-                  style: AppTextStyles.ink20W400,
-                ),
+                Text('khatma_daily_wird'.tr(), textAlign: TextAlign.end, style: AppTextStyles.ink16W400),
                 SizedBox(height: 2.h),
-                Text(
-                  time.format(context),
-                  textAlign: TextAlign.end,
-                  style: AppTextStyles.grey16W400,
-                ),
+                Text(time.format(context), textAlign: TextAlign.end, style: AppTextStyles.grey14W400),
               ],
             ),
           ],
@@ -80,11 +59,7 @@ class WKhatmaReminderCard extends StatelessWidget {
     );
   }
 
-  Future<void> _pickTime(
-    BuildContext context,
-    CBKhatma cubit,
-    TimeOfDay time,
-  ) async {
+  Future<void> _pickTime(BuildContext context, CBKhatma cubit, TimeOfDay time) async {
     final picked = await showTimePicker(context: context, initialTime: time);
     if (picked == null) return;
     await cubit.setReminderTime(picked.hour, picked.minute);
