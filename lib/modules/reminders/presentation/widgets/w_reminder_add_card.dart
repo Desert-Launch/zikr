@@ -20,24 +20,17 @@ class WReminderAddCard extends StatelessWidget {
           padding: EdgeInsets.symmetric(vertical: 18.h),
           decoration: BoxDecoration(
             borderRadius: BorderRadius.circular(18.r),
-            border: Border.all(
-              color: AppColorsLight.primary.withValues(alpha: 0.4),
-            ),
+            border: Border.all(color: AppColorsLight.primary.withValues(alpha: 0.4)),
           ),
           child: Row(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              Icon(Icons.add_rounded,
-                  color: AppColorsLight.primary, size: 20.r),
-              SizedBox(width: 8.w),
               Text(
                 'reminders_add_new'.tr(),
-                style: TextStyle(
-                  fontSize: 14.sp,
-                  fontWeight: FontWeight.w700,
-                  color: AppColorsLight.primary,
-                ),
+                style: TextStyle(fontSize: 14.sp, fontWeight: FontWeight.w700, color: AppColorsLight.primary),
               ),
+              SizedBox(width: 8.w),
+              Icon(Icons.add_rounded, color: AppColorsLight.primary, size: 20.r),
             ],
           ),
         ),
