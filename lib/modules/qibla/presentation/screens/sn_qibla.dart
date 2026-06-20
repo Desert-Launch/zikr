@@ -27,6 +27,10 @@ class _SNQiblaState extends State<SNQibla> {
   static const _green = Color(0xFF0E6B47);
   static const _gold = Color(0xFFC9A227);
   static const _canvas = Color(0xFFF4F2EC);
+  static const _red = Color(0xFFCB3A31);
+
+  /// Degrees of heading error still treated as "facing the Qibla".
+  static const _tolerance = 5.0;
 
   // Kaaba coordinates (decimal degrees).
   static const _kaabaLat = 21.4225;
@@ -102,20 +106,13 @@ class _SNQiblaState extends State<SNQibla> {
     final phi2 = lat2 * math.pi / 180.0;
     final dLambda = (lng2 - lng1) * math.pi / 180.0;
     final y = math.sin(dLambda) * math.cos(phi2);
-    final x =
-        math.cos(phi1) * math.sin(phi2) -
-        math.sin(phi1) * math.cos(phi2) * math.cos(dLambda);
+    final x = math.cos(phi1) * math.sin(phi2) - math.sin(phi1) * math.cos(phi2) * math.cos(dLambda);
     final theta = math.atan2(y, x);
     return (theta * 180.0 / math.pi + 360.0) % 360.0;
   }
 
   /// Great-circle distance between two coordinates in kilometres.
-  static double _haversineKm(
-    double lat1,
-    double lng1,
-    double lat2,
-    double lng2,
-  ) {
+  static double _haversineKm(double lat1, double lng1, double lat2, double lng2) {
     const r = 6371.0;
     final dPhi = (lat2 - lat1) * math.pi / 180.0;
     final dLambda = (lng2 - lng1) * math.pi / 180.0;
@@ -123,10 +120,7 @@ class _SNQiblaState extends State<SNQibla> {
     final phi2 = lat2 * math.pi / 180.0;
     final a =
         math.sin(dPhi / 2) * math.sin(dPhi / 2) +
-        math.cos(phi1) *
-            math.cos(phi2) *
-            math.sin(dLambda / 2) *
-            math.sin(dLambda / 2);
+        math.cos(phi1) * math.cos(phi2) * math.sin(dLambda / 2) * math.sin(dLambda / 2);
     return r * 2 * math.atan2(math.sqrt(a), math.sqrt(1 - a));
   }
 
@@ -183,29 +177,33 @@ class _SNQiblaState extends State<SNQibla> {
     final bearing = _qiblaBearing ?? 0;
     // Pointer angle relative to the device's current facing direction.
     final qiblaAngle = (bearing - _heading) * math.pi / 180.0;
+    // Signed heading error in (-180, 180]: + means the Qibla is to the right.
+    var delta = (bearing - _heading) % 360;
+    if (delta > 180) delta -= 360;
+    final isAligned = delta.abs() <= _tolerance;
+    final turnRight = delta > 0;
     return Column(
       children: [
-        WCompassDial(
-          heading: _heading,
-          qiblaAngle: qiblaAngle,
-          green: _green,
-          gold: _gold,
-        ),
+        WCompassDial(heading: _heading, qiblaAngle: qiblaAngle, isAligned: isAligned, green: _green, gold: _gold),
         SizedBox(height: 26.h),
-        WQiblaInfoCard(
-          bearing: bearing,
-          distanceKm: _distanceKm ?? 0,
-          green: _green,
-          gold: _gold,
-        ),
+        WQiblaInfoCard(heading: _heading, distanceKm: _distanceKm ?? 0, green: _green, gold: _gold),
         SizedBox(height: 14.h),
-        WQiblaStatusPill(
-          text: 'qibla_success'.tr(),
-          background: const Color(0xFFE2EFE8),
-          foreground: const Color(0xFF0A5639),
-          dotColor: _green,
-          showCheck: true,
-        ),
+        if (isAligned)
+          WQiblaStatusPill(
+            text: 'qibla_success'.tr(),
+            background: const Color(0xFFE2EFE8),
+            foreground: const Color(0xFF0A5639),
+            dotColor: _green,
+            showCheck: true,
+          )
+        else
+          WQiblaStatusPill(
+            text: (turnRight ? 'qibla_turn_right' : 'qibla_turn_left').tr(),
+            background: const Color(0xFFF6E1DF),
+            foreground: const Color(0xFF9B2F25),
+            dotColor: _red,
+            leadingEmoji: turnRight ? '➡️' : '⬅️',
+          ),
         SizedBox(height: 10.h),
         WQiblaStatusPill(
           text: 'qibla_tip'.tr(),

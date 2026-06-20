@@ -10,12 +10,16 @@ class WCompassDial extends StatelessWidget {
     super.key,
     required this.heading,
     required this.qiblaAngle,
+    required this.isAligned,
     required this.green,
     required this.gold,
   });
 
   final double heading;
   final double qiblaAngle;
+
+  /// Whether the device is currently facing the Qibla (within tolerance).
+  final bool isAligned;
   final Color green;
   final Color gold;
 
@@ -57,7 +61,11 @@ class WCompassDial extends StatelessWidget {
               alignment: Alignment.topCenter,
               child: Padding(
                 padding: EdgeInsets.only(top: 20.h),
-                child: Icon(Icons.navigation_rounded, color: gold, size: 24.r),
+                child: Icon(
+                  Icons.navigation_rounded,
+                  color: isAligned ? green : const Color(0xFFCB3A31),
+                  size: 24.r,
+                ),
               ),
             ),
           ),

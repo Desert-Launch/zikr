@@ -461,6 +461,8 @@
   "qibla_distance_label": "Distance to Mecca",
   "qibla_km": "km",
   "qibla_success": "Qibla direction set successfully",
+  "qibla_turn_right": "Turn slightly right to face the Qibla",
+  "qibla_turn_left": "Turn slightly left to face the Qibla",
   "qibla_tip": "Keep your phone flat for the best accuracy",
   "qibla_north": "N",
   "qibla_east": "E",
