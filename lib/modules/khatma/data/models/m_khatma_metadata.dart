@@ -63,6 +63,8 @@ class MKhatmaWird extends Equatable {
     required this.endSurahAr,
     required this.startPageNumber,
     required this.endPageNumber,
+    this.startSurahNumber = 0,
+    this.endSurahNumber = 0,
   });
 
   factory MKhatmaWird.fromJson(int index, Map<String, dynamic> json) {
@@ -93,8 +95,37 @@ class MKhatmaWird extends Equatable {
   final int startPageNumber;
   final int endPageNumber;
 
+  /// Quran surah numbers (1-114) for the range bounds. Resolved from the
+  /// canonical surah list after parsing; 0 when unresolved.
+  final int startSurahNumber;
+  final int endSurahNumber;
+
   int get pageCount => endPageNumber - startPageNumber + 1;
 
+  /// Returns a copy with the resolved surah numbers attached.
+  MKhatmaWird withSurahNumbers({required int start, required int end}) =>
+      MKhatmaWird(
+        index: index,
+        startAyahNumber: startAyahNumber,
+        endAyahNumber: endAyahNumber,
+        startAyahText: startAyahText,
+        endAyahText: endAyahText,
+        startSurahEn: startSurahEn,
+        startSurahAr: startSurahAr,
+        endSurahEn: endSurahEn,
+        endSurahAr: endSurahAr,
+        startPageNumber: startPageNumber,
+        endPageNumber: endPageNumber,
+        startSurahNumber: start,
+        endSurahNumber: end,
+      );
+
   @override
-  List<Object?> get props => [index, startPageNumber, endPageNumber];
+  List<Object?> get props => [
+    index,
+    startPageNumber,
+    endPageNumber,
+    startSurahNumber,
+    endSurahNumber,
+  ];
 }

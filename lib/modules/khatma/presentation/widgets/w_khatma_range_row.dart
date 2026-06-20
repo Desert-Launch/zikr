@@ -4,18 +4,32 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:quran/core/theme/app_text_styles.dart';
 import 'package:quran/core/services/routes/routes_names.dart';
 
-/// A tappable "from/to" range row opening the mushaf at [pageNumber].
+/// A tappable "from/to" range row opening the mushaf at the given ayah
+/// (highlighted), falling back to [pageNumber] when the surah is unresolved.
 class WKhatmaRangeRow extends StatelessWidget {
-  const WKhatmaRangeRow({super.key, required this.title, required this.subtitle, required this.pageNumber});
+  const WKhatmaRangeRow({
+    super.key,
+    required this.title,
+    required this.subtitle,
+    required this.pageNumber,
+    this.surahNumber = 0,
+    this.ayahNumber = 0,
+  });
 
   final String title;
   final String subtitle;
   final int pageNumber;
+  final int surahNumber;
+  final int ayahNumber;
 
   @override
   Widget build(BuildContext context) {
     return InkWell(
-      onTap: () => Modular.to.pushNamed(QuranRoutes.readerFromPage(pageNumber)),
+      onTap: () => Modular.to.pushNamed(
+        surahNumber > 0 && ayahNumber > 0
+            ? QuranRoutes.readerFromAyah(surahNumber, ayahNumber)
+            : QuranRoutes.readerFromPage(pageNumber),
+      ),
       child: Padding(
         padding: EdgeInsets.symmetric(vertical: 20.h),
         child: Row(
