@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:quran/core/theme/app_text_styles.dart';
 
 class WSurahFilterButton extends StatelessWidget {
   const WSurahFilterButton({
@@ -32,11 +33,7 @@ class WSurahFilterButton extends StatelessWidget {
           child: Text(
             label,
             textAlign: TextAlign.center,
-            style: TextStyle(
-              color: active ? Colors.white : Colors.black87,
-              fontSize: 9.sp,
-              fontWeight: FontWeight.w600,
-            ),
+            style: active ? AppTextStyles.white12W400 : AppTextStyles.ink12W400,
           ),
         ),
       ),

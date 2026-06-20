@@ -9,13 +9,11 @@ class WTajweedLegendSheet extends StatelessWidget {
   const WTajweedLegendSheet({super.key});
 
   static Future<void> show(BuildContext context) => showModalBottomSheet<void>(
-        context: context,
-        backgroundColor: const Color(0xFFF5ECD7),
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.vertical(top: Radius.circular(22.r)),
-        ),
-        builder: (_) => const WTajweedLegendSheet(),
-      );
+    context: context,
+    backgroundColor: const Color(0xFFFFFFFF),
+    shape: RoundedRectangleBorder(borderRadius: BorderRadius.vertical(top: Radius.circular(22.r))),
+    builder: (_) => const WTajweedLegendSheet(),
+  );
 
   // (colour, AR key, EN fallback) — sampled from the V4 font palette.
   static const List<(Color, String, String)> _items = [
@@ -33,58 +31,51 @@ class WTajweedLegendSheet extends StatelessWidget {
     return SafeArea(
       child: Padding(
         padding: EdgeInsets.fromLTRB(20.w, 14.h, 20.w, 20.h),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: [
-            Center(
-              child: Container(
-                width: 40.w,
-                height: 4.h,
-                decoration: BoxDecoration(
-                  color: Colors.black.withValues(alpha: 0.18),
-                  borderRadius: BorderRadius.circular(2.r),
+        child: Directionality(
+          textDirection: context.isRTL ? TextDirection.rtl : TextDirection.ltr,
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              Center(
+                child: Container(
+                  width: 40.w,
+                  height: 4.h,
+                  decoration: BoxDecoration(
+                    color: Colors.black.withValues(alpha: 0.18),
+                    borderRadius: BorderRadius.circular(2.r),
+                  ),
                 ),
               ),
-            ),
-            SizedBox(height: 14.h),
-            Text(
-              'quran_tajweed_legend_title'.tr(),
-              textAlign: TextAlign.center,
-              style: TextStyle(
-                fontSize: 17.sp,
-                fontWeight: FontWeight.w700,
-                color: const Color(0xFF1A1A1A),
+              SizedBox(height: 14.h),
+              Text(
+                'quran_tajweed_legend_title'.tr(),
+                textAlign: TextAlign.center,
+                style: TextStyle(fontSize: 17.sp, fontWeight: FontWeight.w700, color: const Color(0xFF1A1A1A)),
               ),
-            ),
-            SizedBox(height: 14.h),
-            for (final (color, key, fallback) in _items)
-              Padding(
-                padding: EdgeInsets.symmetric(vertical: 7.h),
-                child: Row(
-                  children: [
-                    Container(
-                      width: 22.r,
-                      height: 22.r,
-                      decoration: BoxDecoration(
-                        color: color,
-                        borderRadius: BorderRadius.circular(6.r),
+              SizedBox(height: 14.h),
+              for (final (color, key, fallback) in _items)
+                Padding(
+                  padding: EdgeInsets.symmetric(vertical: 7.h),
+                  child: Row(
+                    children: [
+                      Container(
+                        width: 22.r,
+                        height: 22.r,
+                        decoration: BoxDecoration(color: color, borderRadius: BorderRadius.circular(6.r)),
                       ),
-                    ),
-                    SizedBox(width: 14.w),
-                    Expanded(
-                      child: Text(
-                        _label(key, fallback),
-                        style: TextStyle(
-                          fontSize: 15.sp,
-                          color: const Color(0xFF2A2A2A),
+                      SizedBox(width: 14.w),
+                      Expanded(
+                        child: Text(
+                          _label(key, fallback),
+                          style: TextStyle(fontSize: 15.sp, color: const Color(0xFF2A2A2A)),
                         ),
                       ),
-                    ),
-                  ],
+                    ],
+                  ),
                 ),
-              ),
-          ],
+            ],
+          ),
         ),
       ),
     );

@@ -3,6 +3,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_modular/flutter_modular.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:localize_and_translate/localize_and_translate.dart';
+import 'package:quran/core/theme/app_text_styles.dart';
 import 'package:quran/core/theme/brand_colors.dart';
 import 'package:quran/core/widgets/w_localize_rotation.dart';
 import 'package:quran/modules/quran/domain/entities/e_quran_font_mode.dart';
@@ -59,7 +60,7 @@ class WFontModePicker extends StatelessWidget {
                           Expanded(
                             child: Text(
                               _t('quran_tajweed_legend_title', 'Tajweed colour guide'),
-                              style: TextStyle(fontSize: 14.sp, fontWeight: FontWeight.w600, color: brand.onSurface),
+                              style: AppTextStyles.ink14W500,
                             ),
                           ),
                           WLocalizeRotation(
@@ -107,16 +108,7 @@ class _ModeRow extends StatelessWidget {
               size: 22.r,
             ),
             SizedBox(width: 12.w),
-            Expanded(
-              child: Text(
-                label,
-                style: TextStyle(
-                  fontSize: 15.sp,
-                  fontWeight: selected ? FontWeight.w700 : FontWeight.w500,
-                  color: brand.onSurface,
-                ),
-              ),
-            ),
+            Expanded(child: Text(label, style: AppTextStyles.ink16W500)),
           ],
         ),
       ),

@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:flutter_svg/svg.dart';
+import 'package:quran/core/theme/app_text_styles.dart';
 
 class WQuranSummaryCard extends StatelessWidget {
   const WQuranSummaryCard({
@@ -11,7 +13,7 @@ class WQuranSummaryCard extends StatelessWidget {
     this.onTap,
   });
 
-  final IconData icon;
+  final String icon;
   final String value;
   final String label;
   final Color color;
@@ -32,17 +34,11 @@ class WQuranSummaryCard extends StatelessWidget {
           ),
           child: Column(
             children: [
-              Icon(icon, color: color, size: 19.r),
+              SvgPicture.asset(icon, colorFilter: ColorFilter.mode(color, BlendMode.srcIn), width: 19.r, height: 19.r),
               SizedBox(height: 12.h),
-              Text(
-                value,
-                style: TextStyle(color: color, fontSize: 13.sp),
-              ),
+              Text(value, style: AppTextStyles.ink14W700.copyWith(color: color)),
               SizedBox(height: 5.h),
-              Text(
-                label,
-                style: TextStyle(fontSize: 8.sp, color: Colors.grey[600]),
-              ),
+              Text(label, style: AppTextStyles.ink12W400.copyWith(color: Colors.grey[600])),
             ],
           ),
         ),

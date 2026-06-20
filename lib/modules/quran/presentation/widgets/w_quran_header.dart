@@ -2,15 +2,11 @@ import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:localize_and_translate/localize_and_translate.dart';
+import 'package:quran/core/theme/app_text_styles.dart';
 import 'package:quran/modules/quran/presentation/cubits/cb_surah_list.dart';
 
 class WQuranHeader extends StatelessWidget {
-  const WQuranHeader({
-    super.key,
-    required this.cubit,
-    required this.onBack,
-    this.onSettings,
-  });
+  const WQuranHeader({super.key, required this.cubit, required this.onBack, this.onSettings});
 
   final CBSurahList cubit;
   final VoidCallback onBack;
@@ -33,10 +29,7 @@ class WQuranHeader extends StatelessWidget {
                 if (onSettings != null)
                   IconButton(
                     onPressed: onSettings,
-                    icon: const Icon(
-                      Icons.settings_outlined,
-                      color: Colors.white,
-                    ),
+                    icon: const Icon(Icons.settings_outlined, color: Colors.white),
                   )
                 else
                   const SizedBox(width: 42),
@@ -45,28 +38,15 @@ class WQuranHeader extends StatelessWidget {
                   children: [
                     Text(
                       'app_name'.tr(),
-                      style: GoogleFonts.amiri(
-                        color: Colors.white,
-                        fontSize: 22.sp,
-                        fontWeight: FontWeight.w700,
-                      ),
+                      style: GoogleFonts.amiri(color: Colors.white, fontSize: 22.sp, fontWeight: FontWeight.w700),
                     ),
-                    Text(
-                      'quran_surah_total'.tr(),
-                      style: TextStyle(
-                        color: Colors.white.withValues(alpha: 0.72),
-                        fontSize: 9.sp,
-                      ),
-                    ),
+                    Text('quran_surah_total'.tr(), style: AppTextStyles.white12W400),
                   ],
                 ),
                 const Spacer(),
                 IconButton(
                   onPressed: onBack,
-                  icon: const Icon(
-                    Icons.arrow_forward_rounded,
-                    color: Colors.white,
-                  ),
+                  icon: const Icon(Icons.arrow_forward_rounded, color: Colors.white),
                 ),
               ],
             ),
@@ -76,26 +56,15 @@ class WQuranHeader extends StatelessWidget {
               style: const TextStyle(color: Colors.white),
               decoration: InputDecoration(
                 hintText: 'search_hint'.tr(),
-                hintStyle: TextStyle(
-                  color: Colors.white.withValues(alpha: 0.62),
-                  fontSize: 11.sp,
-                ),
-                suffixIcon: Icon(
-                  Icons.search_rounded,
-                  color: Colors.white.withValues(alpha: 0.7),
-                  size: 20.r,
-                ),
+
+                hintStyle: TextStyle(color: Colors.white.withValues(alpha: 0.62), fontSize: 11.sp),
+                suffixIcon: Icon(Icons.search_rounded, color: Colors.white.withValues(alpha: 0.7), size: 20.r),
                 filled: true,
                 fillColor: Colors.white.withValues(alpha: 0.07),
-                contentPadding: EdgeInsets.symmetric(
-                  horizontal: 12.w,
-                  vertical: 8.h,
-                ),
+                contentPadding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 8.h),
                 enabledBorder: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(8.r),
-                  borderSide: BorderSide(
-                    color: Colors.white.withValues(alpha: 0.2),
-                  ),
+                  borderSide: BorderSide(color: Colors.white.withValues(alpha: 0.2)),
                 ),
                 focusedBorder: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(8.r),

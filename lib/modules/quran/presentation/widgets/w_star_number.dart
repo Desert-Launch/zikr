@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:quran/core/theme/app_text_styles.dart';
 
 class WStarNumber extends StatelessWidget {
   const WStarNumber({super.key, required this.number, required this.green});
@@ -15,19 +16,8 @@ class WStarNumber extends StatelessWidget {
       child: Stack(
         alignment: Alignment.center,
         children: [
-          Icon(
-            Icons.star_rounded,
-            color: green.withValues(alpha: 0.18),
-            size: 42.r,
-          ),
-          Text(
-            '$number',
-            style: TextStyle(
-              color: green,
-              fontSize: 10.sp,
-              fontWeight: FontWeight.w700,
-            ),
-          ),
+          Icon(Icons.star_rounded, color: green.withValues(alpha: 0.18), size: 42.r),
+          Text('$number', style: AppTextStyles.ink12W700.copyWith(color: green, height: 1.2)),
         ],
       ),
     );
