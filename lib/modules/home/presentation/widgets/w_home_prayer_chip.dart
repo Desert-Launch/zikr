@@ -7,7 +7,7 @@ class WHomePrayerChip extends StatelessWidget {
 
   final String label;
   final String time;
-  final ({Color color, IconData icon}) style;
+  final ({Color color, String emoji}) style;
 
   @override
   Widget build(BuildContext context) {
@@ -16,8 +16,9 @@ class WHomePrayerChip extends StatelessWidget {
         Container(
           width: 42.r,
           height: 42.r,
+          alignment: Alignment.center,
           decoration: BoxDecoration(shape: BoxShape.circle, color: style.color.withValues(alpha: 0.16)),
-          child: Icon(style.icon, size: 20.r, color: style.color),
+          child: Text(style.emoji, style: TextStyle(fontSize: 20.sp)),
         ),
         SizedBox(height: 8.h),
         Text(

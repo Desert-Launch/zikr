@@ -8,14 +8,14 @@ import 'package:quran/modules/home/presentation/widgets/w_home_prayer_chip.dart'
 import 'package:quran/modules/prayer/domain/entities/e_prayer.dart';
 import 'package:quran/modules/prayer/presentation/cubits/s_prayer_times.dart';
 
-/// Per-prayer accent colour + glyph for the chip row.
-({Color color, IconData icon}) _prayerStyle(EPrayer prayer) => switch (prayer) {
-  EPrayer.fajr => (color: const Color(0xFFE2705B), icon: Icons.brightness_3_rounded),
-  EPrayer.sunrise => (color: const Color(0xFFF2A33C), icon: Icons.wb_twilight_rounded),
-  EPrayer.dhuhr => (color: const Color(0xFFF2C037), icon: Icons.wb_sunny_rounded),
-  EPrayer.asr => (color: const Color(0xFF3FA9C4), icon: Icons.brightness_6_rounded),
-  EPrayer.maghrib => (color: const Color(0xFFE8743B), icon: Icons.wb_twilight_outlined),
-  EPrayer.isha => (color: const Color(0xFF6C63B5), icon: Icons.nightlight_round),
+/// Per-prayer accent colour + emoji for the chip row.
+({Color color, String emoji}) _prayerStyle(EPrayer prayer) => switch (prayer) {
+  EPrayer.fajr => (color: const Color(0xFFE2705B), emoji: '🌅'),
+  EPrayer.sunrise => (color: const Color(0xFFF2A33C), emoji: '☀️'),
+  EPrayer.dhuhr => (color: const Color(0xFFF2C037), emoji: '🌤️'),
+  EPrayer.asr => (color: const Color(0xFF3FA9C4), emoji: '🌥️'),
+  EPrayer.maghrib => (color: const Color(0xFFE8743B), emoji: '🌇'),
+  EPrayer.isha => (color: const Color(0xFF6C63B5), emoji: '🌙'),
 };
 
 String _prayerLabel(EPrayer prayer) => switch (prayer) {
