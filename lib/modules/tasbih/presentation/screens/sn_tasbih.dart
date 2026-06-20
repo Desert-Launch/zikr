@@ -19,12 +19,7 @@ class SNTasbih extends StatelessWidget {
   static const _gold = Color(0xFFD6A72C);
   static const _canvas = Color(0xFFF8F7F4);
 
-  static const _phrases = [
-    'سُبْحَانَ اللَّهِ',
-    'الْحَمْدُ لِلَّهِ',
-    'لَا إِلَهَ إِلَّا اللَّهُ',
-    'اللَّهُ أَكْبَرُ',
-  ];
+  static const _phrases = ['سُبْحَانَ اللَّهِ', 'الْحَمْدُ لِلَّهِ', 'لَا إِلَهَ إِلَّا اللَّهُ', 'اللَّهُ أَكْبَرُ'];
 
   @override
   Widget build(BuildContext context) {
@@ -44,12 +39,8 @@ class SNTasbih extends StatelessWidget {
                   subtitle: 'tasbih_digital_subtitle'.tr(),
                   actions: [
                     IconButton(
-                      onPressed: () =>
-                          Modular.to.pushNamed(TasbihRoutes.fullHourly()),
-                      icon: const Icon(
-                        Icons.volume_up_outlined,
-                        color: Colors.white,
-                      ),
+                      onPressed: () => Modular.to.pushNamed(TasbihRoutes.fullHourly()),
+                      icon: const Icon(Icons.settings_outlined, color: Colors.white),
                     ),
                   ],
                 ),
