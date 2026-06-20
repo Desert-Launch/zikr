@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_modular/flutter_modular.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
-import 'package:google_fonts/google_fonts.dart';
 import 'package:localize_and_translate/localize_and_translate.dart';
 import 'package:quran/core/services/routes/routes_names.dart';
+import 'package:quran/core/theme/app_text_styles.dart';
 import 'package:quran/modules/prayer/presentation/cubits/s_prayer_times.dart';
 import 'package:quran/modules/prayer/presentation/widgets/w_prayer_outline_circle.dart';
 
@@ -18,7 +18,7 @@ class WPrayerHeader extends StatelessWidget {
   Widget build(BuildContext context) {
     final now = DateTime.now();
     return Container(
-      height: 275.h,
+      height: 325.h,
       padding: EdgeInsets.fromLTRB(18.w, 8.h, 18.w, 16.h),
       decoration: BoxDecoration(
         color: green,
@@ -43,21 +43,15 @@ class WPrayerHeader extends StatelessWidget {
                 Row(
                   children: [
                     IconButton(
-                      onPressed: () => Modular.to.pushNamed(SettingsRoutes.fullMain()),
+                      onPressed: () => Modular.to.pushNamed(AdhanRoutes.notificationsScreen()),
                       icon: const Icon(Icons.settings_outlined, color: Colors.white),
                     ),
                     const Spacer(),
                     Column(
                       crossAxisAlignment: CrossAxisAlignment.end,
                       children: [
-                        Text(
-                          'prayer_title'.tr(),
-                          style: GoogleFonts.cairo(color: Colors.white, fontSize: 19.sp, fontWeight: FontWeight.w700),
-                        ),
-                        Text(
-                          'prayer_header_subtitle'.tr(),
-                          style: TextStyle(color: Colors.white.withValues(alpha: 0.72), fontSize: 9.sp),
-                        ),
+                        Text('prayer_title'.tr(), style: AppTextStyles.white22W500),
+                        Text('prayer_header_subtitle'.tr(), style: AppTextStyles.white14W400),
                       ],
                     ),
                     SizedBox(width: 7.w),
@@ -83,10 +77,10 @@ class WPrayerHeader extends StatelessWidget {
                       children: [
                         Text(
                           state.cityName.isNotEmpty ? state.cityName : 'prayer_location_unknown'.tr(),
-                          style: TextStyle(color: Colors.white.withValues(alpha: 0.85), fontSize: 9.sp),
+                          style: AppTextStyles.white14W400,
                         ),
                         SizedBox(width: 5.w),
-                        Icon(Icons.location_on_outlined, color: Colors.white.withValues(alpha: 0.85), size: 14.r),
+                        Icon(Icons.location_on_outlined, color: Colors.white.withValues(alpha: 0.85), size: 18.r),
                       ],
                     ),
                   ),
@@ -102,20 +96,11 @@ class WPrayerHeader extends StatelessWidget {
                   ),
                   child: Column(
                     children: [
-                      Text(
-                        _weekday(now),
-                        style: TextStyle(color: Colors.white.withValues(alpha: 0.76), fontSize: 10.sp),
-                      ),
-                      SizedBox(height: 3.h),
-                      Text(
-                        _date(now),
-                        style: GoogleFonts.cairo(color: Colors.white, fontSize: 20.sp, fontWeight: FontWeight.w500),
-                      ),
-                      SizedBox(height: 4.h),
-                      Text(
-                        _hijriDate(now),
-                        style: TextStyle(color: Colors.white.withValues(alpha: 0.68), fontSize: 9.sp),
-                      ),
+                      Text(_weekday(now), style: AppTextStyles.white14W400),
+                      SizedBox(height: 8.h),
+                      Text(_date(now), style: AppTextStyles.white20W500),
+                      SizedBox(height: 14.h),
+                      Text(_hijriDate(now), style: AppTextStyles.white14W400),
                     ],
                   ),
                 ),

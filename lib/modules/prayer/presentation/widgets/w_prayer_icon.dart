@@ -12,13 +12,18 @@ class WPrayerIcon extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      width: 42.r,
-      height: 42.r,
+      width: 52.r,
+      height: 52.r,
       alignment: Alignment.center,
       decoration: BoxDecoration(
         color: active ? Colors.white.withValues(alpha: 0.14) : const Color(0xFFF8F7F1),
-        borderRadius: BorderRadius.circular(14.r),
-        boxShadow: const [BoxShadow(color: Color(0x10000000), blurRadius: 7, offset: Offset(0, 3))],
+        gradient: LinearGradient(
+          colors: [const Color.fromARGB(255, 240, 240, 240), const Color.fromARGB(255, 255, 255, 255)],
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+        ),
+        borderRadius: BorderRadius.circular(20.r),
+        boxShadow: const [BoxShadow(color: Color(0x10000000), blurRadius: 7, offset: Offset(0, 10))],
       ),
       child: Text(_emoji(prayer), style: TextStyle(fontSize: 20.sp)),
     );
