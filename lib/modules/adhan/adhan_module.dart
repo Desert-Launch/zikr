@@ -16,11 +16,6 @@ class AdhanModule extends Module {
   void routes(RouteManager r) {
     r.child('/', child: (_) => const SNPrayerSettingsOverview());
     r.child(AdhanRoutes.notifications, child: (_) => const SNAdhanSettings());
-    r.child(
-      AdhanRoutes.picker,
-      child: (_) => SNAdhanPicker(
-        prayerKey: Modular.args.queryParams['prayer'] ?? 'fajr',
-      ),
-    );
+    r.child(AdhanRoutes.picker, child: (_) => SNAdhanPicker(prayerKey: Modular.args.queryParams['prayer'] ?? 'fajr'));
   }
 }

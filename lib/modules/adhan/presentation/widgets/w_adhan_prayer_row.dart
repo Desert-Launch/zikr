@@ -4,6 +4,8 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:localize_and_translate/localize_and_translate.dart';
 import 'package:quran/core/services/routes/routes_names.dart';
+import 'package:quran/core/theme/app_text_styles.dart';
+import 'package:quran/core/widgets/w_localize_rotation.dart';
 import 'package:quran/modules/adhan/presentation/cubits/cb_adhan_settings.dart';
 import 'package:quran/modules/adhan/presentation/cubits/s_adhan_settings.dart';
 import 'package:quran/modules/adhan/presentation/widgets/w_adhan_icon_circle.dart';
@@ -61,26 +63,14 @@ class WAdhanPrayerRow extends StatelessWidget {
             children: [
               InkWell(
                 borderRadius: BorderRadius.circular(22.r),
-                onTap: isSunrise
-                    ? null
-                    : () => cubit.togglePrayer(_notifyIndex, !enabled),
+                onTap: isSunrise ? null : () => cubit.togglePrayer(_notifyIndex, !enabled),
                 child: WAdhanIconCircle(
-                  icon: enabled
-                      ? Icons.notifications_none_rounded
-                      : Icons.notifications_off_outlined,
-                  color: enabled
-                      ? const Color(0xFF2F7E63)
-                      : const Color(0xFF8B8B8B),
+                  icon: enabled ? Icons.notifications_none_rounded : Icons.notifications_off_outlined,
+                  color: enabled ? const Color(0xFF2F7E63) : const Color(0xFF8B8B8B),
                 ),
               ),
               SizedBox(width: 13.w),
-              Text(
-                title,
-                style: GoogleFonts.cairo(
-                  fontSize: 14.sp,
-                  color: const Color(0xFF303030),
-                ),
-              ),
+              Text(title, style: AppTextStyles.ink16W400),
               const Spacer(),
               Text(
                 isSunrise
@@ -90,19 +80,14 @@ class WAdhanPrayerRow extends StatelessWidget {
                     : 'adhan_voice_none'.tr(),
                 maxLines: 1,
                 overflow: TextOverflow.ellipsis,
-                style: GoogleFonts.cairo(
-                  fontSize: 9.sp,
-                  color: const Color(0xFF777777),
-                ),
+                style: AppTextStyles.grey12W400,
               ),
-              if (!isSunrise) ...[
-                SizedBox(width: 4.w),
-                Icon(
-                  Icons.chevron_left_rounded,
-                  color: const Color(0xFF777777),
-                  size: 21.r,
-                ),
-              ],
+
+              SizedBox(width: 4.w),
+              WLocalizeRotation(
+                reverse: true,
+                child: Icon(Icons.chevron_left_rounded, color: const Color(0xFF777777), size: 21.r),
+              ),
             ],
           ),
         ),

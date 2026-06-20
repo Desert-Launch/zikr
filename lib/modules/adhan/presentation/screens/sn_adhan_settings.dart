@@ -39,137 +39,96 @@ class SNAdhanSettings extends StatelessWidget {
         backgroundColor: _canvas,
         withSafeArea: false,
         padding: EdgeInsets.zero,
-        body: Column(
-          children: [
-            WGradientAppBar(title: 'adhan_alerts_title'.tr()),
-            Expanded(
-              child: BlocBuilder<CBAdhanSettings, SAdhanSettings>(
-                builder: (context, state) {
-                  if (state.loading) {
-                    return const Center(child: CircularProgressIndicator());
-                  }
-                  return ListView(
-                    padding: EdgeInsets.fromLTRB(27.w, 24.h, 27.w, 28.h),
-                    children: [
-                      if (!state.hasPermission) ...[
-                        _PermissionWarning(onFix: cubit.requestPermission),
-                        SizedBox(height: 18.h),
-                      ],
-                      if (state.needsDefaultDownload) ...[
-                        _DefaultDownloadPrompt(
-                          busy: state.retryingDownload,
-                          onRetry: cubit.retryDefaultDownload,
-                        ),
-                        SizedBox(height: 18.h),
-                      ],
-                      WAdhanSectionLabel('adhan_prayer_alerts_section'.tr()),
-                      WAdhanGroup(
-                        children: [
-                          for (var i = 0; i < _prayers.length; i++)
-                            WAdhanPrayerRow(
-                              prayerKey: _prayers[i].$1,
-                              title: _prayers[i].$2.tr(),
-                              state: state,
-                              cubit: cubit,
-                            ),
+        body: Directionality(
+          textDirection: context.isRTL ? TextDirection.rtl : TextDirection.ltr,
+          child: Column(
+            children: [
+              WGradientAppBar(title: 'adhan_alerts_title'.tr()),
+              Expanded(
+                child: BlocBuilder<CBAdhanSettings, SAdhanSettings>(
+                  builder: (context, state) {
+                    if (state.loading) {
+                      return const Center(child: CircularProgressIndicator());
+                    }
+                    return ListView(
+                      padding: EdgeInsets.fromLTRB(27.w, 24.h, 27.w, 28.h),
+                      children: [
+                        if (!state.hasPermission) ...[
+                          _PermissionWarning(onFix: cubit.requestPermission),
+                          SizedBox(height: 18.h),
                         ],
-                      ),
-                      if (defaultTargetPlatform == TargetPlatform.android) ...[
-                        SizedBox(height: 18.h),
-                        WAdhanSectionLabel('adhan_playback_section'.tr()),
+                        if (state.needsDefaultDownload) ...[
+                          _DefaultDownloadPrompt(busy: state.retryingDownload, onRetry: cubit.retryDefaultDownload),
+                          SizedBox(height: 18.h),
+                        ],
+                        WAdhanSectionLabel('adhan_prayer_alerts_section'.tr()),
                         WAdhanGroup(
                           children: [
-                            WAdhanSettingRow(
-                              icon: Icons.volume_up_outlined,
-                              title: 'adhan_background_full'.tr(),
-                              subtitle: 'adhan_background_full_hint'.tr(),
-                              trailing: Transform.scale(
-                                scale: .75,
-                                child: Switch(
-                                  value: state.androidBackgroundFullAdhan,
-                                  activeTrackColor: _green,
-                                  thumbColor: WidgetStateProperty.all(
-                                    Colors.white,
-                                  ),
-                                  onChanged: cubit.setAndroidBackground,
-                                ),
+                            for (var i = 0; i < _prayers.length; i++)
+                              WAdhanPrayerRow(
+                                prayerKey: _prayers[i].$1,
+                                title: _prayers[i].$2.tr(),
+                                state: state,
+                                cubit: cubit,
                               ),
-                            ),
                           ],
                         ),
-                      ] else if (defaultTargetPlatform ==
-                          TargetPlatform.iOS) ...[
-                        SizedBox(height: 18.h),
-                        WAdhanSectionLabel('adhan_playback_section'.tr()),
-                        Container(
-                          padding: EdgeInsets.symmetric(
-                            horizontal: 16.w,
-                            vertical: 14.h,
-                          ),
-                          decoration: BoxDecoration(
-                            color: Colors.white,
-                            borderRadius: BorderRadius.circular(14.r),
-                          ),
-                          child: Row(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Icon(
-                                Icons.info_outline_rounded,
-                                size: 18.r,
-                                color: const Color(0xFF858585),
-                              ),
-                              SizedBox(width: 10.w),
-                              Expanded(
-                                child: Text(
-                                  'adhan_ios_full_note'.tr(),
-                                  style: GoogleFonts.cairo(
-                                    fontSize: 11.sp,
-                                    height: 1.5,
-                                    color: const Color(0xFF858585),
-                                  ),
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
+
+                        // if (defaultTargetPlatform == TargetPlatform.android) ...[
+                        //   SizedBox(height: 18.h),
+                        //   WAdhanSectionLabel('adhan_playback_section'.tr()),
+                        //   WAdhanGroup(
+                        //     children: [
+                        //       WAdhanSettingRow(
+                        //         icon: Icons.volume_up_outlined,
+                        //         title: 'adhan_background_full'.tr(),
+                        //         subtitle: 'adhan_background_full_hint'.tr(),
+                        //         trailing: Transform.scale(
+                        //           scale: .75,
+                        //           child: Switch(
+                        //             value: state.androidBackgroundFullAdhan,
+                        //             activeTrackColor: _green,
+                        //             thumbColor: WidgetStateProperty.all(Colors.white),
+                        //             onChanged: cubit.setAndroidBackground,
+                        //           ),
+                        //         ),
+                        //       ),
+                        //     ],
+                        //   ),
+                        // ] else if (defaultTargetPlatform == TargetPlatform.iOS) ...[
+                        //   SizedBox(height: 18.h),
+                        //   WAdhanSectionLabel('adhan_playback_section'.tr()),
+                        //   Container(
+                        //     padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 14.h),
+                        //     decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(14.r)),
+                        //     child: Row(
+                        //       crossAxisAlignment: CrossAxisAlignment.start,
+                        //       children: [
+                        //         Icon(Icons.info_outline_rounded, size: 18.r, color: const Color(0xFF858585)),
+                        //         SizedBox(width: 10.w),
+                        //         Expanded(
+                        //           child: Text(
+                        //             'adhan_ios_full_note'.tr(),
+                        //             style: GoogleFonts.cairo(
+                        //               fontSize: 11.sp,
+                        //               height: 1.5,
+                        //               color: const Color(0xFF858585),
+                        //             ),
+                        //           ),
+                        //         ),
+                        //       ],
+                        //     ),
+                        //   ),
+                        // ],
+                        SizedBox(height: 20.h),
+                        const WAdhanVirtueCard(),
                       ],
-                      SizedBox(height: 18.h),
-                      WAdhanSectionLabel('adhan_prenotify_section'.tr()),
-                      WAdhanBeforeRow(state: state, cubit: cubit),
-                      SizedBox(height: 14.h),
-                      WAdhanGroup(
-                        children: [
-                          WAdhanSettingRow(
-                            icon: Icons.vibration_rounded,
-                            title: 'adhan_vibrate'.tr(),
-                            trailing: Transform.scale(
-                              scale: .75,
-                              child: Switch(
-                                value: state.vibrate,
-                                activeTrackColor: _green,
-                                thumbColor: WidgetStateProperty.all(
-                                  Colors.white,
-                                ),
-                                onChanged: cubit.setVibrate,
-                              ),
-                            ),
-                          ),
-                        ],
-                      ),
-                      if (state.showBatteryNote) ...[
-                        SizedBox(height: 18.h),
-                        _BatteryGuidanceNote(
-                          onAllow: cubit.requestBatteryExemption,
-                        ),
-                      ],
-                      SizedBox(height: 76.h),
-                      const WAdhanVirtueCard(),
-                    ],
-                  );
-                },
+                    );
+                  },
+                ),
               ),
-            ),
-          ],
+            ],
+          ),
         ),
       ),
     );
@@ -198,11 +157,7 @@ class _DefaultDownloadPrompt extends StatelessWidget {
         ),
         child: Row(
           children: [
-            Icon(
-              Icons.cloud_download_outlined,
-              size: 20.r,
-              color: const Color(0xFFD79A3B),
-            ),
+            Icon(Icons.cloud_download_outlined, size: 20.r, color: const Color(0xFFD79A3B)),
             SizedBox(width: 12.w),
             Expanded(
               child: Column(
@@ -219,10 +174,7 @@ class _DefaultDownloadPrompt extends StatelessWidget {
                   SizedBox(height: 2.h),
                   Text(
                     'adhan_default_download_hint'.tr(),
-                    style: GoogleFonts.cairo(
-                      fontSize: 9.sp,
-                      color: const Color(0xFFA98B5B),
-                    ),
+                    style: GoogleFonts.cairo(fontSize: 9.sp, color: const Color(0xFFA98B5B)),
                   ),
                 ],
               ),
@@ -232,19 +184,12 @@ class _DefaultDownloadPrompt extends StatelessWidget {
               SizedBox(
                 width: 18.r,
                 height: 18.r,
-                child: CircularProgressIndicator(
-                  strokeWidth: 2.r,
-                  color: const Color(0xFFD79A3B),
-                ),
+                child: CircularProgressIndicator(strokeWidth: 2.r, color: const Color(0xFFD79A3B)),
               )
             else
               Text(
                 'adhan_download'.tr(),
-                style: GoogleFonts.cairo(
-                  fontSize: 11.sp,
-                  fontWeight: FontWeight.w700,
-                  color: const Color(0xFFC8841F),
-                ),
+                style: GoogleFonts.cairo(fontSize: 11.sp, fontWeight: FontWeight.w700, color: const Color(0xFFC8841F)),
               ),
           ],
         ),
@@ -274,30 +219,18 @@ class _PermissionWarning extends StatelessWidget {
         ),
         child: Row(
           children: [
-            Icon(
-              Icons.notifications_off_outlined,
-              size: 20.r,
-              color: const Color(0xFFC0473F),
-            ),
+            Icon(Icons.notifications_off_outlined, size: 20.r, color: const Color(0xFFC0473F)),
             SizedBox(width: 12.w),
             Expanded(
               child: Text(
                 'adhan_permission_denied'.tr(),
-                style: GoogleFonts.cairo(
-                  fontSize: 12.sp,
-                  fontWeight: FontWeight.w600,
-                  color: const Color(0xFF8E3A34),
-                ),
+                style: GoogleFonts.cairo(fontSize: 12.sp, fontWeight: FontWeight.w600, color: const Color(0xFF8E3A34)),
               ),
             ),
             SizedBox(width: 10.w),
             Text(
               'adhan_permission_fix'.tr(),
-              style: GoogleFonts.cairo(
-                fontSize: 11.sp,
-                fontWeight: FontWeight.w700,
-                color: const Color(0xFFC0473F),
-              ),
+              style: GoogleFonts.cairo(fontSize: 11.sp, fontWeight: FontWeight.w700, color: const Color(0xFFC0473F)),
             ),
           ],
         ),
@@ -328,11 +261,7 @@ class _BatteryGuidanceNote extends StatelessWidget {
           Row(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Icon(
-                Icons.battery_alert_outlined,
-                size: 18.r,
-                color: const Color(0xFF2F7E63),
-              ),
+              Icon(Icons.battery_alert_outlined, size: 18.r, color: const Color(0xFF2F7E63)),
               SizedBox(width: 10.w),
               Expanded(
                 child: Column(
@@ -349,11 +278,7 @@ class _BatteryGuidanceNote extends StatelessWidget {
                     SizedBox(height: 3.h),
                     Text(
                       'adhan_battery_note_hint'.tr(),
-                      style: GoogleFonts.cairo(
-                        fontSize: 10.sp,
-                        height: 1.5,
-                        color: const Color(0xFF6F8079),
-                      ),
+                      style: GoogleFonts.cairo(fontSize: 10.sp, height: 1.5, color: const Color(0xFF6F8079)),
                     ),
                   ],
                 ),
@@ -366,11 +291,7 @@ class _BatteryGuidanceNote extends StatelessWidget {
               onPressed: onAllow,
               child: Text(
                 'adhan_battery_note_action'.tr(),
-                style: GoogleFonts.cairo(
-                  fontSize: 11.sp,
-                  fontWeight: FontWeight.w700,
-                  color: const Color(0xFF2F7E63),
-                ),
+                style: GoogleFonts.cairo(fontSize: 11.sp, fontWeight: FontWeight.w700, color: const Color(0xFF2F7E63)),
               ),
             ),
           ),

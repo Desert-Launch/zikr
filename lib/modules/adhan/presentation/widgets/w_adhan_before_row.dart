@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:localize_and_translate/localize_and_translate.dart';
+import 'package:quran/core/theme/app_text_styles.dart';
 import 'package:quran/modules/adhan/presentation/cubits/cb_adhan_settings.dart';
 import 'package:quran/modules/adhan/presentation/cubits/s_adhan_settings.dart';
 import 'package:quran/modules/adhan/presentation/widgets/w_adhan_icon_circle.dart';
@@ -34,18 +35,13 @@ class WAdhanBeforeRow extends StatelessWidget {
           color: Colors.white,
           borderRadius: BorderRadius.circular(19.r),
           border: Border.all(color: const Color(0xFFE2ECE8)),
-          boxShadow: const [
-            BoxShadow(color: Color(0x10000000), blurRadius: 3, offset: Offset(0, 2)),
-          ],
+          boxShadow: const [BoxShadow(color: Color(0x10000000), blurRadius: 3, offset: Offset(0, 2))],
         ),
         child: Row(
           children: [
             const WAdhanIconCircle(icon: Icons.notifications_none_rounded),
             SizedBox(width: 13.w),
-            Text(
-              'adhan_before_alert'.tr(),
-              style: GoogleFonts.cairo(fontSize: 14.sp, color: const Color(0xFF303030)),
-            ),
+            Text('adhan_before_alert'.tr(), style: AppTextStyles.ink12W400),
             const Spacer(),
             Text(
               state.preNotifyMinutes == 0
