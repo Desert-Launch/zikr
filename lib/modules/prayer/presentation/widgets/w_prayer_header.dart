@@ -43,7 +43,7 @@ class WPrayerHeader extends StatelessWidget {
                 Row(
                   children: [
                     IconButton(
-                      onPressed: () => Modular.to.pushNamed(AdhanRoutes.notificationsScreen()),
+                      onPressed: () => Modular.to.pushNamed(AdhanRoutes.overview()),
                       icon: const Icon(Icons.settings_outlined, color: Colors.white),
                     ),
                     const Spacer(),
