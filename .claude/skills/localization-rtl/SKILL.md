@@ -1,48 +1,46 @@
 ---
 name: localization-rtl
-description: Use for any text, translation, or RTL/LTR work in Taliah — adding strings, supporting Arabic/English, fixing mirrored layouts, language switching. Triggers on "translate", "localization", "i18n", "Arabic", "RTL", "add a string", "hardcoded text". Enforces FLAT JSON with underscore prefixes via localize_and_translate and correct RTL handling.
+description: Use for any text, translation, or RTL/LTR work in the Quran app — adding strings, supporting Arabic/English, fixing mirrored layouts, language switching. Triggers on "translate", "localization", "i18n", "Arabic", "RTL", "add a string", "hardcoded text", ".tr()". Enforces FLAT prefixed JSON via localize_and_translate and correct RTL handling.
 ---
 
-# Localization & RTL (Taliah)
+# Localization & RTL (Quran app)
 
-Two locales: **Arabic (RTL, default)** and **English (LTR)**. Library: `localize_and_translate`.
+Two locales: **Arabic (RTL, default)** and **English (LTR)**. Library: `localize_and_translate` (`LocalizeAndTranslate.init('ar','en')` runs in `main()`).
 
 ## FLAT JSON only
 ```json
 // assets/lang/ar.json
-{ "auth_email": "البريد الإلكتروني", "courses_title": "المقررات", "common_retry": "إعادة المحاولة" }
+{ "common_retry": "إعادة المحاولة", "prayer_fajr": "الفجر", "quran_ayah_label": "آية" }
 ```
 ```json
 // assets/lang/en.json
-{ "auth_email": "Email", "courses_title": "Courses", "common_retry": "Retry" }
+{ "common_retry": "Retry", "prayer_fajr": "Fajr", "quran_ayah_label": "Ayah" }
 ```
 - ❌ No nesting (`localize_and_translate` does not support it).
-- ✅ Prefix by feature: `auth_`, `courses_`, `grades_`, `common_`.
+- ✅ Prefix by feature: `common_`, `prayer_`, `quran_`, `azkar_`, `tasbih_`, `reminders_`, `adhan_`.
 - Keys identical across both files (run a key-parity check).
 
-## Usage
+## Usage — `.tr()`
 ```dart
-Text('courses_title'.translated)
+Text('quran_ayah_label'.tr())
+Text('quran_downloads_ayat_unit'.tr())
 ```
-Never hardcode user-facing text. Every new string → add to BOTH `ar.json` and `en.json`.
-
-## Language switching
-- A `LocaleController` flips locale and triggers `Directionality` rebuild.
-- Settings screen toggles language live (no restart).
-- After switching, verify direction with `Directionality.of(context)`.
+The translation getter in this app is **`.tr()`** (not `.translated`). Never hardcode user-facing text. Every new string → add to BOTH `ar.json` and `en.json`.
 
 ## RTL correctness
-- Use **logical** insets: `EdgeInsetsDirectional.only(start:, end:)` not `left/right`.
+- Use **logical** insets: `EdgeInsetsDirectional.only(start:, end:)` — not `left/right`.
 - Use `AlignmentDirectional`, `start`/`end`, `TextAlign.start`.
-- Icons that imply direction (back arrows, chevrons) must mirror — use `Icons.arrow_back_ios` with directional awareness or flip via `Transform` when needed.
-- Test EVERY screen in both languages; fix overflow + mirroring.
+- Direction-implying icons (back arrows, chevrons) must mirror — flip via directional awareness or `Transform` / `Directionality`.
+- Some shared helpers exist for this (e.g. `w_localize_rotation.dart`) — reuse before reinventing.
+- Test EVERY screen in both languages; fix overflow + mirroring. Arabic is the default.
 
-## Numbers
-- Arabic vs Hindi numerals: keep raw values; choose numeral rendering at the presentation layer per locale if required by spec.
+## Quran/Arabic numerals & script
+- Quran text and ayah glyphs are Arabic regardless of UI locale — never translate scripture.
+- Keep raw numeric values; choose numeral rendering (Western vs Arabic-Indic) at the presentation layer per locale where the spec calls for it.
 
 ## Checklist
-- [ ] No hardcoded strings
-- [ ] Key exists in ar.json AND en.json
+- [ ] No hardcoded user-facing strings
+- [ ] Key exists in `ar.json` AND `en.json`, FLAT + prefixed
+- [ ] Rendered via `.tr()`
 - [ ] Directional insets/alignment used
-- [ ] Screen verified in AR + EN
-- [ ] Directional icons mirror correctly
+- [ ] Screen verified in AR (RTL) + EN (LTR); directional icons mirror

@@ -1,50 +1,73 @@
 ---
 name: modular-routing
-description: Use for navigation, routes, deep links, or role gating in Taliah — adding a route, navigating between screens, guarding by role, passing params. Triggers on "route", "navigate", "navigation", "deep link", "AppRoutes", "guard", "Modular.to". Enforces typed AppRoutes methods (no string routes) and RoleGuard usage with flutter_modular.
+description: Use for navigation, routes, deep links, or DI wiring in the Quran app — adding a route, navigating between screens, passing params, mounting a module. Triggers on "route", "navigate", "navigation", "deep link", "RoutesNames", "Modular.to", "module", "binds". Enforces typed *Routes builders (no string routes) with flutter_modular.
 ---
 
-# Modular Routing (Taliah)
+# Modular Routing (Quran app)
 
-Routing via `flutter_modular`. **Never** navigate with string literals.
+Routing + DI via `flutter_modular`. **Never** navigate with string literals.
 
-## Typed routes
+## Typed routes — one file, per-module classes
+All route literals live in `lib/core/services/routes/routes_names.dart`:
+- `RoutesNames` holds the module **base paths** (`quranBase = '/quran/'`, `adhanBase = '/adhan/'`, …), mounted in `AppModule.routes`.
+- Each module gets a `<X>Routes` class with `static const` sub-paths and `static String` builders that compose the base + query params.
+
 ```dart
-class AppRoutes {
-  static const _courses = '/courses';
-  static String courses() => _courses;
-  static String courseDetail({required String id}) => '$_courses/$id';
+class QuranRoutes {
+  QuranRoutes._();
+  static const String reader = '/reader';                       // sub-route inside the module
+  static String readerFromAyah(int surah, int ayah) =>
+      '${RoutesNames.quranBase}reader?surah=$surah&ayah=$ayah';  // full path builder
+  static String readerFromPage(int page) =>
+      '${RoutesNames.quranBase}reader?page=$page';
 }
 ```
 Navigate:
 ```dart
-Modular.to.push(AppRoutes.courseDetail(id: course.id)); // ✅
-Modular.to.push('/courses/${course.id}');                // ❌ never
+Modular.to.pushNamed(QuranRoutes.readerFromAyah(2, 255)); // ✅ typed builder
+Modular.to.navigate(RoutesNames.homeBase);                // ✅ replace stack
+Modular.to.pushNamed('/quran/reader?surah=2&ayah=255');   // ❌ never a literal
 ```
 
-## Module registration
-Each feature is a Modular module exposing its routes; the root module wires children. Bind dependencies in `binds.dart`; bind routes in the module's `routes`.
-
-## Role-based routing (core to Taliah)
-- After login, `SessionService.role` ∈ {student, parent, teacher}.
-- `modules/shell/` provides three role scaffolds; the root router sends the user to the correct shell.
-- `RoleGuard` blocks routes not allowed for the current role:
+## Reading params in the screen
+Query/path params arrive via `r.args` when the module binds the route:
 ```dart
-class RoleGuard extends RouteGuard {
-  final List<UserRole> allowed;
-  RoleGuard(this.allowed) : super(redirectTo: AppRoutes.login());
+r.child(QuranRoutes.reader, child: (_) => SNMushafReader(args: r.args));
+```
+Parse `args.queryParams['surah']` inside the screen/module — keep parsing at the route boundary, not scattered.
+
+## Module template
+```dart
+class QuranModule extends Module {
   @override
-  Future<bool> canActivate(String path, ModularRoute route) async =>
-      allowed.contains(Modular.get<SessionService>().role);
+  void binds(i) {
+    i.addSingleton<BoxBookmarks>(BoxBookmarks.new);   // boxes/datasources
+    i.add<DSLocalQuran>(DSLocalQuran.new);
+    i.add<RQuran>(RImplQuran.new);                    // interface → impl
+    i.add(UCGetPageLayout.new);                        // usecases
+    i.addSingleton<CBAudioPlayer>(CBAudioPlayer.new);  // app-wide cubit
+    i.add<CBQuranReader>(CBQuranReader.new);            // per-screen cubit
+  }
+
+  @override
+  void routes(r) {
+    r.child(QuranRoutes.surahList, child: (_) => const SNSurahList());
+    r.child(QuranRoutes.reader,    child: (_) => SNMushafReader(args: r.args));
+  }
 }
 ```
-Apply to role-scoped routes (e.g. mailbox = teacher only, children = parent only).
+Mount the module at its base in the root `AppModule` (`lib/core/services/routes/app_module.dart`).
 
-## Params
-- Pass typed args through route methods; parse in the module.
-- For child-scoped parent screens, the selected child comes from `MgChildren`, not the route, unless deep-linking.
+## DI lifecycle
+- `i.add<T>(T.new)` — factory (new per request): per-screen cubits, usecases, repos, datasources.
+- `i.addSingleton<T>(T.new)` — single instance: Hive box wrappers, `BaseDio`, app-wide cubits (audio, downloads, reciter).
+
+## This app has no role gating
+It's a single-user devotional app — there is **no** `RoleGuard`, `SessionService.role`, or role-scoped routing. Don't add them.
 
 ## Checklist
-- [ ] Typed `AppRoutes` method (no string)
-- [ ] Route registered in the module
-- [ ] `RoleGuard` on role-scoped routes
+- [ ] Typed `*Routes` builder (no string literal)
+- [ ] Route registered with `r.child(...)` in the module
+- [ ] Module mounted at its base in `AppModule`
+- [ ] New module base added to `RoutesNames`
 - [ ] Back/forward behaves in RTL

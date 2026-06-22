@@ -1,11 +1,11 @@
 ---
 name: commit
-description: Use when the user asks to commit changes in Taliah — "commit", "commit changes", "commit this", "save to git", "git commit", "make a commit". Stages the work, gates on flutter analyze, and writes a Conventional-Commit message with NO Co-Authored-By / AI / self attribution. Does not push.
+description: Use when the user asks to commit changes in the Quran app — "commit", "commit changes", "commit this", "save to git", "git commit", "make a commit". Stages the work, gates on flutter analyze, and writes a Conventional-Commit message with NO Co-Authored-By / AI / self attribution. Does not push.
 ---
 
-# Commit (Taliah)
+# Commit (Quran app)
 
-Commit Taliah changes consistently. **Only run when the user explicitly asks to commit.**
+Commit changes consistently. **Only run when the user explicitly asks to commit.**
 
 ## Hard rules
 - 🚫 **No attribution.** Never add `Co-Authored-By`, "Generated with", a Claude/AI line, or any actor/self mention — even if a tool default adds one. This is the #1 rule.
@@ -13,15 +13,14 @@ Commit Taliah changes consistently. **Only run when the user explicitly asks to 
 - ✅ **Gate first.** `flutter analyze` must be 0 errors before committing.
 - ✅ Conventional Commits format (below). Subject describes the *change*, not the actor — no "this commit"/"I changed".
 - Commit on the current branch (this project commits to `main`). Don't create branches unless asked.
-- Flutter/Dart run via FVM: `/opt/homebrew/bin/fvm flutter ...`.
 
 ## Steps
 1. **Inspect:** `git status -s` and `git diff` (staged + unstaged) to understand the change set. If not a git repo, ask before `git init`.
-2. **Gate:** run `/opt/homebrew/bin/fvm flutter analyze`. If it reports errors, STOP and report — don't commit a broken tree. (Run `flutter test` too when logic changed.)
-3. **Stage:** `git add -A` (or only the relevant paths if the user scoped it). Re-check that nothing ignored/heavy is staged: `git ls-files` should not include `build/`, `.dart_tool/`, `.fvm/`, secrets.
+2. **Gate:** run `flutter analyze`. If it reports errors, STOP and report — don't commit a broken tree. (No test suite exists; `flutter analyze` is the only automated gate.)
+3. **Stage:** `git add -A` (or only the relevant paths if the user scoped it). Re-check nothing heavy/ignored is staged: `git ls-files` should not include `build/`, `.dart_tool/`, secrets, or generated junk.
 4. **Classify:** pick `type` and a short `scope` from the diff:
-   - `feat` new feature/screen/module · `fix` bug/breakage · `refactor` no-behavior change · `docs` · `style` formatting/theme · `test` · `chore` deps/config.
-   - scope = the module or area (`core`, `theme`, `auth`, `courses`, `routing`, `i18n`, …).
+   - `feat` new feature/screen/module · `fix` bug/breakage · `refactor` no-behavior change · `docs` · `style` formatting/theme · `chore` deps/config.
+   - scope = the module or area (`quran`, `prayer`, `adhan`, `azkar`, `tasbih`, `qibla`, `reminders`, `home`, `khatma`, `core`, `theme`, `routing`, `i18n`, …).
 5. **Write & commit** via stdin so the body keeps its formatting:
    ```bash
    git commit -F - <<'EOF'
@@ -31,15 +30,15 @@ Commit Taliah changes consistently. **Only run when the user explicitly asks to 
    - Bullet points for notable changes or rationale
    EOF
    ```
-6. **Verify:** `git log --oneline -1` and confirm `git log -1 --format=%B | grep -iE '^(co-authored|generated)'` returns nothing. (Anchor to line start — a commit that merely *mentions* the phrase in its body is fine; only a real trailer line is a problem.)
+6. **Verify:** `git log --oneline -1`, and confirm `git log -1 --format=%B | grep -iE '^(co-authored|generated)'` returns nothing. (Anchor to line start — a body that merely *mentions* the phrase is fine; only a real trailer line is a problem.)
 
 ## Message template
 ```
-fix(theme): align buttons to teal action color
+refactor(reminders): polish cards, RTL tip with svg
 
-Map renamed tokens and route sizing through the *t wrapper.
-- WAppButton primary now teal, secondary maroon
-- screenutil isolated to the wrapper + app_widget
+Tighten the reminder form layout and reuse the gradient app bar.
+- Card spacing routed through screenutil getters
+- RTL tip icon mirrors via the localize-rotation helper
 ```
 
 ## Don't

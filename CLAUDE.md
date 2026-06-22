@@ -243,11 +243,14 @@ class MBookmark {
 }
 ```
 
-After adding/changing a Hive model, run:
-```bash
-flutter pub run build_runner build --delete-conflicting-outputs
-```
-…and tell the user to hot **restart** (not reload).
+After adding/changing a Hive model:
+
+> ⚠️ **`build_runner` is currently broken in this repo** — it fails to generate. Do **not** rely on it. Hand-edit the generated files instead:
+> - The model's `*.g.dart` adapter (mirror an existing adapter's structure).
+> - `lib/modules/quran/data/sources/local/quran_hive_registrar.dart` (`hive_registrar.g.dart`) — register the new adapter.
+> - `lib/main.dart` — open the new box alongside the other ~22 boxes.
+
+Then tell the user to hot **restart** (not reload).
 
 ---
 
@@ -267,18 +270,14 @@ flutter pub run build_runner build --delete-conflicting-outputs
 ## 12. Quick command cheatsheet
 
 ```bash
-# After model/freezed changes
-flutter pub run build_runner build --delete-conflicting-outputs
-
-# Watch mode (good for active development)
-flutter pub run build_runner watch --delete-conflicting-outputs
-
 # Auto-fix lint issues
 dart fix --apply
 
 # Check the project compiles cleanly — this is the verification gate
 flutter analyze
 ```
+
+> ⚠️ **`build_runner` is broken here.** `flutter pub run build_runner build` fails — do not depend on it for `freezed`/Hive codegen. For Hive model changes, hand-edit the `*.g.dart` adapter + `quran_hive_registrar.dart` + `main.dart` (see §10).
 
 > **No test suite exists yet** (no `test/` directory). `flutter analyze` (zero errors) is the only automated gate. Lint config is stock `package:flutter_lints/flutter.yaml` (`analysis_options.yaml`), no custom rules.
 
@@ -298,9 +297,10 @@ Things **I (the AI) should never run** in this project:
 5. Never abandon a task half-done. If `flutter analyze` shows new errors after your edit, you're not done.
 
 ## Where to look
-- Full roadmap → `docs/TALIAH_BUILD_PLAN.md`
-- Detailed conventions → `docs/INSTRUCTIONS.md`
-- Theme tokens & rules → `docs/THEME_GUIDE.md`
+- Detailed conventions (long-form spec) → `.claude/instructions.md`
+- Roadmap / all modules → `docs/plans/All_Modules_Plan.md`
+- Quran reader deep-dive → `docs/plans/Quran_Module_Plan.md`
+- Theme tokens → `lib/core/theme/` (`AppColors`, `AppTextStyles`, `app_themes.dart`)
 - Skills (task playbooks) → `.claude/skills/`
 - Subagents → `.claude/agents/`
 

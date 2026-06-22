@@ -1,11 +1,11 @@
 ---
 name: pr-review
-description: Use when reviewing a pull request, diff, branch, or set of changes in Taliah before merge. Triggers on "review this PR", "review my changes", "check this diff", "is this ready to merge", "code review", "review before commit". Produces a structured, severity-tagged review enforcing Taliah's architecture, naming, provider, mock-first, i18n/RTL, and quality gates.
+description: Use when reviewing a pull request, diff, branch, or set of changes in the Quran app before merge. Triggers on "review this PR", "review my changes", "check this diff", "is this ready to merge", "code review", "review before commit". Produces a structured, severity-tagged review enforcing the app's architecture, naming, Cubit state, data-layer, i18n/RTL, and quality gates.
 ---
 
-# PR Review (Taliah)
+# PR Review (Quran app)
 
-Review against Taliah conventions. Be direct — flag every violation with a fix, not a vibe. Block on 🔴, request changes on 🟠, note 🟡.
+Review against this app's conventions. Be direct — flag every violation with a fix, not a vibe. Block on 🔴, request changes on 🟠, note 🟡.
 
 ## Pre-flight
 1. Read the diff fully + the files it touches (not just the hunks).
@@ -15,44 +15,44 @@ Review against Taliah conventions. Be direct — flag every violation with a fix
 ## Review dimensions (score each)
 
 ### 🏛 Architecture & layering
-- [ ] Code in the right layer (no Dio/datasource in presentation; no logic in screens/managers).
-- [ ] Interfaces in `domain/repos/`, impls in `data/repos/` — never mixed.
-- [ ] Models (`M*`) mapped to entities (`Param*`) before reaching UI.
-- [ ] One-direction flow: screen → manager → usecase → repo → datasource.
+- [ ] Code in the right layer (no Dio/datasource/Hive box in presentation; no logic in screens/cubits).
+- [ ] Interfaces in `domain/repos/` (`r_*`), impls in `data/repos/` (`r_impl_*`) — never mixed.
+- [ ] Repo methods return `Either<Failure, T>`; datasources throw, repo converts.
+- [ ] One-direction flow: screen → cubit → usecase → repo → datasource/box.
 
 ### 🏷 Naming & structure
-- [ ] Correct prefixes/locations (`sn_`, `w_`, `mg_`, `f_`, `param_`, `m_`, `r_`, `r_impl_`, `uc_`, `ds_`).
-- [ ] No `Screen` suffix; no project prefixes on components.
+- [ ] Correct prefixes/locations (`sn_`, `w_`, `cb_`, `s_`, `f_`, `param_`/`e_`, `m_`, `box_`, `r_`, `r_impl_`, `uc_`, `ds_`).
+- [ ] No `Screen` suffix; no project prefixes on shared components.
 - [ ] No class > 300 lines; no function widgets.
 
-### 🧩 State (provider)
-- [ ] `Mg*` extends `ChangeNotifier`; `isLoading`/`errorMessage`; `notifyListeners()` after changes.
-- [ ] `Consumer`/`Selector` wraps only reactive subtree.
-- [ ] No MobX. No `notifyListeners()` in build.
+### 🧩 State (Cubit)
+- [ ] `CB*` extends `Cubit<S*>`; state is freezed; `emit(state.copyWith(...))`.
+- [ ] `BlocBuilder`/`BlocSelector` wraps only the reactive subtree, not the `Scaffold`.
+- [ ] No `Bloc<Event,State>`, no `provider`/`ChangeNotifier`, no MobX. `Either`/`Failure` folded in the cubit, not the UI.
 
-### 📦 Mock-first data
-- [ ] Both `ds_remote_*` (dormant) and `ds_mock_*` present.
-- [ ] Repo selects source via `ApiFlag`; errors via `_handleDioException` (both `error`+`message`).
-- [ ] Mock JSON mirrors real API shape; raw values; has a failure path.
+### 📦 Data layer
+- [ ] Errors mapped to `Failure` in `r_impl_*` (`try/on DioException/catch`).
+- [ ] New Hive boxes opened in `main.dart`; box wrappers `addSingleton`.
+- [ ] No invented `ds_mock_*` / `MockDataService` / `ApiFlag` (not used here); endpoints from `end_points.dart`.
 
 ### 🌐 i18n & RTL
 - [ ] No hardcoded user-facing strings.
-- [ ] Keys added to BOTH `ar.json` + `en.json`; FLAT; prefixed.
-- [ ] Directional insets/alignment; verified AR + EN.
+- [ ] Keys added to BOTH `ar.json` + `en.json`; FLAT; prefixed; used via `.tr()`.
+- [ ] Directional insets/alignment; verified AR (default) + EN.
 
 ### 🎨 UI quality
-- [ ] Shared components used (`WSharedScaffold`, `WLoadingIndicator`, `WCachedImage`, `WAppButton`...).
-- [ ] Sizing via the `*t` wrapper (`.wt`/`.ht`/`.spt`/`.rt`), not raw screenutil getters.
-- [ ] Loading/error/empty states on every list/detail.
+- [ ] Shared components used (`WSharedScaffold`, `WGradientAppBar`, `WAppButton`, `WLoadingOverlay`, `WEmptyState`, form fields).
+- [ ] Sizing via screenutil `.w`/`.h`/`.sp`/`.r` (or `core/responsive` helpers), no raw pixels.
+- [ ] Loading/error/empty states driven off `LoadStatus`.
 
-### 🧭 Routing
-- [ ] Typed `AppRoutes` methods only; no string routes.
-- [ ] `RoleGuard` applied to role-scoped routes.
+### 🧭 Routing & DI
+- [ ] Typed `*Routes` builders only; no string routes.
+- [ ] Module mounted in `AppModule`; correct `add` vs `addSingleton` lifecycle.
 
 ### 🛡 Safety
-- [ ] No `!` null assertion unless provably safe; null-aware used.
-- [ ] Package imports only; no relative imports.
-- [ ] No secrets/keys committed.
+- [ ] No `!` null assertion unless provably safe on the same line; null-aware used.
+- [ ] Package imports only (`package:quran/...`), sorted; no relative imports.
+- [ ] No secrets/keys committed; no raw GPS/token in logs.
 
 ## Output format
 ```
@@ -71,4 +71,4 @@ Review against Taliah conventions. Be direct — flag every violation with a fix
 ### ✅ Good
 - what was done well
 ```
-Always include the exact fix or a corrected snippet for 🔴/🟠 items. Output full corrected files when the change is non-trivial.
+Always include the exact fix or a corrected snippet for 🔴/🟠 items. Output full corrected files when the change is non-trivial. Do not approve with any 🔴 open.

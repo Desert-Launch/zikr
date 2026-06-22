@@ -1,86 +1,64 @@
 ---
 name: logging
-description: Use whenever adding, reviewing, or fixing logging in Taliah — any debug output, error reporting, network/request tracing, or replacing print/debugPrint. Triggers on "log", "logger", "print", "debugPrint", "trace", "console", "why is this failing", or adding any new feature/datasource/repo that performs an action worth recording. Enforces a single AppLogger, correct levels, mandatory redaction of secrets/student PII, and Clean Architecture log placement.
+description: Use whenever adding, reviewing, or fixing logging in the Quran app — any debug output, error reporting, network/request tracing, or replacing print/debugPrint. Triggers on "log", "logger", "print", "debugPrint", "trace", "console", "why is this failing", or adding any new datasource/repo that performs an action worth recording. Enforces the single AppLogger (Talker-backed), correct levels, redaction of secrets/location, and Clean Architecture log placement.
 ---
 
-# Logging (Taliah)
+# Logging (Quran app)
 
-One logger. Correct levels. Never log secrets or student PII. Logs are a debugging aid, not noise.
-
-## The one rule that matters most
-🚫 **NEVER log:** auth tokens, passwords, OTPs, full phone numbers, national IDs, GPS coordinates of a child, exam answers, or any student/parent personal data. This is a Qatar MOE / minors-data app — leaked PII in logs is a compliance incident, not a bug. When in doubt, redact.
+One logger: **`AppLogger`**, backed by **Talker** (`talker_flutter`). Correct levels. Never log secrets or precise user location. Logs are a debugging aid, not noise.
 
 ## Use `AppLogger` only — never `print` / `debugPrint`
-Logging lives in `core/services/logging/app_logger.dart`, backed by the `logger` package (pretty console in debug, silenced/forwarded in release).
+Logging lives in `lib/core/services/logging/app_logger.dart`. `AppLogger.init()` runs first in `main()`. The Talker instance also feeds `talker_dio_logger` for network tracing and `talker_flutter` for the in-app log screen.
 
 ```dart
-// core/services/logging/app_logger.dart
-import 'package:logger/logger.dart';
-import 'package:flutter/foundation.dart';
-
-class AppLogger {
-  AppLogger._();
-  static final Logger _l = Logger(
-    level: kReleaseMode ? Level.warning : Level.debug, // quiet in prod
-    printer: PrettyPrinter(methodCount: 0, errorMethodCount: 6, colors: true),
-  );
-
-  static void t(String m) => _l.t(m);                 // trace (verbose flow)
-  static void d(String m) => _l.d(m);                 // debug (dev info)
-  static void i(String m) => _l.i(m);                 // info (lifecycle events)
-  static void w(String m) => _l.w(m);                 // warning (recoverable)
-  static void e(String m, [Object? err, StackTrace? s]) => _l.e(m, error: err, stackTrace: s);
-}
+AppLogger.debug('openPage start page=$page', tag: 'CBQuranReader');
+AppLogger.info('reschedule complete count=$n', tag: 'CBReminders');
+AppLogger.warning('font preload retried', tag: 'WMushafPage');
+AppLogger.error('getPage failed', error: e, stackTrace: st, tag: 'RImplQuran');
 ```
+
+The API is `debug` / `info` / `warning` / `error`, each taking an optional `tag:`. `error` also takes `error:` and `stackTrace:`. (For caught exceptions, `ErrorHelper.printDebugError(name:, error:, stackTrace:)` is the established helper in repos.)
 
 ## Levels — when to use which
-| Level | Call | Use for | Example |
-|-------|------|---------|---------|
-| trace | `AppLogger.t` | fine-grained flow | "MgCourses.load() start" |
-| debug | `AppLogger.d` | dev-only values (redacted) | "fetched 12 courses from mock" |
-| info  | `AppLogger.i` | meaningful events | "login success role=teacher" |
-| warning | `AppLogger.w` | recoverable issues | "mock latency injected failure, retrying" |
-| error | `AppLogger.e` | caught exceptions + stack | "course fetch failed" + err + stack |
+| Level | Call | Use for |
+|-------|------|---------|
+| debug | `AppLogger.debug` | dev-only flow + values | 
+| info  | `AppLogger.info` | meaningful lifecycle events (boot, reschedule, downloads done) |
+| warning | `AppLogger.warning` | recoverable issues (retry, fallback, permission denied) |
+| error | `AppLogger.error` | caught exceptions — ALWAYS pass `error:` + `stackTrace:` |
 
-Default to `debug` for routine dev output. Reserve `info` for events you'd want in a release/warning build. `error` ALWAYS passes the exception object + stack trace.
+Default to `debug` for routine output. Reserve `info` for events worth seeing in a noisy build. `error` always carries the exception + stack.
+
+## What NOT to log
+🚫 This is a personal devotional app — **never log:** precise GPS coordinates (used for prayer times/Qibla), any auth token, or full device identifiers. Coordinates: log "location resolved" or a coarse country/city, never raw lat/lng.
 
 ## Where logs go (Clean Architecture)
-- **Data layer (`r_impl_*`, `ds_*`)**: log network/mock calls and map+log exceptions. This is the primary place errors are recorded.
+- **Data (`r_impl_*`, `ds_*`)**: primary place errors are recorded. Map + log exceptions:
   ```dart
-  } on DioException catch (e, s) {
-    AppLogger.e('getCourses failed', e, s);
-    return Left(_handleDioException(e));
+  } on DioException catch (e) {
+    AppLogger.error('getTimings failed', error: e, tag: 'RImplPrayer');
+    return Left(_handleDio(e));
+  } catch (e, st) {
+    ErrorHelper.printDebugError(name: 'RImplPrayer.getTimings', error: e, stackTrace: st);
+    return Left(Failure.unexpectedFailure(message: e.toString()));
   }
   ```
-- **Domain (`uc_*`)**: usually no logging — keep usecases pure. Log only a genuinely notable business decision.
-- **Presentation (`mg_*`)**: `trace`/`debug` for state transitions if useful; never log raw API payloads here.
+- **Domain (`uc_*`)**: usually silent — keep usecases pure. Log only a genuinely notable decision.
+- **Presentation (`cb_*`)**: `debug` for state transitions if useful; never log raw payloads.
 - **Screens (`sn_*`, `w_*`)**: no logging. UI doesn't log.
 
-## Redaction helpers (use them)
-Add to the logger or an extension; always pass user-identifying values through these:
-```dart
-String maskPhone(String p) => p.length < 4 ? '***' : '****${p.substring(p.length - 3)}';
-String maskId(String id) => '***${id.length}chars';
-// tokens/coords → never log at all, not even masked
-```
-Example: `AppLogger.i('login ok user=${maskPhone(phone)} role=$role');`
-
 ## Network logging
-- In debug only, attach a Dio interceptor that logs method + path + status — **strip Authorization headers and request bodies containing credentials**.
-- Mock datasources (`ds_mock_*`): log at `debug` which JSON file was loaded + whether a failure was injected.
+- The Dio `talker_dio_logger` interceptor traces method + path + status in debug. Ensure it does not dump auth headers or coordinate-bearing query params in release.
 
 ## Checklist before "done"
-- [ ] No `print` / `debugPrint` anywhere (use `AppLogger`).
-- [ ] No token / password / OTP / child GPS / full phone / national ID in any log.
-- [ ] User identifiers masked via helpers.
-- [ ] `error` logs include the exception object + stack trace.
-- [ ] Correct level (not everything at `info`).
-- [ ] No logging inside screens/widgets.
-- [ ] Release build stays quiet (level ≥ warning).
+- [ ] No `print` / `debugPrint` (use `AppLogger`)
+- [ ] No raw GPS / token / device id in any log
+- [ ] `error` logs pass `error:` + `stackTrace:`
+- [ ] Correct level (not everything at `info`)
+- [ ] No logging inside screens/widgets
 
 ## Anti-patterns
-- ❌ `print('user: $user')` → leaks the whole object, wrong API.
-- ❌ `AppLogger.i(response.data)` → may dump PII/secrets; and it's debug-level info.
-- ❌ Logging in a loop over every list item → noise; log the count.
-- ❌ `catch (e) { AppLogger.e(e.toString()); }` → loses the stack trace; pass `e, s`.
+- ❌ `print('state: $state')` — wrong API, leaks the whole object.
+- ❌ `AppLogger.error(e.toString())` — loses the stack; pass `error: e, stackTrace: st`.
+- ❌ Logging every item in a loop — log the count.
 - ❌ Swallowing an exception with only a log and no `Left(Failure)` return.
