@@ -160,23 +160,23 @@ class _SNHomeState extends State<SNHome> {
         color: _gold,
         route: RoutesNames.qiblaBase,
       ),
-      // gap(),
-      // row(
-      //   WHomeFeatureCard(
-      //     icon: Assets.icons.signal.path,
-      //     title: 'home_radio'.tr(),
-      //     subtitle: 'home_radio_hint'.tr(),
-      //     color: _gold,
-      //     route: RoutesNames.adhanBase,
-      //   ),
-      //   WHomeFeatureCard(
-      //     icon: Assets.icons.tv.path,
-      //     title: 'home_live'.tr(),
-      //     subtitle: 'home_live_hint'.tr(),
-      //     color: _green,
-      //     route: RoutesNames.adhanBase,
-      //   ),
-      // ),
+      gap(),
+      row(
+        WHomeFeatureCard(
+          icon: Assets.icons.signal.path,
+          title: 'home_radio'.tr(),
+          subtitle: 'home_radio_hint'.tr(),
+          color: _gold,
+          route: RadioRoutes.fullHome(),
+        ),
+        WHomeFeatureCard(
+          icon: Assets.icons.tv.path,
+          title: 'home_live'.tr(),
+          subtitle: 'home_live_hint'.tr(),
+          color: _green,
+          route: RoutesNames.adhanBase,
+        ),
+      ),
       gap(),
       row(
         WHomeFeatureCard(

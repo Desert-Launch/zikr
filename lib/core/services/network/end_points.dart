@@ -25,6 +25,12 @@ class EndPoints {
   static const String aladhanBase = 'https://api.aladhan.com/v1';
   static const String aladhanTimings = '/timings';
 
+  // mp3quran.net — live Quran radio catalogue (free, no auth). Reached via a
+  // dedicated Dio in DSRemoteRadio, NOT the shared BaseDio, so the app's
+  // Authorization header is never sent to a third party.
+  static const String mp3QuranBase = 'https://mp3quran.net/api/v3';
+  static const String mp3QuranRadios = '/radios';
+
   // Adhan voice catalog (host as JSON on your CDN). Lets NEW voices ship
   // without an app update. Empty = remote catalog disabled: the app uses the
   // bundled `assets/data/adhans.json` only and skips the network entirely.

@@ -65,6 +65,8 @@ import 'package:quran/modules/quran/data/repos/r_impl_quran.dart';
 import 'package:quran/modules/quran/domain/usecases/uc_get_daily_verse.dart';
 import 'package:quran/modules/quran/presentation/cubits/cb_daily_verse.dart';
 import 'package:quran/modules/quran/quran_module.dart';
+import 'package:quran/modules/radio/presentation/cubits/cb_radio_player.dart';
+import 'package:quran/modules/radio/radio_module.dart';
 import 'package:quran/modules/reminders/data/sources/local/box_reminders.dart';
 import 'package:quran/modules/reminders/presentation/cubits/cb_reminders.dart';
 import 'package:quran/modules/reminders/reminders_module.dart';
@@ -269,6 +271,9 @@ class AppModule extends Module {
         historyBox: i.get<BoxTasbihHistory>(),
       ),
     );
+    // Live Quran radio player — app-wide so playback survives leaving the radio
+    // screen. Lazy so its AudioPlayer is only created on first radio use.
+    i.addLazySingleton<CBRadioPlayer>(CBRadioPlayer.new);
     i.addSingleton<CBReminders>(
       () => CBReminders(
         box: i.get<BoxReminders>(),
@@ -299,6 +304,7 @@ class AppModule extends Module {
     r.module(RoutesNames.quranBase, module: QuranModule());
     r.module(RoutesNames.prayerBase, module: PrayerModule());
     r.module(RoutesNames.adhanBase, module: AdhanModule());
+    r.module(RoutesNames.radioBase, module: RadioModule());
     r.module(RoutesNames.azkarBase, module: AzkarModule());
     r.module(RoutesNames.tasbihBase, module: TasbihModule());
     r.module(RoutesNames.remindersBase, module: RemindersModule());

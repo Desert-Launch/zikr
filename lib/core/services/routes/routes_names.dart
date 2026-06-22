@@ -15,6 +15,7 @@ class RoutesNames {
   static const String quranBase = '/quran/';
   static const String prayerBase = '/prayer/';
   static const String adhanBase = '/adhan/';
+  static const String radioBase = '/radio/';
   static const String azkarBase = '/azkar/';
   static const String tasbihBase = '/tasbih/';
   static const String remindersBase = '/reminders/';
@@ -37,6 +38,15 @@ class AdhanRoutes {
       '${RoutesNames.adhanBase}notifications';
   static String voicePicker(String prayerKey) =>
       '${RoutesNames.adhanBase}picker?prayer=$prayerKey';
+}
+
+class RadioRoutes {
+  RadioRoutes._();
+
+  /// Sub-route within the radio module ('/radio/').
+  static const String home = '/';
+
+  static String fullHome() => RoutesNames.radioBase;
 }
 
 class QuranRoutes {
