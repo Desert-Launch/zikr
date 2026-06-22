@@ -92,9 +92,18 @@ class RImplQuran implements RQuran {
       final normalised = DSLocalQuran.normaliseForSearch(q);
       if (normalised.isEmpty) return const Right([]);
       final raw = await _local.searchNormalised(normalised, limit: limit);
+      // Resolve surah names once so each hit can show a human-readable label.
+      final surahs = await _local.loadSurahs();
+      final byNumber = {for (final s in surahs) s.number: s};
       // Sort by (surah, ayah) ascending — matches the surface order users expect.
       final hits = raw
-          .map((e) => QuranSearchHit(ref: e.ref, snippet: e.snippet))
+          .map((e) => QuranSearchHit(
+                ref: e.ref,
+                snippet: e.snippet,
+                page: e.page,
+                surahArabicName: byNumber[e.ref.surah]?.arabic ?? '',
+                surahName: byNumber[e.ref.surah]?.name ?? '',
+              ))
           .toList()
         ..sort((a, b) {
           final s = a.ref.surah.compareTo(b.ref.surah);

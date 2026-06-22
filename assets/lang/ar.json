@@ -83,6 +83,8 @@
   "search_no_results": "لا توجد نتائج",
   "search_results_count": "{{count}} نتيجة",
   "search_min_chars": "اكتب حرفين على الأقل",
+  "search_page": "صفحة {{page}}",
+  "search_ayah": "آية {{ayah}}",
   "player_now_playing": "قيد التشغيل",
   "player_surah_label": "سورة",
   "player_ayah_label": "الآية",

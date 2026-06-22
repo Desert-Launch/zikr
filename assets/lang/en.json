@@ -92,6 +92,8 @@
   "search_no_results": "No results found",
   "search_results_count": "{{count}} result(s)",
   "search_min_chars": "Type at least 2 characters",
+  "search_page": "Page {{page}}",
+  "search_ayah": "Ayah {{ayah}}",
 
   "player_now_playing": "Now playing",
   "player_surah_label": "Surah",

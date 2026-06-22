@@ -7,9 +7,22 @@ import 'package:quran/modules/quran/domain/entities/e_quran_font_mode.dart';
 import 'package:quran/modules/quran/domain/entities/param_ayah_ref.dart';
 
 class QuranSearchHit {
-  const QuranSearchHit({required this.ref, required this.snippet});
+  const QuranSearchHit({
+    required this.ref,
+    required this.snippet,
+    required this.page,
+    this.surahArabicName = '',
+    this.surahName = '',
+  });
   final ParamAyahRef ref;
   final String snippet;
+  final int page;
+
+  /// Arabic-script surah name, e.g. "البقرة".
+  final String surahArabicName;
+
+  /// Transliterated surah name, e.g. "Al-Baqarah".
+  final String surahName;
 }
 
 abstract class RQuran {
