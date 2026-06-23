@@ -14,6 +14,8 @@ class WAzkarCounterCard extends StatelessWidget {
     required this.green,
     required this.onTap,
     required this.onReset,
+    required this.onPrevious,
+    required this.onNext,
   });
 
   final MAzkarItem item;
@@ -21,6 +23,8 @@ class WAzkarCounterCard extends StatelessWidget {
   final Color green;
   final VoidCallback onTap;
   final VoidCallback onReset;
+  final VoidCallback onPrevious;
+  final VoidCallback onNext;
 
   @override
   Widget build(BuildContext context) {
@@ -73,32 +77,71 @@ class WAzkarCounterCard extends StatelessWidget {
               ),
             ),
             SizedBox(height: 20.h),
-            InkWell(
-              onTap: onReset,
-              child: Container(
-                width: 120.w,
-                height: 32.h,
-                decoration: BoxDecoration(
-                  color: Color(0xFFF8F7F4),
-                  borderRadius: BorderRadius.circular(30.r),
-                  border: Border.all(color: green.withValues(alpha: 0.2)),
-                  boxShadow: [
-                    BoxShadow(
-                      color: Color(0xFFF8F7F4).withValues(alpha: 0.7),
-                      blurRadius: 10,
-                      offset: const Offset(0, 4),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                InkWell(
+                  onTap: onPrevious,
+                  customBorder: const CircleBorder(),
+                  child: Container(
+                    width: 44.r,
+                    height: 44.r,
+                    alignment: Alignment.center,
+                    decoration: BoxDecoration(
+                      color: green,
+                      shape: BoxShape.circle,
+                      boxShadow: [
+                        BoxShadow(color: green.withValues(alpha: 0.2), blurRadius: 10, offset: const Offset(0, 4)),
+                      ],
                     ),
-                  ],
+                    child: Icon(Icons.arrow_back_ios_new, size: 18.sp, color: Colors.white),
+                  ),
                 ),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Text('azkar_reset_counter'.tr(), style: AppTextStyles.ink14W500),
-                    SizedBox(width: 4.w),
-                    const Icon(Icons.restart_alt_rounded, size: 14),
-                  ],
+                InkWell(
+                  onTap: onReset,
+                  child: Container(
+                    width: 120.w,
+                    height: 32.h,
+                    decoration: BoxDecoration(
+                      color: Color(0xFFF8F7F4),
+                      borderRadius: BorderRadius.circular(30.r),
+                      border: Border.all(color: green.withValues(alpha: 0.2)),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Color(0xFFF8F7F4).withValues(alpha: 0.7),
+                          blurRadius: 10,
+                          offset: const Offset(0, 4),
+                        ),
+                      ],
+                    ),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Text('azkar_reset_counter'.tr(), style: AppTextStyles.ink14W500),
+                        SizedBox(width: 4.w),
+                        const Icon(Icons.restart_alt_rounded, size: 14),
+                      ],
+                    ),
+                  ),
                 ),
-              ),
+                InkWell(
+                  onTap: onNext,
+                  customBorder: const CircleBorder(),
+                  child: Container(
+                    width: 44.r,
+                    height: 44.r,
+                    alignment: Alignment.center,
+                    decoration: BoxDecoration(
+                      color: green,
+                      shape: BoxShape.circle,
+                      boxShadow: [
+                        BoxShadow(color: green.withValues(alpha: 0.2), blurRadius: 10, offset: const Offset(0, 4)),
+                      ],
+                    ),
+                    child: Icon(Icons.arrow_forward_ios, size: 18.sp, color: Colors.white),
+                  ),
+                ),
+              ],
             ),
           ],
         ),

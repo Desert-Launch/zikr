@@ -117,6 +117,8 @@ class _SNAzkarPlayerState extends State<SNAzkarPlayer> {
                               green: _green,
                               onTap: _cubit.tap,
                               onReset: _cubit.resetCurrent,
+                              onPrevious: _cubit.previous,
+                              onNext: _cubit.next,
                             ),
                             if (virtue != null && virtue.isNotEmpty) ...[
                               SizedBox(height: 12.h),
