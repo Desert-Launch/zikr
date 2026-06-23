@@ -4,6 +4,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:quran/modules/quran/data/datasources/local/ds_local_quran.dart';
 import 'package:quran/modules/quran/data/datasources/local/ds_qpc_font_loader.dart';
 import 'package:quran/modules/quran/data/models/m_bookmark.dart';
+import 'package:quran/modules/quran/domain/entities/e_quran_font_mode.dart';
 import 'package:quran/modules/quran/domain/entities/param_ayah_ref.dart';
 import 'package:quran/modules/quran/domain/repos/r_bookmarks.dart';
 import 'package:quran/modules/quran/domain/usecases/uc_get_page_layout.dart';
@@ -102,8 +103,12 @@ class CBMushafReader extends Cubit<SMushafReader> {
         fontMode: mode,
       ),
     );
-    // Preload fonts in parallel with layout JSON fetch.
-    final preloadFut = _fonts.preloadWindow(page, mode: mode);
+    // Preload fonts in parallel with layout JSON fetch. Tajweed (Approach B)
+    // renders with the static Amiri font, not the per-page QPC glyph fonts, so
+    // skip the preload there.
+    final preloadFut = mode == EQuranFontMode.tajweedV4
+        ? Future<void>.value()
+        : _fonts.preloadWindow(page, mode: mode);
     final layoutRes = await _getPage(page, mode: mode);
     await preloadFut;
     await layoutRes.fold(

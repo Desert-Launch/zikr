@@ -1,33 +1,53 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_modular/flutter_modular.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:localize_and_translate/localize_and_translate.dart';
+import 'package:quran/modules/quran/domain/entities/e_reader_theme.dart';
+import 'package:quran/modules/quran/domain/entities/e_tajweed_rule.dart';
+import 'package:quran/modules/quran/presentation/cubits/cb_reader_settings.dart';
+import 'package:quran/modules/quran/presentation/widgets/tajweed_palette.dart';
 
-/// Bottom-sheet legend explaining the Tajweed rule colours used by the V4
-/// colour font. The hex values are sampled from the bundled font's own CPAL
-/// palette (`QCF4001_COLOR`) so the legend matches what renders on the page.
+/// Bottom-sheet legend explaining the Tajweed rule colours.
+///
+/// Colours are pulled from [tajweedColour] for the *active* reader theme
+/// (Approach B), so the swatches always match what's rendered on the page —
+/// light, sepia, or dark.
 class WTajweedLegendSheet extends StatelessWidget {
-  const WTajweedLegendSheet({super.key});
+  const WTajweedLegendSheet({required this.theme, super.key});
 
-  static Future<void> show(BuildContext context) => showModalBottomSheet<void>(
-    context: context,
-    backgroundColor: const Color(0xFFFFFFFF),
-    shape: RoundedRectangleBorder(borderRadius: BorderRadius.vertical(top: Radius.circular(22.r))),
-    builder: (_) => const WTajweedLegendSheet(),
-  );
+  final ReaderTheme theme;
 
-  // (colour, AR key, EN fallback) — sampled from the V4 font palette.
-  static const List<(Color, String, String)> _items = [
-    (Color(0xFFB50000), 'quran_tajweed_madd', 'Obligatory Madd (elongation)'),
-    (Color(0xFFFF7B00), 'quran_tajweed_madd_permissible', 'Permissible Madd'),
-    (Color(0xFF09B000), 'quran_tajweed_ghunnah', 'Ghunnah (nasalization)'),
-    (Color(0xFF3F48E6), 'quran_tajweed_qalqalah', 'Qalqalah (echo)'),
-    (Color(0xFF2FADFF), 'quran_tajweed_ikhfa', 'Ikhfa / Idgham'),
-    (Color(0xFF2CA4AB), 'quran_tajweed_iqlab', 'Iqlab'),
-    (Color(0xFFA5A5A5), 'quran_tajweed_silent', 'Silent letters'),
+  static Future<void> show(BuildContext context) {
+    final theme = Modular.get<CBReaderSettings>().state.theme;
+    final dark = theme == ReaderTheme.dark;
+    return showModalBottomSheet<void>(
+      context: context,
+      backgroundColor: dark ? const Color(0xFF1E1E1E) : const Color(0xFFFFFFFF),
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(22.r)),
+      ),
+      builder: (_) => WTajweedLegendSheet(theme: theme),
+    );
+  }
+
+  // The 7 categories, in legend order, each with an EN fallback label.
+  static const List<(ETajweedRule, String)> _items = [
+    (ETajweedRule.maddObligatory, 'Obligatory Madd (elongation)'),
+    (ETajweedRule.maddPermissible, 'Permissible Madd'),
+    (ETajweedRule.ghunnah, 'Ghunnah (nasalization)'),
+    (ETajweedRule.qalqalah, 'Qalqalah (echo)'),
+    (ETajweedRule.ikhfaIdgham, 'Ikhfa / Idgham'),
+    (ETajweedRule.iqlab, 'Iqlab'),
+    (ETajweedRule.silent, 'Silent letters'),
   ];
 
   @override
   Widget build(BuildContext context) {
+    final dark = theme == ReaderTheme.dark;
+    final brightness = tajweedBrightness(theme);
+    final titleColour = dark ? Colors.white : const Color(0xFF1A1A1A);
+    final labelColour = dark ? Colors.white70 : const Color(0xFF2A2A2A);
+
     return SafeArea(
       child: Padding(
         padding: EdgeInsets.fromLTRB(20.w, 14.h, 20.w, 20.h),
@@ -42,7 +62,7 @@ class WTajweedLegendSheet extends StatelessWidget {
                   width: 40.w,
                   height: 4.h,
                   decoration: BoxDecoration(
-                    color: Colors.black.withValues(alpha: 0.18),
+                    color: (dark ? Colors.white : Colors.black).withValues(alpha: 0.18),
                     borderRadius: BorderRadius.circular(2.r),
                   ),
                 ),
@@ -51,10 +71,10 @@ class WTajweedLegendSheet extends StatelessWidget {
               Text(
                 'quran_tajweed_legend_title'.tr(),
                 textAlign: TextAlign.center,
-                style: TextStyle(fontSize: 17.sp, fontWeight: FontWeight.w700, color: const Color(0xFF1A1A1A)),
+                style: TextStyle(fontSize: 17.sp, fontWeight: FontWeight.w700, color: titleColour),
               ),
               SizedBox(height: 14.h),
-              for (final (color, key, fallback) in _items)
+              for (final (rule, fallback) in _items)
                 Padding(
                   padding: EdgeInsets.symmetric(vertical: 7.h),
                   child: Row(
@@ -62,13 +82,16 @@ class WTajweedLegendSheet extends StatelessWidget {
                       Container(
                         width: 22.r,
                         height: 22.r,
-                        decoration: BoxDecoration(color: color, borderRadius: BorderRadius.circular(6.r)),
+                        decoration: BoxDecoration(
+                          color: tajweedColour(rule, brightness: brightness),
+                          borderRadius: BorderRadius.circular(6.r),
+                        ),
                       ),
                       SizedBox(width: 14.w),
                       Expanded(
                         child: Text(
-                          _label(key, fallback),
-                          style: TextStyle(fontSize: 15.sp, color: const Color(0xFF2A2A2A)),
+                          _label(rule.legendKey, fallback),
+                          style: TextStyle(fontSize: 15.sp, color: labelColour),
                         ),
                       ),
                     ],

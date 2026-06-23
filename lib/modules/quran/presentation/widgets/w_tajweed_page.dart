@@ -1,0 +1,535 @@
+import 'package:flutter/gestures.dart';
+import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:flutter_modular/flutter_modular.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:quran/core/theme/app_colors.dart';
+import 'package:quran/core/theme/brand_colors.dart';
+import 'package:quran/modules/quran/data/datasources/local/ds_local_quran.dart';
+import 'package:quran/modules/quran/data/datasources/local/ds_qpc_font_loader.dart';
+import 'package:quran/modules/quran/data/models/m_page_layout.dart';
+import 'package:quran/modules/quran/data/models/m_surah.dart';
+import 'package:quran/modules/quran/domain/entities/e_reader_theme.dart';
+import 'package:quran/modules/quran/domain/entities/e_tajweed_rule.dart';
+import 'package:quran/modules/quran/domain/entities/e_tajweed_token.dart';
+import 'package:quran/modules/quran/domain/entities/param_ayah_ref.dart';
+import 'package:quran/modules/quran/domain/usecases/uc_get_tajweed_tokens.dart';
+import 'package:quran/modules/quran/presentation/cubits/cb_audio_player.dart';
+import 'package:quran/modules/quran/presentation/cubits/cb_mushaf_reader.dart';
+import 'package:quran/modules/quran/presentation/cubits/s_audio_player.dart';
+import 'package:quran/modules/quran/presentation/cubits/s_mushaf_reader.dart';
+import 'package:quran/modules/quran/presentation/widgets/tajweed_palette.dart';
+import 'package:quran/modules/quran/presentation/widgets/w_basmala_line.dart';
+import 'package:quran/modules/quran/presentation/widgets/w_bookmark_color_picker.dart';
+import 'package:quran/modules/quran/presentation/widgets/w_mushaf_page.dart' show readerBackground;
+import 'package:quran/modules/quran/presentation/widgets/w_surah_header.dart';
+
+/// Approach-B Tajweed renderer: paints ayah text ourselves and colours each
+/// token from a theme-aware map (light/sepia/dark).
+///
+/// To stay faithful to the printed Madani page, it lays the coloured text out on
+/// the *same QPC line grid* as [WMushafPage] — identical line breaks, per-line
+/// fit-to-width sizing, one-screen page, surah header, basmala, and page number.
+/// The only thing it can't match is the QPC glyph shape (a colour font can't be
+/// themed), so it uses the Amiri Quran text font. See
+/// `docs/plans/Tajweed_Approach_B_Plan.md`.
+class WTajweedPage extends StatefulWidget {
+  const WTajweedPage({required this.layout, super.key});
+
+  final MPageLayout layout;
+
+  @override
+  State<WTajweedPage> createState() => _WTajweedPageState();
+}
+
+/// One coloured run inside a word.
+class _Seg {
+  const _Seg(this.text, this.rule);
+  final String text;
+  final ETajweedRule? rule;
+}
+
+class _WTajweedPageState extends State<WTajweedPage> {
+  final List<TapGestureRecognizer> _recognizers = [];
+
+  /// Per ayah key (`"surah:ayah"`) → its words, each a list of coloured runs.
+  /// `null` until loaded.
+  Map<String, List<List<_Seg>>>? _coloured;
+  Map<int, MSurah> _surahs = const {};
+
+  @override
+  void initState() {
+    super.initState();
+    _load();
+  }
+
+  Future<void> _load() async {
+    // Load this page's QPC V1 font too — the ayah-end markers reuse the exact
+    // rosette glyph the printed Mushaf uses (rendered from QCF_P{page}).
+    final fontFut = Modular.get<DSQpcFontLoader>().loadPage(widget.layout.page);
+    final surahsList = await Modular.get<DSLocalQuran>().loadSurahs();
+    final res = await Modular.get<UCGetTajweedTokens>()(widget.layout.page);
+    await fontFut;
+    if (!mounted) return;
+    final map = res.fold(
+      (_) => const <String, List<ETajweedToken>>{},
+      (m) => m,
+    );
+    setState(() {
+      _surahs = {for (final s in surahsList) s.number: s};
+      _coloured = {
+        for (final entry in map.entries) entry.key: _splitWords(entry.value),
+      };
+    });
+  }
+
+  /// Splits an ayah's token stream into words (on spaces), keeping each word's
+  /// coloured runs. A space lives inside an uncoloured token, so it both ends a
+  /// word and is dropped.
+  static List<List<_Seg>> _splitWords(List<ETajweedToken> tokens) {
+    final words = <List<_Seg>>[];
+    var current = <_Seg>[];
+    for (final tok in tokens) {
+      final parts = tok.text.split(' ');
+      for (var i = 0; i < parts.length; i++) {
+        if (i > 0 && current.isNotEmpty) {
+          words.add(current);
+          current = <_Seg>[];
+        }
+        if (parts[i].isNotEmpty) current.add(_Seg(parts[i], tok.rule));
+      }
+    }
+    if (current.isNotEmpty) words.add(current);
+    return words;
+  }
+
+  @override
+  void dispose() {
+    for (final r in _recognizers) {
+      r.dispose();
+    }
+    super.dispose();
+  }
+
+  TapGestureRecognizer _recogniser(ParamAyahRef ref, CBMushafReader cubit) {
+    final r = TapGestureRecognizer()..onTap = () => cubit.selectAyah(ref);
+    _recognizers.add(r);
+    return r;
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final cubit = BlocProvider.of<CBMushafReader>(context);
+    final coloured = _coloured;
+
+    return BlocSelector<
+      CBMushafReader,
+      SMushafReader,
+      ({ParamAyahRef? selected, double scale, ReaderTheme theme, Map<String, String?> bookmarks})
+    >(
+      selector: (s) => (
+        selected: s.selectedAyah,
+        scale: s.fontScale,
+        theme: s.theme,
+        bookmarks: s.bookmarks,
+      ),
+      builder: (context, view) {
+        final background = readerBackground(view.theme, colored: false);
+        if (coloured == null) {
+          return ColoredBox(color: background); // tokens load fast — no spinner
+        }
+        final brightness = tajweedBrightness(view.theme);
+        final baseColour = tajweedBaseColour(brightness: brightness);
+        final headerDark = view.theme == ReaderTheme.dark;
+
+        return BlocSelector<CBAudioPlayer, SAudioPlayer, ParamAyahRef?>(
+          bloc: Modular.get<CBAudioPlayer>(),
+          selector: (s) => s.currentAyah,
+          builder: (context, playing) {
+            // Rebuild recognizers fresh each pass so stale callbacks never leak.
+            for (final r in _recognizers) {
+              r.dispose();
+            }
+            _recognizers.clear();
+
+            final pageNumber = Center(
+              child: Text(
+                '${widget.layout.page}',
+                style: TextStyle(fontSize: 11.sp, color: context.brand.muted),
+              ),
+            );
+
+            // Above printed size the page reflows into one justified, vertically
+            // scrollable block — same behaviour as the QPC renderer.
+            final reflow = view.scale > 1.0;
+            if (reflow) {
+              final children = <Widget>[];
+              final paragraph = <InlineSpan>[];
+              void flush() {
+                if (paragraph.isEmpty) return;
+                children.add(
+                  Padding(
+                    padding: EdgeInsets.symmetric(vertical: 4.h),
+                    child: RichText(
+                      textAlign: TextAlign.justify,
+                      textDirection: TextDirection.rtl,
+                      text: TextSpan(children: List<InlineSpan>.of(paragraph)),
+                    ),
+                  ),
+                );
+                paragraph.clear();
+              }
+
+              for (final line in widget.layout.lines) {
+                switch (line.type) {
+                  case LineType.surahHeader:
+                    flush();
+                    children.add(_surahHeader(line, dark: headerDark));
+                    break;
+                  case LineType.basmala:
+                    flush();
+                    children.add(WBasmalaLine(fontSize: 28.sp * view.scale));
+                    break;
+                  case LineType.spacer:
+                    flush();
+                    children.add(SizedBox(height: 8.h));
+                    break;
+                  case LineType.text:
+                    if (paragraph.isNotEmpty) {
+                      paragraph.add(const TextSpan(text: ' '));
+                    }
+                    paragraph.addAll(
+                      _lineSpans(
+                        line,
+                        cubit: cubit,
+                        coloured: coloured,
+                        selected: view.selected,
+                        playing: playing,
+                        bookmarks: view.bookmarks,
+                        scale: view.scale,
+                        baseColour: baseColour,
+                        brightness: brightness,
+                        fontSize: 28.sp * view.scale,
+                        height: 1.9,
+                      ),
+                    );
+                    break;
+                }
+              }
+              flush();
+
+              return Container(
+                color: background,
+                padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 8.h),
+                child: SingleChildScrollView(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
+                    children: [...children, SizedBox(height: 8.h), pageNumber],
+                  ),
+                ),
+              );
+            }
+
+            // Exact mode: one screen. Unlike QPC glyph lines (pre-justified to a
+            // uniform width by the font), real text lines vary in length, so a
+            // per-line fit would size every page differently. Instead we pick a
+            // single font size — driven by the densest line in the whole Mushaf —
+            // and use it on every page, so text is the same size throughout.
+            return LayoutBuilder(
+              builder: (context, constraints) {
+                final avail = constraints.maxWidth - 24.w;
+                final fontSize = _uniformFontSize(context, avail, view.scale);
+
+                final lineWidgets = widget.layout.lines.map((line) {
+                  switch (line.type) {
+                    case LineType.surahHeader:
+                      return _surahHeader(line, dark: headerDark);
+                    case LineType.basmala:
+                      return WBasmalaLine(fontSize: fontSize);
+                    case LineType.spacer:
+                      return SizedBox(height: 8.h);
+                    case LineType.text:
+                      return Padding(
+                        padding: EdgeInsets.symmetric(vertical: 1.h),
+                        child: RichText(
+                          textAlign: TextAlign.center,
+                          textDirection: TextDirection.rtl,
+                          text: TextSpan(
+                            children: _lineSpans(
+                              line,
+                              cubit: cubit,
+                              coloured: coloured,
+                              selected: view.selected,
+                              playing: playing,
+                              bookmarks: view.bookmarks,
+                              scale: view.scale,
+                              baseColour: baseColour,
+                              brightness: brightness,
+                              fontSize: fontSize,
+                              height: 1.0,
+                            ),
+                          ),
+                        ),
+                      );
+                  }
+                }).toList(growable: false);
+
+                // Keep any rare line wider than the reference from overflowing.
+                final wrappedLines = lineWidgets
+                    .map(
+                      (w) => w is WSurahHeader
+                          ? w
+                          : FittedBox(
+                              fit: BoxFit.scaleDown,
+                              alignment: Alignment.center,
+                              child: w,
+                            ),
+                    )
+                    .toList(growable: false);
+
+                // Mirror the QPC renderer's vertical rhythm: dense pages fill the
+                // height with even leading; short opening pages (Fatihah, surah
+                // starts) stay a compact centered block rather than spreading.
+                final isFullPage = widget.layout.lines.length >= 12;
+
+                return Container(
+                  color: background,
+                  padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 8.h),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
+                    children: [
+                      Expanded(
+                        child: Column(
+                          mainAxisAlignment: isFullPage
+                              ? MainAxisAlignment.spaceEvenly
+                              : MainAxisAlignment.center,
+                          crossAxisAlignment: CrossAxisAlignment.stretch,
+                          children: wrappedLines,
+                        ),
+                      ),
+                      SizedBox(height: 4.h),
+                      pageNumber,
+                    ],
+                  ),
+                );
+              },
+            );
+          },
+        );
+      },
+    );
+  }
+
+  WSurahHeader _surahHeader(MLine line, {required bool dark}) {
+    final surah = _surahs[line.surahNumber];
+    return WSurahHeader(
+      title: line.text.isNotEmpty
+          ? line.text
+          : (surah?.arabicLong.isNotEmpty ?? false
+                ? surah?.arabicLong ?? ''
+                : surah?.arabic ?? ''),
+      surahNumber: surah?.number ?? line.surahNumber,
+      ayahCount: surah?.totalAyah,
+      dark: dark,
+    );
+  }
+
+  /// Coloured spans for one QPC [line]: each QPC word maps to its aligned
+  /// tajweed-coloured runs; the ayah's selection/playback/bookmark tint and tap
+  /// recognizer are shared across its words; ayah-number glyphs become badges.
+  List<InlineSpan> _lineSpans(
+    MLine line, {
+    required CBMushafReader cubit,
+    required Map<String, List<List<_Seg>>> coloured,
+    required ParamAyahRef? selected,
+    required ParamAyahRef? playing,
+    required Map<String, String?> bookmarks,
+    required double scale,
+    required Color baseColour,
+    required Brightness brightness,
+    required double fontSize,
+    required double height,
+  }) {
+    final spans = <InlineSpan>[];
+
+    for (int wi = 0; wi < line.words.length; wi++) {
+      final w = line.words[wi];
+      final ref = ParamAyahRef(surah: w.surah, ayah: w.ayah);
+      final tint = _tintFor(ref, selected, playing, bookmarks);
+      final recognizer = _recogniser(ref, cubit);
+
+      TextStyle styleFor(Color colour) => TextStyle(
+        fontFamily: 'AmiriQuran',
+        fontSize: fontSize,
+        height: height,
+        color: colour,
+        backgroundColor: tint,
+      );
+
+      final word = coloured[ref.key];
+      final idx = _wordIndex(w.location);
+      final segs = (word != null && idx >= 0 && idx < word.length) ? word[idx] : null;
+
+      if (segs == null) {
+        // Fallback (e.g. the single word-segmentation outlier, 37:130): render
+        // the QPC word's own text, uncoloured, so nothing is ever dropped.
+        spans.add(
+          TextSpan(
+            text: _stripNumber(w.word),
+            recognizer: recognizer,
+            style: styleFor(baseColour),
+          ),
+        );
+      } else {
+        for (final s in segs) {
+          spans.add(
+            TextSpan(
+              text: s.text,
+              recognizer: recognizer,
+              style: styleFor(
+                s.rule == null
+                    ? baseColour
+                    : tajweedColour(s.rule!, brightness: brightness),
+              ),
+            ),
+          );
+        }
+      }
+
+      // The QPC word carrying the ayah number marks the ayah end → render the
+      // exact QPC rosette glyph (the last glyph of the word's V1 code), so the
+      // marker is identical to the printed Mushaf. Fall back to a drawn badge
+      // only if the glyph is somehow missing.
+      if (_hasArabicDigit(w.word)) {
+        final endGlyph = w.qpcV1.split(' ').last;
+        if (endGlyph.isNotEmpty) {
+          spans.add(const TextSpan(text: ' '));
+          spans.add(
+            TextSpan(
+              text: endGlyph,
+              recognizer: recognizer,
+              style: TextStyle(
+                fontFamily: DSQpcFontLoader.pageFamily(widget.layout.page),
+                fontSize: fontSize,
+                height: height,
+                color: baseColour,
+                backgroundColor: tint,
+              ),
+            ),
+          );
+        } else {
+          spans.add(_ayahEndBadge(ref, cubit, scale: scale, brightness: brightness, tint: tint));
+        }
+      }
+      if (wi != line.words.length - 1) {
+        spans.add(const TextSpan(text: ' '));
+      }
+    }
+    return spans;
+  }
+
+  Color? _tintFor(
+    ParamAyahRef ref,
+    ParamAyahRef? selected,
+    ParamAyahRef? playing,
+    Map<String, String?> bookmarks,
+  ) {
+    if (selected?.key == ref.key) return AppColors.surfaceLightGreen;
+    if (playing?.key == ref.key) {
+      return AppColors.accentGoldAmber.withValues(alpha: 0.15);
+    }
+    if (bookmarks.containsKey(ref.key)) {
+      return bookmarkHighlightFromHex(bookmarks[ref.key]);
+    }
+    return null;
+  }
+
+  /// A themed circular ayah-number badge (we own it — no QPC end-glyph).
+  WidgetSpan _ayahEndBadge(
+    ParamAyahRef ref,
+    CBMushafReader cubit, {
+    required double scale,
+    required Brightness brightness,
+    required Color? tint,
+  }) {
+    final dark = brightness == Brightness.dark;
+    final line = dark ? Colors.white70 : const Color(0xFF0A7A4F);
+    final size = 24.sp * scale;
+    return WidgetSpan(
+      alignment: PlaceholderAlignment.middle,
+      child: GestureDetector(
+        onTap: () => cubit.selectAyah(ref),
+        child: Padding(
+          padding: EdgeInsets.symmetric(horizontal: 2.w),
+          child: Container(
+            width: size,
+            height: size,
+            alignment: Alignment.center,
+            decoration: BoxDecoration(
+              color: tint,
+              shape: BoxShape.circle,
+              border: Border.all(color: line, width: 1.1),
+            ),
+            child: Text(
+              _arabicNumber(ref.ayah),
+              textDirection: TextDirection.rtl,
+              style: TextStyle(
+                fontFamily: 'AmiriQuran',
+                fontSize: 10.sp * scale,
+                color: line,
+                height: 1.0,
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  /// A representative *dense* Mushaf line (~p85 length, diacritics kept, tatweel
+  /// removed). Used as the width yard-stick so every page is typeset at the same
+  /// size: the size at which this line just fits the page width. The handful of
+  /// longer-than-this lines are nudged down by the per-line FittedBox safety,
+  /// which keeps the bulk of the text larger and uniform across pages.
+  static const String _refDenseLine =
+      'ءَالَآءِ رَبِّكُمَا تُكَذِّبَانِ تَبَٰرَكَ ٱسْمُ رَبِّكَ ذِى ٱلْجَلَٰلِ وَٱلْإِكْرَامِ';
+
+  double _uniformFontSize(BuildContext context, double avail, double scale) {
+    final base = 28.sp * scale;
+    if (avail <= 0) return base;
+    final tp = TextPainter(
+      text: TextSpan(
+        text: _refDenseLine,
+        style: TextStyle(fontFamily: 'AmiriQuran', fontSize: base, height: 1.0),
+      ),
+      textDirection: TextDirection.rtl,
+      textScaler: MediaQuery.textScalerOf(context),
+    )..layout();
+    final w = tp.width;
+    if (w <= 0 || w <= avail) return base;
+    return base * (avail / w);
+  }
+
+  static int _wordIndex(String location) {
+    final parts = location.split(':');
+    if (parts.length < 3) return -1;
+    return (int.tryParse(parts[2]) ?? 0) - 1;
+  }
+
+  static bool _hasArabicDigit(String s) =>
+      s.runes.any((c) => (c >= 0x0660 && c <= 0x0669) || (c >= 0x06F0 && c <= 0x06F9));
+
+  static String _stripNumber(String s) {
+    final buf = StringBuffer();
+    for (final c in s.runes) {
+      if ((c >= 0x0660 && c <= 0x0669) || (c >= 0x06F0 && c <= 0x06F9)) continue;
+      buf.writeCharCode(c);
+    }
+    return buf.toString().trim();
+  }
+
+  static String _arabicNumber(int n) {
+    const digits = ['٠', '١', '٢', '٣', '٤', '٥', '٦', '٧', '٨', '٩'];
+    return n.toString().split('').map((c) => digits[int.parse(c)]).join();
+  }
+}

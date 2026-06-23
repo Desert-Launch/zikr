@@ -8,7 +8,10 @@ khatma tracking, and personal reminders.
 
 - **Quranic text**: Madani Mushaf (King Fahd Complex edition).
 - **Recitations**: EveryAyah.com and master reciters.
-- **Fonts**: QPC V1 from the King Fahd Complex.
+- **Fonts**: QPC V1 from the King Fahd Complex; AmiriQuran (SIL Open Font
+  License 1.1) for Tajweed mode.
+- **Tajweed rules**: cpfair/quran-tajweed, licensed under
+  Creative Commons Attribution 4.0 (CC BY 4.0).
 - **Adhan audio**: Internet Archive and Assabile (open-license).
 
 ## Thanks

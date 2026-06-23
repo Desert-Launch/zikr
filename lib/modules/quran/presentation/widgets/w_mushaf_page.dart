@@ -20,6 +20,7 @@ import 'package:quran/modules/quran/presentation/cubits/s_mushaf_reader.dart';
 import 'package:quran/modules/quran/presentation/widgets/w_basmala_line.dart';
 import 'package:quran/modules/quran/presentation/widgets/w_bookmark_color_picker.dart';
 import 'package:quran/modules/quran/presentation/widgets/w_surah_header.dart';
+import 'package:quran/modules/quran/presentation/widgets/w_tajweed_page.dart';
 
 /// Renders one Mushaf page from its [MPageLayout].
 ///
@@ -43,10 +44,12 @@ class _WMushafPageState extends State<WMushafPage> {
   @override
   void initState() {
     super.initState();
-    _fonts.preloadWindow(
-      widget.layout.page,
-      mode: Modular.get<CBReaderSettings>().state.fontMode,
-    );
+    // Tajweed renders via WTajweedPage (static Amiri font) — no QPC glyph
+    // fonts to preload for that mode.
+    final mode = Modular.get<CBReaderSettings>().state.fontMode;
+    if (mode != EQuranFontMode.tajweedV4) {
+      _fonts.preloadWindow(widget.layout.page, mode: mode);
+    }
     _loadSurahs();
   }
 
@@ -89,6 +92,12 @@ class _WMushafPageState extends State<WMushafPage> {
         bookmarks: s.bookmarks,
       ),
       builder: (context, view) {
+        // Tajweed (Approach B): a separate text renderer that colours each
+        // token itself from a theme-aware map, laid out on this same QPC line
+        // grid — not the QPC glyph path below.
+        if (view.mode == EQuranFontMode.tajweedV4) {
+          return WTajweedPage(layout: widget.layout);
+        }
         final fontFamily = view.mode.fontFamilyForPage(widget.layout.page);
         final isColored = view.mode.isColored;
         // QPC V1 glyphs have hair-thin strokes by design — keep the text in a

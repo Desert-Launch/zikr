@@ -45,9 +45,11 @@ extension EQuranFontModeX on EQuranFontMode {
         _ => 'assets/data/mushaf_pages',
       };
 
-  /// Whether glyphs carry their own (COLR/CPAL) colour. Only V4 does — the
-  /// renderer leaves the base text colour as a fallback for uncoloured glyphs.
-  bool get isColored => this == EQuranFontMode.tajweedV4;
+  /// Whether the rendering relies on a baked-colour font whose palette we can't
+  /// theme. Now always false: Tajweed colours are applied per-token by
+  /// [WTajweedPage] (Approach B), so every mode follows the reader theme —
+  /// including dark — and the old dark-mode cream lock is gone.
+  bool get isColored => false;
 
   /// Stable token persisted to local storage.
   String get storageKey => name;

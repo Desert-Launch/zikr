@@ -6,6 +6,7 @@ import 'package:quran/modules/quran/data/datasources/local/ds_local_playback_pre
 import 'package:quran/modules/quran/data/datasources/local/ds_local_quran.dart';
 import 'package:quran/modules/quran/data/datasources/local/ds_local_reader_settings.dart';
 import 'package:quran/modules/quran/data/datasources/local/ds_local_settings.dart';
+import 'package:quran/modules/quran/data/datasources/local/ds_local_tajweed.dart';
 import 'package:quran/modules/quran/data/datasources/local/ds_qpc_font_loader.dart';
 import 'package:quran/modules/quran/data/datasources/remote/ds_audio_downloader.dart';
 import 'package:quran/modules/quran/data/datasources/remote/ds_remote_audio.dart';
@@ -16,6 +17,7 @@ import 'package:quran/modules/quran/data/repos/r_impl_playback_prefs.dart';
 import 'package:quran/modules/quran/data/repos/r_impl_quran.dart';
 import 'package:quran/modules/quran/data/repos/r_impl_reader_settings.dart';
 import 'package:quran/modules/quran/data/repos/r_impl_reciter.dart';
+import 'package:quran/modules/quran/data/repos/r_impl_tajweed.dart';
 import 'package:quran/modules/quran/data/sources/local/box_bookmarks.dart';
 import 'package:quran/modules/quran/data/sources/local/box_last_read.dart';
 import 'package:quran/modules/quran/data/sources/local/box_playback_prefs.dart';
@@ -28,6 +30,7 @@ import 'package:quran/modules/quran/domain/repos/r_playback_prefs.dart';
 import 'package:quran/modules/quran/domain/repos/r_quran.dart';
 import 'package:quran/modules/quran/domain/repos/r_reader_settings.dart';
 import 'package:quran/modules/quran/domain/repos/r_reciter.dart';
+import 'package:quran/modules/quran/domain/repos/r_tajweed.dart';
 import 'package:quran/modules/quran/domain/services/download_notifier.dart';
 import 'package:quran/modules/quran/domain/usecases/uc_delete_reciter_downloads.dart';
 import 'package:quran/modules/quran/domain/usecases/uc_delete_surah_download.dart';
@@ -45,6 +48,7 @@ import 'package:quran/modules/quran/domain/usecases/uc_get_reciter_stats.dart';
 import 'package:quran/modules/quran/domain/usecases/uc_get_reciters.dart';
 import 'package:quran/modules/quran/domain/usecases/uc_get_surah_list.dart';
 import 'package:quran/modules/quran/domain/usecases/uc_get_surah_status.dart';
+import 'package:quran/modules/quran/domain/usecases/uc_get_tajweed_tokens.dart';
 import 'package:quran/modules/quran/domain/usecases/uc_play_ayah.dart';
 import 'package:quran/modules/quran/domain/usecases/uc_play_range.dart';
 import 'package:quran/modules/quran/domain/usecases/uc_resolve_audio_url.dart';
@@ -93,6 +97,7 @@ class QuranModule extends Module {
     i.addSingleton<DSLocalPlaybackPrefs>(() => DSLocalPlaybackPrefs(i.get<BoxPlaybackPrefs>()));
     i.addSingleton<DSLocalAudioFiles>(DSLocalAudioFiles.new);
     i.addSingleton<DSQpcFontLoader>(DSQpcFontLoader.new);
+    i.addSingleton<DSLocalTajweed>(DSLocalTajweed.new);
 
     // Remote data sources
     i.addSingleton<DSRemoteAudio>(DSRemoteAudio.new);
@@ -100,6 +105,7 @@ class QuranModule extends Module {
 
     // Repositories (interface → impl)
     i.addSingleton<RQuran>(() => RImplQuran(i.get<DSLocalQuran>()));
+    i.addSingleton<RTajweed>(() => RImplTajweed(i.get<DSLocalTajweed>()));
     i.addSingleton<RReciter>(() => RImplReciter(i.get<DSLocalSettings>()));
     i.addSingleton<RAudio>(() => RImplAudio(i.get<DSLocalAudioFiles>(), i.get<DSRemoteAudio>(), i.get<RReciter>()));
     i.addSingleton<DownloadNotifier>(() => QuranDownloadNotifier(i.get<UCGetSurahList>()));
@@ -119,6 +125,7 @@ class QuranModule extends Module {
     // Use cases (factory)
     i.add<UCGetSurahList>(() => UCGetSurahList(i.get<RQuran>()));
     i.add<UCGetPageLayout>(() => UCGetPageLayout(i.get<RQuran>()));
+    i.add<UCGetTajweedTokens>(() => UCGetTajweedTokens(i.get<RTajweed>()));
     i.add<UCSearchQuran>(() => UCSearchQuran(i.get<RQuran>()));
     i.add<UCResolveAudioUrl>(() => UCResolveAudioUrl(i.get<RAudio>()));
     i.add<UCPlayAyah>(UCPlayAyah.new);

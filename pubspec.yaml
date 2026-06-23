@@ -146,13 +146,24 @@ flutter:
     - assets/data/
     - assets/data/mushaf_pages/
     - assets/data/mushaf_v4/
+    - assets/data/tajweed/
     - assets/data/azkar/
     - assets/data/khatma/
     - assets/audio/adhan/
     - assets/fonts/qpc/
     - assets/fonts/qpc_v4/
+    - assets/fonts/uthmani/
     - assets/images/
     - assets/icons/
     - assets/lang/
     - assets/mock/
     - assets/legal/
+
+  # Uthmani text font for Tajweed mode (Approach B). Unlike the per-page QPC
+  # glyph fonts (loaded at runtime by DSQpcFontLoader), this is an ordinary
+  # Arabic text font, declared statically so the tajweed renderer can colour
+  # each token itself. AmiriQuran — SIL OFL 1.1 (see assets/fonts/uthmani/OFL.txt).
+  fonts:
+    - family: AmiriQuran
+      fonts:
+        - asset: assets/fonts/uthmani/AmiriQuran.ttf
