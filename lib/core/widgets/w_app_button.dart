@@ -1,10 +1,9 @@
 import 'dart:async';
 
-import 'package:quran/core/theme/app_colors.dart';
-import 'package:quran/core/theme/app_gradients.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:quran/core/responsive/responsive_extensions.dart';
+import 'package:quran/core/theme/brand_colors.dart';
 import 'package:quran/core/widgets/w_app_button_content.dart';
 
 enum AppButtonVariant { primary, secondary, outline, danger }
@@ -85,31 +84,33 @@ class _WAppButtonState extends State<WAppButton> {
   @override
   Widget build(BuildContext context) {
     final isDisabled = widget.isDisabled || _isLoading;
-    final theme = Theme.of(context);
+    final brand = context.brand;
     final borderRadius = BorderRadius.circular(widget.radius ?? 12.rCapped(14));
     final height = widget.height ?? 48.h;
     final width = widget.isExpanded ? (widget.width ?? double.infinity) : widget.width;
+    final disabledFill = brand.border.withValues(alpha: 0.5);
 
-    final borderColor = widget.borderColor ?? _resolveBorderColor(theme, isDisabled);
-    final textColor = _resolveTextColor(theme, isDisabled);
+    final borderColor = widget.borderColor ?? _resolveBorderColor(brand, isDisabled);
+    final textColor = _resolveTextColor(brand, isDisabled);
 
-    // For primary variant, use Container with gradient
+    // Primary — brand green gradient (or a solid fill override), white label.
     if (_variant == AppButtonVariant.primary) {
+      final primaryFill = widget.backgroundColor ?? widget.color;
       return Container(
         width: width,
         height: height,
         decoration: BoxDecoration(
-          gradient: isDisabled ? null : AppGradients.button,
-          color: isDisabled ? Colors.grey.shade300 : null,
+          gradient: isDisabled || primaryFill != null
+              ? null
+              : LinearGradient(
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
+                  colors: [brand.primary, brand.primaryDark],
+                ),
+          color: isDisabled ? disabledFill : primaryFill,
           borderRadius: borderRadius,
           boxShadow: widget.withShadow && !isDisabled
-              ? [
-                  BoxShadow(
-                    color: AppColors.authPrimary.withValues(alpha: 0.4),
-                    blurRadius: 12,
-                    offset: const Offset(0, 4),
-                  ),
-                ]
+              ? [BoxShadow(color: brand.primary.withValues(alpha: 0.35), blurRadius: 12, offset: const Offset(0, 4))]
               : null,
         ),
         child: Material(
@@ -138,17 +139,17 @@ class _WAppButtonState extends State<WAppButton> {
       );
     }
 
-    // For danger variant, use solid red background
+    // Danger — solid error fill from the theme.
     if (_variant == AppButtonVariant.danger) {
-      const dangerColor = AppColors.semanticDanger;
+      final dangerColor = brand.error;
       return Container(
         width: width,
         height: height,
         decoration: BoxDecoration(
-          color: isDisabled ? Colors.grey.shade300 : dangerColor,
+          color: isDisabled ? disabledFill : dangerColor,
           borderRadius: borderRadius,
           boxShadow: widget.withShadow && !isDisabled
-              ? [BoxShadow(color: dangerColor.withValues(alpha: 0.4), blurRadius: 12, offset: const Offset(0, 4))]
+              ? [BoxShadow(color: dangerColor.withValues(alpha: 0.35), blurRadius: 12, offset: const Offset(0, 4))]
               : null,
         ),
         child: Material(
@@ -177,8 +178,8 @@ class _WAppButtonState extends State<WAppButton> {
       );
     }
 
-    // For other variants, use ElevatedButton
-    final background = _resolveBackground(theme, isDisabled);
+    // Secondary / outline — ElevatedButton using theme tokens.
+    final background = _resolveBackground(brand, isDisabled);
     return AnimatedOpacity(
       duration: const Duration(milliseconds: 150),
       opacity: isDisabled ? 0.7 : 1,
@@ -190,10 +191,10 @@ class _WAppButtonState extends State<WAppButton> {
           style: ButtonStyle(
             elevation: WidgetStatePropertyAll(widget.withShadow ? 6 : 0),
             shape: WidgetStatePropertyAll(RoundedRectangleBorder(borderRadius: borderRadius)),
-            backgroundColor: WidgetStatePropertyAll(background.color),
+            backgroundColor: WidgetStatePropertyAll(background),
             foregroundColor: WidgetStatePropertyAll(textColor),
-            overlayColor: const WidgetStatePropertyAll(Colors.white10),
-            shadowColor: WidgetStatePropertyAll(AppColors.black800.withValues(alpha: 0.2)),
+            overlayColor: WidgetStatePropertyAll(brand.primary.withValues(alpha: 0.08)),
+            shadowColor: WidgetStatePropertyAll(brand.primary.withValues(alpha: 0.2)),
             side: _isOutline ? WidgetStatePropertyAll(BorderSide(color: borderColor, width: 1.5)) : null,
           ),
           child: WAppButtonContent(
@@ -213,59 +214,46 @@ class _WAppButtonState extends State<WAppButton> {
     );
   }
 
-  _ButtonBackground _resolveBackground(ThemeData theme, bool isDisabled) {
-    final disabledColor = AppColors.lightBorderDefault.withValues(alpha: 0.5);
-    if (isDisabled) {
-      return _ButtonBackground(color: disabledColor);
-    }
-
+  Color _resolveBackground(BrandColors brand, bool isDisabled) {
+    if (isDisabled) return brand.border.withValues(alpha: 0.5);
     switch (_variant) {
-      case AppButtonVariant.primary:
-        return _ButtonBackground(
-          color: widget.backgroundColor ?? AppColors.brandPurple,
-          decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(widget.radius ?? 4.rCapped(5)),
-            gradient: AppGradients.main,
-          ),
-        );
       case AppButtonVariant.secondary:
-        return _ButtonBackground(color: widget.backgroundColor ?? AppColors.brandPurple100);
+        return widget.backgroundColor ?? brand.primary.withValues(alpha: 0.12);
       case AppButtonVariant.outline:
-        return _ButtonBackground(color: widget.backgroundColor ?? theme.colorScheme.surface);
+        return widget.backgroundColor ?? brand.surface;
+      case AppButtonVariant.primary:
       case AppButtonVariant.danger:
-        return _ButtonBackground(color: widget.backgroundColor ?? AppColors.semanticDanger);
+        return widget.backgroundColor ?? brand.primary;
     }
   }
 
-  Color _resolveTextColor(ThemeData theme, bool isDisabled) {
+  Color _resolveTextColor(BrandColors brand, bool isDisabled) {
     if (isDisabled) {
-      // For primary/danger variants, keep white text when disabled
+      // Primary/danger keep white text so the label stays legible when greyed.
       if (_variant == AppButtonVariant.primary || _variant == AppButtonVariant.danger) {
         return Colors.white;
       }
-      return AppColors.textInactiveLight;
+      return brand.muted;
     }
 
     switch (_variant) {
       case AppButtonVariant.primary:
-        return AppColors.lightForeground;
+        return widget.color ?? Colors.white;
       case AppButtonVariant.secondary:
-        return AppColors.brandPurpleDark;
+        return widget.color ?? brand.primary;
       case AppButtonVariant.outline:
-        return widget.borderColor ?? Colors.grey.shade600;
+        return widget.color ?? widget.borderColor ?? brand.onSurface;
       case AppButtonVariant.danger:
         return Colors.white;
     }
   }
 
-  Color _resolveBorderColor(ThemeData theme, bool isDisabled) {
-    if (isDisabled) {
-      return AppColors.lightBorderDefault;
-    }
+  Color _resolveBorderColor(BrandColors brand, bool isDisabled) {
+    if (isDisabled) return brand.border;
     if (_variant == AppButtonVariant.outline) {
-      return widget.borderColor ?? Colors.grey.shade600;
+      return widget.borderColor ?? brand.border;
     }
-    return widget.borderColor ?? theme.colorScheme.primary;
+    return widget.borderColor ?? brand.primary;
   }
 
   Future<void> _onTap() async {
@@ -296,11 +284,4 @@ class _WAppButtonState extends State<WAppButton> {
       }
     }
   }
-}
-
-class _ButtonBackground {
-  _ButtonBackground({required this.color, this.decoration});
-
-  final Color color;
-  final Decoration? decoration;
 }
