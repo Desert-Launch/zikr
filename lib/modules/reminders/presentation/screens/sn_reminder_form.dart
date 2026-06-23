@@ -36,9 +36,7 @@ class _SNReminderFormState extends State<SNReminderForm> {
   void initState() {
     super.initState();
     if (_isEdit) {
-      final existing = Modular.get<BoxReminders>().byId(
-        widget.reminderId ?? '',
-      );
+      final existing = Modular.get<BoxReminders>().byId(widget.reminderId ?? '');
       if (existing != null) {
         _titleCtrl.text = existing.title;
         _existingBody = existing.body;
@@ -63,9 +61,7 @@ class _SNReminderFormState extends State<SNReminderForm> {
 
   String _formatTime() {
     String two(int n) => n.toString().padLeft(2, '0');
-    final h = _time.hour > 12
-        ? _time.hour - 12
-        : (_time.hour == 0 ? 12 : _time.hour);
+    final h = _time.hour > 12 ? _time.hour - 12 : (_time.hour == 0 ? 12 : _time.hour);
     final suffix = _time.hour >= 12 ? 'reminders_pm'.tr() : 'reminders_am'.tr();
     return '${two(h)}:${two(_time.minute)} $suffix';
   }
@@ -126,14 +122,9 @@ class _SNReminderFormState extends State<SNReminderForm> {
       builder: (ctx) => AlertDialog(
         title: Text('reminders_delete_confirm'.tr()),
         actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(ctx, false),
-            child: Text('common_cancel'.tr()),
-          ),
+          TextButton(onPressed: () => Navigator.pop(ctx, false), child: Text('common_cancel'.tr())),
           FilledButton(
-            style: FilledButton.styleFrom(
-              backgroundColor: AppColorsLight.error,
-            ),
+            style: FilledButton.styleFrom(backgroundColor: AppColorsLight.error),
             onPressed: () => Navigator.pop(ctx, true),
             child: Text('common_delete'.tr()),
           ),
@@ -152,94 +143,88 @@ class _SNReminderFormState extends State<SNReminderForm> {
       backgroundColor: context.brand.background,
       withSafeArea: false,
       padding: EdgeInsets.zero,
-      body: Column(
-        children: [
-          WRemindersHeader(title: 'reminders_title'.tr()),
-          Expanded(
-            child: ListView(
-              padding: EdgeInsets.fromLTRB(16.w, 18.h, 16.w, 24.h),
-              children: [
-                Row(
-                  children: [
-                    Expanded(
-                      child: Text(
-                        _isEdit
-                            ? 'reminders_edit'.tr()
-                            : 'reminders_new_title'.tr(),
-                        style: TextStyle(
-                          fontSize: 18.sp,
-                          fontWeight: FontWeight.w800,
-                          color: context.brand.onSurface,
+      body: Directionality(
+        textDirection: context.isRTL ? TextDirection.rtl : TextDirection.ltr,
+        child: Column(
+          children: [
+            WRemindersHeader(title: 'reminders_title'.tr()),
+            Expanded(
+              child: ListView(
+                padding: EdgeInsets.fromLTRB(16.w, 18.h, 16.w, 24.h),
+                children: [
+                  Row(
+                    children: [
+                      Expanded(
+                        child: Text(
+                          _isEdit ? 'reminders_edit'.tr() : 'reminders_new_title'.tr(),
+                          style: TextStyle(
+                            fontSize: 18.sp,
+                            fontWeight: FontWeight.w800,
+                            color: context.brand.onSurface,
+                          ),
                         ),
                       ),
-                    ),
-                    if (_isEdit)
-                      IconButton(
-                        icon: Icon(
-                          Icons.delete_outline_rounded,
-                          color: AppColorsLight.error,
+                      if (_isEdit)
+                        IconButton(
+                          icon: Icon(Icons.delete_outline_rounded, color: AppColorsLight.error),
+                          onPressed: _delete,
                         ),
-                        onPressed: _delete,
+                    ],
+                  ),
+                  SizedBox(height: 14.h),
+                  _label('reminders_title_label'.tr()),
+                  SizedBox(height: 6.h),
+                  _titleField(context),
+                  SizedBox(height: 16.h),
+                  _label('reminders_time_label'.tr()),
+                  SizedBox(height: 6.h),
+                  _timeField(context),
+                  SizedBox(height: 18.h),
+                  _label('reminders_choose_icon'.tr()),
+                  SizedBox(height: 10.h),
+                  _iconGrid(context),
+                  SizedBox(height: 18.h),
+                  _label('reminders_choose_color'.tr()),
+                  SizedBox(height: 10.h),
+                  _colorRow(),
+                  SizedBox(height: 18.h),
+                  _dailyHint(context),
+                  SizedBox(height: 18.h),
+                  _preview(context),
+                  if (_error != null) ...[SizedBox(height: 14.h), _errorBanner()],
+                  SizedBox(height: 22.h),
+                  Row(
+                    children: [
+                      Expanded(
+                        child: WAppButton(
+                          title: 'reminders_save'.tr(),
+                          isLoading: _isSubmitting,
+                          backgroundColor: AppColorsLight.primary,
+                          onTap: _save,
+                        ),
                       ),
-                  ],
-                ),
-                SizedBox(height: 14.h),
-                _label('reminders_title_label'.tr()),
-                SizedBox(height: 6.h),
-                _titleField(context),
-                SizedBox(height: 16.h),
-                _label('reminders_time_label'.tr()),
-                SizedBox(height: 6.h),
-                _timeField(context),
-                SizedBox(height: 18.h),
-                _label('reminders_choose_icon'.tr()),
-                SizedBox(height: 10.h),
-                _iconGrid(context),
-                SizedBox(height: 18.h),
-                _label('reminders_choose_color'.tr()),
-                SizedBox(height: 10.h),
-                _colorRow(),
-                SizedBox(height: 18.h),
-                _dailyHint(context),
-                SizedBox(height: 18.h),
-                _preview(context),
-                if (_error != null) ...[SizedBox(height: 14.h), _errorBanner()],
-                SizedBox(height: 22.h),
-                Row(
-                  children: [
-                    Expanded(
-                      child: WAppButton(
-                        title: 'reminders_save'.tr(),
-                        isLoading: _isSubmitting,
-                        backgroundColor: AppColorsLight.primary,
-                        onTap: _save,
+                      SizedBox(width: 12.w),
+                      Expanded(
+                        child: WAppButton(
+                          title: 'common_cancel'.tr(),
+                          variant: AppButtonVariant.outline,
+                          onTap: () => Modular.to.pop(),
+                        ),
                       ),
-                    ),
-                    SizedBox(width: 12.w),
-                    Expanded(
-                      child: WAppButton(
-                        title: 'common_cancel'.tr(),
-                        variant: AppButtonVariant.outline,
-                        onTap: () => Modular.to.pop(),
-                      ),
-                    ),
-                  ],
-                ),
-              ],
+                    ],
+                  ),
+                ],
+              ),
             ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }
 
   Widget _label(String text) => Text(
     text,
-    style: TextStyle(
-      fontSize: 13.sp,
-      fontWeight: FontWeight.w700,
-      color: context.brand.onSurface,
-    ),
+    style: TextStyle(fontSize: 13.sp, fontWeight: FontWeight.w700, color: context.brand.onSurface),
   );
 
   Widget _titleField(BuildContext context) {
@@ -258,10 +243,7 @@ class _SNReminderFormState extends State<SNReminderForm> {
         ),
         focusedBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(12.r),
-          borderSide: const BorderSide(
-            color: AppColorsLight.primary,
-            width: 1.4,
-          ),
+          borderSide: const BorderSide(color: AppColorsLight.primary, width: 1.4),
         ),
       ),
     );
@@ -280,11 +262,7 @@ class _SNReminderFormState extends State<SNReminderForm> {
         ),
         child: Row(
           children: [
-            Icon(
-              Icons.access_time_rounded,
-              size: 18.r,
-              color: AppColorsLight.primary,
-            ),
+            Icon(Icons.access_time_rounded, size: 18.r, color: AppColorsLight.primary),
             SizedBox(width: 10.w),
             Text(
               _formatTime(),
@@ -296,11 +274,7 @@ class _SNReminderFormState extends State<SNReminderForm> {
               ),
             ),
             const Spacer(),
-            Icon(
-              Icons.keyboard_arrow_down_rounded,
-              color: context.brand.muted,
-              size: 22.r,
-            ),
+            Icon(Icons.keyboard_arrow_down_rounded, color: context.brand.muted, size: 22.r),
           ],
         ),
       ),
@@ -320,9 +294,7 @@ class _SNReminderFormState extends State<SNReminderForm> {
           onTap: () => setState(() => _iconId = i),
           child: Container(
             decoration: BoxDecoration(
-              color: selected
-                  ? AppColorsLight.primary.withValues(alpha: 0.14)
-                  : context.brand.surface,
+              color: selected ? AppColorsLight.primary.withValues(alpha: 0.14) : context.brand.surface,
               borderRadius: BorderRadius.circular(12.r),
               border: Border.all(
                 color: selected ? AppColorsLight.primary : context.brand.border,
@@ -355,22 +327,12 @@ class _SNReminderFormState extends State<SNReminderForm> {
               decoration: BoxDecoration(
                 color: color,
                 shape: BoxShape.circle,
-                border: selected
-                    ? Border.all(color: Colors.white, width: 3)
-                    : null,
+                border: selected ? Border.all(color: Colors.white, width: 3) : null,
                 boxShadow: selected
-                    ? [
-                        BoxShadow(
-                          color: color.withValues(alpha: 0.5),
-                          blurRadius: 8,
-                          spreadRadius: 1,
-                        ),
-                      ]
+                    ? [BoxShadow(color: color.withValues(alpha: 0.5), blurRadius: 8, spreadRadius: 1)]
                     : null,
               ),
-              child: selected
-                  ? Icon(Icons.check_rounded, color: Colors.white, size: 22.r)
-                  : null,
+              child: selected ? Icon(Icons.check_rounded, color: Colors.white, size: 22.r) : null,
             ),
           ),
         );
@@ -394,11 +356,7 @@ class _SNReminderFormState extends State<SNReminderForm> {
           Expanded(
             child: Text(
               'reminders_daily_repeat'.tr(),
-              style: TextStyle(
-                fontSize: 14.sp,
-                fontWeight: FontWeight.w700,
-                color: context.brand.onSurface,
-              ),
+              style: TextStyle(fontSize: 14.sp, fontWeight: FontWeight.w700, color: context.brand.onSurface),
             ),
           ),
         ],
@@ -408,36 +366,25 @@ class _SNReminderFormState extends State<SNReminderForm> {
 
   Widget _preview(BuildContext context) {
     final color = ReminderStyles.colorFor(_colorId);
-    final title = _titleCtrl.text.trim().isEmpty
-        ? 'reminders_preview_placeholder'.tr()
-        : _titleCtrl.text.trim();
+    final title = _titleCtrl.text.trim().isEmpty ? 'reminders_preview_placeholder'.tr() : _titleCtrl.text.trim();
     return Container(
       padding: EdgeInsets.all(14.w),
       decoration: BoxDecoration(
         color: AppColorsLight.primary.withValues(alpha: 0.08),
         borderRadius: BorderRadius.circular(16.r),
-        border: Border.all(
-          color: AppColorsLight.primary.withValues(alpha: 0.2),
-        ),
+        border: Border.all(color: AppColorsLight.primary.withValues(alpha: 0.2)),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
             'reminders_preview'.tr(),
-            style: TextStyle(
-              fontSize: 11.sp,
-              fontWeight: FontWeight.w700,
-              color: context.brand.muted,
-            ),
+            style: TextStyle(fontSize: 11.sp, fontWeight: FontWeight.w700, color: context.brand.muted),
           ),
           SizedBox(height: 10.h),
           Container(
             padding: EdgeInsets.all(12.w),
-            decoration: BoxDecoration(
-              color: context.brand.surface,
-              borderRadius: BorderRadius.circular(12.r),
-            ),
+            decoration: BoxDecoration(color: context.brand.surface, borderRadius: BorderRadius.circular(12.r)),
             child: Row(
               children: [
                 Expanded(
@@ -446,11 +393,7 @@ class _SNReminderFormState extends State<SNReminderForm> {
                     children: [
                       Text(
                         title,
-                        style: TextStyle(
-                          fontSize: 14.sp,
-                          fontWeight: FontWeight.w700,
-                          color: context.brand.onSurface,
-                        ),
+                        style: TextStyle(fontSize: 14.sp, fontWeight: FontWeight.w700, color: context.brand.onSurface),
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
                       ),
@@ -470,15 +413,8 @@ class _SNReminderFormState extends State<SNReminderForm> {
                 Container(
                   width: 44.r,
                   height: 44.r,
-                  decoration: BoxDecoration(
-                    color: color.withValues(alpha: 0.14),
-                    shape: BoxShape.circle,
-                  ),
-                  child: Icon(
-                    ReminderStyles.iconFor(_iconId),
-                    color: color,
-                    size: 22.r,
-                  ),
+                  decoration: BoxDecoration(color: color.withValues(alpha: 0.14), shape: BoxShape.circle),
+                  child: Icon(ReminderStyles.iconFor(_iconId), color: color, size: 22.r),
                 ),
               ],
             ),
@@ -498,11 +434,7 @@ class _SNReminderFormState extends State<SNReminderForm> {
       ),
       child: Row(
         children: [
-          Icon(
-            Icons.error_outline_rounded,
-            size: 16.r,
-            color: AppColorsLight.error,
-          ),
+          Icon(Icons.error_outline_rounded, size: 16.r, color: AppColorsLight.error),
           SizedBox(width: 8.w),
           Expanded(
             child: Text(
