@@ -18,9 +18,9 @@ import 'package:quran/modules/quran/presentation/widgets/w_reciter_sheet.dart';
 
 /// Expanded playback UI. Opens as a modal bottom sheet from the mini-player.
 ///
-/// Includes: position scrubber, transport controls, repeat-mode toggle,
-/// playback-speed slider (0.5x–2x), and a from/to range picker that calls
-/// `CBAudioPlayer.playRange`.
+/// Includes: a compact now-playing card, position scrubber, transport controls,
+/// repeat-mode toggle, and compact chips for reciter / speed / sleep timer,
+/// plus a from/to range picker that calls `CBAudioPlayer.playRange`.
 class WFullPlayer extends StatelessWidget {
   const WFullPlayer({super.key});
 
@@ -39,7 +39,7 @@ class WFullPlayer extends StatelessWidget {
       value: Modular.get<CBAudioPlayer>(),
       child: DraggableScrollableSheet(
         expand: false,
-        initialChildSize: 0.72,
+        initialChildSize: 0.66,
         minChildSize: 0.5,
         maxChildSize: 0.95,
         builder: (context, scrollController) {
@@ -50,30 +50,33 @@ class WFullPlayer extends StatelessWidget {
             ),
             child: ListView(
               controller: scrollController,
-              padding: EdgeInsets.fromLTRB(20.w, 12.h, 20.w, 24.h),
-              children: const [
-                _Grip(),
-                SizedBox(height: 12),
-                _Header(),
-                SizedBox(height: 24),
-                _ArtworkBlock(),
-                SizedBox(height: 16),
-                _Scrubber(),
-                SizedBox(height: 8),
-                _Transport(),
-                SizedBox(height: 16),
-                // Repeat (mode + count + after-repeat + auto-advance), speed,
-                // sleep timer, reciter, and the range picker.
-                _RepeatRow(),
-                _RepeatExtras(),
-                SizedBox(height: 8),
-                _SpeedRow(),
-                SizedBox(height: 8),
-                _SleepRow(),
-                SizedBox(height: 8),
-                _ReciterRow(),
-                SizedBox(height: 8),
-                _RangePicker(),
+              padding: EdgeInsets.fromLTRB(20.w, 10.h, 20.w, 24.h),
+              children: [
+                const _Grip(),
+                SizedBox(height: 10.h),
+                const _Header(),
+                SizedBox(height: 14.h),
+                const _ArtworkBlock(),
+                SizedBox(height: 14.h),
+                const _Scrubber(),
+                const _Transport(),
+                SizedBox(height: 16.h),
+                // Secondary controls grouped as compact chips.
+                const _ReciterChip(),
+                SizedBox(height: 10.h),
+                Row(
+                  children: const [
+                    Expanded(child: _SpeedChip()),
+                    SizedBox(width: 10),
+                    Expanded(child: _SleepChip()),
+                  ],
+                ),
+                SizedBox(height: 16.h),
+                // Repeat (mode + count + after-repeat + auto-advance).
+                const _RepeatRow(),
+                const _RepeatExtras(),
+                SizedBox(height: 8.h),
+                const _RangePicker(),
               ],
             ),
           );
@@ -139,7 +142,6 @@ class _ArtworkBlock extends StatelessWidget {
         final ayah = state.currentAyah;
         return Container(
           width: double.infinity,
-          height: 232.h,
           clipBehavior: Clip.antiAlias,
           decoration: BoxDecoration(
             gradient: const LinearGradient(
@@ -147,17 +149,17 @@ class _ArtworkBlock extends StatelessWidget {
               begin: Alignment.topLeft,
               end: Alignment.bottomRight,
             ),
-            borderRadius: BorderRadius.circular(28.r),
+            borderRadius: BorderRadius.circular(20.r),
             boxShadow: [
               BoxShadow(
-                color: AppColorsLight.primary.withValues(alpha: 0.32),
-                blurRadius: 24,
-                offset: const Offset(0, 12),
+                color: AppColorsLight.primary.withValues(alpha: 0.28),
+                blurRadius: 18,
+                offset: const Offset(0, 8),
               ),
             ],
           ),
           child: ayah == null
-              ? const SizedBox.shrink()
+              ? SizedBox(height: 84.h)
               : _NowPlayingCard(ref: ayah),
         );
       },
@@ -165,8 +167,8 @@ class _ArtworkBlock extends StatelessWidget {
   }
 }
 
-/// Self-contained "now playing" artwork: a gold book emblem, the surah name,
-/// and a gold ayah-number star medallion.
+/// Compact "now playing" card: a gold book emblem, the surah name, and a gold
+/// ayah-number star — laid out horizontally to keep the card short.
 class _NowPlayingCard extends StatefulWidget {
   const _NowPlayingCard({required this.ref});
 
@@ -215,14 +217,14 @@ class _NowPlayingCardState extends State<_NowPlayingCard> {
         ? '${'player_surah_label'.tr()} ${widget.ref.surah}'
         : _surahName;
     return Padding(
-      padding: EdgeInsets.symmetric(horizontal: 22.w, vertical: 12.h),
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
+      padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 14.h),
+      child: Row(
         children: [
           // Emblem — the focal "cover art".
           Container(
-            width: 82.r,
-            height: 82.r,
+            width: 54.r,
+            height: 54.r,
+            alignment: Alignment.center,
             decoration: BoxDecoration(
               shape: BoxShape.circle,
               color: Colors.white.withValues(alpha: 0.12),
@@ -230,43 +232,54 @@ class _NowPlayingCardState extends State<_NowPlayingCard> {
                 color: Colors.white.withValues(alpha: 0.30),
                 width: 1.5,
               ),
-              boxShadow: [
-                BoxShadow(
-                  color: Colors.black.withValues(alpha: 0.18),
-                  blurRadius: 16,
-                  offset: const Offset(0, 6),
-                ),
-              ],
             ),
             child: Icon(
               Icons.menu_book_rounded,
-              size: 40.r,
+              size: 28.r,
               color: AppColorsLight.accent,
             ),
           ),
-          SizedBox(height: 14.h),
-          // Surah name.
-          Text(
-            name,
-            textAlign: TextAlign.center,
-            style: TextStyle(
-              color: Colors.white,
-              fontSize: 22.sp,
-              fontWeight: FontWeight.w800,
-              letterSpacing: 0.3,
+          SizedBox(width: 14.w),
+          // Surah name + ayah label.
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Text(
+                  name,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: TextStyle(
+                    color: Colors.white,
+                    fontSize: 18.sp,
+                    fontWeight: FontWeight.w800,
+                    letterSpacing: 0.3,
+                  ),
+                ),
+                SizedBox(height: 3.h),
+                Text(
+                  'الآية ${_arabicDigits(widget.ref.ayah)}',
+                  style: TextStyle(
+                    color: Colors.white.withValues(alpha: 0.75),
+                    fontSize: 12.sp,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+              ],
             ),
           ),
-          SizedBox(height: 8.h),
+          SizedBox(width: 10.w),
           // Ayah marker.
           SizedBox(
-            width: 42.r,
-            height: 42.r,
+            width: 40.r,
+            height: 40.r,
             child: Stack(
               alignment: Alignment.center,
               children: [
                 Icon(
                   Icons.star_rounded,
-                  size: 42.r,
+                  size: 40.r,
                   color: AppColorsLight.accent,
                 ),
                 Text(
@@ -632,15 +645,91 @@ class _RepeatExtras extends StatelessWidget {
   }
 }
 
-/// Shows the active reciter and opens [WReciterSheet] to switch.
-class _ReciterRow extends StatefulWidget {
-  const _ReciterRow();
+/// Compact pill used for the secondary controls (reciter / speed / sleep).
+class _OptionChip extends StatelessWidget {
+  const _OptionChip({
+    required this.icon,
+    required this.label,
+    required this.value,
+    this.onTap,
+    this.active = false,
+  });
+
+  final IconData icon;
+  final String label;
+  final String value;
+  final VoidCallback? onTap;
+  final bool active;
 
   @override
-  State<_ReciterRow> createState() => _ReciterRowState();
+  Widget build(BuildContext context) {
+    final content = Container(
+      padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 9.h),
+      decoration: BoxDecoration(
+        color: active
+            ? AppColorsLight.primary.withValues(alpha: 0.08)
+            : context.brand.surfaceMuted,
+        borderRadius: BorderRadius.circular(12.r),
+        border: Border.all(
+          color: active
+              ? AppColorsLight.primary.withValues(alpha: 0.4)
+              : context.brand.border,
+        ),
+      ),
+      child: Row(
+        children: [
+          Icon(
+            icon,
+            size: 18.r,
+            color: active ? AppColorsLight.primary : context.brand.muted,
+          ),
+          SizedBox(width: 8.w),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Text(
+                  label,
+                  style: TextStyle(fontSize: 10.sp, color: context.brand.muted),
+                ),
+                SizedBox(height: 1.h),
+                Text(
+                  value,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: TextStyle(
+                    fontSize: 12.sp,
+                    fontWeight: FontWeight.w700,
+                    color: active
+                        ? AppColorsLight.primary
+                        : context.brand.onSurface,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+    if (onTap == null) return content;
+    return InkWell(
+      onTap: onTap,
+      borderRadius: BorderRadius.circular(12.r),
+      child: content,
+    );
+  }
 }
 
-class _ReciterRowState extends State<_ReciterRow> {
+/// Shows the active reciter and opens [WReciterSheet] to switch.
+class _ReciterChip extends StatefulWidget {
+  const _ReciterChip();
+
+  @override
+  State<_ReciterChip> createState() => _ReciterChipState();
+}
+
+class _ReciterChipState extends State<_ReciterChip> {
   final CBReciter _reciter = Modular.get<CBReciter>();
 
   @override
@@ -663,52 +752,24 @@ class _ReciterRowState extends State<_ReciterRow> {
             break;
           }
         }
-        return InkWell(
+        return _OptionChip(
+          icon: Icons.record_voice_over_rounded,
+          label: 'player_reciter'.tr(),
+          value: name.isEmpty ? '—' : name,
           onTap: () => WReciterSheet.show(context),
-          borderRadius: BorderRadius.circular(10.r),
-          child: Padding(
-            padding: EdgeInsets.symmetric(horizontal: 4.w, vertical: 8.h),
-            child: Row(
-              children: [
-                Icon(
-                  Icons.record_voice_over_rounded,
-                  size: 18.r,
-                  color: context.brand.muted,
-                ),
-                SizedBox(width: 8.w),
-                Text(
-                  'player_reciter'.tr(),
-                  style: TextStyle(
-                    fontSize: 13.sp,
-                    fontWeight: FontWeight.w600,
-                  ),
-                ),
-                SizedBox(width: 12.w),
-                Expanded(
-                  child: Text(
-                    name,
-                    overflow: TextOverflow.ellipsis,
-                    textAlign: TextAlign.end,
-                    style: TextStyle(
-                      fontSize: 12.sp,
-                      fontWeight: FontWeight.w700,
-                      color: AppColorsLight.primary,
-                    ),
-                  ),
-                ),
-              ],
-            ),
-          ),
         );
       },
     );
   }
 }
 
-class _SpeedRow extends StatelessWidget {
-  const _SpeedRow();
+class _SpeedChip extends StatelessWidget {
+  const _SpeedChip();
 
   static const _stops = <double>[0.5, 0.75, 1.0, 1.25, 1.5, 1.75, 2.0];
+
+  static String _fmt(double v) =>
+      '${v.toStringAsFixed(v == v.roundToDouble() ? 1 : 2)}x';
 
   @override
   Widget build(BuildContext context) {
@@ -717,77 +778,28 @@ class _SpeedRow extends StatelessWidget {
       builder: (context, state) {
         final cubit = BlocProvider.of<CBAudioPlayer>(context);
         final speed = state.options.speed.clamp(0.5, 2.0);
-        return Column(
-          children: [
-            Padding(
-              padding: EdgeInsets.symmetric(horizontal: 4.w),
-              child: Row(
-                children: [
-                  Icon(
-                    Icons.speed_rounded,
-                    size: 18.r,
-                    color: context.brand.muted,
-                  ),
-                  SizedBox(width: 8.w),
-                  Text(
-                    'player_speed'.tr(),
-                    style: TextStyle(
-                      fontSize: 13.sp,
-                      fontWeight: FontWeight.w600,
-                    ),
-                  ),
-                  const Spacer(),
-                  Container(
-                    padding: EdgeInsets.symmetric(
-                      horizontal: 8.w,
-                      vertical: 2.h,
-                    ),
-                    decoration: BoxDecoration(
-                      color: AppColorsLight.primary.withValues(alpha: 0.1),
-                      borderRadius: BorderRadius.circular(8.r),
-                    ),
-                    child: Text(
-                      '${speed.toStringAsFixed(speed == speed.roundToDouble() ? 1 : 2)}x',
-                      style: TextStyle(
-                        fontSize: 12.sp,
-                        fontWeight: FontWeight.w700,
-                        color: AppColorsLight.primary,
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-            ),
-            SliderTheme(
-              data: SliderTheme.of(context).copyWith(
-                trackHeight: 3.h,
-                activeTrackColor: AppColorsLight.primary,
-                thumbColor: AppColorsLight.primary,
-                inactiveTrackColor: context.brand.border,
-              ),
-              child: Slider(
-                value: speed,
-                min: 0.5,
-                max: 2.0,
-                divisions: 6,
-                label: '${speed.toStringAsFixed(2)}x',
-                onChanged: (v) {
-                  final snapped = _stops.reduce(
-                    (a, b) => (a - v).abs() < (b - v).abs() ? a : b,
-                  );
-                  cubit.setSpeed(snapped);
-                },
-              ),
-            ),
+        return PopupMenuButton<double>(
+          initialValue: speed,
+          onSelected: cubit.setSpeed,
+          tooltip: 'player_speed'.tr(),
+          itemBuilder: (_) => [
+            for (final s in _stops)
+              PopupMenuItem<double>(value: s, child: Text(_fmt(s))),
           ],
+          child: _OptionChip(
+            icon: Icons.speed_rounded,
+            label: 'player_speed'.tr(),
+            value: _fmt(speed),
+            active: speed != 1.0,
+          ),
         );
       },
     );
   }
 }
 
-class _SleepRow extends StatelessWidget {
-  const _SleepRow();
+class _SleepChip extends StatelessWidget {
+  const _SleepChip();
 
   String _label(ESleepTimer t) => switch (t) {
     ESleepTimer.off => 'player_sleep_off'.tr(),
@@ -807,62 +819,19 @@ class _SleepRow extends StatelessWidget {
       builder: (context, state) {
         final cubit = BlocProvider.of<CBAudioPlayer>(context);
         final active = state.sleepTimer != ESleepTimer.off;
-        return Padding(
-          padding: EdgeInsets.symmetric(horizontal: 4.w),
-          child: Row(
-            children: [
-              Icon(
-                Icons.bedtime_outlined,
-                size: 18.r,
-                color: context.brand.muted,
-              ),
-              SizedBox(width: 8.w),
-              Text(
-                'player_sleep'.tr(),
-                style: TextStyle(fontSize: 13.sp, fontWeight: FontWeight.w600),
-              ),
-              const Spacer(),
-              PopupMenuButton<ESleepTimer>(
-                initialValue: state.sleepTimer,
-                onSelected: cubit.setSleepTimer,
-                itemBuilder: (_) => [
-                  for (final t in ESleepTimer.values)
-                    PopupMenuItem<ESleepTimer>(
-                      value: t,
-                      child: Text(_label(t)),
-                    ),
-                ],
-                child: Container(
-                  padding: EdgeInsets.symmetric(
-                    horizontal: 10.w,
-                    vertical: 6.h,
-                  ),
-                  decoration: BoxDecoration(
-                    color: active
-                        ? AppColorsLight.primary.withValues(alpha: 0.1)
-                        : context.brand.surface,
-                    borderRadius: BorderRadius.circular(8.r),
-                    border: Border.all(color: context.brand.border),
-                  ),
-                  child: Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Text(
-                        _label(state.sleepTimer),
-                        style: TextStyle(
-                          fontSize: 12.sp,
-                          fontWeight: FontWeight.w600,
-                          color: active
-                              ? AppColorsLight.primary
-                              : context.brand.muted,
-                        ),
-                      ),
-                      Icon(Icons.arrow_drop_down_rounded, size: 18.r),
-                    ],
-                  ),
-                ),
-              ),
-            ],
+        return PopupMenuButton<ESleepTimer>(
+          initialValue: state.sleepTimer,
+          onSelected: cubit.setSleepTimer,
+          tooltip: 'player_sleep'.tr(),
+          itemBuilder: (_) => [
+            for (final t in ESleepTimer.values)
+              PopupMenuItem<ESleepTimer>(value: t, child: Text(_label(t))),
+          ],
+          child: _OptionChip(
+            icon: Icons.bedtime_outlined,
+            label: 'player_sleep'.tr(),
+            value: _label(state.sleepTimer),
+            active: active,
           ),
         );
       },
@@ -1033,9 +1002,10 @@ class _RangePickerState extends State<_RangePicker> {
   }
 
   void _playRange() {
-    final s = _surah!;
-    final from = _fromAyah!;
-    final to = _toAyah!;
+    final s = _surah;
+    final from = _fromAyah;
+    final to = _toAyah;
+    if (s == null || from == null || to == null) return;
     Modular.get<CBAudioPlayer>().playRange(
       ParamAyahRef(surah: s, ayah: from),
       ParamAyahRef(surah: s, ayah: to),

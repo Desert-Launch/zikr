@@ -80,32 +80,50 @@ class _SheetBody extends StatelessWidget {
         Row(
           children: [
             Container(
-              padding: EdgeInsets.symmetric(horizontal: 10.w, vertical: 4.h),
+              padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 5.h),
               decoration: BoxDecoration(
                 color: AppColorsLight.primary.withValues(alpha: 0.1),
-                borderRadius: BorderRadius.circular(8.r),
+                borderRadius: BorderRadius.circular(10.r),
               ),
-              child: Text(
-                '${ref.surah}:${ref.ayah}',
-                style: TextStyle(
-                  color: AppColorsLight.primary,
-                  fontWeight: FontWeight.w700,
-                  fontSize: 13.sp,
-                ),
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Icon(
+                    Icons.menu_book_rounded,
+                    size: 15.r,
+                    color: AppColorsLight.primary,
+                  ),
+                  SizedBox(width: 6.w),
+                  Text(
+                    'سورة ${ref.surah} · آية ${ref.ayah}',
+                    style: TextStyle(
+                      color: AppColorsLight.primary,
+                      fontWeight: FontWeight.w700,
+                      fontSize: 13.sp,
+                    ),
+                  ),
+                ],
               ),
             ),
             const Spacer(),
-            IconButton(
-              icon: const Icon(Icons.close),
-              // Closes the sheet only; playback keeps going and the mini player
-              // takes over. Stop from the mini player to end playback.
-              onPressed: cubit.clearSelection,
+            // Closes the sheet only; playback keeps going and the mini player
+            // takes over. Stop from the mini player to end playback.
+            InkWell(
+              onTap: cubit.clearSelection,
+              borderRadius: BorderRadius.circular(20.r),
+              child: Padding(
+                padding: EdgeInsets.all(6.r),
+                child: Icon(
+                  Icons.close_rounded,
+                  size: 20.r,
+                  color: context.brand.muted,
+                ),
+              ),
             ),
           ],
         ),
-        SizedBox(height: 4.h),
+        SizedBox(height: 8.h),
         Row(
-          mainAxisAlignment: MainAxisAlignment.spaceAround,
           children: [
             _Action(
               icon: Icons.play_arrow_rounded,
@@ -113,15 +131,6 @@ class _SheetBody extends StatelessWidget {
               // Keep the sheet open so the merged player bar below stays visible.
               onTap: (_) => Modular.get<CBAudioPlayer>().playFrom(ref),
             ),
-            // _Action(
-            //   icon: Icons.repeat_rounded,
-            //   label: 'reader_repeat'.tr(),
-            //   onTap: (actionContext) async {
-            //     await Modular.get<CBAudioPlayer>().repeatSingle(ref);
-            //     if (!actionContext.mounted) return;
-            //     BlocProvider.of<CBMushafReader>(actionContext).clearSelection();
-            //   },
-            // ),
             _Action(
               icon: Icons.bookmark_add_outlined,
               label: 'reader_bookmark'.tr(),
@@ -150,15 +159,25 @@ class _SheetBody extends StatelessWidget {
             return Column(
               mainAxisSize: MainAxisSize.min,
               children: [
-                Divider(height: 18.h, color: context.brand.border),
+                SizedBox(height: 12.h),
                 // Tap the bar to expand into the full player (speed, repeat,
                 // range, …) — same affordance as the floating mini player.
-                InkWell(
-                  borderRadius: BorderRadius.circular(12.r),
-                  onTap: () => WFullPlayer.show(context),
-                  child: WPlayerBar(
-                    state: audio,
-                    cubit: Modular.get<CBAudioPlayer>(),
+                Material(
+                  color: context.brand.surfaceMuted,
+                  borderRadius: BorderRadius.circular(14.r),
+                  child: InkWell(
+                    borderRadius: BorderRadius.circular(14.r),
+                    onTap: () => WFullPlayer.show(context),
+                    child: Padding(
+                      padding: EdgeInsets.symmetric(
+                        horizontal: 10.w,
+                        vertical: 8.h,
+                      ),
+                      child: WPlayerBar(
+                        state: audio,
+                        cubit: Modular.get<CBAudioPlayer>(),
+                      ),
+                    ),
                   ),
                 ),
               ],
@@ -229,18 +248,39 @@ class _Action extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return InkWell(
-      onTap: () => onTap(context),
-      borderRadius: BorderRadius.circular(10.r),
-      child: Padding(
-        padding: EdgeInsets.symmetric(horizontal: 6.w, vertical: 6.h),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Icon(icon, color: AppColorsLight.primary, size: 26.r),
-            SizedBox(height: 4.h),
-            Text(label, style: TextStyle(fontSize: 11.sp)),
-          ],
+    return Expanded(
+      child: InkWell(
+        onTap: () {
+          HapticFeedback.selectionClick();
+          onTap(context);
+        },
+        borderRadius: BorderRadius.circular(14.r),
+        child: Padding(
+          padding: EdgeInsets.symmetric(vertical: 8.h),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Container(
+                width: 46.r,
+                height: 46.r,
+                alignment: Alignment.center,
+                decoration: BoxDecoration(
+                  color: AppColorsLight.primary.withValues(alpha: 0.1),
+                  shape: BoxShape.circle,
+                ),
+                child: Icon(icon, color: AppColorsLight.primary, size: 24.r),
+              ),
+              SizedBox(height: 7.h),
+              Text(
+                label,
+                style: TextStyle(
+                  fontSize: 11.sp,
+                  fontWeight: FontWeight.w600,
+                  color: context.brand.onSurface,
+                ),
+              ),
+            ],
+          ),
         ),
       ),
     );
