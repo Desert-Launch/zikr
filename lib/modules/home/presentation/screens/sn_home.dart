@@ -174,7 +174,7 @@ class _SNHomeState extends State<SNHome> {
           title: 'home_live'.tr(),
           subtitle: 'home_live_hint'.tr(),
           color: _green,
-          route: RoutesNames.adhanBase,
+          route: LiveRoutes.fullHome(),
         ),
       ),
       gap(),

@@ -16,6 +16,7 @@ class RoutesNames {
   static const String prayerBase = '/prayer/';
   static const String adhanBase = '/adhan/';
   static const String radioBase = '/radio/';
+  static const String liveBase = '/live/';
   static const String azkarBase = '/azkar/';
   static const String tasbihBase = '/tasbih/';
   static const String remindersBase = '/reminders/';
@@ -47,6 +48,15 @@ class RadioRoutes {
   static const String home = '/';
 
   static String fullHome() => RoutesNames.radioBase;
+}
+
+class LiveRoutes {
+  LiveRoutes._();
+
+  /// Sub-route within the live module ('/live/').
+  static const String home = '/';
+
+  static String fullHome() => RoutesNames.liveBase;
 }
 
 class QuranRoutes {

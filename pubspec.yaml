@@ -70,6 +70,14 @@ dependencies:
   connectivity_plus: ^6.1.0
   url_launcher: ^6.3.1
 
+  # In-app web view — embeds the Haramain live YouTube streams (see modules/live).
+  # The platform packages are pulled in explicitly so the live screen can enable
+  # iOS inline playback (wkwebview) and Android autoplay-without-gesture
+  # (android), each without a referenced-package lint.
+  webview_flutter: ^4.10.0
+  webview_flutter_android: ^4.0.0
+  webview_flutter_wkwebview: ^3.18.0
+
   # Notifications + permissions
   flutter_local_notifications: ^18.0.1
   permission_handler: ^11.3.1
