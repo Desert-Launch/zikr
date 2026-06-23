@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_modular/flutter_modular.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:flutter_svg/svg.dart';
 import 'package:localize_and_translate/localize_and_translate.dart';
 import 'package:quran/core/services/routes/routes_names.dart';
 import 'package:quran/core/theme/app_colors.dart';
@@ -16,9 +17,7 @@ class WReminderTile extends StatelessWidget {
 
   String _formatTime() {
     String two(int n) => n.toString().padLeft(2, '0');
-    final h = reminder.hour > 12
-        ? reminder.hour - 12
-        : (reminder.hour == 0 ? 12 : reminder.hour);
+    final h = reminder.hour > 12 ? reminder.hour - 12 : (reminder.hour == 0 ? 12 : reminder.hour);
     final suffix = reminder.hour >= 12 ? 'reminders_pm'.tr() : 'reminders_am'.tr();
     return '${two(h)}:${two(reminder.minute)} $suffix';
   }
@@ -31,9 +30,7 @@ class WReminderTile extends StatelessWidget {
       borderRadius: BorderRadius.circular(18.r),
       child: InkWell(
         borderRadius: BorderRadius.circular(18.r),
-        onTap: () => Modular.to.pushNamed(
-          RemindersRoutes.fullForm(id: reminder.id),
-        ),
+        onTap: () => Modular.to.pushNamed(RemindersRoutes.fullForm(id: reminder.id)),
         child: Container(
           padding: EdgeInsets.symmetric(horizontal: 14.w, vertical: 12.h),
           decoration: BoxDecoration(
@@ -45,12 +42,14 @@ class WReminderTile extends StatelessWidget {
               Container(
                 width: 46.r,
                 height: 46.r,
-                decoration: BoxDecoration(
-                  color: color.withValues(alpha: 0.14),
-                  shape: BoxShape.circle,
+                alignment: Alignment.center,
+                decoration: BoxDecoration(color: color.withValues(alpha: 0.14), shape: BoxShape.circle),
+                child: SvgPicture.asset(
+                  ReminderStyles.iconAssetFor(reminder.iconId),
+                  width: 24.r,
+                  height: 24.r,
+                  colorFilter: ColorFilter.mode(color, BlendMode.srcIn),
                 ),
-                child: Icon(ReminderStyles.iconFor(reminder.iconId),
-                    color: color, size: 24.r),
               ),
               SizedBox(width: 12.w),
               Expanded(
@@ -59,11 +58,7 @@ class WReminderTile extends StatelessWidget {
                   children: [
                     Text(
                       reminder.title,
-                      style: TextStyle(
-                        fontSize: 14.sp,
-                        fontWeight: FontWeight.w700,
-                        color: context.brand.onSurface,
-                      ),
+                      style: TextStyle(fontSize: 14.sp, fontWeight: FontWeight.w700, color: context.brand.onSurface),
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
                     ),

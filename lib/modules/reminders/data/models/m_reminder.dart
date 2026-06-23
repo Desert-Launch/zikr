@@ -45,7 +45,7 @@ class MReminder extends HiveObject {
   @HiveField(7)
   DateTime createdAt;
 
-  /// Index into [ReminderStyles.icons]. Defaults to the clock icon.
+  /// Index into [ReminderStyles.iconAssets]. Defaults to the clock icon.
   @HiveField(8)
   int iconId;
 

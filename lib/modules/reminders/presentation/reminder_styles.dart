@@ -13,19 +13,19 @@ class ReminderStyles {
   static const int defaultIcon = 2;
   static const int defaultColor = 3;
 
-  static const List<IconData> icons = [
-    Icons.notifications_rounded, // 0
-    Icons.favorite_rounded, // 1
-    Icons.schedule_rounded, // 2
-    Icons.alarm_rounded, // 3
-    Icons.wb_sunny_rounded, // 4
-    Icons.star_rounded, // 5
-    Icons.self_improvement_rounded, // 6
-    Icons.bookmark_added_rounded, // 7
-    Icons.nightlight_round, // 8
-    Icons.menu_book_rounded, // 9
-    Icons.mosque_rounded, // 10
-    Icons.water_drop_rounded, // 11
+  /// SVG asset paths (from `assets/icons/`) shown in the icon picker.
+  /// The index is persisted via [MReminder.iconId] — only append, never reorder.
+  static const List<String> iconAssets = [
+    'assets/icons/bell.svg', // 0
+    'assets/icons/heart.svg', // 1
+    'assets/icons/clock.svg', // 2  (default)
+    'assets/icons/moon.svg', // 3
+    'assets/icons/sun.svg', // 4
+    'assets/icons/star_outline.svg', // 5
+    'assets/icons/sunset.svg', // 6
+    'assets/icons/sunrise.svg', // 7
+    'assets/icons/coffee.svg', // 8
+    'assets/icons/book_open.svg', // 9
   ];
 
   static const List<Color> colors = [
@@ -35,8 +35,9 @@ class ReminderStyles {
     AppColorsLight.primary, // 3 green
   ];
 
-  static IconData iconFor(int id) =>
-      (id >= 0 && id < icons.length) ? icons[id] : icons[defaultIcon];
+  static String iconAssetFor(int id) => (id >= 0 && id < iconAssets.length)
+      ? iconAssets[id]
+      : iconAssets[defaultIcon];
 
   static Color colorFor(int id) =>
       (id >= 0 && id < colors.length) ? colors[id] : colors[defaultColor];
