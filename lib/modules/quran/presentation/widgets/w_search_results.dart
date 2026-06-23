@@ -4,13 +4,17 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:localize_and_translate/localize_and_translate.dart';
 import 'package:quran/core/theme/app_colors.dart';
 import 'package:quran/core/theme/brand_colors.dart';
+import 'package:quran/modules/quran/domain/usecases/uc_search_quran.dart';
 import 'package:quran/modules/quran/presentation/cubits/cb_quran_search.dart';
 import 'package:quran/modules/quran/presentation/cubits/s_quran_search.dart';
 import 'package:quran/modules/quran/presentation/cubits/s_surah_list.dart' show LoadStatus;
 import 'package:quran/modules/quran/presentation/widgets/w_search_hit_tile.dart';
 
 class WSearchResults extends StatelessWidget {
-  const WSearchResults({super.key});
+  const WSearchResults({super.key, this.onHitTap});
+
+  /// When set, tapping a result invokes this instead of pushing a new reader.
+  final void Function(SearchHit hit)? onHitTap;
 
   @override
   Widget build(BuildContext context) {
@@ -68,8 +72,15 @@ class WSearchResults extends StatelessWidget {
                 itemCount: state.results.length,
                 separatorBuilder: (_, __) =>
                     Divider(height: 1.h, color: context.brand.border),
-                itemBuilder: (_, i) =>
-                    WSearchHitTile(hit: state.results[i], query: state.query.trim()),
+                itemBuilder: (_, i) {
+                  final hit = state.results[i];
+                  final cb = onHitTap;
+                  return WSearchHitTile(
+                    hit: hit,
+                    query: state.query.trim(),
+                    onTap: cb == null ? null : () => cb(hit),
+                  );
+                },
               ),
             ),
           ],

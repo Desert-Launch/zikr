@@ -3,6 +3,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_modular/flutter_modular.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:localize_and_translate/localize_and_translate.dart';
 import 'package:quran/core/services/routes/routes_names.dart';
 import 'package:quran/core/theme/app_colors.dart';
 import 'package:quran/modules/quran/presentation/cubits/cb_mushaf_reader.dart';
@@ -102,6 +103,12 @@ class _Bar extends StatelessWidget {
                   ),
                 ),
                 IconButton(
+                  tooltip: 'common_search'.tr(),
+                  onPressed: () =>
+                      BlocProvider.of<CBMushafReader>(context).toggleSearch(),
+                  icon: const Icon(Icons.search_rounded, color: Colors.white),
+                ),
+                IconButton(
                   tooltip: 'فهرس القرآن',
                   onPressed: () =>
                       Modular.to.navigate(QuranRoutes.fullSurahList()),
@@ -109,6 +116,12 @@ class _Bar extends StatelessWidget {
                     Icons.format_list_bulleted_rounded,
                     color: Colors.white,
                   ),
+                ),
+                IconButton(
+                  tooltip: 'quran_settings_title'.tr(),
+                  onPressed: () =>
+                      Modular.to.pushNamed(QuranRoutes.fullSettings()),
+                  icon: const Icon(Icons.settings_rounded, color: Colors.white),
                 ),
               ],
             ),

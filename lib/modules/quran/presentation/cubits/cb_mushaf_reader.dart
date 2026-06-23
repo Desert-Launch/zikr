@@ -22,9 +22,13 @@ class CBMushafReader extends Cubit<SMushafReader> {
     this._local,
     this._bookmarks,
     this._settings,
-  ) : super(SMushafReader(fontMode: _settings.state.fontMode)) {
+  ) : super(SMushafReader(
+          fontMode: _settings.state.fontMode,
+          theme: _settings.state.theme,
+          fontScale: _settings.state.fontScale,
+        )) {
     _watchBookmarks();
-    _watchFontMode();
+    _watchSettings();
   }
 
   final UCGetPageLayout _getPage;
@@ -36,13 +40,19 @@ class CBMushafReader extends Cubit<SMushafReader> {
 
   Timer? _saveDebounce;
   StreamSubscription<List<MBookmark>>? _bookmarkSub;
-  StreamSubscription<SReaderSettings>? _fontModeSub;
+  StreamSubscription<SReaderSettings>? _settingsSub;
 
-  /// Reloads the current page when the font mode changes so the open reader
-  /// re-renders with the new glyphs/layout (the V4 layout differs from V1/V2).
-  void _watchFontMode() {
-    _fontModeSub = _settings.stream.listen((s) {
-      if (!isClosed && s.fontMode != state.fontMode) openPage(state.currentPage);
+  /// Mirrors the shared [CBReaderSettings] into the reader state so changes made
+  /// on the settings screen apply to an open reader instantly. Theme and text
+  /// size just re-style the current page; a font-mode change reloads the page
+  /// because the V4 glyphs/layout differ from V1/V2.
+  void _watchSettings() {
+    _settingsSub = _settings.stream.listen((s) {
+      if (isClosed) return;
+      if (s.theme != state.theme || s.fontScale != state.fontScale) {
+        emit(state.copyWith(theme: s.theme, fontScale: s.fontScale));
+      }
+      if (s.fontMode != state.fontMode) openPage(state.currentPage);
     });
   }
 
@@ -148,8 +158,20 @@ class CBMushafReader extends Cubit<SMushafReader> {
     }
   }
 
-  void toggleChrome() =>
-      emit(state.copyWith(chromeVisible: !state.chromeVisible));
+  void toggleChrome() {
+    final next = !state.chromeVisible;
+    // Hiding the chrome also dismisses the search panel so it never floats
+    // without the top bar it anchors to.
+    emit(state.copyWith(chromeVisible: next, searchOpen: next && state.searchOpen));
+  }
+
+  /// Opens/closes the slide-down search panel. Opening keeps the chrome up so
+  /// the panel stays anchored beneath the visible top bar.
+  void toggleSearch() => emit(
+        state.copyWith(searchOpen: !state.searchOpen, chromeVisible: true),
+      );
+
+  void closeSearch() => emit(state.copyWith(searchOpen: false));
 
   void setChrome(bool visible) => emit(state.copyWith(chromeVisible: visible));
 
@@ -161,10 +183,6 @@ class CBMushafReader extends Cubit<SMushafReader> {
     if (!next.add(ref.key)) next.remove(ref.key);
     emit(state.copyWith(multiSelection: next));
   }
-
-  void setTheme(ReaderTheme theme) => emit(state.copyWith(theme: theme));
-  void setFontScale(double scale) =>
-      emit(state.copyWith(fontScale: scale.clamp(0.8, 1.5)));
 
   void _scheduleLastReadSave(int page) {
     _saveDebounce?.cancel();
@@ -183,7 +201,7 @@ class CBMushafReader extends Cubit<SMushafReader> {
   Future<void> close() {
     _saveDebounce?.cancel();
     _bookmarkSub?.cancel();
-    _fontModeSub?.cancel();
+    _settingsSub?.cancel();
     return super.close();
   }
 }

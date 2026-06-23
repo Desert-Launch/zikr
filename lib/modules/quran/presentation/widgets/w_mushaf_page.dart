@@ -10,6 +10,7 @@ import 'package:quran/modules/quran/data/datasources/local/ds_qpc_font_loader.da
 import 'package:quran/modules/quran/data/models/m_page_layout.dart';
 import 'package:quran/modules/quran/data/models/m_surah.dart';
 import 'package:quran/modules/quran/domain/entities/e_quran_font_mode.dart';
+import 'package:quran/modules/quran/domain/entities/e_reader_theme.dart';
 import 'package:quran/modules/quran/domain/entities/param_ayah_ref.dart';
 import 'package:quran/modules/quran/presentation/cubits/cb_audio_player.dart';
 import 'package:quran/modules/quran/presentation/cubits/cb_mushaf_reader.dart';
@@ -93,38 +94,75 @@ class _WMushafPageState extends State<WMushafPage> {
         // QPC V1 glyphs have hair-thin strokes by design — keep the text in a
         // saturated near-black so they remain readable over the cream paper.
         // Theme.onSurface (#1A1A1A) is technically dark but loses contrast on
-        // cream once anti-aliasing thins the strokes further. Coloured (V4)
-        // glyphs always sit on a cream surface (sepia lock), so keep them dark.
+        // cream once anti-aliasing thins the strokes further. In dark theme the
+        // base text flips to white — but NOT for V4: its base letters are
+        // baked black in the font palette (uncolourable), so tajweed stays on a
+        // light page (see [readerBackground]) and keeps dark text.
         final fg = (view.theme == ReaderTheme.dark && !isColored)
             ? Colors.white
             : const Color(0xFF0A0A0A);
+        // Above the printed size the full-width Mushaf lines can't grow taller
+        // without spilling off-screen, so switch to a reflowed, vertically
+        // scrollable layout: lines render at true size, wrap, and the page
+        // grows downward. At/below 1.0 we keep the pixel-exact one-screen page.
+        final reflow = view.scale > 1.0;
         return BlocSelector<CBAudioPlayer, SAudioPlayer, ParamAyahRef?>(
           bloc: Modular.get<CBAudioPlayer>(),
           selector: (s) => s.currentAyah,
           builder: (context, playing) {
-            final lineWidgets = widget.layout.lines
-                .map((line) {
-                  switch (line.type) {
-                    case LineType.surahHeader:
-                      final surah = _surahs[line.surahNumber];
-                      return WSurahHeader(
-                        // V4 header lines carry no text — fall back to the
-                        // surah's name from the loaded surah list.
-                        title: line.text.isNotEmpty
-                            ? line.text
-                            : (surah?.arabicLong.isNotEmpty ?? false
-                                  ? surah?.arabicLong ?? ''
-                                  : surah?.arabic ?? ''),
-                        surahNumber: surah?.number ?? line.surahNumber,
-                        ayahCount: surah?.totalAyah,
-                        dark: view.theme == ReaderTheme.dark && !isColored,
-                      );
-                    case LineType.basmala:
-                      return WBasmalaLine(fontSize: 28.sp * view.scale);
-                    case LineType.spacer:
-                      return SizedBox(height: 8.h);
-                    case LineType.text:
-                      return _renderTextLine(
+            final pageNumber = Center(
+              child: Text(
+                '${widget.layout.page}',
+                style: TextStyle(fontSize: 11.sp, color: context.brand.muted),
+              ),
+            );
+            final headerDark = view.theme == ReaderTheme.dark && !isColored;
+
+            // Enlarged: merge consecutive text lines into one continuously
+            // wrapping, justified paragraph — words flow to the screen edge and
+            // carry to the next row instead of each printed line wrapping on its
+            // own. The page grows downward in a vertical scroll, whose axis
+            // doesn't fight the reader's horizontal page-swipe.
+            if (reflow) {
+              final children = <Widget>[];
+              final paragraph = <InlineSpan>[];
+              void flushParagraph() {
+                if (paragraph.isEmpty) return;
+                children.add(
+                  Padding(
+                    padding: EdgeInsets.symmetric(vertical: 4.h),
+                    child: RichText(
+                      textAlign: TextAlign.justify,
+                      textDirection: TextDirection.rtl,
+                      text: TextSpan(children: List<InlineSpan>.of(paragraph)),
+                    ),
+                  ),
+                );
+                paragraph.clear();
+              }
+
+              for (final line in widget.layout.lines) {
+                switch (line.type) {
+                  case LineType.surahHeader:
+                    flushParagraph();
+                    children.add(_surahHeader(line, dark: headerDark));
+                    break;
+                  case LineType.basmala:
+                    flushParagraph();
+                    children.add(WBasmalaLine(fontSize: 28.sp * view.scale));
+                    break;
+                  case LineType.spacer:
+                    flushParagraph();
+                    children.add(SizedBox(height: 8.h));
+                    break;
+                  case LineType.text:
+                    // Separate the printed line break so the last word of one
+                    // line doesn't glue to the first word of the next.
+                    if (paragraph.isNotEmpty) {
+                      paragraph.add(const TextSpan(text: ' '));
+                    }
+                    paragraph.addAll(
+                      _lineSpans(
                         line,
                         cubit: cubit,
                         selected: view.selected,
@@ -134,15 +172,57 @@ class _WMushafPageState extends State<WMushafPage> {
                         mode: view.mode,
                         scale: view.scale,
                         color: fg,
-                      );
-                  }
-                })
-                .toList(growable: false);
+                        wrap: true,
+                      ),
+                    );
+                    break;
+                }
+              }
+              flushParagraph();
 
-            // Regular Mushaf pages have ~15 lines and should fill the page
-            // top-to-bottom. Short pages (Fatihah, Baqarah opening, last few)
-            // have fewer lines and should be centered as a block inside the
-            // available space.
+              return Container(
+                color: readerBackground(view.theme, colored: isColored),
+                padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 8.h),
+                child: SingleChildScrollView(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
+                    children: [
+                      ...children,
+                      SizedBox(height: 8.h),
+                      pageNumber,
+                    ],
+                  ),
+                ),
+              );
+            }
+
+            // Exact mode: each line fits the page width and the page fills one
+            // screen. Short pages (Fatihah, Baqarah opening, last few) have
+            // fewer lines and center as a block inside the available space.
+            final lineWidgets = widget.layout.lines.map((line) {
+              switch (line.type) {
+                case LineType.surahHeader:
+                  return _surahHeader(line, dark: headerDark);
+                case LineType.basmala:
+                  return WBasmalaLine(fontSize: 28.sp * view.scale);
+                case LineType.spacer:
+                  return SizedBox(height: 8.h);
+                case LineType.text:
+                  return _renderTextLine(
+                    line,
+                    cubit: cubit,
+                    selected: view.selected,
+                    playing: playing,
+                    bookmarks: view.bookmarks,
+                    fontFamily: fontFamily,
+                    mode: view.mode,
+                    scale: view.scale,
+                    color: fg,
+                    wrap: false,
+                  );
+              }
+            }).toList(growable: false);
+
             final isFullPage = widget.layout.lines.length >= 12;
             final wrappedLines = lineWidgets
                 .map(
@@ -157,7 +237,7 @@ class _WMushafPageState extends State<WMushafPage> {
                 .toList(growable: false);
 
             return Container(
-              color: _bgFor(view.theme, isColored),
+              color: readerBackground(view.theme, colored: isColored),
               padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 8.h),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -172,15 +252,7 @@ class _WMushafPageState extends State<WMushafPage> {
                     ),
                   ),
                   SizedBox(height: 4.h),
-                  Center(
-                    child: Text(
-                      '${widget.layout.page}',
-                      style: TextStyle(
-                        fontSize: 11.sp,
-                        color: context.brand.muted,
-                      ),
-                    ),
-                  ),
+                  pageNumber,
                 ],
               ),
             );
@@ -190,20 +262,24 @@ class _WMushafPageState extends State<WMushafPage> {
     );
   }
 
-  Color _bgFor(ReaderTheme theme, bool isColored) {
-    // Sepia lock: V4 tajweed colours are tuned for a warm/light page, so keep
-    // the reading surface cream even when the app is in dark mode.
-    if (isColored && theme == ReaderTheme.dark) return AppColors.paperCream;
-    switch (theme) {
-      case ReaderTheme.light:
-        return AppColors.paperWarm;
-      case ReaderTheme.sepia:
-        return AppColors.paperCream;
-      case ReaderTheme.dark:
-        return AppColors.darkBackground;
-    }
+
+  /// Surah header for [line], falling back to the loaded surah list when the
+  /// (V4) header line carries no text.
+  WSurahHeader _surahHeader(MLine line, {required bool dark}) {
+    final surah = _surahs[line.surahNumber];
+    return WSurahHeader(
+      title: line.text.isNotEmpty
+          ? line.text
+          : (surah?.arabicLong.isNotEmpty ?? false
+                ? surah?.arabicLong ?? ''
+                : surah?.arabic ?? ''),
+      surahNumber: surah?.number ?? line.surahNumber,
+      ayahCount: surah?.totalAyah,
+      dark: dark,
+    );
   }
 
+  /// Exact mode: one printed line as its own centered, fit-to-width RichText.
   Widget _renderTextLine(
     MLine line, {
     required CBMushafReader cubit,
@@ -214,6 +290,45 @@ class _WMushafPageState extends State<WMushafPage> {
     required EQuranFontMode mode,
     required double scale,
     required Color color,
+    required bool wrap,
+  }) {
+    return Padding(
+      padding: EdgeInsets.symmetric(vertical: 1.h),
+      child: RichText(
+        textAlign: TextAlign.center,
+        textDirection: TextDirection.rtl,
+        text: TextSpan(
+          children: _lineSpans(
+            line,
+            cubit: cubit,
+            selected: selected,
+            playing: playing,
+            bookmarks: bookmarks,
+            fontFamily: fontFamily,
+            mode: mode,
+            scale: scale,
+            color: color,
+            wrap: wrap,
+          ),
+        ),
+      ),
+    );
+  }
+
+  /// Ayah-grouped glyph spans for one printed [line] — shared by the exact
+  /// per-line renderer and the reflowed continuous-paragraph builder. Each ayah
+  /// group keeps its own tap recognizer and selection/playback/bookmark tint.
+  List<InlineSpan> _lineSpans(
+    MLine line, {
+    required CBMushafReader cubit,
+    required ParamAyahRef? selected,
+    required ParamAyahRef? playing,
+    required Map<String, String?> bookmarks,
+    required String fontFamily,
+    required EQuranFontMode mode,
+    required double scale,
+    required Color color,
+    required bool wrap,
   }) {
     final isColored = mode.isColored;
     final groups = <_AyahGroup>[];
@@ -247,7 +362,9 @@ class _WMushafPageState extends State<WMushafPage> {
             // selection/playback. Plain modes recolour the now-playing ayah.
             color: isColored ? color : (isPlaying ? AppColorsLight.accent : color),
             fontWeight: FontWeight.w500,
-            height: 1.0,
+            // Tight leading keeps exact pages packed; reflowed pages need room
+            // between wrapped rows so stacked lines stay legible.
+            height: wrap ? 1.9 : 1.0,
             // Priority: live selection → now-playing → saved bookmark colour.
             backgroundColor: isSelected
                 ? AppColors.surfaceLightGreen
@@ -263,15 +380,24 @@ class _WMushafPageState extends State<WMushafPage> {
         spans.add(const TextSpan(text: ' '));
       }
     }
+    return spans;
+  }
+}
 
-    return Padding(
-      padding: EdgeInsets.symmetric(vertical: 1.h),
-      child: RichText(
-        textAlign: TextAlign.center,
-        textDirection: TextDirection.rtl,
-        text: TextSpan(children: spans),
-      ),
-    );
+/// Reading-surface colour for [theme], shared by the page and the reader
+/// screen background so the whole screen recolours as one. [colored] (V4
+/// tajweed) glyphs bake their colours — including black base letters — into the
+/// font palette, which can't be recoloured for a dark surface, so tajweed is
+/// locked to a light page even when the reader theme is dark.
+Color readerBackground(ReaderTheme theme, {required bool colored}) {
+  if (colored && theme == ReaderTheme.dark) return AppColors.paperCream;
+  switch (theme) {
+    case ReaderTheme.light:
+      return AppColors.paperWarm;
+    case ReaderTheme.sepia:
+      return AppColors.paperCream;
+    case ReaderTheme.dark:
+      return AppColors.darkBackground;
   }
 }
 

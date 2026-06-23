@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_modular/flutter_modular.dart';
-import 'package:quran/core/theme/app_colors.dart';
 import 'package:quran/core/widgets/w_shared_scaffold.dart';
 import 'package:quran/modules/quran/data/datasources/local/ds_local_quran.dart';
+import 'package:quran/modules/quran/domain/entities/e_quran_font_mode.dart';
 import 'package:quran/modules/quran/domain/entities/param_ayah_ref.dart';
 import 'package:quran/modules/quran/presentation/cubits/cb_audio_player.dart';
 import 'package:quran/modules/quran/presentation/cubits/cb_mushaf_reader.dart';
@@ -14,6 +14,7 @@ import 'package:quran/modules/quran/presentation/cubits/s_surah_list.dart'
 import 'package:quran/modules/quran/presentation/widgets/w_ayah_action_sheet.dart';
 import 'package:quran/modules/quran/presentation/widgets/w_mini_player.dart';
 import 'package:quran/modules/quran/presentation/widgets/w_mushaf_page.dart';
+import 'package:quran/modules/quran/presentation/widgets/w_reader_search_panel.dart';
 import 'package:quran/modules/quran/presentation/widgets/w_reader_top_bar.dart';
 
 class SNMushafReader extends StatefulWidget {
@@ -68,6 +69,17 @@ class _SNMushafReaderState extends State<SNMushafReader> {
     super.dispose();
   }
 
+  /// Jumps the open reader to a search hit instead of pushing a new screen:
+  /// closes the panel, lands on the hit's page and highlights the verse.
+  void _openSearchHit(ParamAyahRef ref, int page) {
+    _cubit.closeSearch();
+    if (_pageController.hasClients) {
+      _pageController.jumpToPage(page - 1);
+    }
+    _cubit.openPage(page);
+    _cubit.highlightAyah(ref);
+  }
+
   Future<void> _scrollToPlayingPage(ParamAyahRef ref) async {
     final page = await Modular.get<DSLocalQuran>().pageOfAyah(
       ref.surah,
@@ -89,7 +101,10 @@ class _SNMushafReaderState extends State<SNMushafReader> {
     return BlocProvider.value(
       value: _cubit,
       child: WSharedScaffold(
-        backgroundColor: AppColors.paperWarm,
+        backgroundColor: readerBackground(
+          _cubit.state.theme,
+          colored: _cubit.state.fontMode.isColored,
+        ),
         padding: EdgeInsets.zero,
         withSafeArea: false,
         body: BlocListener<CBAudioPlayer, SAudioPlayer>(
@@ -101,6 +116,16 @@ class _SNMushafReaderState extends State<SNMushafReader> {
           },
           child: Stack(
             children: [
+              // Themed backdrop behind everything (incl. the status-bar and
+              // bottom insets the SafeArea leaves) so the whole screen — not
+              // just the page surface — recolours with the reading theme.
+              Positioned.fill(
+                child: BlocSelector<CBMushafReader, SMushafReader, Color>(
+                  selector: (s) =>
+                      readerBackground(s.theme, colored: s.fontMode.isColored),
+                  builder: (_, bg) => ColoredBox(color: bg),
+                ),
+              ),
               // Tapping empty space on the page toggles the reader chrome
               // (top app bar). Word taps are handled by the page's own
               // gesture recognizers and never reach this detector.
@@ -120,9 +145,15 @@ class _SNMushafReaderState extends State<SNMushafReader> {
                   ),
                 ),
               ),
-              const Align(
+              Align(
                 alignment: Alignment.topCenter,
-                child: WReaderTopBar(),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    const WReaderTopBar(),
+                    WReaderSearchPanel(onHitTap: _openSearchHit),
+                  ],
+                ),
               ),
               Align(
                 alignment: Alignment.bottomCenter,

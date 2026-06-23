@@ -197,6 +197,7 @@ class DSLocalQuran {
   /// for the rest of the session.
   Map<String, String>? _ayahTextIndex;
   Map<String, String>? _ayahNormalisedIndex;
+  Map<String, int>? _ayahPageIndex;
   Future<Map<String, String>>? _buildingIndex;
 
   /// Returns the full ayah-text index, building it lazily on first call.
@@ -208,6 +209,7 @@ class DSLocalQuran {
 
   Future<Map<String, String>> _buildIndex() async {
     final text = <String, StringBuffer>{};
+    final pages = <String, int>{};
     for (int page = 1; page <= 604; page++) {
       final raw = await rootBundle.loadString(_pagePath(page));
       final json = Map<String, dynamic>.from(jsonDecode(raw) as Map);
@@ -226,12 +228,15 @@ class DSLocalQuran {
           final buf = text.putIfAbsent(key, StringBuffer.new);
           if (buf.isNotEmpty) buf.write(' ');
           buf.write(word);
+          // First page an ayah appears on — what search results jump to.
+          pages.putIfAbsent(key, () => page);
         }
       }
     }
     final result = text.map((k, v) => MapEntry(k, v.toString()));
     _ayahTextIndex = result;
     _ayahNormalisedIndex = result.map((k, v) => MapEntry(k, _normalise(v)));
+    _ayahPageIndex = pages;
     _buildingIndex = null;
     return result;
   }
@@ -276,18 +281,19 @@ class DSLocalQuran {
 
   /// Search the index for [normalisedQuery]. Caller must pass a string that
   /// has already been through [normaliseForSearch].
-  Future<List<({ParamAyahRef ref, String snippet})>> searchNormalised(String normalisedQuery, {int limit = 200}) async {
+  Future<List<({ParamAyahRef ref, String snippet, int page})>> searchNormalised(String normalisedQuery, {int limit = 200}) async {
     if (normalisedQuery.isEmpty) return const [];
     await ayahTextIndex();
     final normIndex = _ayahNormalisedIndex ?? const {};
     final fullIndex = _ayahTextIndex ?? const {};
-    final out = <({ParamAyahRef ref, String snippet})>[];
+    final pageIndex = _ayahPageIndex ?? const {};
+    final out = <({ParamAyahRef ref, String snippet, int page})>[];
     for (final entry in normIndex.entries) {
       final idx = entry.value.indexOf(normalisedQuery);
       if (idx < 0) continue;
       final parts = entry.key.split(':');
       final ref = ParamAyahRef(surah: int.parse(parts[0]), ayah: int.parse(parts[1]));
-      out.add((ref: ref, snippet: fullIndex[entry.key] ?? ''));
+      out.add((ref: ref, snippet: fullIndex[entry.key] ?? '', page: pageIndex[entry.key] ?? 1));
       if (out.length >= limit) break;
     }
     return out;

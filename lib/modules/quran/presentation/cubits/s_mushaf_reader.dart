@@ -1,11 +1,10 @@
 import 'package:equatable/equatable.dart';
 import 'package:quran/modules/quran/data/models/m_page_layout.dart';
 import 'package:quran/modules/quran/domain/entities/e_quran_font_mode.dart';
+import 'package:quran/modules/quran/domain/entities/e_reader_theme.dart';
 import 'package:quran/modules/quran/domain/entities/param_ayah_ref.dart';
 import 'package:quran/modules/quran/presentation/cubits/s_surah_list.dart'
     show LoadStatus;
-
-enum ReaderTheme { light, sepia, dark }
 
 class SMushafReader extends Equatable {
   const SMushafReader({
@@ -21,6 +20,7 @@ class SMushafReader extends Equatable {
     this.surahName = '',
     this.juz = 1,
     this.chromeVisible = false,
+    this.searchOpen = false,
     this.bookmarks = const <String, String?>{},
   });
 
@@ -47,6 +47,9 @@ class SMushafReader extends Equatable {
   /// the page toggles it; selecting an ayah forces it on.
   final bool chromeVisible;
 
+  /// Whether the slide-down search panel under the top bar is open.
+  final bool searchOpen;
+
   /// Bookmarked ayahs on any page, keyed by `surah:ayah` → stored `colorHex`
   /// (may be null for colourless bookmarks). Kept live from the bookmarks box
   /// so saved ayahs stay highlighted in their colour.
@@ -66,6 +69,7 @@ class SMushafReader extends Equatable {
     String? surahName,
     int? juz,
     bool? chromeVisible,
+    bool? searchOpen,
     Map<String, String?>? bookmarks,
   }) {
     return SMushafReader(
@@ -81,6 +85,7 @@ class SMushafReader extends Equatable {
       surahName: surahName ?? this.surahName,
       juz: juz ?? this.juz,
       chromeVisible: chromeVisible ?? this.chromeVisible,
+      searchOpen: searchOpen ?? this.searchOpen,
       bookmarks: bookmarks ?? this.bookmarks,
     );
   }
@@ -99,6 +104,7 @@ class SMushafReader extends Equatable {
     surahName,
     juz,
     chromeVisible,
+    searchOpen,
     bookmarks,
   ];
 }

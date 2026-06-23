@@ -37,8 +37,10 @@ import 'package:quran/modules/quran/domain/usecases/uc_ensure_ayah_downloaded.da
 import 'package:quran/modules/quran/domain/usecases/uc_get_all_surahs_status.dart';
 import 'package:quran/modules/quran/domain/usecases/uc_get_bookmarks.dart';
 import 'package:quran/modules/quran/domain/usecases/uc_get_font_mode.dart';
+import 'package:quran/modules/quran/domain/usecases/uc_get_font_scale.dart';
 import 'package:quran/modules/quran/domain/usecases/uc_get_page_layout.dart';
 import 'package:quran/modules/quran/domain/usecases/uc_get_playback_prefs.dart';
+import 'package:quran/modules/quran/domain/usecases/uc_get_reader_theme.dart';
 import 'package:quran/modules/quran/domain/usecases/uc_get_reciter_stats.dart';
 import 'package:quran/modules/quran/domain/usecases/uc_get_reciters.dart';
 import 'package:quran/modules/quran/domain/usecases/uc_get_surah_list.dart';
@@ -52,6 +54,8 @@ import 'package:quran/modules/quran/domain/usecases/uc_save_playback_prefs.dart'
 import 'package:quran/modules/quran/domain/usecases/uc_search_quran.dart';
 import 'package:quran/modules/quran/domain/usecases/uc_set_active_reciter.dart';
 import 'package:quran/modules/quran/domain/usecases/uc_set_font_mode.dart';
+import 'package:quran/modules/quran/domain/usecases/uc_set_font_scale.dart';
+import 'package:quran/modules/quran/domain/usecases/uc_set_reader_theme.dart';
 import 'package:quran/modules/quran/presentation/cubits/cb_audio_player.dart';
 import 'package:quran/modules/quran/presentation/cubits/cb_bookmarks.dart';
 import 'package:quran/modules/quran/presentation/cubits/cb_mushaf_reader.dart';
@@ -134,6 +138,10 @@ class QuranModule extends Module {
     i.add<UCSetActiveReciter>(() => UCSetActiveReciter(i.get<RReciter>()));
     i.add<UCGetFontMode>(() => UCGetFontMode(i.get<RReaderSettings>()));
     i.add<UCSetFontMode>(() => UCSetFontMode(i.get<RReaderSettings>()));
+    i.add<UCGetReaderTheme>(() => UCGetReaderTheme(i.get<RReaderSettings>()));
+    i.add<UCSetReaderTheme>(() => UCSetReaderTheme(i.get<RReaderSettings>()));
+    i.add<UCGetFontScale>(() => UCGetFontScale(i.get<RReaderSettings>()));
+    i.add<UCSetFontScale>(() => UCSetFontScale(i.get<RReaderSettings>()));
     i.add<UCGetPlaybackPrefs>(() => UCGetPlaybackPrefs(i.get<RPlaybackPrefs>()));
     i.add<UCSavePlaybackPrefs>(() => UCSavePlaybackPrefs(i.get<RPlaybackPrefs>()));
 
@@ -158,7 +166,14 @@ class QuranModule extends Module {
     // Reader display settings (font mode) — shared by the reader + settings
     // screen so a mode change re-renders an open reader instantly.
     i.addSingleton<CBReaderSettings>(
-      () => CBReaderSettings(i.get<UCGetFontMode>(), i.get<UCSetFontMode>()),
+      () => CBReaderSettings(
+        i.get<UCGetFontMode>(),
+        i.get<UCSetFontMode>(),
+        i.get<UCGetReaderTheme>(),
+        i.get<UCSetReaderTheme>(),
+        i.get<UCGetFontScale>(),
+        i.get<UCSetFontScale>(),
+      ),
     );
 
     // Per-screen cubits (factory).
