@@ -35,8 +35,8 @@ class WAzkarCategoryCard extends StatelessWidget {
         child: Stack(
           children: [
             PositionedDirectional(
-              top: -7.h,
-              end: -7.w,
+              top: -37.h,
+              end: -37.w,
               child: Container(
                 width: 70.r,
                 height: 70.r,

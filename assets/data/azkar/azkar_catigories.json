@@ -1,17 +1,17 @@
 [
     {
-        "id": 4,
-        "arName": "أذكار الصباح",
-        "enName": "Morning",
-        "filename": "morning.json",
-        "emoji": "🌅"
-    },
-    {
         "id": 2,
         "arName": "أذكار المساء",
         "enName": "Evening",
         "filename": "evening.json",
         "emoji": "🌙"
+    },
+    {
+        "id": 4,
+        "arName": "أذكار الصباح",
+        "enName": "Morning",
+        "filename": "morning.json",
+        "emoji": "🌅"
     },
     {
         "id": 6,

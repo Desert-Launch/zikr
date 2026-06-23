@@ -78,20 +78,16 @@ class _SNAzkarHomeState extends State<SNAzkarHome> {
                     crossAxisCount: 2,
                     mainAxisSpacing: 10.h,
                     crossAxisSpacing: 10.w,
-                    childAspectRatio: 1.13,
+                    childAspectRatio: 1.23,
                   ),
                   delegate: SliverChildListDelegate([
                     ...data.catalog.map(
                       (entry) => WAzkarCategoryCard(
                         title: _catalogName(entry),
-                        count: entry.isOther
-                            ? -1
-                            : (byId[entry.slug]?.items.length ?? 0),
+                        count: entry.isOther ? -1 : (byId[entry.slug]?.items.length ?? 0),
                         color: _colorFor(entry.slug),
                         emoji: entry.emoji,
-                        onTap: entry.isOther
-                            ? _openOther
-                            : () => _openCategory(entry.slug),
+                        onTap: entry.isOther ? _openOther : () => _openCategory(entry.slug),
                       ),
                     ),
                     WAzkarCategoryCard(
@@ -114,9 +110,7 @@ class _SNAzkarHomeState extends State<SNAzkarHome> {
   Color _colorFor(String slug) => _colors[slug] ?? _green;
 
   String _catalogName(MAzkarCatalog entry) {
-    return LocalizeAndTranslate.getLanguageCode() == 'ar'
-        ? entry.nameAr
-        : entry.nameEn;
+    return LocalizeAndTranslate.getLanguageCode() == 'ar' ? entry.nameAr : entry.nameEn;
   }
 
   int _completedToday(List<MAzkarCategory> categories) {
