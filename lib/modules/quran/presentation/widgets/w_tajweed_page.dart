@@ -461,7 +461,12 @@ class _WTajweedPageState extends State<WTajweedPage> {
     final spaceCount =
         spans.where((s) => s is TextSpan && s.text == ' ').length;
 
-    if (!hasWidgetSpan && spaceCount > 0) {
+    // Pages 1–2 (Al-Fatihah and the opening of Al-Baqarah) are the Mushaf's
+    // decorative opening spread: a compact centered block, never justified to
+    // the page edges — so they keep the centered fallback path below.
+    final isOpeningSpread = widget.layout.page <= 2;
+
+    if (!isOpeningSpread && !hasWidgetSpan && spaceCount > 0) {
       final tp = TextPainter(
         text: TextSpan(style: rootStyle, children: spans),
         textDirection: TextDirection.rtl,
