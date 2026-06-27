@@ -45,8 +45,8 @@ class _WBasmalaLineState extends State<WBasmalaLine> {
     return BlocSelector<CBMushafReader, SMushafReader, double>(
       selector: (s) => s.fontScale,
       builder: (context, scale) {
-        return Padding(
-          padding: EdgeInsets.symmetric(vertical: 4.h),
+        return Container(
+          margin: EdgeInsets.only(bottom: 8.h),
           child: Center(
             child: Text(
               WBasmalaLine.basmalaGlyphs,
