@@ -252,7 +252,7 @@ class _WTajweedPageState extends State<WTajweedPage> {
                       // centered basmala on every surah-opening page.
                       return Center(
                         child: SizedBox(
-                          width: avail * 0.6,
+                          width: avail * 0.5,
                           child: FittedBox(
                             fit: BoxFit.contain,
                             alignment: Alignment.center,
