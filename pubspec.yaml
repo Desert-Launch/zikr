@@ -145,13 +145,11 @@ flutter:
   assets:
     - assets/data/
     - assets/data/mushaf_pages/
-    - assets/data/mushaf_v4/
     - assets/data/tajweed/
     - assets/data/azkar/
     - assets/data/khatma/
     - assets/audio/adhan/
     - assets/fonts/qpc/
-    - assets/fonts/qpc_v4/
     - assets/fonts/uthmani/
     - assets/images/
     - assets/icons/
