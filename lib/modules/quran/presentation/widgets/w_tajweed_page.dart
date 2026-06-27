@@ -350,7 +350,7 @@ class _WTajweedPageState extends State<WTajweedPage> {
     for (int wi = 0; wi < line.words.length; wi++) {
       final w = line.words[wi];
       final ref = ParamAyahRef(surah: w.surah, ayah: w.ayah);
-      final tint = _tintFor(ref, selected, playing, bookmarks);
+      final tint = _tintFor(ref, selected, playing, bookmarks, brightness);
       final recognizer = _recogniser(ref, cubit);
 
       TextStyle styleFor(Color colour) => TextStyle(
@@ -525,8 +525,15 @@ class _WTajweedPageState extends State<WTajweedPage> {
     ParamAyahRef? selected,
     ParamAyahRef? playing,
     Map<String, String?> bookmarks,
+    Brightness brightness,
   ) {
-    if (selected?.key == ref.key) return AppColors.surfaceLightGreen;
+    if (selected?.key == ref.key) {
+      // The solid green reads fine on cream, but on the dark page it buries the
+      // text, so drop it to a low-opacity tint there.
+      return brightness == Brightness.dark
+          ? AppColors.surfaceLightGreen.withValues(alpha: 0.22)
+          : AppColors.surfaceLightGreen;
+    }
     if (playing?.key == ref.key) {
       return AppColors.accentGoldAmber.withValues(alpha: 0.15);
     }
