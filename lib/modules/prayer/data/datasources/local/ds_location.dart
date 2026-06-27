@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:geocoding/geocoding.dart';
 import 'package:geolocator/geolocator.dart';
 
@@ -42,12 +44,22 @@ class DSLocation {
       throw const LocationException('Location permission not granted');
     }
 
-    final pos = await Geolocator.getCurrentPosition(
-      locationSettings: LocationSettings(
-        accuracy: LocationAccuracy.low,
-        timeLimit: timeout,
-      ),
-    );
+    // Try a fresh fix first. A cold GPS start — e.g. right after the user
+    // grants the permission — can exceed the time limit, so fall back to the
+    // last known fix instead of failing outright (which would leave the prayer
+    // screen empty until the next refresh).
+    Position? pos;
+    try {
+      pos = await Geolocator.getCurrentPosition(
+        locationSettings: LocationSettings(
+          accuracy: LocationAccuracy.medium,
+          timeLimit: timeout,
+        ),
+      );
+    } on TimeoutException {
+      pos = await Geolocator.getLastKnownPosition();
+    }
+    if (pos == null) return null;
 
     final (label, countryCode) = await _reverseGeocode(
       pos.latitude,
