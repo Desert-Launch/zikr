@@ -7,13 +7,7 @@ import 'package:quran/core/theme/app_colors.dart';
 
 /// Mushaf-style banner shown at the beginning of every surah.
 class WSurahHeader extends StatelessWidget {
-  const WSurahHeader({
-    required this.title,
-    this.surahNumber,
-    this.ayahCount,
-    this.dark = false,
-    super.key,
-  });
+  const WSurahHeader({required this.title, this.surahNumber, this.ayahCount, this.dark = false, super.key});
 
   final String title;
   final int? surahNumber;
@@ -25,23 +19,17 @@ class WSurahHeader extends StatelessWidget {
     final gold = dark ? const Color(0xFFE0BD4A) : const Color(0xFFC9A227);
     final green = dark ? const Color(0xFF083D31) : const Color(0xFF086B50);
     final cream = dark ? const Color(0xFF17251E) : const Color(0xFFFFFAEC);
-    final textColor = dark
-        ? const Color(0xFFF4EACB)
-        : AppColorsLight.primaryDark;
+    final textColor = dark ? const Color(0xFFF4EACB) : AppColorsLight.primaryDark;
 
     return Container(
       width: double.infinity,
       height: 64.h,
-      margin: EdgeInsets.symmetric(vertical: 5.h),
+      margin: EdgeInsets.symmetric(vertical: 15.h),
       child: Stack(
         children: [
           Positioned.fill(
             child: CustomPaint(
-              painter: _MushafHeaderPainter(
-                green: green,
-                cream: cream,
-                gold: gold,
-              ),
+              painter: _MushafHeaderPainter(green: green, cream: cream, gold: gold),
             ),
           ),
           Positioned.fill(
@@ -52,12 +40,7 @@ class WSurahHeader extends StatelessWidget {
                 title,
                 maxLines: 1,
                 textAlign: TextAlign.center,
-                style: GoogleFonts.amiri(
-                  color: textColor,
-                  fontSize: 20.sp,
-                  fontWeight: FontWeight.w700,
-                  height: 1,
-                ),
+                style: GoogleFonts.amiri(color: textColor, fontSize: 20.sp, fontWeight: FontWeight.w700, height: 1),
               ),
             ),
           ),
@@ -65,25 +48,13 @@ class WSurahHeader extends StatelessWidget {
             Positioned(
               left: 20.w,
               top: 10.h,
-              child: _Medallion(
-                caption: 'عدد آياتها',
-                value: ayahCount!,
-                green: green,
-                cream: cream,
-                gold: gold,
-              ),
+              child: _Medallion(caption: 'عدد آياتها', value: ayahCount!, green: green, cream: cream, gold: gold),
             ),
           if (surahNumber != null)
             Positioned(
               right: 20.w,
               top: 10.h,
-              child: _Medallion(
-                caption: 'ترتيبها',
-                value: surahNumber!,
-                green: green,
-                cream: cream,
-                gold: gold,
-              ),
+              child: _Medallion(caption: 'ترتيبها', value: surahNumber!, green: green, cream: cream, gold: gold),
             ),
         ],
       ),
@@ -119,22 +90,12 @@ class _Medallion extends StatelessWidget {
             Text(
               caption,
               maxLines: 1,
-              style: GoogleFonts.amiri(
-                color: green,
-                fontSize: 6.5.sp,
-                fontWeight: FontWeight.w700,
-                height: 0.85,
-              ),
+              style: GoogleFonts.amiri(color: green, fontSize: 6.5.sp, fontWeight: FontWeight.w700, height: 0.85),
             ),
             SizedBox(height: 1.h),
             Text(
               _arabicDigits(value),
-              style: GoogleFonts.amiri(
-                color: green,
-                fontSize: 14.sp,
-                fontWeight: FontWeight.w700,
-                height: 0.9,
-              ),
+              style: GoogleFonts.amiri(color: green, fontSize: 14.sp, fontWeight: FontWeight.w700, height: 0.9),
             ),
           ],
         ),
@@ -144,11 +105,7 @@ class _Medallion extends StatelessWidget {
 }
 
 class _MedallionPainter extends CustomPainter {
-  const _MedallionPainter({
-    required this.cream,
-    required this.green,
-    required this.gold,
-  });
+  const _MedallionPainter({required this.cream, required this.green, required this.gold});
 
   final Color cream;
   final Color green;
@@ -160,10 +117,7 @@ class _MedallionPainter extends CustomPainter {
     for (var i = 0; i < 12; i++) {
       final angle = i * math.pi / 6;
       canvas.drawCircle(
-        Offset(
-          center.dx + math.cos(angle) * 18,
-          center.dy + math.sin(angle) * 18,
-        ),
+        Offset(center.dx + math.cos(angle) * 18, center.dy + math.sin(angle) * 18),
         4.2,
         Paint()..color = gold,
       );
@@ -182,25 +136,16 @@ class _MedallionPainter extends CustomPainter {
   }
 
   @override
-  bool shouldRepaint(covariant _MedallionPainter old) =>
-      old.cream != cream || old.green != green || old.gold != gold;
+  bool shouldRepaint(covariant _MedallionPainter old) => old.cream != cream || old.green != green || old.gold != gold;
 }
 
 String _arabicDigits(int value) {
   const digits = '٠١٢٣٤٥٦٧٨٩';
-  return value
-      .toString()
-      .split('')
-      .map((digit) => digits[int.parse(digit)])
-      .join();
+  return value.toString().split('').map((digit) => digits[int.parse(digit)]).join();
 }
 
 class _MushafHeaderPainter extends CustomPainter {
-  const _MushafHeaderPainter({
-    required this.green,
-    required this.cream,
-    required this.gold,
-  });
+  const _MushafHeaderPainter({required this.green, required this.cream, required this.gold});
 
   final Color green;
   final Color cream;
@@ -220,10 +165,7 @@ class _MushafHeaderPainter extends CustomPainter {
       ..color = gold;
     canvas.drawRRect(outer, goldStroke);
     canvas.drawRRect(
-      RRect.fromRectAndRadius(
-        outer.outerRect.deflate(4),
-        const Radius.circular(1),
-      ),
+      RRect.fromRectAndRadius(outer.outerRect.deflate(4), const Radius.circular(1)),
       Paint()
         ..style = PaintingStyle.stroke
         ..strokeWidth = 0.7
@@ -280,14 +222,8 @@ class _MushafHeaderPainter extends CustomPainter {
 
     for (var i = 0; i < 8; i++) {
       final angle = i * math.pi / 4;
-      final start = Offset(
-        center.dx + math.cos(angle) * 22,
-        center.dy + math.sin(angle) * 22,
-      );
-      final end = Offset(
-        center.dx + math.cos(angle) * 29,
-        center.dy + math.sin(angle) * 29,
-      );
+      final start = Offset(center.dx + math.cos(angle) * 22, center.dy + math.sin(angle) * 22);
+      final end = Offset(center.dx + math.cos(angle) * 29, center.dy + math.sin(angle) * 29);
       canvas.drawLine(start, end, pattern);
       canvas.drawCircle(end, 1.4, Paint()..color = gold);
     }

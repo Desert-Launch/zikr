@@ -14,9 +14,13 @@ import 'package:quran/modules/quran/presentation/cubits/s_mushaf_reader.dart';
 /// matching the printed Madani copy. The verse-end glyph U+FB55 is intentionally
 /// excluded since these basmalas aren't ayah 1.
 class WBasmalaLine extends StatefulWidget {
-  const WBasmalaLine({this.fontSize, super.key});
+  const WBasmalaLine({this.fontSize, this.color, super.key});
 
   final double? fontSize;
+
+  /// Glyph colour. Defaults to near-black for the light/cream page; callers on
+  /// a dark page pass a light colour so the basmala stays visible.
+  final Color? color;
 
   /// Glyph sequence for the QPC V1 basmala (no ayah-end marker).
   static const String basmalaGlyphs = 'ﭑ ﭒ ﭓ ﭔ';
@@ -41,8 +45,8 @@ class _WBasmalaLineState extends State<WBasmalaLine> {
     return BlocSelector<CBMushafReader, SMushafReader, double>(
       selector: (s) => s.fontScale,
       builder: (context, scale) {
-        return Padding(
-          padding: EdgeInsets.symmetric(vertical: 4.h),
+        return Container(
+          margin: EdgeInsets.only(bottom: 8.h),
           child: Center(
             child: Text(
               WBasmalaLine.basmalaGlyphs,
@@ -50,7 +54,7 @@ class _WBasmalaLineState extends State<WBasmalaLine> {
               style: TextStyle(
                 fontFamily: WBasmalaLine.fontFamily,
                 fontSize: (widget.fontSize ?? 28.sp) * scale,
-                color: const Color(0xFF0A0A0A),
+                color: widget.color ?? const Color(0xFF0A0A0A),
                 fontWeight: FontWeight.w500,
                 height: 1.0,
               ),

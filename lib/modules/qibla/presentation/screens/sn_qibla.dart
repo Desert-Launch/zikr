@@ -2,6 +2,7 @@ import 'dart:async';
 import 'dart:math' as math;
 
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_compass/flutter_compass.dart';
 import 'package:flutter_modular/flutter_modular.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
@@ -43,6 +44,8 @@ class _SNQiblaState extends State<SNQibla> {
   StreamSubscription<CompassEvent>? _compassSub;
   double _heading = 0;
   bool _hasMagnetometer = true;
+  // Tracks the previous alignment so we only buzz on the not-aligned → aligned edge.
+  bool _wasAligned = false;
 
   @override
   void initState() {
@@ -96,8 +99,21 @@ class _SNQiblaState extends State<SNQibla> {
     }
     _compassSub = stream.listen((event) {
       final h = event.heading;
-      if (h != null && mounted) setState(() => _heading = h);
+      if (h == null || !mounted) return;
+      _maybeBuzz(h);
+      setState(() => _heading = h);
     });
+  }
+
+  /// Fires a light haptic tick the moment the device crosses into Qibla alignment.
+  void _maybeBuzz(double heading) {
+    final bearing = _qiblaBearing;
+    if (bearing == null) return;
+    var delta = (bearing - heading) % 360;
+    if (delta > 180) delta -= 360;
+    final aligned = delta.abs() <= _tolerance;
+    if (aligned && !_wasAligned) HapticFeedback.lightImpact();
+    _wasAligned = aligned;
   }
 
   /// Initial bearing from `(lat1,lng1)` to `(lat2,lng2)` in degrees (0..360).

@@ -158,7 +158,7 @@ class _WMushafPageState extends State<WMushafPage> {
                     break;
                   case LineType.basmala:
                     flushParagraph();
-                    children.add(WBasmalaLine(fontSize: 28.sp * view.scale));
+                    children.add(WBasmalaLine(fontSize: 28.sp * view.scale, color: fg));
                     break;
                   case LineType.spacer:
                     flushParagraph();
@@ -182,6 +182,9 @@ class _WMushafPageState extends State<WMushafPage> {
                         scale: view.scale,
                         color: fg,
                         wrap: true,
+                        brightness: view.theme == ReaderTheme.dark
+                            ? Brightness.dark
+                            : Brightness.light,
                       ),
                     );
                     break;
@@ -213,7 +216,7 @@ class _WMushafPageState extends State<WMushafPage> {
                 case LineType.surahHeader:
                   return _surahHeader(line, dark: headerDark);
                 case LineType.basmala:
-                  return WBasmalaLine(fontSize: 28.sp * view.scale);
+                  return WBasmalaLine(fontSize: 28.sp * view.scale, color: fg);
                 case LineType.spacer:
                   return SizedBox(height: 8.h);
                 case LineType.text:
@@ -228,6 +231,9 @@ class _WMushafPageState extends State<WMushafPage> {
                     scale: view.scale,
                     color: fg,
                     wrap: false,
+                    brightness: view.theme == ReaderTheme.dark
+                        ? Brightness.dark
+                        : Brightness.light,
                   );
               }
             }).toList(growable: false);
@@ -300,6 +306,7 @@ class _WMushafPageState extends State<WMushafPage> {
     required double scale,
     required Color color,
     required bool wrap,
+    required Brightness brightness,
   }) {
     return Padding(
       padding: EdgeInsets.symmetric(vertical: 1.h),
@@ -318,6 +325,7 @@ class _WMushafPageState extends State<WMushafPage> {
             scale: scale,
             color: color,
             wrap: wrap,
+            brightness: brightness,
           ),
         ),
       ),
@@ -338,6 +346,7 @@ class _WMushafPageState extends State<WMushafPage> {
     required double scale,
     required Color color,
     required bool wrap,
+    required Brightness brightness,
   }) {
     final isColored = mode.isColored;
     final groups = <_AyahGroup>[];
@@ -376,7 +385,9 @@ class _WMushafPageState extends State<WMushafPage> {
             height: wrap ? 1.9 : 1.0,
             // Priority: live selection → now-playing → saved bookmark colour.
             backgroundColor: isSelected
-                ? AppColors.surfaceLightGreen
+                ? (brightness == Brightness.dark
+                      ? AppColors.surfaceLightGreen.withValues(alpha: 0.22)
+                      : AppColors.surfaceLightGreen)
                 : (isPlaying
                       ? AppColors.accentGoldAmber.withValues(alpha: 0.15)
                       : (isBookmarked

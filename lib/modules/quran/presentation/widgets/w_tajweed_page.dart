@@ -188,7 +188,9 @@ class _WTajweedPageState extends State<WTajweedPage> {
                     break;
                   case LineType.basmala:
                     flush();
-                    children.add(WBasmalaLine(fontSize: 28.sp * view.scale));
+                    children.add(
+                      WBasmalaLine(fontSize: 28.sp * view.scale, color: baseColour),
+                    );
                     break;
                   case LineType.spacer:
                     flush();
@@ -240,52 +242,45 @@ class _WTajweedPageState extends State<WTajweedPage> {
                 final avail = constraints.maxWidth - 24.w;
                 final fontSize = _uniformFontSize(context, avail, view.scale);
 
-                final lineWidgets = widget.layout.lines.map((line) {
+                final wrappedLines = widget.layout.lines.map<Widget>((line) {
                   switch (line.type) {
                     case LineType.surahHeader:
                       return _surahHeader(line, dark: headerDark);
                     case LineType.basmala:
-                      return WBasmalaLine(fontSize: fontSize);
-                    case LineType.spacer:
-                      return SizedBox(height: 8.h);
-                    case LineType.text:
-                      return Padding(
-                        padding: EdgeInsets.symmetric(vertical: 1.h),
-                        child: RichText(
-                          textAlign: TextAlign.center,
-                          textDirection: TextDirection.rtl,
-                          text: TextSpan(
-                            children: _lineSpans(
-                              line,
-                              cubit: cubit,
-                              coloured: coloured,
-                              selected: view.selected,
-                              playing: playing,
-                              bookmarks: view.bookmarks,
-                              scale: view.scale,
-                              baseColour: baseColour,
-                              brightness: brightness,
-                              fontSize: fontSize,
-                              height: 1.0,
-                            ),
+                      // Size the basmala to a fixed share of the page width: the
+                      // uniform body font size leaves it small and a plain
+                      // scale-down only ever shrinks it further. BoxFit.contain
+                      // inside a fixed-width box gives a large, consistent
+                      // centered basmala on every surah-opening page.
+                      return Center(
+                        child: SizedBox(
+                          width: avail * 0.5,
+                          child: FittedBox(
+                            fit: BoxFit.contain,
+                            alignment: Alignment.center,
+                            child: WBasmalaLine(fontSize: fontSize, color: baseColour),
                           ),
                         ),
                       );
+                    case LineType.spacer:
+                      return SizedBox(height: 8.h);
+                    case LineType.text:
+                      return _justifiedTextLine(
+                        line,
+                        context: context,
+                        avail: avail,
+                        fontSize: fontSize,
+                        cubit: cubit,
+                        coloured: coloured,
+                        selected: view.selected,
+                        playing: playing,
+                        bookmarks: view.bookmarks,
+                        scale: view.scale,
+                        baseColour: baseColour,
+                        brightness: brightness,
+                      );
                   }
                 }).toList(growable: false);
-
-                // Keep any rare line wider than the reference from overflowing.
-                final wrappedLines = lineWidgets
-                    .map(
-                      (w) => w is WSurahHeader
-                          ? w
-                          : FittedBox(
-                              fit: BoxFit.scaleDown,
-                              alignment: Alignment.center,
-                              child: w,
-                            ),
-                    )
-                    .toList(growable: false);
 
                 // Mirror the QPC renderer's vertical rhythm: dense pages fill the
                 // height with even leading; short opening pages (Fatihah, surah
@@ -355,7 +350,7 @@ class _WTajweedPageState extends State<WTajweedPage> {
     for (int wi = 0; wi < line.words.length; wi++) {
       final w = line.words[wi];
       final ref = ParamAyahRef(surah: w.surah, ayah: w.ayah);
-      final tint = _tintFor(ref, selected, playing, bookmarks);
+      final tint = _tintFor(ref, selected, playing, bookmarks, brightness);
       final recognizer = _recogniser(ref, cubit);
 
       TextStyle styleFor(Color colour) => TextStyle(
@@ -428,13 +423,117 @@ class _WTajweedPageState extends State<WTajweedPage> {
     return spans;
   }
 
+  /// One printed line, justified to fill the page width like the printed Mushaf.
+  ///
+  /// Amiri text — unlike the QPC glyph lines, which the per-page font pre-spaces
+  /// to a uniform width — doesn't reach both edges on its own, so it renders
+  /// centered with margins. Here we measure the line's natural width and spread
+  /// the slack across its inter-word spaces via [TextStyle.wordSpacing], so the
+  /// line fills the page without distorting letter shapes. Genuinely short lines
+  /// (surah ends) stay centered — stretching them would leave ugly gaps — and
+  /// the rare over-wide line scales down to fit, both matching the printed page.
+  Widget _justifiedTextLine(
+    MLine line, {
+    required BuildContext context,
+    required double avail,
+    required double fontSize,
+    required CBMushafReader cubit,
+    required Map<String, List<List<_Seg>>> coloured,
+    required ParamAyahRef? selected,
+    required ParamAyahRef? playing,
+    required Map<String, String?> bookmarks,
+    required double scale,
+    required Color baseColour,
+    required Brightness brightness,
+  }) {
+    final spans = _lineSpans(
+      line,
+      cubit: cubit,
+      coloured: coloured,
+      selected: selected,
+      playing: playing,
+      bookmarks: bookmarks,
+      scale: scale,
+      baseColour: baseColour,
+      brightness: brightness,
+      fontSize: fontSize,
+      height: 1.0,
+    );
+
+    final rootStyle = TextStyle(
+      fontFamily: 'AmiriQuran',
+      fontSize: fontSize,
+      height: 1.0,
+    );
+
+    // The ayah-end badge fallback is a WidgetSpan the painter can't measure;
+    // such (rare) lines keep the plain centered/scale-down path.
+    final hasWidgetSpan = spans.any((s) => s is WidgetSpan);
+    final spaceCount =
+        spans.where((s) => s is TextSpan && s.text == ' ').length;
+
+    // Pages 1–2 (Al-Fatihah and the opening of Al-Baqarah) are the Mushaf's
+    // decorative opening spread: a compact centered block, never justified to
+    // the page edges — so they keep the centered fallback path below.
+    final isOpeningSpread = widget.layout.page <= 2;
+
+    if (!isOpeningSpread && !hasWidgetSpan && spaceCount > 0) {
+      final tp = TextPainter(
+        text: TextSpan(style: rootStyle, children: spans),
+        textDirection: TextDirection.rtl,
+        textScaler: MediaQuery.textScalerOf(context),
+      )..layout();
+      final natural = tp.width;
+      // Stretch only near-full lines to the edges; below this the line is a
+      // genuine short line (surah end) better left centered. Threshold is
+      // deliberately conservative and easy to tune.
+      if (natural <= avail && natural >= avail * 0.6) {
+        final wordSpacing = (avail - natural) / spaceCount;
+        return Padding(
+          padding: EdgeInsets.symmetric(vertical: 1.h),
+          child: SizedBox(
+            width: avail,
+            child: RichText(
+              textDirection: TextDirection.rtl,
+              text: TextSpan(
+                style: rootStyle.copyWith(wordSpacing: wordSpacing),
+                children: spans,
+              ),
+            ),
+          ),
+        );
+      }
+    }
+
+    // Fallback: center short lines, scale down the rare over-wide line.
+    return Padding(
+      padding: EdgeInsets.symmetric(vertical: 1.h),
+      child: FittedBox(
+        fit: BoxFit.scaleDown,
+        alignment: Alignment.center,
+        child: RichText(
+          textAlign: TextAlign.center,
+          textDirection: TextDirection.rtl,
+          text: TextSpan(style: rootStyle, children: spans),
+        ),
+      ),
+    );
+  }
+
   Color? _tintFor(
     ParamAyahRef ref,
     ParamAyahRef? selected,
     ParamAyahRef? playing,
     Map<String, String?> bookmarks,
+    Brightness brightness,
   ) {
-    if (selected?.key == ref.key) return AppColors.surfaceLightGreen;
+    if (selected?.key == ref.key) {
+      // The solid green reads fine on cream, but on the dark page it buries the
+      // text, so drop it to a low-opacity tint there.
+      return brightness == Brightness.dark
+          ? AppColors.surfaceLightGreen.withValues(alpha: 0.22)
+          : AppColors.surfaceLightGreen;
+    }
     if (playing?.key == ref.key) {
       return AppColors.accentGoldAmber.withValues(alpha: 0.15);
     }
