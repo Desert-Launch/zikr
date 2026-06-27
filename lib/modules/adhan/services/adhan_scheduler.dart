@@ -105,8 +105,8 @@ class AdhanScheduler {
       }
 
       if (!await _notifications.hasPermission()) {
-        AppLogger.info(
-          'No notification permission — skip scheduling',
+        AppLogger.warning(
+          'No notification permission — adhan scheduling skipped (0 queued)',
           tag: 'AdhanScheduler',
         );
         return;
@@ -128,8 +128,8 @@ class AdhanScheduler {
         }
       }
       if (loc == null) {
-        AppLogger.info(
-          'Adhan scheduling: no location available — skip',
+        AppLogger.warning(
+          'Adhan scheduling: no location available — skipped (0 queued)',
           tag: 'AdhanScheduler',
         );
         return;
@@ -195,6 +195,23 @@ class AdhanScheduler {
           now: now,
         );
       }
+
+      // Diagnostic: surface how many adhan notifications are actually queued
+      // after a rebuild. A 0 here (with permission + location present) points
+      // at prayer-time fetches failing; a healthy run shows tens of pending.
+      final pending = await _notifications.pending();
+      final adhanPending = pending
+          .where(
+            (r) =>
+                (r.id >= _mainBandStart && r.id < _mainBandEnd) ||
+                (r.id >= _preBandStart && r.id < _preBandEnd),
+          )
+          .length;
+      AppLogger.info(
+        'Adhan window rebuilt — $adhanPending adhan notifications pending '
+        '(app total: ${pending.length})',
+        tag: 'AdhanScheduler',
+      );
     } finally {
       _running = false;
     }

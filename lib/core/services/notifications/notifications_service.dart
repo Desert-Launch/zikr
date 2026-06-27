@@ -36,11 +36,17 @@ class NotificationsService {
       final localZone = await FlutterTimezone.getLocalTimezone();
       tz.setLocalLocation(tz.getLocation(localZone.identifier));
     } catch (e) {
+      // Named lookup failed (couldn't read the device zone, or the identifier
+      // isn't in the tz database). Leaving `tz.local` at UTC would fire every
+      // scheduled notification off by the device's offset, so derive a zone
+      // whose current offset matches the device instead.
       AppLogger.error(
-        'Failed to resolve local timezone, defaulting to UTC',
+        'Failed to resolve local timezone by name — '
+        'falling back to device UTC offset',
         tag: 'NotificationsService',
         error: e,
       );
+      _setLocalTimezoneFromDeviceOffset();
     }
 
     const androidInit = AndroidInitializationSettings('@mipmap/ic_launcher');
@@ -82,6 +88,21 @@ class NotificationsService {
       'NotificationsService initialized',
       tag: 'NotificationsService',
     );
+  }
+
+  /// Picks a timezone whose *current* offset matches the device and makes it
+  /// `tz.local`. Not DST-history-accurate, but correct for the near-term
+  /// scheduling window — far better than leaving `tz.local` at UTC (which
+  /// would shift every adhan by the device's offset). Falls back to UTC only
+  /// if no zone matches (shouldn't happen).
+  void _setLocalTimezoneFromDeviceOffset() {
+    final offset = DateTime.now().timeZoneOffset;
+    for (final loc in tz.timeZoneDatabase.locations.values) {
+      if (tz.TZDateTime.now(loc).timeZoneOffset == offset) {
+        tz.setLocalLocation(loc);
+        return;
+      }
+    }
   }
 
   /// Asks the user for the OS notification permission. Safe to call repeatedly.
