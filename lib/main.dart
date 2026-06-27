@@ -20,7 +20,6 @@ import 'package:quran/modules/auth/presentation/cubits/cb_auth.dart';
 import 'package:quran/modules/adhan/data/models/m_adhan_download.dart';
 import 'package:quran/modules/adhan/data/models/m_adhan_preference.dart';
 import 'package:quran/modules/adhan/data/models/m_adhan_settings.dart';
-import 'package:quran/modules/adhan/data/sources/local/box_adhan_settings.dart';
 import 'package:quran/modules/adhan/services/adhan_background.dart';
 import 'package:quran/modules/adhan/services/adhan_bootstrap.dart';
 import 'package:quran/modules/adhan/services/adhan_scheduler.dart';
@@ -99,15 +98,15 @@ Future<void> main() async {
   );
 }
 
-/// Re-requests the OS notification permission for returning users whose adhan
-/// is enabled but who never granted it (completed onboarding on a build that
-/// didn't ask, or tapped "Don't Allow"). New users are handled by the
-/// onboarding flow, so this is skipped until onboarding is done to avoid
-/// prompting over it. Without the permission, [AdhanScheduler.reschedule]
-/// silently schedules nothing.
-Future<void> _ensureAdhanNotificationPermission() async {
+/// Requests the OS notification permission on app open for returning users who
+/// never granted it (completed onboarding on a build that didn't ask, or tapped
+/// "Don't Allow"). Notifications back several features — adhan, reminders,
+/// azkar, khatma, tasbih — so this is NOT gated on adhan being enabled. New
+/// users are handled by the onboarding flow, so it's skipped until onboarding
+/// is done to avoid prompting over it. Without the permission,
+/// [AdhanScheduler.reschedule] (and the other schedulers) silently no-op.
+Future<void> _ensureNotificationPermission() async {
   if (!Modular.get<BoxAppSettings>().current().hasSeenOnboarding) return;
-  if (!Modular.get<BoxAdhanSettings>().current().enabled) return;
   final notifications = Modular.get<NotificationsService>();
   if (await notifications.hasPermission()) return;
   await notifications.requestPermission();
@@ -138,11 +137,12 @@ class _RootState extends State<_Root> with WidgetsBindingObserver {
     Modular.get<NotificationsService>().init().then((_) async {
       await Modular.get<CBReminders>().rescheduleAll();
       await Modular.get<AdhanBootstrap>().run();
-      // Returning users who finished onboarding on an older build may never
-      // have been asked for the notification permission — without it adhan
-      // scheduling silently no-ops. Re-ask once here (new users are prompted
-      // during onboarding, so this is gated on hasSeenOnboarding inside).
-      await _ensureAdhanNotificationPermission();
+      // Returning users who finished onboarding on an older build (or declined)
+      // may never have granted the notification permission — without it the
+      // adhan/reminder/azkar schedulers silently no-op. Re-ask once here (new
+      // users are prompted during onboarding, so this is gated on
+      // hasSeenOnboarding inside).
+      await _ensureNotificationPermission();
       // Rebuild the rolling adhan window on every cold start so scheduling
       // never depends solely on opening Home or an app-resume event — the
       // resume callback does NOT fire on the initial launch. Cached location
