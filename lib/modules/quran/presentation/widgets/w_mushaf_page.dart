@@ -158,7 +158,7 @@ class _WMushafPageState extends State<WMushafPage> {
                     break;
                   case LineType.basmala:
                     flushParagraph();
-                    children.add(WBasmalaLine(fontSize: 28.sp * view.scale));
+                    children.add(WBasmalaLine(fontSize: 28.sp * view.scale, color: fg));
                     break;
                   case LineType.spacer:
                     flushParagraph();
@@ -213,7 +213,7 @@ class _WMushafPageState extends State<WMushafPage> {
                 case LineType.surahHeader:
                   return _surahHeader(line, dark: headerDark);
                 case LineType.basmala:
-                  return WBasmalaLine(fontSize: 28.sp * view.scale);
+                  return WBasmalaLine(fontSize: 28.sp * view.scale, color: fg);
                 case LineType.spacer:
                   return SizedBox(height: 8.h);
                 case LineType.text:

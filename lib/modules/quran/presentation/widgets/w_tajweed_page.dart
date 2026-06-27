@@ -188,7 +188,9 @@ class _WTajweedPageState extends State<WTajweedPage> {
                     break;
                   case LineType.basmala:
                     flush();
-                    children.add(WBasmalaLine(fontSize: 28.sp * view.scale));
+                    children.add(
+                      WBasmalaLine(fontSize: 28.sp * view.scale, color: baseColour),
+                    );
                     break;
                   case LineType.spacer:
                     flush();
@@ -256,7 +258,7 @@ class _WTajweedPageState extends State<WTajweedPage> {
                           child: FittedBox(
                             fit: BoxFit.contain,
                             alignment: Alignment.center,
-                            child: WBasmalaLine(fontSize: fontSize),
+                            child: WBasmalaLine(fontSize: fontSize, color: baseColour),
                           ),
                         ),
                       );
