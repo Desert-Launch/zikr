@@ -60,7 +60,7 @@ class ELiveChannel {
     shortTitleKey: 'live_madinah_short',
     subtitleKey: 'live_madinah_hint',
     channelId: 'UCROKYPep-UuODNwyipe6JMw',
-    videoId: 'G4KRJX0Zsm4',
+    videoId: 'ge2Xn-Lwk3U',
   );
 
   /// Ordered for the toggle — Makkah is the default (first).
