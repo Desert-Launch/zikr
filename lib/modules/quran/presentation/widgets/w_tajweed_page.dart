@@ -245,11 +245,20 @@ class _WTajweedPageState extends State<WTajweedPage> {
                     case LineType.surahHeader:
                       return _surahHeader(line, dark: headerDark);
                     case LineType.basmala:
-                      // Keep the basmala from overflowing on the rare narrow page.
-                      return FittedBox(
-                        fit: BoxFit.scaleDown,
-                        alignment: Alignment.center,
-                        child: WBasmalaLine(fontSize: fontSize),
+                      // Size the basmala to a fixed share of the page width: the
+                      // uniform body font size leaves it small and a plain
+                      // scale-down only ever shrinks it further. BoxFit.contain
+                      // inside a fixed-width box gives a large, consistent
+                      // centered basmala on every surah-opening page.
+                      return Center(
+                        child: SizedBox(
+                          width: avail * 0.6,
+                          child: FittedBox(
+                            fit: BoxFit.contain,
+                            alignment: Alignment.center,
+                            child: WBasmalaLine(fontSize: fontSize),
+                          ),
+                        ),
                       );
                     case LineType.spacer:
                       return SizedBox(height: 8.h);
