@@ -88,6 +88,28 @@
             </intent-filter>
         </receiver>
 
+        <!-- Full-adhan background auto-play: an exact alarm fires
+             AdhanAlarmReceiver at each prayer time, which starts
+             AdhanPlaybackService (a mediaPlayback foreground service) to play
+             the full adhan via MediaPlayer. AdhanBootReceiver re-arms the
+             persisted alarms after a reboot / app update. -->
+        <receiver
+            android:name=".adhan.AdhanAlarmReceiver"
+            android:exported="false" />
+        <service
+            android:name=".adhan.AdhanPlaybackService"
+            android:foregroundServiceType="mediaPlayback"
+            android:exported="false" />
+        <receiver
+            android:name=".adhan.AdhanBootReceiver"
+            android:exported="true">
+            <intent-filter>
+                <action android:name="android.intent.action.BOOT_COMPLETED" />
+                <action android:name="android.intent.action.QUICKBOOT_POWERON" />
+                <action android:name="android.intent.action.MY_PACKAGE_REPLACED" />
+            </intent-filter>
+        </receiver>
+
         <!-- flutter_local_notifications: receivers for scheduled / boot-time
              rescheduling, and an action receiver for tap handling. -->
         <receiver

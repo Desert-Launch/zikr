@@ -1,5 +1,6 @@
 import Flutter
 import UIKit
+import flutter_local_notifications
 import workmanager_apple
 
 @main
@@ -8,6 +9,18 @@ import workmanager_apple
     _ application: UIApplication,
     didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]?
   ) -> Bool {
+    // Required by flutter_local_notifications so the background isolate can
+    // register plugins, and so foreground notifications are presented + taps
+    // are routed. Without the UNUserNotificationCenter delegate, iOS suppresses
+    // notifications while the app is in the foreground and tap callbacks never
+    // reach Dart. Must be set before GeneratedPluginRegistrant.register.
+    FlutterLocalNotificationsPlugin.setPluginRegistrantCallback { (registry) in
+      GeneratedPluginRegistrant.register(with: registry)
+    }
+    if #available(iOS 10.0, *) {
+      UNUserNotificationCenter.current().delegate = self as? UNUserNotificationCenterDelegate
+    }
+
     GeneratedPluginRegistrant.register(with: self)
 
     // Best-effort weekly adhan refresh. iOS decides when (or whether) this

@@ -12,6 +12,7 @@ import 'package:quran/modules/adhan/data/models/m_adhan_preference.dart';
 import 'package:quran/modules/adhan/data/models/m_adhan_settings.dart';
 import 'package:quran/modules/adhan/data/sources/local/box_adhan_preference.dart';
 import 'package:quran/modules/adhan/data/sources/local/box_adhan_settings.dart';
+import 'package:quran/modules/adhan/services/adhan_audio_alarms.dart';
 import 'package:quran/modules/adhan/services/adhan_scheduler.dart';
 import 'package:quran/modules/prayer/data/datasources/local/ds_last_location.dart';
 import 'package:quran/modules/prayer/data/datasources/local/ds_location.dart';
@@ -159,8 +160,12 @@ Future<void> runAdhanBackgroundReschedule() async {
       adhanPrefs: BoxAdhanPreference(),
       local: DSLocalAdhan(),
       lastLocation: DSLastLocation(),
+      audioAlarms: AdhanAudioAlarms(),
     );
-    await scheduler.reschedule(useCachedLocation: true);
+    // Background isolates can't reach the MainActivity method channel, so the
+    // native alarms stay as the UI isolate / boot receiver last armed them;
+    // here we only refresh the notification window.
+    await scheduler.reschedule(useCachedLocation: true, armAudioAlarms: false);
     AppLogger.info('Background adhan refresh done', tag: 'AdhanBackground');
   } catch (e, st) {
     AppLogger.error(

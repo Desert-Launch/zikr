@@ -74,52 +74,76 @@ class SNAdhanSettings extends StatelessWidget {
                           ],
                         ),
 
-                        // if (defaultTargetPlatform == TargetPlatform.android) ...[
-                        //   SizedBox(height: 18.h),
-                        //   WAdhanSectionLabel('adhan_playback_section'.tr()),
-                        //   WAdhanGroup(
-                        //     children: [
-                        //       WAdhanSettingRow(
-                        //         icon: Icons.volume_up_outlined,
-                        //         title: 'adhan_background_full'.tr(),
-                        //         subtitle: 'adhan_background_full_hint'.tr(),
-                        //         trailing: Transform.scale(
-                        //           scale: .75,
-                        //           child: Switch(
-                        //             value: state.androidBackgroundFullAdhan,
-                        //             activeTrackColor: _green,
-                        //             thumbColor: WidgetStateProperty.all(Colors.white),
-                        //             onChanged: cubit.setAndroidBackground,
-                        //           ),
-                        //         ),
-                        //       ),
-                        //     ],
-                        //   ),
-                        // ] else if (defaultTargetPlatform == TargetPlatform.iOS) ...[
-                        //   SizedBox(height: 18.h),
-                        //   WAdhanSectionLabel('adhan_playback_section'.tr()),
-                        //   Container(
-                        //     padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 14.h),
-                        //     decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(14.r)),
-                        //     child: Row(
-                        //       crossAxisAlignment: CrossAxisAlignment.start,
-                        //       children: [
-                        //         Icon(Icons.info_outline_rounded, size: 18.r, color: const Color(0xFF858585)),
-                        //         SizedBox(width: 10.w),
-                        //         Expanded(
-                        //           child: Text(
-                        //             'adhan_ios_full_note'.tr(),
-                        //             style: GoogleFonts.cairo(
-                        //               fontSize: 11.sp,
-                        //               height: 1.5,
-                        //               color: const Color(0xFF858585),
-                        //             ),
-                        //           ),
-                        //         ),
-                        //       ],
-                        //     ),
-                        //   ),
-                        // ],
+                        if (defaultTargetPlatform ==
+                            TargetPlatform.android) ...[
+                          SizedBox(height: 18.h),
+                          WAdhanSectionLabel('adhan_playback_section'.tr()),
+                          WAdhanGroup(
+                            children: [
+                              WAdhanSettingRow(
+                                icon: Icons.volume_up_outlined,
+                                title: 'adhan_background_full'.tr(),
+                                subtitle: 'adhan_background_full_hint'.tr(),
+                                trailing: Transform.scale(
+                                  scale: .75,
+                                  child: Switch(
+                                    value: state.androidBackgroundFullAdhan,
+                                    activeTrackColor: _green,
+                                    thumbColor: WidgetStateProperty.all(
+                                      Colors.white,
+                                    ),
+                                    onChanged: cubit.setAndroidBackground,
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
+                          // Aggressive OEM battery managers can delay/kill the
+                          // exact alarm that fires the full adhan — surface the
+                          // exemption prompt only once the feature is on.
+                          if (state.androidBackgroundFullAdhan &&
+                              state.showBatteryNote) ...[
+                            SizedBox(height: 12.h),
+                            _BatteryGuidanceNote(
+                              onAllow: cubit.requestBatteryExemption,
+                            ),
+                          ],
+                        ] else if (defaultTargetPlatform ==
+                            TargetPlatform.iOS) ...[
+                          SizedBox(height: 18.h),
+                          WAdhanSectionLabel('adhan_playback_section'.tr()),
+                          Container(
+                            padding: EdgeInsets.symmetric(
+                              horizontal: 16.w,
+                              vertical: 14.h,
+                            ),
+                            decoration: BoxDecoration(
+                              color: Colors.white,
+                              borderRadius: BorderRadius.circular(14.r),
+                            ),
+                            child: Row(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Icon(
+                                  Icons.info_outline_rounded,
+                                  size: 18.r,
+                                  color: const Color(0xFF858585),
+                                ),
+                                SizedBox(width: 10.w),
+                                Expanded(
+                                  child: Text(
+                                    'adhan_ios_full_note'.tr(),
+                                    style: GoogleFonts.cairo(
+                                      fontSize: 11.sp,
+                                      height: 1.5,
+                                      color: const Color(0xFF858585),
+                                    ),
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ],
                         SizedBox(height: 20.h),
                         const WAdhanVirtueCard(),
                       ],

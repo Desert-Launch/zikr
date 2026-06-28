@@ -23,6 +23,7 @@ import 'package:quran/modules/adhan/domain/usecases/uc_fetch_adhan_catalog.dart'
 import 'package:quran/modules/adhan/presentation/cubits/cb_adhan_download.dart';
 import 'package:quran/modules/adhan/presentation/cubits/cb_adhan_player.dart';
 import 'package:quran/modules/adhan/presentation/cubits/cb_adhan_settings.dart';
+import 'package:quran/modules/adhan/services/adhan_audio_alarms.dart';
 import 'package:quran/modules/adhan/services/adhan_bootstrap.dart';
 import 'package:quran/modules/adhan/services/adhan_scheduler.dart';
 import 'package:quran/modules/auth/auth_module.dart';
@@ -178,6 +179,8 @@ class AppModule extends Module {
     i.add<UCDownloadAdhanVoice>(() => UCDownloadAdhanVoice(i.get<RAdhan>()));
     i.add<UCDeleteAdhanVoice>(() => UCDeleteAdhanVoice(i.get<RAdhan>()));
 
+    // Native full-adhan background auto-play bridge (Android).
+    i.addSingleton<AdhanAudioAlarms>(AdhanAudioAlarms.new);
     // Rolling adhan-notification scheduler + first-launch bootstrap.
     i.addSingleton<AdhanScheduler>(
       () => AdhanScheduler(
@@ -189,6 +192,7 @@ class AppModule extends Module {
         adhanPrefs: i.get<BoxAdhanPreference>(),
         local: i.get<DSLocalAdhan>(),
         lastLocation: i.get<DSLastLocation>(),
+        audioAlarms: i.get<AdhanAudioAlarms>(),
       ),
     );
     i.addSingleton<AdhanBootstrap>(

@@ -35,6 +35,19 @@ class AppNotificationChannels {
     playSound: true,
   );
 
+  /// Silent companion for the adhan when the FULL audio is played by the native
+  /// foreground service (Android background full-adhan mode). Still a max-importance
+  /// heads-up, but no channel sound — the MediaPlayer service provides the audio,
+  /// so we must not also fire the short clip.
+  static const adhanSilent = AndroidNotificationChannel(
+    'adhan_silent_channel',
+    'Adhan (full audio)',
+    description: 'Adhan alert shown while the full adhan plays in the background',
+    importance: Importance.max,
+    playSound: false,
+    enableVibration: false,
+  );
+
   /// Silent companion channel for the optional "X minutes before" reminder —
   /// no sound, just a heads-up.
   static const adhanPre = AndroidNotificationChannel(
@@ -89,6 +102,7 @@ class AppNotificationChannels {
     prayer,
     azkar,
     adhan,
+    adhanSilent,
     adhanPre,
     hourly,
     reminders,

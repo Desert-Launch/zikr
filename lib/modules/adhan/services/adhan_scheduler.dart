@@ -7,8 +7,10 @@ import 'package:quran/core/services/notifications/notification_channels.dart';
 import 'package:quran/core/services/notifications/notification_payload.dart';
 import 'package:quran/core/services/notifications/notifications_service.dart';
 import 'package:quran/modules/adhan/data/datasources/local/ds_local_adhan.dart';
+import 'package:quran/modules/adhan/data/models/m_adhan_settings.dart';
 import 'package:quran/modules/adhan/data/sources/local/box_adhan_preference.dart';
 import 'package:quran/modules/adhan/data/sources/local/box_adhan_settings.dart';
+import 'package:quran/modules/adhan/services/adhan_audio_alarms.dart';
 import 'package:quran/modules/prayer/data/datasources/local/ds_last_location.dart';
 import 'package:quran/modules/prayer/data/datasources/local/ds_location.dart';
 import 'package:quran/modules/prayer/data/models/m_prayer_timings.dart';
@@ -37,6 +39,7 @@ class AdhanScheduler {
     required BoxAdhanPreference adhanPrefs,
     required DSLocalAdhan local,
     required DSLastLocation lastLocation,
+    required AdhanAudioAlarms audioAlarms,
   }) : _notifications = notifications,
        _location = location,
        _getTimes = getTimes,
@@ -44,7 +47,8 @@ class AdhanScheduler {
        _adhanSettings = adhanSettings,
        _adhanPrefs = adhanPrefs,
        _local = local,
-       _lastLocation = lastLocation;
+       _lastLocation = lastLocation,
+       _audioAlarms = audioAlarms;
 
   final NotificationsService _notifications;
   final DSLocation _location;
@@ -54,8 +58,14 @@ class AdhanScheduler {
   final BoxAdhanPreference _adhanPrefs;
   final DSLocalAdhan _local;
   final DSLastLocation _lastLocation;
+  final AdhanAudioAlarms _audioAlarms;
 
   static const int _preWindowDays = 4; // pre-reminders only for the near days
+
+  /// Days of full-adhan native audio alarms armed ahead (Android background
+  /// mode). Re-armed on every app open + after reboot, so a small rolling
+  /// window is plenty; days beyond it still get the short-clip notification.
+  static const int _audioWindowDays = 3;
 
   /// Adhan's slice of iOS's 64 pending-notification budget (the rest is left
   /// for reminders/azkar/etc.). Ignored on Android.
@@ -89,11 +99,22 @@ class AdhanScheduler {
   /// location instead — required from the weekly background isolate, which
   /// can't acquire a fresh fix. The foreground path persists each fresh fix so
   /// the background path has something to read.
-  Future<void> reschedule({bool useCachedLocation = false}) async {
+  /// [armAudioAlarms] arms the native full-adhan audio alarms (Android
+  /// background auto-play). Only the UI isolate can reach the native channel,
+  /// so the weekly background isolate passes `false` and relies on the alarms
+  /// the UI isolate / boot receiver already armed.
+  Future<void> reschedule({
+    bool useCachedLocation = false,
+    bool armAudioAlarms = true,
+  }) async {
     if (_running) return;
     _running = true;
     try {
       await _cancelWindow();
+      // Clear previously-armed native alarms before rebuilding. Also clears them
+      // when the master switch / full-adhan mode is off (handled by the early
+      // returns / mode check below never re-arming).
+      if (armAudioAlarms) await _audioAlarms.cancelAll();
 
       final settings = _adhanSettings.current();
       if (!settings.enabled) {
@@ -140,12 +161,15 @@ class AdhanScheduler {
       final method = PrayerMethodMapper.methodForCountry(loc.countryCode);
       final pref = _adhanPrefs.current();
 
-      // Resolve the adhan voice → its bundled clip (or full clip when the user
-      // opted into Android background full-adhan). iOS always uses the short
-      // .caf (Apple's 30s cap).
-      final bgFull =
+      // Android background full-adhan: when on, the near-window prayers get a
+      // SILENT notification + a native alarm that plays the full adhan via the
+      // foreground service. Days beyond the audio window (and all non-Android /
+      // mode-off cases) fall back to the short-clip notification. iOS always
+      // uses the short .caf (Apple's 30s cap) — no native audio is possible.
+      final fullAndroid =
+          Platform.isAndroid &&
           settings.androidBackgroundFullAdhan &&
-          settings.playbackMode == 'full';
+          settings.playbackMode == MAdhanSettings.playbackFull;
 
       // Effective Fajr voice (a per-prayer override still wins per day below).
       String? fajrVoiceId;
@@ -190,7 +214,9 @@ class AdhanScheduler {
           voiceIdPerPrayer: prayer.adhanIdPerPrayer ?? const {},
           defaultVoiceId: pref.defaultAdhanId,
           fajrVoiceId: fajrVoiceId,
-          bgFull: bgFull,
+          fullAndroid: fullAndroid,
+          armAudioAlarms: armAudioAlarms,
+          dayOffset: dayOffset,
           scheduledPre: dayOffset < _preWindowDays,
           now: now,
         );
@@ -229,7 +255,9 @@ class AdhanScheduler {
     required Map<String, String> voiceIdPerPrayer,
     required String? defaultVoiceId,
     required String? fajrVoiceId,
-    required bool bgFull,
+    required bool fullAndroid,
+    required bool armAudioAlarms,
+    required int dayOffset,
     required bool scheduledPre,
     required DateTime now,
   }) async {
@@ -249,7 +277,21 @@ class AdhanScheduler {
         defaultVoiceId,
         fajrVoiceId,
       );
-      final channel = await _resolveChannel(voiceId, bgFull);
+
+      // Full-adhan native playback applies to near-window prayers with a known
+      // voice. The notification then goes silent (the foreground service plays
+      // the audio); the silencing is independent of whether we can arm the
+      // alarm here, so the weekly background isolate doesn't re-sound prayers
+      // the UI isolate already armed natively.
+      final useFullAdhan =
+          fullAndroid &&
+          voiceId != null &&
+          voiceId.isNotEmpty &&
+          dayOffset < _audioWindowDays;
+
+      final channel = useFullAdhan
+          ? AppNotificationChannels.adhanSilent
+          : await _resolveChannel(voiceId);
       final iosSound = _iosClipFor(voiceId);
 
       final id = _mainBandStart + doy * 10 + i;
@@ -262,12 +304,25 @@ class AdhanScheduler {
         channel: channel,
         iosSound: iosSound,
         enableVibration: vibrate,
-        alarm: true,
+        // A silent full-adhan companion shouldn't raise a full-screen alarm
+        // intent; the service's own notification carries the Stop control.
+        alarm: !useFullAdhan,
         payload: NotificationPayload(
           type: 'adhan',
           data: {'prayer': prayer.key},
         ),
       );
+
+      if (useFullAdhan && armAudioAlarms) {
+        await _audioAlarms.schedule(
+          id: id,
+          when: time,
+          rawRes: '${voiceId}_full',
+          title: 'adhan_playing_title'.tr(),
+          body: 'adhan_notif_title'.tr().replaceFirst('{{prayer}}', prayerName),
+          stopLabel: 'adhan_stop'.tr(),
+        );
+      }
       _remaining--;
 
       if (scheduledPre && preMinutes > 0 && _remaining > 0) {
@@ -337,23 +392,21 @@ class AdhanScheduler {
 
   int _dayOfYear(DateTime d) => d.difference(DateTime(d.year)).inDays + 1;
 
-  /// Resolves the Android channel for [voiceId]. Creates a per-voice channel
-  /// pointing at the bundled `res/raw/<voiceId>` clip (or `<voiceId>_full`
-  /// when background full-adhan is on). If the raw resource is missing, Android
-  /// falls back to the default sound — no crash. Null voice → shared channel.
-  Future<AndroidNotificationChannel> _resolveChannel(
-    String? voiceId,
-    bool bgFull,
-  ) async {
+  /// Resolves the Android channel for [voiceId]'s SHORT notification clip
+  /// (`res/raw/<voiceId>`, the 28s alert). The full adhan is never a channel
+  /// sound — Android truncates long channel sounds, so multi-minute playback is
+  /// handled by the native foreground service instead. If the raw resource is
+  /// missing, Android falls back to the default sound — no crash. Null voice →
+  /// shared channel.
+  Future<AndroidNotificationChannel> _resolveChannel(String? voiceId) async {
     if (voiceId == null || voiceId.isEmpty) {
       return AppNotificationChannels.adhan;
     }
-    final raw = bgFull ? '${voiceId}_full' : voiceId;
-    final channelId = bgFull ? 'adhan_${voiceId}_full' : 'adhan_$voiceId';
+    final channelId = 'adhan_$voiceId';
     await _notifications.createVoiceChannel(
       id: channelId,
       name: 'Adhan',
-      rawResource: raw,
+      rawResource: voiceId,
     );
     return AndroidNotificationChannel(
       channelId,
