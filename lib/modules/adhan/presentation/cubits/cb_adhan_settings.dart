@@ -256,6 +256,20 @@ class CBAdhanSettings extends Cubit<SAdhanSettings> {
     if (granted) _scheduleSoon();
   }
 
+  /// Fires a one-shot test adhan ~1 minute from now to verify the end-to-end
+  /// notification path independent of location / prayer-time fetching. Prompts
+  /// for permission first if it's missing. Returns the scheduled fire time, or
+  /// null if permission was denied (so the UI can warn instead of promising a
+  /// notification that will never arrive).
+  Future<DateTime?> scheduleTestAdhan() async {
+    if (!state.hasPermission) {
+      final granted = await _notifications.requestPermission();
+      emit(state.copyWith(hasPermission: granted));
+      if (!granted) return null;
+    }
+    return _scheduler.scheduleTest();
+  }
+
   /// Re-reads the selected voice (called when returning from the picker).
   Future<void> refreshVoice() async {
     final selected = await _selectedVoiceName();

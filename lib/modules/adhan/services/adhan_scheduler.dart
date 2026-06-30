@@ -74,6 +74,10 @@ class AdhanScheduler {
   /// Notifications still allowed in the current [reschedule] run (iOS budget).
   int _remaining = 0;
 
+  /// One-shot test notification id. Deliberately outside the main/pre bands so
+  /// [_cancelWindow] (and a real reschedule) never clobbers a pending test.
+  static const int _testId = 999999;
+
   // Dedicated id bands so cancelling our window never touches other features.
   static const int _mainBandStart = 200000;
   static const int _mainBandEnd = 300000;
@@ -246,6 +250,79 @@ class AdhanScheduler {
   /// Cancels every adhan notification so a disabled master switch leaves
   /// nothing pending.
   Future<void> cancelAll() => _cancelWindow();
+
+  /// Schedules a single test adhan [after] from now (default 1 minute),
+  /// routed through the EXACT same channel/sound/alarm path a real prayer
+  /// uses. This isolates the notification pipeline (permission, exact-alarm
+  /// delivery, timezone, the selected voice's sound) from the location /
+  /// prayer-time fetch chain — if the test fires but real adhans don't, the
+  /// problem is location or prayer-time fetching, not notifications.
+  ///
+  /// Returns the fire time, or null if notification permission isn't granted
+  /// (the caller should prompt). Uses the default voice and a dedicated
+  /// [_testId] outside the scheduling bands, so it never disturbs the real
+  /// window and a real reschedule never cancels it.
+  Future<DateTime?> scheduleTest({
+    Duration after = const Duration(minutes: 1),
+  }) async {
+    if (!await _notifications.hasPermission()) {
+      AppLogger.warning(
+        'Test adhan skipped — no notification permission',
+        tag: 'AdhanScheduler',
+      );
+      return null;
+    }
+
+    final settings = _adhanSettings.current();
+    final pref = _adhanPrefs.current();
+    final voiceId = pref.defaultAdhanId;
+
+    final fullAndroid =
+        Platform.isAndroid &&
+        settings.androidBackgroundFullAdhan &&
+        settings.playbackMode == MAdhanSettings.playbackFull;
+    final useFullAdhan =
+        fullAndroid && voiceId != null && voiceId.isNotEmpty;
+
+    final channel = useFullAdhan
+        ? AppNotificationChannels.adhanSilent
+        : await _resolveChannel(voiceId);
+    final iosSound = _iosClipFor(voiceId);
+
+    final when = DateTime.now().add(after);
+    await _notifications.scheduleAt(
+      id: _testId,
+      when: when,
+      title: 'adhan_test_notif_title'.tr(),
+      body: 'adhan_test_notif_body'.tr(),
+      channel: channel,
+      iosSound: iosSound,
+      enableVibration: settings.vibrate,
+      alarm: !useFullAdhan,
+      payload: const NotificationPayload(
+        type: 'adhan',
+        data: {'prayer': 'dhuhr'},
+      ),
+    );
+
+    if (useFullAdhan) {
+      await _audioAlarms.schedule(
+        id: _testId,
+        when: when,
+        rawRes: '${voiceId}_full',
+        title: 'adhan_playing_title'.tr(),
+        body: 'adhan_test_notif_title'.tr(),
+        stopLabel: 'adhan_stop'.tr(),
+      );
+    }
+
+    AppLogger.info(
+      'Test adhan scheduled at $when (voice: ${voiceId ?? 'default'}, '
+      'full: $useFullAdhan)',
+      tag: 'AdhanScheduler',
+    );
+    return when;
+  }
 
   Future<void> _scheduleDay({
     required DateTime date,
