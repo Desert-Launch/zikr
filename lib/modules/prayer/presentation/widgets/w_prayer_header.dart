@@ -97,9 +97,9 @@ class WPrayerHeader extends StatelessWidget {
                   child: Column(
                     children: [
                       Text(_weekday(now), style: AppTextStyles.white14W400),
-                      SizedBox(height: 8.h),
+                      SizedBox(height: 6.h),
                       Text(_date(now), style: AppTextStyles.white20W500),
-                      SizedBox(height: 14.h),
+                      SizedBox(height: 10.h),
                       Text(_hijriDate(now), style: AppTextStyles.white14W400),
                     ],
                   ),
