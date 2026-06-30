@@ -6,6 +6,35 @@ import 'package:quran/modules/quran/domain/entities/e_page_entry.dart';
 
 enum LoadStatus { idle, loading, success, error }
 
+/// Folds Arabic orthographic variants so search is forgiving of how the user
+/// types: drops tashkeel (harakat) and tatweel, and unifies the alef, ya, and
+/// ta-marbuta forms (e.g. أ/إ/آ/ٱ → ا, ة → ه, ى → ي). Latin text is only
+/// lower-cased. Lets "الاعراف", "الأعراف" and "اعراف" all match "الأعراف".
+String normalizeArabicSearch(String input) {
+  final buf = StringBuffer();
+  for (final rune in input.toLowerCase().runes) {
+    switch (rune) {
+      // Harakat / superscript alef / tatweel → dropped.
+      case 0x064B || 0x064C || 0x064D || 0x064E || 0x064F || 0x0650:
+      case 0x0651 || 0x0652 || 0x0653 || 0x0654 || 0x0655 || 0x0670:
+      case 0x0640:
+        continue;
+      // Alef variants → bare alef.
+      case 0x0622 || 0x0623 || 0x0625 || 0x0671:
+        buf.writeCharCode(0x0627);
+      // Ta-marbuta → ha.
+      case 0x0629:
+        buf.writeCharCode(0x0647);
+      // Alef-maqsura → ya.
+      case 0x0649:
+        buf.writeCharCode(0x064A);
+      default:
+        buf.writeCharCode(rune);
+    }
+  }
+  return buf.toString().trim();
+}
+
 enum SurahFilter { all, makki, madani }
 
 /// Which index the screen is browsing: the 114 surahs, the 30 ajzaa', or the
@@ -41,17 +70,29 @@ class SSurahList extends Equatable {
 
   List<MSurah> get visible {
     var list = all;
-    if (filter == SurahFilter.makki) list = list.where((s) => s.isMakki).toList();
-    if (filter == SurahFilter.madani) list = list.where((s) => s.isMadani).toList();
-    if (juzFilter != null) list = list.where((s) => s.juzStart == juzFilter).toList();
-    if (query.isNotEmpty) {
-      final q = query.toLowerCase();
-      list = list.where((s) =>
-        s.arabic.contains(query) ||
-        s.name.toLowerCase().contains(q) ||
-        s.translation.toLowerCase().contains(q) ||
-        s.number.toString() == q
-      ).toList();
+    if (filter == SurahFilter.makki) {
+      list = list.where((s) => s.isMakki).toList();
+    }
+    if (filter == SurahFilter.madani) {
+      list = list.where((s) => s.isMadani).toList();
+    }
+    if (juzFilter != null) {
+      list = list.where((s) => s.juzStart == juzFilter).toList();
+    }
+    final q = query.trim();
+    if (q.isNotEmpty) {
+      final qLower = q.toLowerCase();
+      final qAr = normalizeArabicSearch(q);
+      list = list
+          .where(
+            (s) =>
+                normalizeArabicSearch(s.arabic).contains(qAr) ||
+                normalizeArabicSearch(s.arabicLong).contains(qAr) ||
+                s.name.toLowerCase().contains(qLower) ||
+                s.translation.toLowerCase().contains(qLower) ||
+                s.number.toString() == qLower,
+          )
+          .toList();
     }
     return list;
   }
@@ -88,6 +129,17 @@ class SSurahList extends Equatable {
   }
 
   @override
-  List<Object?> get props =>
-      [status, all, juzIndex, pageIndex, query, mode, filter, juzFilter, lastRead, bookmarkCount, error];
+  List<Object?> get props => [
+    status,
+    all,
+    juzIndex,
+    pageIndex,
+    query,
+    mode,
+    filter,
+    juzFilter,
+    lastRead,
+    bookmarkCount,
+    error,
+  ];
 }

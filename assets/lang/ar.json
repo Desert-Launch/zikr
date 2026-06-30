@@ -23,6 +23,8 @@
   "surah_list_meccan": "مكية",
   "surah_list_medinan": "مدنية",
   "surah_list_ayah_count": "{{count}} آية",
+  "surah_list_results_surahs": "السور",
+  "surah_list_results_ayat": "الآيات",
   "quran_surah_total": "114 سورة",
   "quran_surah_label": "سورة",
   "quran_ayah_label": "آية",

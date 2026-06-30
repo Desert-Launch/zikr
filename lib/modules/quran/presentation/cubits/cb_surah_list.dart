@@ -10,7 +10,12 @@ import 'package:quran/modules/quran/domain/usecases/uc_save_last_read.dart';
 import 'package:quran/modules/quran/presentation/cubits/s_surah_list.dart';
 
 class CBSurahList extends Cubit<SSurahList> {
-  CBSurahList(this._getSurahs, this._lastRead, this._bookmarks, this._getJuzIndex) : super(const SSurahList());
+  CBSurahList(
+    this._getSurahs,
+    this._lastRead,
+    this._bookmarks,
+    this._getJuzIndex,
+  ) : super(const SSurahList());
 
   final UCGetSurahList _getSurahs;
   final UCSaveLastRead _lastRead;
@@ -26,15 +31,19 @@ class CBSurahList extends Cubit<SSurahList> {
     final bookmarksRes = await _bookmarks();
     final juzRes = await _getJuzIndex();
     result.fold(
-      (failure) => emit(state.copyWith(status: LoadStatus.error, error: failure.message)),
-      (surahs) => emit(state.copyWith(
-        status: LoadStatus.success,
-        all: surahs,
-        juzIndex: juzRes.fold((_) => const [], (l) => l),
-        pageIndex: _buildPageIndex(surahs),
-        lastRead: lastReadRes.fold((_) => null, (r) => r),
-        bookmarkCount: bookmarksRes.fold((_) => 0, (l) => l.length),
-      )),
+      (failure) => emit(
+        state.copyWith(status: LoadStatus.error, error: failure.message),
+      ),
+      (surahs) => emit(
+        state.copyWith(
+          status: LoadStatus.success,
+          all: surahs,
+          juzIndex: juzRes.fold((_) => const [], (l) => l),
+          pageIndex: _buildPageIndex(surahs),
+          lastRead: lastReadRes.fold((_) => null, (r) => r),
+          bookmarkCount: bookmarksRes.fold((_) => 0, (l) => l.length),
+        ),
+      ),
     );
     // Keep the bookmark count live so the summary card updates instantly when a
     // bookmark is added/removed elsewhere (e.g. from the mushaf reader).
@@ -47,7 +56,8 @@ class CBSurahList extends Cubit<SSurahList> {
   /// the greatest `pageStart` that is `<= page`.
   List<EPageEntry> _buildPageIndex(List<MSurah> surahs) {
     if (surahs.isEmpty) return const [];
-    final sorted = [...surahs]..sort((a, b) => a.pageStart.compareTo(b.pageStart));
+    final sorted = [...surahs]
+      ..sort((a, b) => a.pageStart.compareTo(b.pageStart));
     final out = <EPageEntry>[];
     var idx = 0;
     for (var page = 1; page <= 604; page++) {
@@ -55,7 +65,13 @@ class CBSurahList extends Cubit<SSurahList> {
         idx++;
       }
       final surah = sorted[idx];
-      out.add(EPageEntry(page: page, surahNumber: surah.number, surahArabic: surah.arabic));
+      out.add(
+        EPageEntry(
+          page: page,
+          surahNumber: surah.number,
+          surahArabic: surah.arabic,
+        ),
+      );
     }
     return out;
   }
@@ -68,7 +84,19 @@ class CBSurahList extends Cubit<SSurahList> {
 
   void setMode(QuranIndexMode mode) => emit(state.copyWith(mode: mode));
   void setFilter(SurahFilter filter) => emit(state.copyWith(filter: filter));
-  void setQuery(String q) => emit(state.copyWith(query: q));
-  void setJuzFilter(int? juz) =>
-      juz == null ? emit(state.copyWith(clearJuzFilter: true)) : emit(state.copyWith(juzFilter: juz));
+
+  /// Search filters the surah index only, so a non-empty query also switches to
+  /// it — otherwise typing while browsing the juz/page indexes filters nothing
+  /// and the search looks broken.
+  void setQuery(String q) {
+    if (q.trim().isNotEmpty && state.mode != QuranIndexMode.surah) {
+      emit(state.copyWith(query: q, mode: QuranIndexMode.surah));
+    } else {
+      emit(state.copyWith(query: q));
+    }
+  }
+
+  void setJuzFilter(int? juz) => juz == null
+      ? emit(state.copyWith(clearJuzFilter: true))
+      : emit(state.copyWith(juzFilter: juz));
 }
