@@ -41,6 +41,7 @@ import 'package:quran/modules/quran/domain/usecases/uc_get_all_surahs_status.dar
 import 'package:quran/modules/quran/domain/usecases/uc_get_bookmarks.dart';
 import 'package:quran/modules/quran/domain/usecases/uc_get_font_mode.dart';
 import 'package:quran/modules/quran/domain/usecases/uc_get_font_scale.dart';
+import 'package:quran/modules/quran/domain/usecases/uc_get_juz_index.dart';
 import 'package:quran/modules/quran/domain/usecases/uc_get_page_layout.dart';
 import 'package:quran/modules/quran/domain/usecases/uc_get_playback_prefs.dart';
 import 'package:quran/modules/quran/domain/usecases/uc_get_reader_theme.dart';
@@ -124,6 +125,7 @@ class QuranModule extends Module {
 
     // Use cases (factory)
     i.add<UCGetSurahList>(() => UCGetSurahList(i.get<RQuran>()));
+    i.add<UCGetJuzIndex>(() => UCGetJuzIndex(i.get<RQuran>()));
     i.add<UCGetPageLayout>(() => UCGetPageLayout(i.get<RQuran>()));
     i.add<UCGetTajweedTokens>(() => UCGetTajweedTokens(i.get<RTajweed>()));
     i.add<UCSearchQuran>(() => UCSearchQuran(i.get<RQuran>()));
@@ -184,7 +186,14 @@ class QuranModule extends Module {
     );
 
     // Per-screen cubits (factory).
-    i.add<CBSurahList>(() => CBSurahList(i.get<UCGetSurahList>(), i.get<UCSaveLastRead>(), i.get<UCGetBookmarks>()));
+    i.add<CBSurahList>(
+      () => CBSurahList(
+        i.get<UCGetSurahList>(),
+        i.get<UCSaveLastRead>(),
+        i.get<UCGetBookmarks>(),
+        i.get<UCGetJuzIndex>(),
+      ),
+    );
     i.add<CBMushafReader>(
       () => CBMushafReader(
         i.get<UCGetPageLayout>(),

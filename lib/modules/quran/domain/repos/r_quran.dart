@@ -3,6 +3,7 @@ import 'package:quran/core/errors/failure.dart';
 import 'package:quran/modules/quran/data/models/m_page_layout.dart';
 import 'package:quran/modules/quran/data/models/m_surah.dart';
 import 'package:quran/modules/quran/domain/entities/e_daily_verse.dart';
+import 'package:quran/modules/quran/domain/entities/e_juz_entry.dart';
 import 'package:quran/modules/quran/domain/entities/e_quran_font_mode.dart';
 import 'package:quran/modules/quran/domain/entities/param_ayah_ref.dart';
 
@@ -41,6 +42,9 @@ abstract class RQuran {
 
   /// Returns all ayah refs of [juz] (1..30) in document order.
   Future<Either<Failure, List<ParamAyahRef>>> ayatOfJuz(int juz);
+
+  /// Returns the 30 ajzaa' with the page where each one begins.
+  Future<Either<Failure, List<EJuzEntry>>> getJuzIndex();
 
   /// Deterministic "verse of the day" for the given calendar [day], constrained
   /// to verses no longer than [maxChars] so it fits the home card.

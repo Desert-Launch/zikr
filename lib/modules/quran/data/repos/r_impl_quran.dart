@@ -5,6 +5,8 @@ import 'package:quran/modules/quran/data/datasources/local/ds_local_quran.dart';
 import 'package:quran/modules/quran/data/models/m_page_layout.dart';
 import 'package:quran/modules/quran/data/models/m_surah.dart';
 import 'package:quran/modules/quran/domain/entities/e_daily_verse.dart';
+import 'package:quran/modules/quran/domain/entities/e_hizb_entry.dart';
+import 'package:quran/modules/quran/domain/entities/e_juz_entry.dart';
 import 'package:quran/modules/quran/domain/entities/e_quran_font_mode.dart';
 import 'package:quran/modules/quran/domain/entities/param_ayah_ref.dart';
 import 'package:quran/modules/quran/domain/repos/r_quran.dart';
@@ -132,6 +134,64 @@ class RImplQuran implements RQuran {
       ));
     } catch (e, st) {
       ErrorHelper.printDebugError(name: 'RImplQuran.getDailyVerse', error: e, stackTrace: st);
+      return Left(Failure.cacheFailure(message: e.toString()));
+    }
+  }
+
+  /// Start of every hizb (1..60) as `[surah, ayah, page]` in the 604-page Madani
+  /// mushaf. Derived from the Tanzil quarter/page metadata; the odd entries
+  /// (hizb 2k-1) coincide with the start of juz' k, and the juz' start pages
+  /// match `CBMushafReader`'s table. Two ahzab per juz', so juz' k owns rows
+  /// `2k-2` and `2k-1` (0-based).
+  static const List<List<int>> _hizbStarts = [
+    [1, 1, 1], [2, 75, 11], [2, 142, 22], [2, 203, 32], [2, 253, 42],
+    [3, 15, 51], [3, 93, 62], [3, 171, 72], [4, 24, 82], [4, 88, 92],
+    [4, 148, 102], [5, 27, 112], [5, 82, 121], [6, 36, 132], [6, 111, 142],
+    [7, 1, 151], [7, 88, 162], [7, 171, 173], [8, 41, 182], [9, 34, 192],
+    [9, 93, 201], [10, 26, 212], [11, 6, 222], [11, 84, 231], [12, 53, 242],
+    [13, 19, 252], [15, 1, 262], [16, 51, 272], [17, 1, 282], [17, 99, 292],
+    [18, 75, 302], [20, 1, 312], [21, 1, 322], [22, 1, 332], [23, 1, 342],
+    [24, 21, 352], [25, 21, 362], [26, 111, 371], [27, 56, 382], [28, 51, 392],
+    [29, 46, 402], [31, 22, 413], [33, 31, 422], [34, 24, 431], [36, 28, 442],
+    [37, 145, 451], [39, 32, 462], [40, 41, 472], [41, 47, 482], [43, 24, 491],
+    [46, 1, 502], [48, 18, 513], [51, 31, 522], [55, 1, 531], [58, 1, 542],
+    [62, 1, 553], [67, 1, 562], [72, 1, 572], [78, 1, 582], [87, 1, 591],
+  ];
+
+  @override
+  Future<Either<Failure, List<EJuzEntry>>> getJuzIndex() async {
+    try {
+      final surahs = await _local.loadSurahs();
+      final byNumber = {for (final s in surahs) s.number: s};
+      String arabic(int surah) => byNumber[surah]?.arabic ?? '';
+
+      EHizbEntry hizbAt(int row) {
+        final r = _hizbStarts[row];
+        return EHizbEntry(
+          number: row + 1,
+          startSurah: r[0],
+          startAyah: r[1],
+          startPage: r[2],
+          startSurahArabic: arabic(r[0]),
+        );
+      }
+
+      final out = <EJuzEntry>[];
+      for (var juz = 1; juz <= 30; juz++) {
+        final first = hizbAt((juz - 1) * 2);
+        final second = hizbAt((juz - 1) * 2 + 1);
+        out.add(EJuzEntry(
+          number: juz,
+          startSurah: first.startSurah,
+          startAyah: first.startAyah,
+          startPage: first.startPage,
+          startSurahArabic: first.startSurahArabic,
+          hizbs: [first, second],
+        ));
+      }
+      return Right(out);
+    } catch (e, st) {
+      ErrorHelper.printDebugError(name: 'RImplQuran.getJuzIndex', error: e, stackTrace: st);
       return Left(Failure.cacheFailure(message: e.toString()));
     }
   }

@@ -7,7 +7,10 @@ import 'package:quran/core/services/routes/routes_names.dart';
 import 'package:quran/core/widgets/w_shared_scaffold.dart';
 import 'package:quran/modules/quran/presentation/cubits/cb_surah_list.dart';
 import 'package:quran/modules/quran/presentation/cubits/s_surah_list.dart';
+import 'package:quran/modules/quran/presentation/widgets/w_juz_card.dart';
+import 'package:quran/modules/quran/presentation/widgets/w_page_card.dart';
 import 'package:quran/modules/quran/presentation/widgets/w_quran_header.dart';
+import 'package:quran/modules/quran/presentation/widgets/w_quran_index_mode_bar.dart';
 import 'package:quran/modules/quran/presentation/widgets/w_quran_summary_cards.dart';
 import 'package:quran/modules/quran/presentation/widgets/w_surah_card.dart';
 import 'package:quran/modules/quran/presentation/widgets/w_surah_filter_bar.dart';
@@ -31,6 +34,70 @@ class _SNSurahListState extends State<SNSurahList> {
       Modular.to.pop();
     } else {
       Modular.to.navigate(RoutesNames.homeBase);
+    }
+  }
+
+  void _openPage(int page) =>
+      Modular.to.pushNamed(QuranRoutes.readerFromPage(page));
+
+  /// The body list, swapped by the active index mode (surahs / juz / pages).
+  Widget _indexSliver(SSurahList state) {
+    switch (state.mode) {
+      case QuranIndexMode.surah:
+        if (state.visible.isEmpty) {
+          return SliverFillRemaining(
+            child: Center(child: Text('search_no_results'.tr())),
+          );
+        }
+        return SliverPadding(
+          padding: EdgeInsets.fromLTRB(16.w, 4.h, 16.w, 28.h),
+          sliver: SliverList.separated(
+            itemCount: state.visible.length,
+            separatorBuilder: (_, __) => SizedBox(height: 8.h),
+            itemBuilder: (_, index) {
+              final surah = state.visible[index];
+              return WSurahCard(
+                surah: surah,
+                green: _green,
+                gold: _gold,
+                onTap: () => _openPage(surah.pageStart),
+              );
+            },
+          ),
+        );
+      case QuranIndexMode.juz:
+        return SliverPadding(
+          padding: EdgeInsets.fromLTRB(16.w, 4.h, 16.w, 28.h),
+          sliver: SliverList.separated(
+            itemCount: state.juzIndex.length,
+            separatorBuilder: (_, __) => SizedBox(height: 8.h),
+            itemBuilder: (_, index) {
+              final juz = state.juzIndex[index];
+              return WJuzCard(
+                entry: juz,
+                green: _green,
+                gold: _gold,
+                onOpenPage: _openPage,
+              );
+            },
+          ),
+        );
+      case QuranIndexMode.page:
+        return SliverPadding(
+          padding: EdgeInsets.fromLTRB(16.w, 4.h, 16.w, 28.h),
+          sliver: SliverList.separated(
+            itemCount: state.pageIndex.length,
+            separatorBuilder: (_, __) => SizedBox(height: 8.h),
+            itemBuilder: (_, index) {
+              final entry = state.pageIndex[index];
+              return WPageCard(
+                entry: entry,
+                green: _green,
+                onTap: () => _openPage(entry.page),
+              );
+            },
+          ),
+        );
     }
   }
 
@@ -60,12 +127,20 @@ class _SNSurahListState extends State<SNSurahList> {
                     ),
                   ),
                   SliverToBoxAdapter(
-                    child: WSurahFilterBar(
+                    child: WQuranIndexModeBar(
                       cubit: _cubit,
                       state: state,
                       green: _green,
                     ),
                   ),
+                  if (state.mode == QuranIndexMode.surah)
+                    SliverToBoxAdapter(
+                      child: WSurahFilterBar(
+                        cubit: _cubit,
+                        state: state,
+                        green: _green,
+                      ),
+                    ),
                   if (state.status == LoadStatus.loading && state.all.isEmpty)
                     const SliverFillRemaining(
                       child: Center(child: CircularProgressIndicator()),
@@ -91,29 +166,7 @@ class _SNSurahListState extends State<SNSurahList> {
                             Modular.to.pushNamed(QuranRoutes.fullBookmarks()),
                       ),
                     ),
-                    if (state.visible.isEmpty)
-                      SliverFillRemaining(
-                        child: Center(child: Text('search_no_results'.tr())),
-                      )
-                    else
-                      SliverPadding(
-                        padding: EdgeInsets.fromLTRB(16.w, 4.h, 16.w, 28.h),
-                        sliver: SliverList.separated(
-                          itemCount: state.visible.length,
-                          separatorBuilder: (_, __) => SizedBox(height: 8.h),
-                          itemBuilder: (_, index) {
-                            final surah = state.visible[index];
-                            return WSurahCard(
-                              surah: surah,
-                              green: _green,
-                              gold: _gold,
-                              onTap: () => Modular.to.pushNamed(
-                                QuranRoutes.readerFromPage(surah.pageStart),
-                              ),
-                            );
-                          },
-                        ),
-                      ),
+                    _indexSliver(state),
                   ],
                 ],
               );
