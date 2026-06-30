@@ -8,6 +8,7 @@
 
 /* Begin PBXBuildFile section */
 		02CDB4B27A0687933D012A77 /* adhan_egypt.caf in Resources */ = {isa = PBXBuildFile; fileRef = 3AF088B447AA6D9834235872 /* adhan_egypt.caf */; };
+		540ECD1748816F7DBEA8FED1 /* salah_3la_mohamed.caf in Resources */ = {isa = PBXBuildFile; fileRef = A1BB6333A202165E1BB28FB1 /* salah_3la_mohamed.caf */; };
 		1498D2341E8E89220040F4C2 /* GeneratedPluginRegistrant.m in Sources */ = {isa = PBXBuildFile; fileRef = 1498D2331E8E89220040F4C2 /* GeneratedPluginRegistrant.m */; };
 		331C808B294A63AB00263BE5 /* RunnerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 331C807B294A618700263BE5 /* RunnerTests.swift */; };
 		3B3967161E833CAA004F5970 /* AppFrameworkInfo.plist in Resources */ = {isa = PBXBuildFile; fileRef = 3B3967151E833CAA004F5970 /* AppFrameworkInfo.plist */; };
@@ -53,6 +54,7 @@
 		331C807B294A618700263BE5 /* RunnerTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RunnerTests.swift; sourceTree = "<group>"; };
 		331C8081294A63A400263BE5 /* RunnerTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = RunnerTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		3AF088B447AA6D9834235872 /* adhan_egypt.caf */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = file; path = adhan_egypt.caf; sourceTree = "<group>"; };
+		A1BB6333A202165E1BB28FB1 /* salah_3la_mohamed.caf */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = file; path = salah_3la_mohamed.caf; sourceTree = "<group>"; };
 		3B3967151E833CAA004F5970 /* AppFrameworkInfo.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; name = AppFrameworkInfo.plist; path = Flutter/AppFrameworkInfo.plist; sourceTree = "<group>"; };
 		4766578DC2C4E8BA9299113E /* adhan_makkah.caf */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = file; path = adhan_makkah.caf; sourceTree = "<group>"; };
 		59F4695E0BBD2EDC8C47518E /* Pods-RunnerTests.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-RunnerTests.release.xcconfig"; path = "Target Support Files/Pods-RunnerTests/Pods-RunnerTests.release.xcconfig"; sourceTree = "<group>"; };
@@ -123,6 +125,7 @@
 				4766578DC2C4E8BA9299113E /* adhan_makkah.caf */,
 				3AF088B447AA6D9834235872 /* adhan_egypt.caf */,
 				9F319016576718D867BA3188 /* adhan_abdulbasit.caf */,
+				A1BB6333A202165E1BB28FB1 /* salah_3la_mohamed.caf */,
 			);
 			path = Sounds;
 			sourceTree = "<group>";
@@ -288,6 +291,7 @@
 				CCA6AE2DA5A7A08963494384 /* adhan_makkah.caf in Resources */,
 				02CDB4B27A0687933D012A77 /* adhan_egypt.caf in Resources */,
 				804CC85E4AB86C447615FDE5 /* adhan_abdulbasit.caf in Resources */,
+				540ECD1748816F7DBEA8FED1 /* salah_3la_mohamed.caf in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

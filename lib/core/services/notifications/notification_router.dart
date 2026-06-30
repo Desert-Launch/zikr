@@ -30,6 +30,8 @@ class NotificationRouter {
         Modular.to.navigate(RoutesNames.azkarBase);
       case 'hourly':
         Modular.to.navigate(RoutesNames.tasbihBase);
+      case 'salawat':
+        Modular.to.navigate(TasbihRoutes.fullSalawat());
       case 'reminder':
         Modular.to.navigate(RoutesNames.remindersBase);
       case 'quran':

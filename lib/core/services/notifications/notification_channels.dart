@@ -69,6 +69,19 @@ class AppNotificationChannels {
     enableVibration: false,
   );
 
+  /// Salawat-upon-the-Prophet reminders. Plays a short bundled clip
+  /// (`res/raw/salah_3la_mohamed.mp3`) so it's audibly distinct from the silent
+  /// hourly tasbih. Default importance keeps it gentle but audible. Channel
+  /// sound is immutable once created — never change [id] or the clip silently.
+  static const salawat = AndroidNotificationChannel(
+    'salawat_channel',
+    'Salawat Reminder',
+    description: 'Reminders to send salawat upon the Prophet ﷺ (08:30 — 22:30)',
+    importance: Importance.defaultImportance,
+    playSound: true,
+    sound: RawResourceAndroidNotificationSound('salah_3la_mohamed'),
+  );
+
   static const reminders = AndroidNotificationChannel(
     'reminders_channel',
     'Custom Reminders',
@@ -105,6 +118,7 @@ class AppNotificationChannels {
     adhanSilent,
     adhanPre,
     hourly,
+    salawat,
     reminders,
     quranReminders,
     downloads,

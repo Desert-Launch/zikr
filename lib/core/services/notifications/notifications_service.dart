@@ -215,6 +215,10 @@ class NotificationsService {
   }
 
   /// Schedules a daily-repeating notification at [hour]:[minute] local time.
+  ///
+  /// [iosSound] is a per-notification iOS sound file bundled in the app
+  /// (≤30s, e.g. `salah_3la_mohamed.caf`); Android sound is fixed to the
+  /// [channel] instead.
   Future<void> scheduleDaily({
     required int id,
     required int hour,
@@ -223,13 +227,14 @@ class NotificationsService {
     required String body,
     required AndroidNotificationChannel channel,
     NotificationPayload? payload,
+    String? iosSound,
   }) async {
     await _plugin.zonedSchedule(
       id,
       title,
       body,
       _nextInstanceOfTime(hour, minute),
-      _details(channel),
+      _details(channel, iosSound: iosSound),
       androidScheduleMode: AndroidScheduleMode.exactAllowWhileIdle,
       uiLocalNotificationDateInterpretation:
           UILocalNotificationDateInterpretation.absoluteTime,

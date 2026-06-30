@@ -7,6 +7,7 @@ import 'package:quran/core/widgets/w_gradient_app_bar.dart';
 import 'package:quran/core/widgets/w_shared_scaffold.dart';
 import 'package:quran/modules/tasbih/presentation/cubits/cb_salawat.dart';
 import 'package:quran/modules/tasbih/presentation/cubits/s_tasbih.dart';
+import 'package:quran/modules/tasbih/presentation/widgets/w_salawat_reminder_sheet.dart';
 import 'package:quran/modules/tasbih/presentation/widgets/w_tasbih_counter_card.dart';
 import 'package:quran/modules/tasbih/presentation/widgets/w_tasbih_virtue_card.dart';
 
@@ -34,6 +35,18 @@ class SNSalawat extends StatelessWidget {
                 child: WGradientAppBar(
                   title: 'home_salawat'.tr(),
                   subtitle: 'salawat_subtitle'.tr(),
+                  actions: [
+                    IconButton(
+                      onPressed: () =>
+                          WSalawatReminderSheet.show(context, cubit),
+                      icon: Icon(
+                        state.reminderEnabled
+                            ? Icons.notifications_active
+                            : Icons.notifications_none,
+                        color: Colors.white,
+                      ),
+                    ),
+                  ],
                 ),
               ),
               SliverPadding(

@@ -13,6 +13,10 @@ class MTasbihCounter extends HiveObject {
     this.count = 0,
     this.vibrate = true,
     this.hourlyEnabled = false,
+    this.reminderEnabled = false,
+    this.reminderIntervalHours = 2,
+    this.reminderHour = 9,
+    this.reminderMinute = 30,
   });
 
   /// The phrase being counted. User can swap between سبحان الله, الحمد لله,
@@ -35,4 +39,24 @@ class MTasbihCounter extends HiveObject {
   /// Whether hourly tasbih notifications fire 08–22 (Decision 2).
   @HiveField(4)
   bool hourlyEnabled;
+
+  /// Salawat reminder fields — only meaningful on the salawat record
+  /// (see [BoxTasbihCounter.salawatKey]); harmless defaults on the tasbih one.
+  ///
+  /// Whether the salawat-upon-the-Prophet reminder is scheduled.
+  @HiveField(5)
+  bool reminderEnabled;
+
+  /// Hours between reminders within the 08:30–22:30 window. `0` switches to
+  /// a single daily reminder at [reminderHour]:[reminderMinute] instead.
+  @HiveField(6)
+  int reminderIntervalHours;
+
+  /// Hour (0–23) for the single specific-time reminder (when interval is 0).
+  @HiveField(7)
+  int reminderHour;
+
+  /// Minute (0–59) for the single specific-time reminder (when interval is 0).
+  @HiveField(8)
+  int reminderMinute;
 }

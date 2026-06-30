@@ -75,6 +75,7 @@ import 'package:quran/modules/reminders/reminders_module.dart';
 import 'package:quran/modules/settings/data/sources/local/box_theme_pref.dart';
 import 'package:quran/modules/settings/settings_module.dart';
 import 'package:quran/modules/tasbih/data/datasources/local/ds_hourly_tasbih.dart';
+import 'package:quran/modules/tasbih/data/datasources/local/ds_salawat_reminder.dart';
 import 'package:quran/modules/tasbih/data/sources/local/box_tasbih_counter.dart';
 import 'package:quran/modules/tasbih/data/sources/local/box_tasbih_history.dart';
 import 'package:quran/modules/tasbih/presentation/cubits/cb_salawat.dart';
@@ -116,6 +117,10 @@ class AppModule extends Module {
     // Hourly tasbih scheduler — depends on the notifications service below.
     i.addSingleton<DSHourlyTasbih>(
       () => DSHourlyTasbih(i.get<NotificationsService>()),
+    );
+    // Salawat reminder scheduler.
+    i.addSingleton<DSSalawatReminder>(
+      () => DSSalawatReminder(i.get<NotificationsService>()),
     );
 
     // Adhan
@@ -274,6 +279,7 @@ class AppModule extends Module {
       () => CBSalawat(
         counterBox: i.get<BoxTasbihCounter>(),
         historyBox: i.get<BoxTasbihHistory>(),
+        reminder: i.get<DSSalawatReminder>(),
       ),
     );
     // Live Quran radio player — app-wide so playback survives leaving the radio
