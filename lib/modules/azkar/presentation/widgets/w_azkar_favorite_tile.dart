@@ -9,12 +9,7 @@ import 'package:quran/modules/azkar/data/models/m_azkar_item.dart';
 
 /// A favorited zekr card. Resolves its text/source lazily from [ds] by item id.
 class WAzkarFavoriteTile extends StatelessWidget {
-  const WAzkarFavoriteTile({
-    super.key,
-    required this.fav,
-    required this.ds,
-    required this.onRemove,
-  });
+  const WAzkarFavoriteTile({super.key, required this.fav, required this.ds, required this.onRemove});
 
   final MAzkarFavorite fav;
   final DSLocalAzkar ds;
@@ -51,8 +46,7 @@ class WAzkarFavoriteTile extends StatelessWidget {
                       ),
                     ),
                     IconButton(
-                      icon: const Icon(Icons.favorite_rounded,
-                          color: AppColorsLight.error),
+                      icon: const Icon(Icons.favorite_rounded, color: AppColorsLight.error),
                       onPressed: onRemove,
                     ),
                   ],
@@ -60,12 +54,7 @@ class WAzkarFavoriteTile extends StatelessWidget {
                 SizedBox(height: 4.h),
                 Directionality(
                   textDirection: TextDirection.rtl,
-                  child: Text(
-                    item?.textAr ?? '—',
-                    style: GoogleFonts.amiri(
-                      fontSize: 16.sp, height: 1.9,
-                    ),
-                  ),
+                  child: Text(item?.textAr ?? '—', style: GoogleFonts.amiri(fontSize: 16.sp, height: 1.9)),
                 ),
               ],
             ),
