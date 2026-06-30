@@ -18,46 +18,37 @@ class WTasbihPhraseSelector extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return GridView.builder(
-      shrinkWrap: true,
-      physics: const NeverScrollableScrollPhysics(),
-      padding: EdgeInsets.zero,
-      itemCount: phrases.length,
-      gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-        crossAxisCount: 2,
-        mainAxisSpacing: 8.h,
-        crossAxisSpacing: 8.w,
-        childAspectRatio: 2.75,
+    return SizedBox(
+      height: 46.h,
+      child: ListView.separated(
+        scrollDirection: Axis.horizontal,
+        padding: EdgeInsets.zero,
+        itemCount: phrases.length,
+        separatorBuilder: (_, __) => SizedBox(width: 8.w),
+        itemBuilder: (_, index) {
+          final phrase = phrases[index];
+          final active = phrase == selected;
+          return InkWell(
+            borderRadius: BorderRadius.circular(23.r),
+            onTap: () => onChanged(phrase),
+            child: Container(
+              alignment: Alignment.center,
+              padding: EdgeInsets.symmetric(horizontal: 16.w),
+              decoration: BoxDecoration(
+                color: active ? green.withValues(alpha: 0.08) : Colors.white,
+                borderRadius: BorderRadius.circular(23.r),
+                border: Border.all(color: active ? green : const Color(0xFFE8E7E2)),
+              ),
+              child: Text(
+                phrase,
+                style: active
+                    ? AppTextStyles.ink14W400.copyWith(color: green, fontWeight: FontWeight.w700)
+                    : AppTextStyles.ink14W400,
+              ),
+            ),
+          );
+        },
       ),
-      itemBuilder: (_, index) {
-        final phrase = phrases[index];
-        final active = phrase == selected;
-        return InkWell(
-          borderRadius: BorderRadius.circular(10.r),
-          onTap: () => onChanged(phrase),
-          child: Container(
-            alignment: Alignment.center,
-            decoration: BoxDecoration(
-              color: active ? green.withValues(alpha: 0.08) : Colors.white,
-              borderRadius: BorderRadius.circular(10.r),
-              border: active ? Border.all(color: green) : null,
-            ),
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Text(phrase, style: AppTextStyles.ink14W400),
-                if (active)
-                  Container(
-                    width: 4.r,
-                    height: 4.r,
-                    margin: EdgeInsets.only(top: 4.h),
-                    decoration: BoxDecoration(color: green, shape: BoxShape.circle),
-                  ),
-              ],
-            ),
-          ),
-        );
-      },
     );
   }
 }

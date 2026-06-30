@@ -10,6 +10,7 @@ import 'package:quran/modules/tasbih/presentation/cubits/cb_tasbih.dart';
 import 'package:quran/modules/tasbih/presentation/cubits/s_tasbih.dart';
 import 'package:quran/modules/tasbih/presentation/widgets/w_tasbih_counter_card.dart';
 import 'package:quran/modules/tasbih/presentation/widgets/w_tasbih_phrase_selector.dart';
+import 'package:quran/modules/tasbih/presentation/widgets/w_tasbih_target_selector.dart';
 import 'package:quran/modules/tasbih/presentation/widgets/w_tasbih_virtue_card.dart';
 
 class SNTasbih extends StatelessWidget {
@@ -19,7 +20,15 @@ class SNTasbih extends StatelessWidget {
   static const _gold = Color(0xFFD6A72C);
   static const _canvas = Color(0xFFF8F7F4);
 
-  static const _phrases = ['سُبْحَانَ اللَّهِ', 'الْحَمْدُ لِلَّهِ', 'لَا إِلَهَ إِلَّا اللَّهُ', 'اللَّهُ أَكْبَرُ'];
+  static const _phrases = [
+    'سُبْحَانَ اللَّهِ',
+    'الْحَمْدُ لِلَّهِ',
+    'لَا إِلَهَ إِلَّا اللَّهُ',
+    'اللَّهُ أَكْبَرُ',
+    'أَسْتَغْفِرُ اللَّهَ',
+    'لَا حَوْلَ وَلَا قُوَّةَ إِلَّا بِاللَّهِ',
+    'سُبْحَانَ اللَّهِ وَبِحَمْدِهِ',
+  ];
 
   @override
   Widget build(BuildContext context) {
@@ -54,6 +63,12 @@ class SNTasbih extends StatelessWidget {
                       phrases: _phrases,
                       green: _green,
                       onChanged: cubit.setZekr,
+                    ),
+                    SizedBox(height: 12.h),
+                    WTasbihTargetSelector(
+                      target: state.target,
+                      green: _green,
+                      onChanged: cubit.setTarget,
                     ),
                     SizedBox(height: 12.h),
                     WTasbihCounterCard(

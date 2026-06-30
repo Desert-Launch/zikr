@@ -7,6 +7,7 @@ import 'package:quran/modules/tasbih/data/sources/local/box_tasbih_counter.dart'
 import 'package:quran/modules/tasbih/data/sources/local/box_tasbih_history.dart';
 import 'package:quran/modules/tasbih/presentation/cubits/s_tasbih.dart';
 import 'package:uuid/uuid.dart';
+import 'package:vibration/vibration.dart';
 
 /// App-wide tasbih singleton. Lives in AppModule because the hourly toggle
 /// (in Settings) writes the same state the counter screen reads.
@@ -20,12 +21,25 @@ class CBTasbih extends Cubit<STasbih> {
         _hourly = hourly,
         super(const STasbih()) {
     _hydrate();
+    _initVibrator();
   }
 
   final BoxTasbihCounter _counter;
   final BoxTasbihHistory _history;
   final DSHourlyTasbih _hourly;
   final _uuid = const Uuid();
+
+  /// Whether the device has a vibration motor — checked once so the
+  /// target-complete pulse can fall back to haptics when it doesn't.
+  bool _hasVibrator = false;
+
+  Future<void> _initVibrator() async {
+    try {
+      _hasVibrator = await Vibration.hasVibrator();
+    } catch (_) {
+      _hasVibrator = false;
+    }
+  }
 
   void _hydrate() {
     final c = _counter.current();
@@ -57,7 +71,7 @@ class CBTasbih extends Cubit<STasbih> {
     }
     // When we hit the target this tap, log the session and pulse harder.
     if (!wasComplete && next >= state.target) {
-      if (state.vibrate) HapticFeedback.mediumImpact();
+      if (state.vibrate) _pulseComplete();
       await _history.log(MTasbihHistory(
         id: _uuid.v4(),
         zekrAr: state.zekrAr,
@@ -66,6 +80,16 @@ class CBTasbih extends Cubit<STasbih> {
       ));
     }
     await _persist();
+  }
+
+  /// Distinct double-buzz when the target is reached — falls back to a heavy
+  /// haptic on devices without amplitude/pattern support.
+  void _pulseComplete() {
+    if (_hasVibrator) {
+      Vibration.vibrate(pattern: const [0, 200, 100, 300]);
+    } else {
+      HapticFeedback.heavyImpact();
+    }
   }
 
   Future<void> reset() async {
