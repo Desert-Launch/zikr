@@ -75,19 +75,6 @@ class _SNSettingsState extends State<SNSettings> {
                     ],
                   ),
                   SizedBox(height: 15.h),
-                  WSettingsSectionLabel('settings_quran_section'.tr()),
-                  WSettingsGroup(
-                    children: [
-                      WSettingsRow(
-                        icon: Icons.menu_book_outlined,
-                        title: 'settings_mushaf_type'.tr(),
-                        subtitle: 'settings_mushaf_type_hint'.tr(),
-                        value: 'settings_mushaf_madani'.tr(),
-                        onTap: () => Modular.to.pushNamed(RoutesNames.quranBase),
-                      ),
-                    ],
-                  ),
-                  SizedBox(height: 15.h),
                   WSettingsSectionLabel('settings_about_app'.tr()),
                   WSettingsGroup(
                     children: [
