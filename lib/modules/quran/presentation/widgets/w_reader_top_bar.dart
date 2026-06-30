@@ -18,12 +18,7 @@ class WReaderTopBar extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return BlocSelector<CBMushafReader, SMushafReader, _TopBarVM>(
-      selector: (s) => _TopBarVM(
-        visible: s.chromeVisible,
-        surahName: s.surahName,
-        juz: s.juz,
-        page: s.currentPage,
-      ),
+      selector: (s) => _TopBarVM(visible: s.chromeVisible, surahName: s.surahName, juz: s.juz, page: s.currentPage),
       builder: (context, vm) {
         return IgnorePointer(
           ignoring: !vm.visible,
@@ -56,11 +51,7 @@ class _Bar extends StatelessWidget {
           color: AppColorsLight.primary,
           borderRadius: BorderRadius.vertical(bottom: Radius.circular(28.r)),
           boxShadow: [
-            BoxShadow(
-              color: Colors.black.withValues(alpha: 0.18),
-              blurRadius: 8,
-              offset: const Offset(0, 3),
-            ),
+            BoxShadow(color: Colors.black.withValues(alpha: 0.18), blurRadius: 8, offset: const Offset(0, 3)),
           ],
         ),
         child: SafeArea(
@@ -69,9 +60,11 @@ class _Bar extends StatelessWidget {
             height: 62.h,
             child: Row(
               children: [
-                BackButton(
-                  color: Colors.white,
-                  onPressed: () => Modular.to.pop(),
+                BackButton(color: Colors.white, onPressed: () => Modular.to.pop()),
+                IconButton(
+                  tooltip: 'فهرس القرآن',
+                  onPressed: () => Modular.to.navigate(QuranRoutes.fullSurahList()),
+                  icon: const Icon(Icons.format_list_bulleted_rounded, color: Colors.white),
                 ),
                 Expanded(
                   child: Column(
@@ -104,23 +97,13 @@ class _Bar extends StatelessWidget {
                 ),
                 IconButton(
                   tooltip: 'common_search'.tr(),
-                  onPressed: () =>
-                      BlocProvider.of<CBMushafReader>(context).toggleSearch(),
+                  onPressed: () => BlocProvider.of<CBMushafReader>(context).toggleSearch(),
                   icon: const Icon(Icons.search_rounded, color: Colors.white),
                 ),
-                IconButton(
-                  tooltip: 'فهرس القرآن',
-                  onPressed: () =>
-                      Modular.to.navigate(QuranRoutes.fullSurahList()),
-                  icon: const Icon(
-                    Icons.format_list_bulleted_rounded,
-                    color: Colors.white,
-                  ),
-                ),
+
                 IconButton(
                   tooltip: 'quran_settings_title'.tr(),
-                  onPressed: () =>
-                      Modular.to.pushNamed(QuranRoutes.fullSettings()),
+                  onPressed: () => Modular.to.pushNamed(QuranRoutes.fullSettings()),
                   icon: const Icon(Icons.settings_rounded, color: Colors.white),
                 ),
               ],
@@ -133,12 +116,7 @@ class _Bar extends StatelessWidget {
 }
 
 class _TopBarVM {
-  const _TopBarVM({
-    required this.visible,
-    required this.surahName,
-    required this.juz,
-    required this.page,
-  });
+  const _TopBarVM({required this.visible, required this.surahName, required this.juz, required this.page});
 
   final bool visible;
   final String surahName;
