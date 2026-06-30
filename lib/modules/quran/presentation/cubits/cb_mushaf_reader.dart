@@ -81,7 +81,9 @@ class CBMushafReader extends Cubit<SMushafReader> {
     402, 422, 442, 462, 482, 502, 522, 542, 562, 582, //
   ];
 
-  static int _juzForPage(int page) {
+  /// The juz' (1–30) a Madani-Mushaf [page] (1–604) belongs to, by its start
+  /// page. Public so the page chrome can label each page without re-deriving it.
+  static int juzForPage(int page) {
     var juz = 1;
     for (var i = 0; i < _juzStartPages.length; i++) {
       if (page >= _juzStartPages[i]) {
@@ -125,7 +127,7 @@ class CBMushafReader extends Cubit<SMushafReader> {
             status: LoadStatus.success,
             layout: layout,
             surahName: surahName,
-            juz: _juzForPage(page),
+            juz: juzForPage(page),
             fontMode: mode,
           ),
         );

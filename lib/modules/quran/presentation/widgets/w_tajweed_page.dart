@@ -22,6 +22,7 @@ import 'package:quran/modules/quran/presentation/widgets/tajweed_palette.dart';
 import 'package:quran/modules/quran/presentation/widgets/w_basmala_line.dart';
 import 'package:quran/modules/quran/presentation/widgets/w_bookmark_color_picker.dart';
 import 'package:quran/modules/quran/presentation/widgets/w_mushaf_page.dart' show readerBackground;
+import 'package:quran/modules/quran/presentation/widgets/w_mushaf_page_header.dart';
 import 'package:quran/modules/quran/presentation/widgets/w_surah_header.dart';
 
 /// Approach-B Tajweed renderer: paints ayah text ourselves and colours each
@@ -158,6 +159,11 @@ class _WTajweedPageState extends State<WTajweedPage> {
                 style: TextStyle(fontSize: 11.sp, color: context.brand.muted),
               ),
             );
+            final pageHeader = WMushafPageHeader(
+              surahName: _pageSurahName,
+              page: widget.layout.page,
+              color: headerDark ? Colors.white70 : context.brand.muted,
+            );
 
             // Above printed size the page reflows into one justified, vertically
             // scrollable block — same behaviour as the QPC renderer.
@@ -226,7 +232,12 @@ class _WTajweedPageState extends State<WTajweedPage> {
                 child: SingleChildScrollView(
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.stretch,
-                    children: [...children, SizedBox(height: 8.h), pageNumber],
+                    children: [
+                      pageHeader,
+                      ...children,
+                      SizedBox(height: 8.h),
+                      pageNumber,
+                    ],
                   ),
                 ),
               );
@@ -293,6 +304,7 @@ class _WTajweedPageState extends State<WTajweedPage> {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.stretch,
                     children: [
+                      pageHeader,
                       Expanded(
                         child: Column(
                           mainAxisAlignment: isFullPage
@@ -313,6 +325,15 @@ class _WTajweedPageState extends State<WTajweedPage> {
         );
       },
     );
+  }
+
+  /// Arabic short name of the surah at the top of the page (running head).
+  String get _pageSurahName {
+    final refs = widget.layout.allAyahRefs;
+    if (refs.isEmpty) return '';
+    final surah = _surahs[refs.first.surah];
+    if (surah == null) return '';
+    return surah.arabic.isNotEmpty ? surah.arabic : surah.arabicLong;
   }
 
   WSurahHeader _surahHeader(MLine line, {required bool dark}) {

@@ -19,6 +19,7 @@ import 'package:quran/modules/quran/presentation/cubits/s_audio_player.dart';
 import 'package:quran/modules/quran/presentation/cubits/s_mushaf_reader.dart';
 import 'package:quran/modules/quran/presentation/widgets/w_basmala_line.dart';
 import 'package:quran/modules/quran/presentation/widgets/w_bookmark_color_picker.dart';
+import 'package:quran/modules/quran/presentation/widgets/w_mushaf_page_header.dart';
 import 'package:quran/modules/quran/presentation/widgets/w_surah_header.dart';
 import 'package:quran/modules/quran/presentation/widgets/w_tajweed_page.dart';
 
@@ -126,6 +127,13 @@ class _WMushafPageState extends State<WMushafPage> {
               ),
             );
             final headerDark = view.theme == ReaderTheme.dark && !isColored;
+            // Running-head colour tracks the page-number muted tone, lightened
+            // on the dark page so it stays legible.
+            final pageHeader = WMushafPageHeader(
+              surahName: _pageSurahName,
+              page: widget.layout.page,
+              color: headerDark ? Colors.white70 : context.brand.muted,
+            );
 
             // Enlarged: merge consecutive text lines into one continuously
             // wrapping, justified paragraph — words flow to the screen edge and
@@ -199,6 +207,7 @@ class _WMushafPageState extends State<WMushafPage> {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.stretch,
                     children: [
+                      pageHeader,
                       ...children,
                       SizedBox(height: 8.h),
                       pageNumber,
@@ -257,6 +266,7 @@ class _WMushafPageState extends State<WMushafPage> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
+                  pageHeader,
                   Expanded(
                     child: Column(
                       mainAxisAlignment: isFullPage
@@ -277,6 +287,16 @@ class _WMushafPageState extends State<WMushafPage> {
     );
   }
 
+
+  /// Arabic short name of the surah at the top of the page (the running-head
+  /// label). Empty until [_surahs] loads.
+  String get _pageSurahName {
+    final refs = widget.layout.allAyahRefs;
+    if (refs.isEmpty) return '';
+    final surah = _surahs[refs.first.surah];
+    if (surah == null) return '';
+    return surah.arabic.isNotEmpty ? surah.arabic : surah.arabicLong;
+  }
 
   /// Surah header for [line], falling back to the loaded surah list when the
   /// (V4) header line carries no text.
