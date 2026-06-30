@@ -10,6 +10,7 @@ import 'package:quran/core/cubits/cb_theme.dart';
 import 'package:quran/core/cubits/s_theme.dart';
 import 'package:quran/core/data/models/m_app_settings.dart';
 import 'package:quran/core/data/sources/local/box_app_settings.dart';
+import 'package:quran/core/extension/build_context.dart';
 import 'package:quran/core/services/logging/app_logger.dart';
 import 'package:quran/core/services/notifications/notifications_service.dart';
 import 'package:quran/core/services/routes/app_module.dart';
@@ -177,7 +178,7 @@ class _RootState extends State<_Root> with WidgetsBindingObserver {
   @override
   Widget build(BuildContext context) {
     return ScreenUtilInit(
-      designSize: const Size(390, 844),
+      designSize: context.isTablet ? Size(390 * 2, 844) : Size(360, 844),
       minTextAdapt: true,
       splitScreenMode: true,
       builder: (context, _) {
