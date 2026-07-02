@@ -347,6 +347,7 @@ class _WTajweedPageState extends State<WTajweedPage> {
       surahNumber: surah?.number ?? line.surahNumber,
       ayahCount: surah?.totalAyah,
       dark: dark,
+      tajweed: true,
     );
   }
 

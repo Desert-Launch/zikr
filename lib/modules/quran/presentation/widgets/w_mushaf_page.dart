@@ -222,7 +222,7 @@ class _WMushafPageState extends State<WMushafPage> {
                     case LineType.surahHeader:
                       return _surahHeader(line, dark: headerDark);
                     case LineType.basmala:
-                      return WBasmalaLine(fontSize: 32.sp * view.scale, color: fg);
+                      return WBasmalaLine(fontSize: 28.sp * view.scale, color: fg);
                     case LineType.spacer:
                       return SizedBox(height: 8.h);
                     case LineType.text:

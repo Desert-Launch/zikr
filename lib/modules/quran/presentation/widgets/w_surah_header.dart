@@ -7,12 +7,23 @@ import 'package:quran/core/theme/app_colors.dart';
 
 /// Mushaf-style banner shown at the beginning of every surah.
 class WSurahHeader extends StatelessWidget {
-  const WSurahHeader({required this.title, this.surahNumber, this.ayahCount, this.dark = false, super.key});
+  const WSurahHeader({
+    required this.title,
+    this.surahNumber,
+    this.ayahCount,
+    this.dark = false,
+    this.tajweed = false,
+    super.key,
+  });
 
   final String title;
   final int? surahNumber;
   final int? ayahCount;
   final bool dark;
+
+  /// Tajweed reader lays out the banner with extra vertical breathing room; the
+  /// plain Mushaf page packs it tight against the surrounding lines.
+  final bool tajweed;
 
   @override
   Widget build(BuildContext context) {
@@ -24,7 +35,7 @@ class WSurahHeader extends StatelessWidget {
     return Container(
       width: double.infinity,
       height: 64.h,
-      margin: EdgeInsets.symmetric(vertical: 15.h),
+      margin: tajweed ? EdgeInsets.symmetric(vertical: 15.h) : EdgeInsets.zero,
       child: Stack(
         children: [
           Positioned.fill(
