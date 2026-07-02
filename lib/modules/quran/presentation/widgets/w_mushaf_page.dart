@@ -85,13 +85,8 @@ class _WMushafPageState extends State<WMushafPage> {
       SMushafReader,
       ({ParamAyahRef? selected, double scale, ReaderTheme theme, EQuranFontMode mode, Map<String, String?> bookmarks})
     >(
-      selector: (s) => (
-        selected: s.selectedAyah,
-        scale: s.fontScale,
-        theme: s.theme,
-        mode: s.fontMode,
-        bookmarks: s.bookmarks,
-      ),
+      selector: (s) =>
+          (selected: s.selectedAyah, scale: s.fontScale, theme: s.theme, mode: s.fontMode, bookmarks: s.bookmarks),
       builder: (context, view) {
         // Tajweed (Approach B): a separate text renderer that colours each
         // token itself from a theme-aware map, laid out on this same QPC line
@@ -101,6 +96,11 @@ class _WMushafPageState extends State<WMushafPage> {
         }
         final fontFamily = view.mode.fontFamilyForPage(widget.layout.page);
         final isColored = view.mode.isColored;
+        // Pages 1–2 (Al-Fatihah + the opening of Al-Baqarah) hold only a few
+        // short, sparsely-packed lines, so the shared base size looks oversized
+        // there; every other page packs longer lines that read a touch small.
+        // Nudge the base size per page: gently down on the openers, up elsewhere.
+        final pageScale = widget.layout.page <= 2 ? 0.8 : 1;
         // QPC V1 glyphs have hair-thin strokes by design — keep the text in a
         // saturated near-black so they remain readable over the cream paper.
         // Theme.onSurface (#1A1A1A) is technically dark but loses contrast on
@@ -108,9 +108,7 @@ class _WMushafPageState extends State<WMushafPage> {
         // base text flips to white — but NOT for V4: its base letters are
         // baked black in the font palette (uncolourable), so tajweed stays on a
         // light page (see [readerBackground]) and keeps dark text.
-        final fg = (view.theme == ReaderTheme.dark && !isColored)
-            ? Colors.white
-            : const Color(0xFF0A0A0A);
+        final fg = (view.theme == ReaderTheme.dark && !isColored) ? Colors.white : const Color(0xFF0A0A0A);
         // Above the printed size the full-width Mushaf lines can't grow taller
         // without spilling off-screen, so switch to a reflowed, vertically
         // scrollable layout: lines render at true size, wrap, and the page
@@ -187,12 +185,10 @@ class _WMushafPageState extends State<WMushafPage> {
                         bookmarks: view.bookmarks,
                         fontFamily: fontFamily,
                         mode: view.mode,
-                        scale: view.scale,
+                        scale: view.scale * pageScale,
                         color: fg,
                         wrap: true,
-                        brightness: view.theme == ReaderTheme.dark
-                            ? Brightness.dark
-                            : Brightness.light,
+                        brightness: view.theme == ReaderTheme.dark ? Brightness.dark : Brightness.light,
                       ),
                     );
                     break;
@@ -220,44 +216,49 @@ class _WMushafPageState extends State<WMushafPage> {
             // Exact mode: each line fits the page width and the page fills one
             // screen. Short pages (Fatihah, Baqarah opening, last few) have
             // fewer lines and center as a block inside the available space.
-            final lineWidgets = widget.layout.lines.map((line) {
-              switch (line.type) {
-                case LineType.surahHeader:
-                  return _surahHeader(line, dark: headerDark);
-                case LineType.basmala:
-                  return WBasmalaLine(fontSize: 28.sp * view.scale, color: fg);
-                case LineType.spacer:
-                  return SizedBox(height: 8.h);
-                case LineType.text:
-                  return _renderTextLine(
-                    line,
-                    cubit: cubit,
-                    selected: view.selected,
-                    playing: playing,
-                    bookmarks: view.bookmarks,
-                    fontFamily: fontFamily,
-                    mode: view.mode,
-                    scale: view.scale,
-                    color: fg,
-                    wrap: false,
-                    brightness: view.theme == ReaderTheme.dark
-                        ? Brightness.dark
-                        : Brightness.light,
-                  );
-              }
-            }).toList(growable: false);
+            final lineWidgets = widget.layout.lines
+                .map((line) {
+                  switch (line.type) {
+                    case LineType.surahHeader:
+                      return _surahHeader(line, dark: headerDark);
+                    case LineType.basmala:
+                      return WBasmalaLine(fontSize: 32.sp * view.scale, color: fg);
+                    case LineType.spacer:
+                      return SizedBox(height: 8.h);
+                    case LineType.text:
+                      return _renderTextLine(
+                        line,
+                        cubit: cubit,
+                        selected: view.selected,
+                        playing: playing,
+                        bookmarks: view.bookmarks,
+                        fontFamily: fontFamily,
+                        mode: view.mode,
+                        scale: view.scale * pageScale,
+                        color: fg,
+                        wrap: false,
+                        brightness: view.theme == ReaderTheme.dark ? Brightness.dark : Brightness.light,
+                      );
+                  }
+                })
+                .toList(growable: false);
 
             final isFullPage = widget.layout.lines.length >= 12;
+            // The openers (pp. 1–2) are centred with lots of spare vertical
+            // room, so add breathing space between their lines. Full pages stay
+            // tight — spaceEvenly already distributes their gaps.
+            final openerGap = widget.layout.page <= 2 ? 7.h : 0.0;
             final wrappedLines = lineWidgets
-                .map(
-                  (w) => w is WSurahHeader
-                      ? w
-                      : FittedBox(
-                          fit: BoxFit.scaleDown,
-                          alignment: Alignment.center,
-                          child: w,
-                        ),
-                )
+                .map((w) {
+                  if (w is WSurahHeader) return w;
+                  final fitted = FittedBox(fit: BoxFit.scaleDown, alignment: Alignment.center, child: w);
+                  return openerGap > 0
+                      ? Padding(
+                          padding: EdgeInsets.symmetric(vertical: openerGap),
+                          child: fitted,
+                        )
+                      : fitted;
+                })
                 .toList(growable: false);
 
             return Container(
@@ -269,9 +270,7 @@ class _WMushafPageState extends State<WMushafPage> {
                   pageHeader,
                   Expanded(
                     child: Column(
-                      mainAxisAlignment: isFullPage
-                          ? MainAxisAlignment.spaceEvenly
-                          : MainAxisAlignment.center,
+                      mainAxisAlignment: isFullPage ? MainAxisAlignment.spaceEvenly : MainAxisAlignment.center,
                       crossAxisAlignment: CrossAxisAlignment.stretch,
                       children: wrappedLines,
                     ),
@@ -286,7 +285,6 @@ class _WMushafPageState extends State<WMushafPage> {
       },
     );
   }
-
 
   /// Arabic short name of the surah at the top of the page (the running-head
   /// label). Empty until [_surahs] loads.
@@ -305,9 +303,7 @@ class _WMushafPageState extends State<WMushafPage> {
     return WSurahHeader(
       title: line.text.isNotEmpty
           ? line.text
-          : (surah?.arabicLong.isNotEmpty ?? false
-                ? surah?.arabicLong ?? ''
-                : surah?.arabic ?? ''),
+          : (surah?.arabicLong.isNotEmpty ?? false ? surah?.arabicLong ?? '' : surah?.arabic ?? ''),
       surahNumber: surah?.number ?? line.surahNumber,
       ayahCount: surah?.totalAyah,
       dark: dark,
@@ -410,9 +406,7 @@ class _WMushafPageState extends State<WMushafPage> {
                       : AppColors.surfaceLightGreen)
                 : (isPlaying
                       ? AppColors.accentGoldAmber.withValues(alpha: 0.15)
-                      : (isBookmarked
-                            ? bookmarkHighlightFromHex(bookmarks[group.ref.key])
-                            : null)),
+                      : (isBookmarked ? bookmarkHighlightFromHex(bookmarks[group.ref.key]) : null)),
           ),
         ),
       );
