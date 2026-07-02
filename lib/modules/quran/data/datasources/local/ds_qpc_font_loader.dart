@@ -4,11 +4,11 @@ import 'package:flutter/services.dart';
 import 'package:quran/core/services/logging/app_logger.dart';
 import 'package:quran/modules/quran/domain/entities/e_quran_font_mode.dart';
 
-/// Registers per-page QPC V1 TTF fonts on demand.
+/// Registers per-page QPC TTF fonts on demand.
 ///
 /// Strategy:
-/// - Each page N uses font family `QCF_P{N}` (loaded from `assets/fonts/qpc/QCF_P{NNN}.TTF`).
-/// - Surah headers + basmala use family `QCF_BSML` (loaded from `QCF_BSML.TTF`).
+/// - Each page N uses font family `QCF_V2_P{N}` (loaded from
+///   `assets/fonts/qpc_v2/QCF_V2_P{NNN}.TTF`) — the standard Madani Mushaf set.
 /// - The loader maintains a window of recently-used fonts. Anything past
 ///   [_maxLoadedPages] entries is left in memory until the OS evicts it
 ///   (Flutter cannot unload a registered `FontLoader`).
@@ -16,10 +16,10 @@ class DSQpcFontLoader {
   DSQpcFontLoader();
 
   static const int _maxLoadedPages = 9; // current ± 4
-  static const String basmalaFamily = 'QCF_BSML';
 
-  /// V1 per-page family (kept for callers that always render V1, e.g. basmala).
-  static String pageFamily(int page) => 'QCF_P$page';
+  /// The standard (plain V2) per-page family — what callers that always render
+  /// the plain Mushaf (basmala line, tajweed ayah-end rosette) use directly.
+  static String pageFamily(int page) => 'QCF_V2_P$page';
 
   /// Per-page family for the given [mode] — what the renderer must set as the
   /// `fontFamily` for that mode's glyphs.
@@ -33,7 +33,7 @@ class DSQpcFontLoader {
   final Map<String, Future<void>> _inFlight = {};
 
   /// Returns once the font for [page] in [mode] is registered. No-op if loaded.
-  Future<void> loadPage(int page, [EQuranFontMode mode = EQuranFontMode.plainV1]) {
+  Future<void> loadPage(int page, [EQuranFontMode mode = EQuranFontMode.plainV2]) {
     if (page < 1 || page > 604) return Future.value();
     final family = familyFor(page, mode);
     if (_loadedFamilies.contains(family)) return Future.value();
@@ -71,11 +71,9 @@ class DSQpcFontLoader {
 
   /// Loads the typography we use for every basmala line.
   ///
-  /// QCF_BSML.TTF is intentionally NOT used — its cmap is missing the
-  /// `U+0670` (superscript alef) glyph, which renders the standard basmala
-  /// text as tofu boxes. Instead, every basmala line is drawn using
-  /// Al-Fatihah's basmala glyphs (`ﭑ ﭒ ﭓ ﭔ`) and the page-1 font, which
-  /// always exists in any QPC V1 set.
+  /// Every basmala line is drawn using Al-Fatihah's basmala glyphs
+  /// (`ﱁ ﱂ ﱃ ﱄ`) and the page-1 font (`QCF_V2_P1`), which always exists in the
+  /// bundled QPC V2 set — giving identical calligraphy to the printed Madani copy.
   Future<void> loadBasmala() async {
     if (_basmalaLoaded) return;
     await loadPage(1);
@@ -86,7 +84,7 @@ class DSQpcFontLoader {
   /// [center] future first so callers can `await` the most important one.
   Future<void> preloadWindow(
     int center, {
-    EQuranFontMode mode = EQuranFontMode.plainV1,
+    EQuranFontMode mode = EQuranFontMode.plainV2,
     int radius = 2,
   }) async {
     await loadBasmala();
@@ -102,6 +100,6 @@ class DSQpcFontLoader {
     );
   }
 
-  bool isLoaded(int page, [EQuranFontMode mode = EQuranFontMode.plainV1]) =>
+  bool isLoaded(int page, [EQuranFontMode mode = EQuranFontMode.plainV2]) =>
       _loadedFamilies.contains(familyFor(page, mode));
 }

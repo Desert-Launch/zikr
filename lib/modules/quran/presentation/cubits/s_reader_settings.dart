@@ -7,7 +7,7 @@ import 'package:quran/modules/quran/domain/entities/e_reader_theme.dart';
 /// chrome visibility, current page) stays in `SMushafReader`.
 class SReaderSettings extends Equatable {
   const SReaderSettings({
-    this.fontMode = EQuranFontMode.plainV1,
+    this.fontMode = EQuranFontMode.plainV2,
     this.theme = ReaderTheme.light,
     this.fontScale = 1.0,
   });

@@ -65,8 +65,8 @@ class _WTajweedPageState extends State<WTajweedPage> {
   }
 
   Future<void> _load() async {
-    // Load this page's QPC V1 font too — the ayah-end markers reuse the exact
-    // rosette glyph the printed Mushaf uses (rendered from QCF_P{page}).
+    // Load this page's QPC V2 font too — the ayah-end markers reuse the exact
+    // rosette glyph the printed Mushaf uses (rendered from QCF_V2_P{page}).
     final fontFut = Modular.get<DSQpcFontLoader>().loadPage(widget.layout.page);
     final surahsList = await Modular.get<DSLocalQuran>().loadSurahs();
     final res = await Modular.get<UCGetTajweedTokens>()(widget.layout.page);
@@ -413,11 +413,12 @@ class _WTajweedPageState extends State<WTajweedPage> {
       }
 
       // The QPC word carrying the ayah number marks the ayah end → render the
-      // exact QPC rosette glyph (the last glyph of the word's V1 code), so the
+      // exact QPC rosette glyph (the last glyph of the word's V2 code), so the
       // marker is identical to the printed Mushaf. Fall back to a drawn badge
       // only if the glyph is somehow missing.
       if (_hasArabicDigit(w.word)) {
-        final endGlyph = w.qpcV1.split(' ').last;
+        final v2 = w.qpcV2;
+        final endGlyph = (v2 != null && v2.isNotEmpty) ? v2.split(' ').last : '';
         if (endGlyph.isNotEmpty) {
           spans.add(const TextSpan(text: ' '));
           spans.add(

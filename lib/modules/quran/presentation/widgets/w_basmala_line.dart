@@ -8,11 +8,11 @@ import 'package:quran/modules/quran/presentation/cubits/s_mushaf_reader.dart';
 
 /// Basmala line for surahs other than Al-Fatihah.
 ///
-/// We reuse Al-Fatihah's basmala glyphs (`ﭑ ﭒ ﭓ ﭔ` = U+FB51..U+FB54) rendered
-/// with the page-1 QPC font (`QCF_P1`) — this gives the exact same calligraphic
-/// basmala typography across every standalone basmala line in the mushaf,
-/// matching the printed Madani copy. The verse-end glyph U+FB55 is intentionally
-/// excluded since these basmalas aren't ayah 1.
+/// We reuse Al-Fatihah's basmala glyphs rendered with the page-1 QPC V2 font
+/// (`QCF_V2_P1`) — this gives the exact same calligraphic basmala typography
+/// across every standalone basmala line in the mushaf, matching the printed
+/// Madani copy. The verse-end (ayah 1) marker glyph is intentionally excluded
+/// since these basmalas aren't ayah 1.
 class WBasmalaLine extends StatefulWidget {
   const WBasmalaLine({this.fontSize, this.color, super.key});
 
@@ -22,8 +22,8 @@ class WBasmalaLine extends StatefulWidget {
   /// a dark page pass a light colour so the basmala stays visible.
   final Color? color;
 
-  /// Glyph sequence for the QPC V1 basmala (no ayah-end marker).
-  static const String basmalaGlyphs = 'ﭑ ﭒ ﭓ ﭔ';
+  /// Glyph sequence for the QPC V2 basmala (no ayah-end marker).
+  static const String basmalaGlyphs = 'ﱁ ﱂ ﱃ ﱄ';
 
   /// Font family used to render [basmalaGlyphs].
   static final String fontFamily = DSQpcFontLoader.pageFamily(1);

@@ -11,16 +11,15 @@ import 'package:quran/modules/quran/presentation/cubits/cb_reader_settings.dart'
 import 'package:quran/modules/quran/presentation/cubits/s_reader_settings.dart';
 import 'package:quran/modules/quran/presentation/widgets/w_tajweed_legend_sheet.dart';
 
-/// Reader font-mode picker: Standard (V1) vs Tajweed coloured (V4). Reacts to
+/// Reader font-mode picker: Standard Mushaf (V2) vs Tajweed coloured. Reacts to
 /// and writes the shared [CBReaderSettings] singleton, so changing the mode
 /// re-renders an open Mushaf reader. When Tajweed is active it also surfaces a
 /// link to the colour legend.
 class WFontModePicker extends StatelessWidget {
   const WFontModePicker({super.key});
 
-  // V2 is intentionally omitted until the V2 font set is bundled.
   static const _options = <(EQuranFontMode, String, String)>[
-    (EQuranFontMode.plainV1, 'quran_font_mode_plain', 'Standard Mushaf'),
+    (EQuranFontMode.plainV2, 'quran_font_mode_plain', 'Standard Mushaf'),
     (EQuranFontMode.tajweedV4, 'quran_font_mode_tajweed', 'Tajweed (coloured)'),
   ];
 

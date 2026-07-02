@@ -16,7 +16,7 @@ class SMushafReader extends Equatable {
     this.multiSelection = const <String>{},
     this.fontScale = 1.0,
     this.theme = ReaderTheme.light,
-    this.fontMode = EQuranFontMode.plainV1,
+    this.fontMode = EQuranFontMode.plainV2,
     this.surahName = '',
     this.juz = 1,
     this.chromeVisible = false,
