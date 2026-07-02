@@ -31,6 +31,14 @@ class EndPoints {
   static const String mp3QuranBase = 'https://mp3quran.net/api/v3';
   static const String mp3QuranRadios = '/radios';
 
+  // YouTube — resolve a channel's CURRENT live video by reading its public
+  // `/live` page (free, no auth, no API key). Reached via a dedicated Dio in
+  // DSRemoteLive, NOT the shared BaseDio, so the app's Authorization header is
+  // never sent to a third party.
+  static const String youtubeBase = 'https://www.youtube.com';
+  static String youtubeChannelLive(String channelId) =>
+      '/channel/$channelId/live';
+
   // Adhan voice catalog (host as JSON on your CDN). Lets NEW voices ship
   // without an app update. Empty = remote catalog disabled: the app uses the
   // bundled `assets/data/adhans.json` only and skips the network entirely.

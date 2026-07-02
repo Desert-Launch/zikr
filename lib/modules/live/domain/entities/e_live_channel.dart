@@ -1,14 +1,17 @@
 /// A Haramain live broadcast backed by an official Saudi YouTube channel.
 ///
-/// Plays a specific live [videoId] via the privacy-enhanced embed. We do NOT
-/// use the `live_stream?channel=…` follow endpoint: it is deprecated and YouTube
-/// returns "video unavailable / error 152" for it. The [videoId]s come from
-/// YouTube's own Share → Embed dialog (only offered when embedding is allowed),
-/// so they play in-app.
+/// The CURRENT live video id is resolved at runtime from the channel's public
+/// [liveUrl] (`/channel/{id}/live`) — see `DSRemoteLive` — so the stream keeps
+/// working when a broadcast ends and the channel rolls to a new live video, with
+/// no code change. The resolved id is fed into the privacy-enhanced embed via
+/// [embedUrlFor].
 ///
-/// ⚠️ When a broadcast ends and the channel starts a NEW live video, update the
-/// matching [videoId] below (grab it from the stream's Share → Embed). The
-/// [channelId] is kept for reference and to build the external watch fallback.
+/// We do NOT use the `live_stream?channel=…` embed endpoint: it is deprecated and
+/// YouTube returns "video unavailable / error 152" for it.
+///
+/// [videoId] is the last-known-good id, used ONLY as an offline / resolution
+/// fallback so the surface never renders empty. It comes from YouTube's own
+/// Share → Embed dialog (offered only when embedding is allowed).
 class ELiveChannel {
   const ELiveChannel({
     required this.id,
@@ -30,18 +33,29 @@ class ELiveChannel {
   /// Official YouTube channel id (reference + external fallback).
   final String channelId;
 
-  /// Current live video id for this stream.
+  /// Last-known-good live video id — the resolution fallback (see class doc).
   final String videoId;
 
-  /// Primary in-app embed (privacy-enhanced, embeddable specific video).
+  /// The channel's public "current live" page. Reading it yields whatever video
+  /// the channel is broadcasting right now (see `DSRemoteLive`).
+  String get liveUrl => 'https://www.youtube.com/channel/$channelId/live';
+
+  /// Privacy-enhanced embed for a resolved live [id] (embeddable specific video).
   /// `controls=0` for an immersive surface — the app chrome overlays instead.
-  String get embedUrl =>
-      'https://www.youtube-nocookie.com/embed/$videoId'
+  static String embedUrlFor(String id) =>
+      'https://www.youtube-nocookie.com/embed/$id'
       '?autoplay=1&playsinline=1&controls=0&rel=0&fs=0&iv_load_policy=3';
 
-  /// Watch page — loaded in-WebView on hard failure, and opened externally as a
-  /// last resort.
-  String get fallbackUrl => 'https://www.youtube.com/watch?v=$videoId';
+  /// Watch page for a resolved live [id] — loaded in-WebView on hard failure,
+  /// and opened externally as a last resort.
+  static String watchUrlFor(String id) =>
+      'https://www.youtube.com/watch?v=$id';
+
+  /// Embed for the fallback [videoId] (used before resolution completes).
+  String get embedUrl => embedUrlFor(videoId);
+
+  /// Watch page for the fallback [videoId].
+  String get fallbackUrl => watchUrlFor(videoId);
 
   /// Al-Masjid Al-Haram — KSA Qur'an TV (Saudi Broadcasting Authority).
   static const ELiveChannel makkah = ELiveChannel(
