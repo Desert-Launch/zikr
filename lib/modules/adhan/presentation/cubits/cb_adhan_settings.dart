@@ -262,11 +262,16 @@ class CBAdhanSettings extends Cubit<SAdhanSettings> {
   /// null if permission was denied (so the UI can warn instead of promising a
   /// notification that will never arrive).
   Future<DateTime?> scheduleTestAdhan() async {
-    if (!state.hasPermission) {
-      final granted = await _notifications.requestPermission();
-      emit(state.copyWith(hasPermission: granted));
-      if (!granted) return null;
+    // Verify the live OS permission rather than trusting the cubit's cached
+    // flag (which defaults to true and can go stale if the user revoked it in
+    // system settings). Otherwise scheduleTest() skips with a warning and the
+    // user never sees the permission prompt.
+    var granted = await _notifications.hasPermission();
+    if (!granted) {
+      granted = await _notifications.requestPermission();
     }
+    emit(state.copyWith(hasPermission: granted));
+    if (!granted) return null;
     return _scheduler.scheduleTest();
   }
 

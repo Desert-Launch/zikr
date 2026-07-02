@@ -144,8 +144,32 @@ class NotificationsService {
     return (await Permission.notification.request()).isGranted;
   }
 
+  /// Reads the live notification permission through the SAME plugin that
+  /// [requestPermission] grants through (flutter_local_notifications), so the
+  /// two never disagree. Querying permission_handler here instead would read a
+  /// different source of truth: a fresh grant via the plugin can still report
+  /// `false` through permission_handler, which made scheduleTest() skip with a
+  /// "no permission" warning right after the user allowed notifications.
   Future<bool> hasPermission() async {
-    return await Permission.notification.isGranted;
+    final ios = _plugin
+        .resolvePlatformSpecificImplementation<
+          IOSFlutterLocalNotificationsPlugin
+        >();
+    if (ios != null) {
+      final options = await ios.checkPermissions();
+      return options?.isEnabled ?? false;
+    }
+
+    final android = _plugin
+        .resolvePlatformSpecificImplementation<
+          AndroidFlutterLocalNotificationsPlugin
+        >();
+    if (android != null) {
+      return await android.areNotificationsEnabled() ?? false;
+    }
+
+    // Other platforms: fall back to permission_handler.
+    return Permission.notification.isGranted;
   }
 
   /// Schedules a one-shot notification at [when]. If [when] is in the past,
