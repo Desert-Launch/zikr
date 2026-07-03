@@ -305,10 +305,10 @@ Things **I (the AI) should never run** in this project:
 - Subagents → `.claude/agents/`
 
 # Commit message format
-Conventional commits. Subject `type(scope): summary` (≤50 chars), blank line, body wrapped at 72.
+Conventional commits. Subject `type(scope): summary` (≤500 chars), blank line, body wrapped at 72.
 
 ```
-feat|fix|refactor|docs|style|test|chore(scope): Short description (max 50 chars)
+feat|fix|refactor|docs|style|test|chore(scope): Short description (max 500 chars)
 Detailed description, if needed. Wrap at 72 chars. Include relevant links/refs.
 - Bullet points for complex changes or rationale
 ```
