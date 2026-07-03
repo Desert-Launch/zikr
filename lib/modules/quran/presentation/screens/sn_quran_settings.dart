@@ -47,6 +47,13 @@ class SNQuranSettings extends StatelessWidget {
                     hint: 'quran_settings_choose_reciter_hint'.tr(),
                     onTap: () => Modular.to.pushNamed(QuranRoutes.fullReciterPicker()),
                   ),
+                  SizedBox(height: 10.h),
+                  _SettingsTile(
+                    icon: Icons.menu_book_rounded,
+                    title: 'quran_settings_tafsir'.tr(),
+                    hint: 'quran_settings_tafsir_hint'.tr(),
+                    onTap: () => Modular.to.pushNamed(QuranRoutes.fullTafsirLibrary()),
+                  ),
                   SizedBox(height: 22.h),
                   _SectionLabel('quran_settings_font_mode'.tr()),
                   SizedBox(height: 8.h),

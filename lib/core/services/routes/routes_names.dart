@@ -70,6 +70,8 @@ class QuranRoutes {
   static const String reciterSurahs = '/reciter-surahs';
   static const String bookmarks = '/bookmarks';
   static const String search = '/search';
+  static const String tafsir = '/tafsir';
+  static const String tafsirLibrary = '/tafsir-library';
 
   static String fullSurahList() => RoutesNames.quranBase;
   static String readerFromPage(int page) =>
@@ -84,6 +86,9 @@ class QuranRoutes {
       '${RoutesNames.quranBase}reciter-surahs?reciter=$reciterId';
   static String fullBookmarks() => '${RoutesNames.quranBase}bookmarks';
   static String fullSearch() => '${RoutesNames.quranBase}search';
+  static String tafsirForAyah(int surah, int ayah) =>
+      '${RoutesNames.quranBase}tafsir?surah=$surah&ayah=$ayah';
+  static String fullTafsirLibrary() => '${RoutesNames.quranBase}tafsir-library';
 }
 
 class AzkarRoutes {

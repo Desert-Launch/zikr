@@ -7,9 +7,11 @@ import 'package:quran/modules/quran/data/datasources/local/ds_local_quran.dart';
 import 'package:quran/modules/quran/data/datasources/local/ds_local_reader_settings.dart';
 import 'package:quran/modules/quran/data/datasources/local/ds_local_settings.dart';
 import 'package:quran/modules/quran/data/datasources/local/ds_local_tajweed.dart';
+import 'package:quran/modules/quran/data/datasources/local/ds_local_tafsir.dart';
 import 'package:quran/modules/quran/data/datasources/local/ds_qpc_font_loader.dart';
 import 'package:quran/modules/quran/data/datasources/remote/ds_audio_downloader.dart';
 import 'package:quran/modules/quran/data/datasources/remote/ds_remote_audio.dart';
+import 'package:quran/modules/quran/data/datasources/remote/ds_remote_tafsir.dart';
 import 'package:quran/modules/quran/data/repos/r_impl_audio.dart';
 import 'package:quran/modules/quran/data/repos/r_impl_audio_downloads.dart';
 import 'package:quran/modules/quran/data/repos/r_impl_bookmarks.dart';
@@ -17,12 +19,14 @@ import 'package:quran/modules/quran/data/repos/r_impl_playback_prefs.dart';
 import 'package:quran/modules/quran/data/repos/r_impl_quran.dart';
 import 'package:quran/modules/quran/data/repos/r_impl_reader_settings.dart';
 import 'package:quran/modules/quran/data/repos/r_impl_reciter.dart';
+import 'package:quran/modules/quran/data/repos/r_impl_tafsir.dart';
 import 'package:quran/modules/quran/data/repos/r_impl_tajweed.dart';
 import 'package:quran/modules/quran/data/sources/local/box_bookmarks.dart';
 import 'package:quran/modules/quran/data/sources/local/box_last_read.dart';
 import 'package:quran/modules/quran/data/sources/local/box_playback_prefs.dart';
 import 'package:quran/modules/quran/data/sources/local/box_reader_settings.dart';
 import 'package:quran/modules/quran/data/sources/local/box_reciter_pref.dart';
+import 'package:quran/modules/quran/data/sources/local/box_tafsir.dart';
 import 'package:quran/modules/quran/domain/repos/r_audio.dart';
 import 'package:quran/modules/quran/domain/repos/r_audio_downloads.dart';
 import 'package:quran/modules/quran/domain/repos/r_bookmarks.dart';
@@ -30,15 +34,21 @@ import 'package:quran/modules/quran/domain/repos/r_playback_prefs.dart';
 import 'package:quran/modules/quran/domain/repos/r_quran.dart';
 import 'package:quran/modules/quran/domain/repos/r_reader_settings.dart';
 import 'package:quran/modules/quran/domain/repos/r_reciter.dart';
+import 'package:quran/modules/quran/domain/repos/r_tafsir.dart';
 import 'package:quran/modules/quran/domain/repos/r_tajweed.dart';
+import 'package:quran/modules/quran/domain/entities/param_ayah_ref.dart';
 import 'package:quran/modules/quran/domain/services/download_notifier.dart';
 import 'package:quran/modules/quran/domain/usecases/uc_delete_reciter_downloads.dart';
 import 'package:quran/modules/quran/domain/usecases/uc_delete_surah_download.dart';
+import 'package:quran/modules/quran/domain/usecases/uc_delete_tafsir.dart';
 import 'package:quran/modules/quran/domain/usecases/uc_download_all_surahs.dart';
 import 'package:quran/modules/quran/domain/usecases/uc_download_surah.dart';
+import 'package:quran/modules/quran/domain/usecases/uc_download_tafsir.dart';
 import 'package:quran/modules/quran/domain/usecases/uc_ensure_ayah_downloaded.dart';
 import 'package:quran/modules/quran/domain/usecases/uc_get_all_surahs_status.dart';
+import 'package:quran/modules/quran/domain/usecases/uc_get_ayah_tafsir.dart';
 import 'package:quran/modules/quran/domain/usecases/uc_get_bookmarks.dart';
+import 'package:quran/modules/quran/domain/usecases/uc_get_downloaded_tafsirs.dart';
 import 'package:quran/modules/quran/domain/usecases/uc_get_font_mode.dart';
 import 'package:quran/modules/quran/domain/usecases/uc_get_font_scale.dart';
 import 'package:quran/modules/quran/domain/usecases/uc_get_juz_index.dart';
@@ -49,6 +59,7 @@ import 'package:quran/modules/quran/domain/usecases/uc_get_reciter_stats.dart';
 import 'package:quran/modules/quran/domain/usecases/uc_get_reciters.dart';
 import 'package:quran/modules/quran/domain/usecases/uc_get_surah_list.dart';
 import 'package:quran/modules/quran/domain/usecases/uc_get_surah_status.dart';
+import 'package:quran/modules/quran/domain/usecases/uc_get_tafsir_catalog.dart';
 import 'package:quran/modules/quran/domain/usecases/uc_get_tajweed_tokens.dart';
 import 'package:quran/modules/quran/domain/usecases/uc_play_ayah.dart';
 import 'package:quran/modules/quran/domain/usecases/uc_play_range.dart';
@@ -70,6 +81,8 @@ import 'package:quran/modules/quran/presentation/cubits/cb_reciter.dart';
 import 'package:quran/modules/quran/presentation/cubits/cb_reciter_downloads.dart';
 import 'package:quran/modules/quran/presentation/cubits/cb_reciter_surahs.dart';
 import 'package:quran/modules/quran/presentation/cubits/cb_surah_list.dart';
+import 'package:quran/modules/quran/presentation/cubits/cb_tafsir.dart';
+import 'package:quran/modules/quran/presentation/cubits/cb_tafsir_library.dart';
 import 'package:quran/modules/quran/presentation/screens/sn_bookmarks.dart';
 import 'package:quran/modules/quran/presentation/screens/sn_mushaf_reader.dart';
 import 'package:quran/modules/quran/presentation/screens/sn_quran_search.dart';
@@ -78,6 +91,8 @@ import 'package:quran/modules/quran/presentation/screens/sn_reciter_downloads.da
 import 'package:quran/modules/quran/presentation/screens/sn_reciter_picker.dart';
 import 'package:quran/modules/quran/presentation/screens/sn_reciter_surahs.dart';
 import 'package:quran/modules/quran/presentation/screens/sn_surah_list.dart';
+import 'package:quran/modules/quran/presentation/screens/sn_tafsir.dart';
+import 'package:quran/modules/quran/presentation/screens/sn_tafsir_library.dart';
 import 'package:quran/modules/quran/presentation/services/quran_download_notifier.dart';
 
 class QuranModule extends Module {
@@ -89,6 +104,7 @@ class QuranModule extends Module {
     i.addSingleton<BoxReciterPref>(BoxReciterPref.new);
     i.addSingleton<BoxReaderSettings>(BoxReaderSettings.new);
     i.addSingleton<BoxPlaybackPrefs>(BoxPlaybackPrefs.new);
+    i.addSingleton<BoxTafsir>(BoxTafsir.new);
 
     // Local data sources
     i.addSingleton<DSLocalQuran>(DSLocalQuran.new);
@@ -99,10 +115,12 @@ class QuranModule extends Module {
     i.addSingleton<DSLocalAudioFiles>(DSLocalAudioFiles.new);
     i.addSingleton<DSQpcFontLoader>(DSQpcFontLoader.new);
     i.addSingleton<DSLocalTajweed>(DSLocalTajweed.new);
+    i.addSingleton<DSLocalTafsir>(() => DSLocalTafsir(i.get<BoxTafsir>()));
 
     // Remote data sources
     i.addSingleton<DSRemoteAudio>(DSRemoteAudio.new);
     i.addSingleton<DSAudioDownloader>(DSAudioDownloader.new);
+    i.addSingleton<DSRemoteTafsir>(DSRemoteTafsir.new);
 
     // Repositories (interface → impl)
     i.addSingleton<RQuran>(() => RImplQuran(i.get<DSLocalQuran>()));
@@ -122,6 +140,7 @@ class QuranModule extends Module {
     i.addSingleton<RBookmarks>(() => RImplBookmarks(i.get<DSLocalBookmarks>()));
     i.addSingleton<RReaderSettings>(() => RImplReaderSettings(i.get<DSLocalReaderSettings>()));
     i.addSingleton<RPlaybackPrefs>(() => RImplPlaybackPrefs(i.get<DSLocalPlaybackPrefs>()));
+    i.addSingleton<RTafsir>(() => RImplTafsir(i.get<DSLocalTafsir>(), i.get<DSRemoteTafsir>()));
 
     // Use cases (factory)
     i.add<UCGetSurahList>(() => UCGetSurahList(i.get<RQuran>()));
@@ -153,6 +172,11 @@ class QuranModule extends Module {
     i.add<UCSetFontScale>(() => UCSetFontScale(i.get<RReaderSettings>()));
     i.add<UCGetPlaybackPrefs>(() => UCGetPlaybackPrefs(i.get<RPlaybackPrefs>()));
     i.add<UCSavePlaybackPrefs>(() => UCSavePlaybackPrefs(i.get<RPlaybackPrefs>()));
+    i.add<UCGetTafsirCatalog>(() => UCGetTafsirCatalog(i.get<RTafsir>()));
+    i.add<UCGetDownloadedTafsirs>(() => UCGetDownloadedTafsirs(i.get<RTafsir>()));
+    i.add<UCDownloadTafsir>(() => UCDownloadTafsir(i.get<RTafsir>()));
+    i.add<UCDeleteTafsir>(() => UCDeleteTafsir(i.get<RTafsir>()));
+    i.add<UCGetAyahTafsir>(() => UCGetAyahTafsir(i.get<RTafsir>()));
 
     // App-wide cubits (singletons survive navigation).
     i.addSingleton<CBAudioPlayer>(
@@ -221,6 +245,17 @@ class QuranModule extends Module {
         repo: i.get<RAudioDownloads>(),
       ),
     );
+    i.add<CBTafsir>(
+      () => CBTafsir(i.get<UCGetAyahTafsir>(), i.get<UCGetDownloadedTafsirs>()),
+    );
+    i.add<CBTafsirLibrary>(
+      () => CBTafsirLibrary(
+        catalog: i.get<UCGetTafsirCatalog>(),
+        downloaded: i.get<UCGetDownloadedTafsirs>(),
+        download: i.get<UCDownloadTafsir>(),
+        delete: i.get<UCDeleteTafsir>(),
+      ),
+    );
   }
 
   /// Eagerly opens the Hive boxes the module needs. Call from a screen `initState`
@@ -231,6 +266,7 @@ class QuranModule extends Module {
     await Modular.get<BoxReciterPref>().init();
     await Modular.get<BoxReaderSettings>().init();
     await Modular.get<BoxPlaybackPrefs>().init();
+    await Modular.get<BoxTafsir>().init();
   }
 
   @override
@@ -256,5 +292,15 @@ class QuranModule extends Module {
     r.child(QuranRoutes.reciterSurahs, child: (_) => SNReciterSurahs(reciterId: r.args.queryParams['reciter'] ?? ''));
     r.child(QuranRoutes.bookmarks, child: (_) => const SNBookmarks());
     r.child(QuranRoutes.search, child: (_) => const SNQuranSearch());
+    r.child(QuranRoutes.tafsirLibrary, child: (_) => const SNTafsirLibrary());
+    r.child(
+      QuranRoutes.tafsir,
+      child: (_) {
+        final params = r.args.queryParams;
+        final surah = int.tryParse(params['surah'] ?? '') ?? 1;
+        final ayah = int.tryParse(params['ayah'] ?? '') ?? 1;
+        return SNTafsir(ayah: ParamAyahRef(surah: surah, ayah: ayah));
+      },
+    );
   }
 }

@@ -39,6 +39,13 @@ class EndPoints {
   static String youtubeChannelLive(String channelId) =>
       '/channel/$channelId/live';
 
+  // Quranic Universal Library (QUL) tafsir corpus — free, no auth. Files are
+  // base64-encoded BZip2 JSON (`.json.txt`), one map of `surah:ayah -> {text}`
+  // per book. Reached via a dedicated Dio in DSRemoteTafsir, NOT the shared
+  // BaseDio, so the app's Authorization header never touches a third party.
+  // `full_path` values live in the ETafsirBook catalog and are appended here.
+  static const String tafsirBase = 'https://quran-backend-delta.vercel.app/';
+
   // Adhan voice catalog (host as JSON on your CDN). Lets NEW voices ship
   // without an app update. Empty = remote catalog disabled: the app uses the
   // bundled `assets/data/adhans.json` only and skips the network entirely.

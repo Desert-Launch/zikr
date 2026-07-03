@@ -4,6 +4,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_modular/flutter_modular.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:localize_and_translate/localize_and_translate.dart';
+import 'package:quran/core/services/routes/routes_names.dart';
 import 'package:quran/core/theme/app_colors.dart';
 import 'package:quran/core/theme/brand_colors.dart';
 import 'package:quran/modules/quran/domain/entities/param_ayah_ref.dart';
@@ -132,6 +133,11 @@ class _SheetBody extends StatelessWidget {
               onTap: (_) => Modular.get<CBAudioPlayer>().playFrom(ref),
             ),
             _Action(
+              icon: Icons.menu_book_outlined,
+              label: 'tafsir_action'.tr(),
+              onTap: _openTafsir,
+            ),
+            _Action(
               icon: Icons.bookmark_add_outlined,
               label: 'reader_bookmark'.tr(),
               onTap: _bookmark,
@@ -197,6 +203,11 @@ class _SheetBody extends StatelessWidget {
       }
     }
     return '${ref.surah}:${ref.ayah}';
+  }
+
+  void _openTafsir(BuildContext context) {
+    BlocProvider.of<CBMushafReader>(context).clearSelection();
+    Modular.to.pushNamed(QuranRoutes.tafsirForAyah(ref.surah, ref.ayah));
   }
 
   Future<void> _bookmark(BuildContext context) async {

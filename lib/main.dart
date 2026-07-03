@@ -64,6 +64,7 @@ Future<void> main() async {
   await Hive.openBox<MReciterPref>('quran_reciter_pref');
   await Hive.openBox<String>('quran_reader_settings');
   await Hive.openBox<dynamic>('quran_playback_prefs');
+  await Hive.openBox<String>('quran_tafsir');
   await Hive.openBox<MThemePref>('app_theme_pref');
   await Hive.openBox<MAppSettings>('app_settings');
   await Hive.openBox<MUser>('app_user');
