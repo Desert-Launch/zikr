@@ -87,9 +87,9 @@ class WHomePrayerCard extends StatelessWidget {
                     children: [
                       Text(
                         caption.toString(),
-                        maxLines: 1,
+                        maxLines: 2,
                         overflow: TextOverflow.ellipsis,
-                        style: TextStyle(color: Colors.grey[600], fontSize: 12.sp),
+                        style: TextStyle(color: Colors.grey[600], fontSize: 10.sp),
                       ),
                       SizedBox(height: 4.h),
                       Text(
@@ -124,7 +124,7 @@ class WHomePrayerCard extends StatelessWidget {
                           SizedBox(width: 6.w),
                           Text(
                             _remaining(next),
-                            style: TextStyle(color: Colors.grey[600], fontSize: 11.sp),
+                            style: TextStyle(color: Colors.grey[600], fontSize: 8.sp),
                           ),
                         ],
                       ),
