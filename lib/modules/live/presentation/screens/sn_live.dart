@@ -13,25 +13,27 @@ import 'package:webview_flutter/webview_flutter.dart';
 import 'package:webview_flutter_android/webview_flutter_android.dart';
 import 'package:webview_flutter_wkwebview/webview_flutter_wkwebview.dart';
 
-/// Haramain live broadcasts. Provides [CBLive], which resolves the selected
-/// channel's CURRENT live video id from the channel itself (see [CBLive]) and
-/// falls back to a last-known-good id when that lookup fails.
+/// Haramain live broadcast for a single [channel] (chosen on [SNLivePicker]).
+/// Provides [CBLive], which resolves the channel's CURRENT live video id from
+/// the channel itself (see [CBLive]) and falls back to a last-known-good id when
+/// that lookup fails.
 class SNLive extends StatelessWidget {
-  const SNLive({super.key});
+  const SNLive({required this.channel, super.key});
+
+  final ELiveChannel channel;
 
   @override
   Widget build(BuildContext context) {
     return BlocProvider<CBLive>(
-      create: (_) => Modular.get<CBLive>()..open(ELiveChannel.makkah),
+      create: (_) => Modular.get<CBLive>()..open(channel),
       child: const _LiveView(),
     );
   }
 }
 
 /// A single embedded [WebView] fills the screen and plays whichever id [CBLive]
-/// has resolved for the selected channel; the toggle re-resolves and reloads it.
-/// `controls=0` keeps the surface immersive and the app chrome (header +
-/// switcher) overlays on top.
+/// has resolved for the picked channel. `controls=0` keeps the surface immersive
+/// and the app chrome (a slim header) overlays on top.
 ///
 /// Tapping the video toggles the chrome and the system bars. The screen forces
 /// landscape while open and restores portrait + chrome on exit. All chrome uses
@@ -45,8 +47,6 @@ class _LiveView extends StatefulWidget {
 }
 
 class _LiveViewState extends State<_LiveView> {
-  static const _green = Color(0xFF0D7E5E);
-
   /// HTML page origin loaded with the iframe. Matching the nocookie embed
   /// domain gives YouTube a valid referrer and avoids the player-config errors
   /// (153 / 152) seen when the embed is opened as a bare top-level page.
@@ -210,7 +210,7 @@ class _LiveViewState extends State<_LiveView> {
                 Positioned.fill(
                   child: GestureDetector(behavior: HitTestBehavior.opaque, onTap: _toggleChrome),
                 ),
-              // 3. Chrome (header + switcher) overlays the top, on top of the tap
+              // 3. Chrome (a slim header) overlays the top, on top of the tap
               //    layer so its buttons win taps. Fades + ignores pointers when hidden.
               Positioned(
                 top: 0,
@@ -221,7 +221,7 @@ class _LiveViewState extends State<_LiveView> {
                   child: AnimatedOpacity(
                     duration: const Duration(milliseconds: 180),
                     opacity: _chromeVisible ? 1 : 0,
-                    child: _chrome(context, state.channel),
+                    child: _chrome(state.channel),
                   ),
                 ),
               ),
@@ -246,7 +246,7 @@ class _LiveViewState extends State<_LiveView> {
     );
   }
 
-  Widget _chrome(BuildContext context, ELiveChannel channel) {
+  Widget _chrome(ELiveChannel channel) {
     return DecoratedBox(
       decoration: const BoxDecoration(
         gradient: LinearGradient(
@@ -255,20 +255,9 @@ class _LiveViewState extends State<_LiveView> {
           colors: [Color(0xCC000000), Color(0x00000000)],
         ),
       ),
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          _Header(title: 'live_title'.tr(), onOpenExternal: _openInYoutube),
-          Padding(
-            padding: const EdgeInsets.fromLTRB(16, 4, 16, 12),
-            child: _StreamToggle(
-              channels: ELiveChannel.all,
-              selectedId: channel.id,
-              accent: _green,
-              onSelect: (c) => BlocProvider.of<CBLive>(context).select(c),
-            ),
-          ),
-        ],
+      child: Padding(
+        padding: const EdgeInsets.only(bottom: 12),
+        child: _Header(title: channel.titleKey.tr(), onOpenExternal: _openInYoutube),
       ),
     );
   }
@@ -346,57 +335,6 @@ class _Header extends StatelessWidget {
             ],
           ),
         ),
-      ),
-    );
-  }
-}
-
-/// Two-segment pill toggle (Makkah / Madinah). Fixed sizing (orientation-safe).
-class _StreamToggle extends StatelessWidget {
-  const _StreamToggle({required this.channels, required this.selectedId, required this.accent, required this.onSelect});
-
-  final List<ELiveChannel> channels;
-  final String selectedId;
-  final Color accent;
-  final ValueChanged<ELiveChannel> onSelect;
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.all(4),
-      decoration: BoxDecoration(
-        color: Colors.black.withValues(alpha: 0.45),
-        borderRadius: BorderRadius.circular(14),
-        border: Border.all(color: Colors.white24),
-      ),
-      child: Row(
-        children: [
-          for (final ch in channels)
-            Expanded(
-              child: GestureDetector(
-                onTap: () => onSelect(ch),
-                child: AnimatedContainer(
-                  duration: const Duration(milliseconds: 180),
-                  padding: const EdgeInsets.symmetric(vertical: 9),
-                  alignment: Alignment.center,
-                  decoration: BoxDecoration(
-                    color: ch.id == selectedId ? accent : Colors.transparent,
-                    borderRadius: BorderRadius.circular(10),
-                  ),
-                  child: Text(
-                    ch.shortTitleKey.tr(),
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                    style: TextStyle(
-                      fontSize: 14,
-                      fontWeight: FontWeight.w600,
-                      color: ch.id == selectedId ? Colors.white : Colors.white70,
-                    ),
-                  ),
-                ),
-              ),
-            ),
-        ],
       ),
     );
   }

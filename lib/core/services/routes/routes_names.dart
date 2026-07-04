@@ -53,10 +53,17 @@ class RadioRoutes {
 class LiveRoutes {
   LiveRoutes._();
 
-  /// Sub-route within the live module ('/live/').
+  /// Channel-picker sub-route within the live module ('/live/').
   static const String home = '/';
 
+  /// Player sub-route ('/live/player') — takes a `channel` query param.
+  static const String player = '/player';
+
   static String fullHome() => RoutesNames.liveBase;
+
+  /// Player for a specific channel by its selection [channelId] (e.g. 'makkah').
+  static String playerFor(String channelId) =>
+      '${RoutesNames.liveBase}player?channel=$channelId';
 }
 
 class QuranRoutes {

@@ -77,6 +77,11 @@ class ELiveChannel {
     videoId: 'ge2Xn-Lwk3U',
   );
 
-  /// Ordered for the toggle — Makkah is the default (first).
+  /// Ordered for the picker — Makkah is the default (first).
   static const List<ELiveChannel> all = [makkah, madinah];
+
+  /// Resolves a channel from its selection [id] (e.g. `makkah`), falling back to
+  /// [makkah] for an unknown id so the player always has something to open.
+  static ELiveChannel byId(String id) =>
+      all.firstWhere((c) => c.id == id, orElse: () => makkah);
 }

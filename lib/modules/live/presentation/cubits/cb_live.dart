@@ -11,8 +11,7 @@ class CBLive extends Cubit<SLive> {
   CBLive(this._resolve) : super(const SLive());
   final UCResolveLiveVideo _resolve;
 
-  /// Selects [channel] and resolves its live id. Safe to call for the initial
-  /// channel and on every toggle.
+  /// Selects [channel] and resolves its live id.
   Future<void> open(ELiveChannel channel) async {
     emit(state.copyWith(
       channel: channel,
@@ -38,11 +37,5 @@ class CBLive extends Cubit<SLive> {
         usedFallback: false,
       )),
     );
-  }
-
-  /// Toggle handler — no-op when the channel is already selected.
-  Future<void> select(ELiveChannel channel) {
-    if (channel.id == state.channel.id) return Future<void>.value();
-    return open(channel);
   }
 }

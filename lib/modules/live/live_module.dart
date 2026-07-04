@@ -4,8 +4,10 @@ import 'package:quran/modules/live/data/datasources/remote/ds_remote_live.dart';
 import 'package:quran/modules/live/data/repos/r_impl_live.dart';
 import 'package:quran/modules/live/domain/repos/r_live.dart';
 import 'package:quran/modules/live/domain/usecases/uc_resolve_live_video.dart';
+import 'package:quran/modules/live/domain/entities/e_live_channel.dart';
 import 'package:quran/modules/live/presentation/cubits/cb_live.dart';
 import 'package:quran/modules/live/presentation/screens/sn_live.dart';
+import 'package:quran/modules/live/presentation/screens/sn_live_picker.dart';
 
 /// Haramain live-broadcast module. Embeds the official KSA YouTube channels
 /// (see [ELiveChannel]) and resolves each channel's CURRENT live video at
@@ -28,6 +30,13 @@ class LiveModule extends Module {
 
   @override
   void routes(RouteManager r) {
-    r.child(LiveRoutes.home, child: (_) => const SNLive());
+    // Channel picker first, then the player for the chosen channel.
+    r.child(LiveRoutes.home, child: (_) => const SNLivePicker());
+    r.child(
+      LiveRoutes.player,
+      child: (_) => SNLive(
+        channel: ELiveChannel.byId(r.args.queryParams['channel'] ?? ELiveChannel.makkah.id),
+      ),
+    );
   }
 }
