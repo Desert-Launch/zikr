@@ -10,7 +10,6 @@ import 'package:quran/core/widgets/w_localize_rotation.dart';
 import 'package:quran/core/widgets/w_shared_scaffold.dart';
 import 'package:quran/modules/quran/presentation/widgets/w_font_mode_picker.dart';
 import 'package:quran/modules/quran/presentation/widgets/w_reader_theme_picker.dart';
-import 'package:quran/modules/quran/presentation/widgets/w_text_size_slider.dart';
 
 /// Quran-specific settings hub, reached from the gear icon on the surah list.
 /// Structured to grow — for now it surfaces audio downloads and reciter choice.
@@ -62,10 +61,6 @@ class SNQuranSettings extends StatelessWidget {
                   _SectionLabel('quran_settings_reader_theme'.tr()),
                   SizedBox(height: 8.h),
                   const WReaderThemePicker(),
-                  SizedBox(height: 22.h),
-                  _SectionLabel('quran_settings_text_size'.tr()),
-                  SizedBox(height: 8.h),
-                  const WTextSizeSlider(),
                 ],
               ),
             ),

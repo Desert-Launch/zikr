@@ -3,7 +3,6 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_modular/flutter_modular.dart';
 import 'package:quran/core/widgets/w_shared_scaffold.dart';
 import 'package:quran/modules/quran/data/datasources/local/ds_local_quran.dart';
-import 'package:quran/modules/quran/domain/entities/e_quran_font_mode.dart';
 import 'package:quran/modules/quran/domain/entities/param_ayah_ref.dart';
 import 'package:quran/modules/quran/presentation/cubits/cb_audio_player.dart';
 import 'package:quran/modules/quran/presentation/cubits/cb_mushaf_reader.dart';
@@ -13,7 +12,7 @@ import 'package:quran/modules/quran/presentation/cubits/s_surah_list.dart'
     show LoadStatus;
 import 'package:quran/modules/quran/presentation/widgets/w_ayah_action_sheet.dart';
 import 'package:quran/modules/quran/presentation/widgets/w_mini_player.dart';
-import 'package:quran/modules/quran/presentation/widgets/w_mushaf_page.dart';
+import 'package:quran/modules/quran/presentation/widgets/w_mushaf_v4_page.dart';
 import 'package:quran/modules/quran/presentation/widgets/w_reader_search_panel.dart';
 import 'package:quran/modules/quran/presentation/widgets/w_reader_top_bar.dart';
 
@@ -101,10 +100,7 @@ class _SNMushafReaderState extends State<SNMushafReader> {
     return BlocProvider.value(
       value: _cubit,
       child: WSharedScaffold(
-        backgroundColor: readerBackground(
-          _cubit.state.theme,
-          colored: _cubit.state.fontMode.isColored,
-        ),
+        backgroundColor: readerBackground(_cubit.state.theme),
         padding: EdgeInsets.zero,
         withSafeArea: false,
         body: BlocListener<CBAudioPlayer, SAudioPlayer>(
@@ -121,8 +117,7 @@ class _SNMushafReaderState extends State<SNMushafReader> {
               // just the page surface — recolours with the reading theme.
               Positioned.fill(
                 child: BlocSelector<CBMushafReader, SMushafReader, Color>(
-                  selector: (s) =>
-                      readerBackground(s.theme, colored: s.fontMode.isColored),
+                  selector: (s) => readerBackground(s.theme),
                   builder: (_, bg) => ColoredBox(color: bg),
                 ),
               ),
@@ -208,7 +203,7 @@ class _PageLoaderState extends State<_PageLoader> {
       builder: (context, state) {
         final isCurrent = state.currentPage == widget.pageNumber;
         if (isCurrent && state.layout?.page == widget.pageNumber) {
-          return WMushafPage(layout: state.layout!);
+          return WMushafV4Page(layout: state.layout!);
         }
         if (isCurrent && state.status == LoadStatus.loading) {
           return const Center(child: CircularProgressIndicator());

@@ -12,20 +12,33 @@ class WHomeFeatureCard extends StatelessWidget {
     required this.title,
     required this.subtitle,
     required this.color,
-    required this.route,
+    this.route,
+    this.onTap,
   });
 
   final String icon;
   final String title;
   final String subtitle;
   final Color color;
-  final String route;
+
+  /// Route pushed on tap. Ignored when [onTap] is supplied.
+  final String? route;
+
+  /// Overrides the default route push — e.g. to open a picker sheet instead.
+  final VoidCallback? onTap;
+
+  VoidCallback? get _handleTap {
+    if (onTap != null) return onTap;
+    final r = route;
+    if (r != null) return () => Modular.to.pushNamed(r);
+    return null;
+  }
 
   @override
   Widget build(BuildContext context) {
     return InkWell(
       borderRadius: BorderRadius.circular(16.r),
-      onTap: () => Modular.to.pushNamed(route),
+      onTap: _handleTap,
       child: Container(
         height: 150.h,
         padding: EdgeInsets.all(14.r),

@@ -62,9 +62,9 @@ class _Bar extends StatelessWidget {
               children: [
                 BackButton(color: Colors.white, onPressed: () => Modular.to.pop()),
                 IconButton(
-                  tooltip: 'فهرس القرآن',
-                  onPressed: () => Modular.to.navigate(QuranRoutes.fullSurahList()),
-                  icon: const Icon(Icons.format_list_bulleted_rounded, color: Colors.white),
+                  tooltip: 'common_search'.tr(),
+                  onPressed: () => BlocProvider.of<CBMushafReader>(context).toggleSearch(),
+                  icon: const Icon(Icons.search_rounded, color: Colors.white),
                 ),
                 Expanded(
                   child: Column(
@@ -95,12 +95,12 @@ class _Bar extends StatelessWidget {
                     ],
                   ),
                 ),
-                IconButton(
-                  tooltip: 'common_search'.tr(),
-                  onPressed: () => BlocProvider.of<CBMushafReader>(context).toggleSearch(),
-                  icon: const Icon(Icons.search_rounded, color: Colors.white),
-                ),
 
+                IconButton(
+                  tooltip: 'فهرس القرآن',
+                  onPressed: () => Modular.to.navigate(QuranRoutes.fullSurahList()),
+                  icon: const Icon(Icons.format_list_bulleted_rounded, color: Colors.white),
+                ),
                 IconButton(
                   tooltip: 'quran_settings_title'.tr(),
                   onPressed: () => Modular.to.pushNamed(QuranRoutes.fullSettings()),

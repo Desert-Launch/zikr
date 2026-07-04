@@ -148,22 +148,22 @@ flutter:
     - assets/data/
     - assets/data/mushaf_pages/
     - assets/data/tajweed/
+    - assets/data/qpc_v4/
+    - assets/fonts/qpc_v4/
     - assets/data/azkar/
     - assets/data/khatma/
     - assets/audio/adhan/
-    - assets/fonts/qpc_v2/
-    - assets/fonts/uthmani/
     - assets/images/
     - assets/icons/
     - assets/lang/
     - assets/mock/
     - assets/legal/
 
-  # Uthmani text font for Tajweed mode (Approach B). Unlike the per-page QPC
-  # glyph fonts (loaded at runtime by DSQpcFontLoader), this is an ordinary
-  # Arabic text font, declared statically so the tajweed renderer can colour
-  # each token itself. AmiriQuran — SIL OFL 1.1 (see assets/fonts/uthmani/OFL.txt).
   fonts:
-    - family: AmiriQuran
+    # Ayah-end rosette font for the QPC-V4 reader.
+    # Renders the ayah number inside an ornamented marker. The per-page QPC-V4
+    # colour glyph fonts themselves are gzipped under assets/fonts/qpc_v4/ and
+    # registered at runtime by DSQpcV4FontLoader (not declared here).
+    - family: ayahNumberV4
       fonts:
-        - asset: assets/fonts/uthmani/AmiriQuran.ttf
+        - asset: assets/fonts/qpc_v4_ui/Uthmanic_NeoCOLORD-Regular.ttf

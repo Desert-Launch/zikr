@@ -1,5 +1,5 @@
 import 'package:equatable/equatable.dart';
-import 'package:quran/modules/quran/data/models/m_page_layout.dart';
+import 'package:quran/modules/quran/data/models/m_qpc_v4_page.dart';
 import 'package:quran/modules/quran/domain/entities/e_quran_font_mode.dart';
 import 'package:quran/modules/quran/domain/entities/e_reader_theme.dart';
 import 'package:quran/modules/quran/domain/entities/param_ayah_ref.dart';
@@ -25,7 +25,7 @@ class SMushafReader extends Equatable {
   });
 
   final int currentPage;
-  final MPageLayout? layout;
+  final MQpcV4Page? layout;
   final LoadStatus status;
   final String? error;
   final ParamAyahRef? selectedAyah;
@@ -57,7 +57,7 @@ class SMushafReader extends Equatable {
 
   SMushafReader copyWith({
     int? currentPage,
-    MPageLayout? layout,
+    MQpcV4Page? layout,
     LoadStatus? status,
     String? error,
     ParamAyahRef? selectedAyah,

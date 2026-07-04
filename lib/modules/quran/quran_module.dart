@@ -8,7 +8,8 @@ import 'package:quran/modules/quran/data/datasources/local/ds_local_reader_setti
 import 'package:quran/modules/quran/data/datasources/local/ds_local_settings.dart';
 import 'package:quran/modules/quran/data/datasources/local/ds_local_tajweed.dart';
 import 'package:quran/modules/quran/data/datasources/local/ds_local_tafsir.dart';
-import 'package:quran/modules/quran/data/datasources/local/ds_qpc_font_loader.dart';
+import 'package:quran/modules/quran/data/datasources/local/ds_qpc_v4_data.dart';
+import 'package:quran/modules/quran/data/datasources/local/ds_qpc_v4_font_loader.dart';
 import 'package:quran/modules/quran/data/datasources/remote/ds_audio_downloader.dart';
 import 'package:quran/modules/quran/data/datasources/remote/ds_remote_audio.dart';
 import 'package:quran/modules/quran/data/datasources/remote/ds_remote_tafsir.dart';
@@ -17,6 +18,7 @@ import 'package:quran/modules/quran/data/repos/r_impl_audio_downloads.dart';
 import 'package:quran/modules/quran/data/repos/r_impl_bookmarks.dart';
 import 'package:quran/modules/quran/data/repos/r_impl_playback_prefs.dart';
 import 'package:quran/modules/quran/data/repos/r_impl_quran.dart';
+import 'package:quran/modules/quran/data/repos/r_impl_quran_v4.dart';
 import 'package:quran/modules/quran/data/repos/r_impl_reader_settings.dart';
 import 'package:quran/modules/quran/data/repos/r_impl_reciter.dart';
 import 'package:quran/modules/quran/data/repos/r_impl_tafsir.dart';
@@ -32,6 +34,7 @@ import 'package:quran/modules/quran/domain/repos/r_audio_downloads.dart';
 import 'package:quran/modules/quran/domain/repos/r_bookmarks.dart';
 import 'package:quran/modules/quran/domain/repos/r_playback_prefs.dart';
 import 'package:quran/modules/quran/domain/repos/r_quran.dart';
+import 'package:quran/modules/quran/domain/repos/r_quran_v4.dart';
 import 'package:quran/modules/quran/domain/repos/r_reader_settings.dart';
 import 'package:quran/modules/quran/domain/repos/r_reciter.dart';
 import 'package:quran/modules/quran/domain/repos/r_tafsir.dart';
@@ -54,6 +57,7 @@ import 'package:quran/modules/quran/domain/usecases/uc_get_font_scale.dart';
 import 'package:quran/modules/quran/domain/usecases/uc_get_juz_index.dart';
 import 'package:quran/modules/quran/domain/usecases/uc_get_page_layout.dart';
 import 'package:quran/modules/quran/domain/usecases/uc_get_playback_prefs.dart';
+import 'package:quran/modules/quran/domain/usecases/uc_get_qpc_v4_page.dart';
 import 'package:quran/modules/quran/domain/usecases/uc_get_reader_theme.dart';
 import 'package:quran/modules/quran/domain/usecases/uc_get_reciter_stats.dart';
 import 'package:quran/modules/quran/domain/usecases/uc_get_reciters.dart';
@@ -113,7 +117,8 @@ class QuranModule extends Module {
     i.addSingleton<DSLocalReaderSettings>(() => DSLocalReaderSettings(i.get<BoxReaderSettings>()));
     i.addSingleton<DSLocalPlaybackPrefs>(() => DSLocalPlaybackPrefs(i.get<BoxPlaybackPrefs>()));
     i.addSingleton<DSLocalAudioFiles>(DSLocalAudioFiles.new);
-    i.addSingleton<DSQpcFontLoader>(DSQpcFontLoader.new);
+    i.addSingleton<DSQpcV4Data>(DSQpcV4Data.new);
+    i.addSingleton<DSQpcV4FontLoader>(DSQpcV4FontLoader.new);
     i.addSingleton<DSLocalTajweed>(DSLocalTajweed.new);
     i.addSingleton<DSLocalTafsir>(() => DSLocalTafsir(i.get<BoxTafsir>()));
 
@@ -124,6 +129,7 @@ class QuranModule extends Module {
 
     // Repositories (interface → impl)
     i.addSingleton<RQuran>(() => RImplQuran(i.get<DSLocalQuran>()));
+    i.addSingleton<RQuranV4>(() => RImplQuranV4(i.get<DSQpcV4Data>()));
     i.addSingleton<RTajweed>(() => RImplTajweed(i.get<DSLocalTajweed>()));
     i.addSingleton<RReciter>(() => RImplReciter(i.get<DSLocalSettings>()));
     i.addSingleton<RAudio>(() => RImplAudio(i.get<DSLocalAudioFiles>(), i.get<DSRemoteAudio>(), i.get<RReciter>()));
@@ -146,6 +152,7 @@ class QuranModule extends Module {
     i.add<UCGetSurahList>(() => UCGetSurahList(i.get<RQuran>()));
     i.add<UCGetJuzIndex>(() => UCGetJuzIndex(i.get<RQuran>()));
     i.add<UCGetPageLayout>(() => UCGetPageLayout(i.get<RQuran>()));
+    i.add<UCGetQpcV4Page>(() => UCGetQpcV4Page(i.get<RQuranV4>()));
     i.add<UCGetTajweedTokens>(() => UCGetTajweedTokens(i.get<RTajweed>()));
     i.add<UCSearchQuran>(() => UCSearchQuran(i.get<RQuran>()));
     i.add<UCResolveAudioUrl>(() => UCResolveAudioUrl(i.get<RAudio>()));
@@ -220,9 +227,9 @@ class QuranModule extends Module {
     );
     i.add<CBMushafReader>(
       () => CBMushafReader(
-        i.get<UCGetPageLayout>(),
+        i.get<UCGetQpcV4Page>(),
         i.get<UCSaveLastRead>(),
-        i.get<DSQpcFontLoader>(),
+        i.get<DSQpcV4FontLoader>(),
         i.get<DSLocalQuran>(),
         i.get<RBookmarks>(),
         i.get<CBReaderSettings>(),

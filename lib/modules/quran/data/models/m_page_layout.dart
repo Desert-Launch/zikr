@@ -49,6 +49,7 @@ class MLine extends Equatable {
     required this.text,
     this.verseRange,
     this.surahNumber,
+    this.fontPage,
     this.words = const [],
   });
 
@@ -70,6 +71,7 @@ class MLine extends Equatable {
       text: json['text'] as String? ?? '',
       verseRange: json['verseRange'] as String?,
       surahNumber: int.tryParse(json['surah']?.toString() ?? ''),
+      fontPage: json['fontPage'] as int?,
       words: words,
     );
   }
@@ -80,6 +82,12 @@ class MLine extends Equatable {
   /// e.g. "2:1-2:5"
   final String? verseRange;
   final int? surahNumber;
+  /// QPC font page whose glyph set this line's [words] belong to, when it
+  /// differs from the mushaf page the line is printed on. A handful of pages
+  /// carry a top line whose QPC v2 glyph codes live in the *previous* page's
+  /// font; those lines set this so the renderer picks the font that actually
+  /// contains their glyphs. `null` (the norm) means use the page's own font.
+  final int? fontPage;
   final List<MWord> words;
 
   /// Unique ayah refs touched by this line (in order, no duplicates).

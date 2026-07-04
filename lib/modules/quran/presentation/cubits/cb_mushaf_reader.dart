@@ -2,12 +2,11 @@ import 'dart:async';
 
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:quran/modules/quran/data/datasources/local/ds_local_quran.dart';
-import 'package:quran/modules/quran/data/datasources/local/ds_qpc_font_loader.dart';
+import 'package:quran/modules/quran/data/datasources/local/ds_qpc_v4_font_loader.dart';
 import 'package:quran/modules/quran/data/models/m_bookmark.dart';
-import 'package:quran/modules/quran/domain/entities/e_quran_font_mode.dart';
 import 'package:quran/modules/quran/domain/entities/param_ayah_ref.dart';
 import 'package:quran/modules/quran/domain/repos/r_bookmarks.dart';
-import 'package:quran/modules/quran/domain/usecases/uc_get_page_layout.dart';
+import 'package:quran/modules/quran/domain/usecases/uc_get_qpc_v4_page.dart';
 import 'package:quran/modules/quran/domain/usecases/uc_save_last_read.dart';
 import 'package:quran/modules/quran/presentation/cubits/cb_reader_settings.dart';
 import 'package:quran/modules/quran/presentation/cubits/s_mushaf_reader.dart';
@@ -32,9 +31,9 @@ class CBMushafReader extends Cubit<SMushafReader> {
     _watchSettings();
   }
 
-  final UCGetPageLayout _getPage;
+  final UCGetQpcV4Page _getPage;
   final UCSaveLastRead _saveLastRead;
-  final DSQpcFontLoader _fonts;
+  final DSQpcV4FontLoader _fonts;
   final DSLocalQuran _local;
   final RBookmarks _bookmarks;
   final CBReaderSettings _settings;
@@ -53,7 +52,9 @@ class CBMushafReader extends Cubit<SMushafReader> {
       if (s.theme != state.theme || s.fontScale != state.fontScale) {
         emit(state.copyWith(theme: s.theme, fontScale: s.fontScale));
       }
-      if (s.fontMode != state.fontMode) openPage(state.currentPage);
+      // Colored (tajweedV4) and plain (plainV2) share the same page data and both
+      // font variants are already registered, so a mode change just re-styles.
+      if (s.fontMode != state.fontMode) emit(state.copyWith(fontMode: s.fontMode));
     });
   }
 
@@ -97,21 +98,17 @@ class CBMushafReader extends Cubit<SMushafReader> {
 
   Future<void> openPage(int page) async {
     if (page < 1 || page > 604) return;
-    final mode = _settings.state.fontMode;
     emit(
       state.copyWith(
         currentPage: page,
         status: LoadStatus.loading,
-        fontMode: mode,
+        fontMode: _settings.state.fontMode,
       ),
     );
-    // Preload fonts in parallel with layout JSON fetch. Tajweed (Approach B)
-    // renders with the static Amiri font, not the per-page QPC glyph fonts, so
-    // skip the preload there.
-    final preloadFut = mode == EQuranFontMode.tajweedV4
-        ? Future<void>.value()
-        : _fonts.preloadWindow(page, mode: mode);
-    final layoutRes = await _getPage(page, mode: mode);
+    // Register the page's QPC-V4 colour font (+ background neighbour warmup) in
+    // parallel with the layout resolve so glyphs are ready when we paint.
+    final preloadFut = _fonts.preloadWindow(page);
+    final layoutRes = await _getPage(page);
     await preloadFut;
     await layoutRes.fold(
       (failure) async {
@@ -128,7 +125,6 @@ class CBMushafReader extends Cubit<SMushafReader> {
             layout: layout,
             surahName: surahName,
             juz: juzForPage(page),
-            fontMode: mode,
           ),
         );
       },

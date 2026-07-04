@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_modular/flutter_modular.dart';
+import 'package:quran/modules/quran/data/datasources/local/ds_local_quran.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:localize_and_translate/localize_and_translate.dart';
 import 'package:quran/core/services/routes/routes_names.dart';
@@ -194,13 +195,15 @@ class _SheetBody extends StatelessWidget {
     );
   }
 
-  String _plainText(BuildContext context) {
-    final layout = BlocProvider.of<CBMushafReader>(context).state.layout;
-    if (layout == null) return '${ref.surah}:${ref.ayah}';
-    for (final line in layout.lines) {
-      if (line.verseRange != null && line.verseRange!.contains(ref.key)) {
-        return line.text;
-      }
+  /// Readable Arabic text of the ayah for copy/share. The rendered page uses
+  /// QPC-V4 glyph fonts (PUA codepoints, not readable), so the plain text is
+  /// pulled from the bundled Uthmani ayah index instead.
+  Future<String> _plainText() async {
+    try {
+      final text = await Modular.get<DSLocalQuran>().fullAyahText(ref);
+      if (text.isNotEmpty) return text;
+    } catch (_) {
+      // Fall through to the reference label.
     }
     return '${ref.surah}:${ref.ayah}';
   }
@@ -226,8 +229,9 @@ class _SheetBody extends StatelessWidget {
   }
 
   Future<void> _copy(BuildContext context) async {
+    final text = await _plainText();
     await Clipboard.setData(
-      ClipboardData(text: '${_plainText(context)}\n(${ref.surah}:${ref.ayah})'),
+      ClipboardData(text: '$text\n(${ref.surah}:${ref.ayah})'),
     );
     if (!context.mounted) return;
     ScaffoldMessenger.of(
@@ -237,7 +241,8 @@ class _SheetBody extends StatelessWidget {
   }
 
   Future<void> _share(BuildContext context) async {
-    final text = _plainText(context);
+    final text = await _plainText();
+    if (!context.mounted) return;
     final box = context.findRenderObject() as RenderBox?;
     final screenSize = MediaQuery.sizeOf(context);
     final origin =
