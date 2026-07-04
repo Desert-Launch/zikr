@@ -53,7 +53,7 @@ class WHomeVerseCard extends StatelessWidget {
 
   Widget _card(BuildContext context, EDailyVerse? verse) {
     final body = Padding(
-      padding: EdgeInsets.fromLTRB(18.w, 22.h, 18.w, 22.h),
+      padding: EdgeInsets.symmetric(horizontal: 18.w, vertical: 20.h),
       child: Column(
         mainAxisSize: _static ? MainAxisSize.min : MainAxisSize.max,
         children: [

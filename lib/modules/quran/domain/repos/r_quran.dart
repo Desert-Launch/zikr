@@ -47,10 +47,12 @@ abstract class RQuran {
   Future<Either<Failure, List<EJuzEntry>>> getJuzIndex();
 
   /// Deterministic "verse of the day" for the given calendar [day], constrained
-  /// to verses no longer than [maxChars] so it fits the home card.
+  /// to verses longer than [minChars] and no longer than [maxChars] so it fits
+  /// the home card and isn't trivially short.
   Future<Either<Failure, EDailyVerse>> getDailyVerse(
     DateTime day, {
     int maxChars,
+    int minChars,
   });
 
   /// Diacritics-tolerant Uthmani text search across all 6236 ayat.

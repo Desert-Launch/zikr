@@ -122,9 +122,10 @@ class RImplQuran implements RQuran {
   Future<Either<Failure, EDailyVerse>> getDailyVerse(
     DateTime day, {
     int maxChars = 85,
+    int minChars = 10,
   }) async {
     try {
-      final v = await _local.dailyVerse(day, maxChars: maxChars);
+      final v = await _local.dailyVerse(day, maxChars: maxChars, minChars: minChars);
       return Right(EDailyVerse(
         surahNumber: v.surah.number,
         surahArabicName: v.surah.arabic,

@@ -114,11 +114,16 @@ class DSLocalQuran {
   /// "verse of the day" doesn't simply walk forward one ayah at a time.
   ///
   /// [maxChars] caps how long the chosen verse may be so it fits the home
-  /// "verse of the day" card without ellipsis. Length is measured on the
-  /// diacritic-stripped text (a closer proxy for rendered width than the raw
+  /// "verse of the day" card without ellipsis, and [minChars] rejects verses
+  /// too short to be meaningful (e.g. single-word ayat). Length is measured on
+  /// the diacritic-stripped text (a closer proxy for rendered width than the raw
   /// Uthmani string, since harakat add glyphs but little width). When no
   /// candidate fits within the attempt budget, the primary day-pick is used.
-  Future<({ParamAyahRef ref, MSurah surah, String text})> dailyVerse(DateTime day, {int maxChars = 80}) async {
+  Future<({ParamAyahRef ref, MSurah surah, String text})> dailyVerse(
+    DateTime day, {
+    int maxChars = 80,
+    int minChars = 10,
+  }) async {
     final surahs = await loadSurahs();
     final total = surahs.fold<int>(0, (sum, s) => sum + s.totalAyah);
     final dayNumber = DateTime.utc(day.year, day.month, day.day).difference(DateTime.utc(1970)).inDays;
@@ -151,7 +156,8 @@ class DSLocalQuran {
         chosen = hit.surah;
         text = t;
       }
-      if (_normalise(t).length <= maxChars) {
+      final len = _normalise(t).length;
+      if (len > minChars && len <= maxChars) {
         ref = r;
         chosen = hit.surah;
         text = t;
