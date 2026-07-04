@@ -19,6 +19,7 @@ import 'package:quran/modules/quran/presentation/cubits/cb_mushaf_reader.dart';
 import 'package:quran/modules/quran/presentation/cubits/s_audio_player.dart';
 import 'package:quran/modules/quran/presentation/cubits/s_mushaf_reader.dart';
 import 'package:quran/modules/quran/presentation/widgets/tajweed_palette.dart';
+import 'package:quran/modules/quran/presentation/widgets/w_ayah_highlight_text.dart';
 import 'package:quran/modules/quran/presentation/widgets/w_basmala_line.dart';
 import 'package:quran/modules/quran/presentation/widgets/w_bookmark_color_picker.dart';
 import 'package:quran/modules/quran/presentation/widgets/w_mushaf_page.dart' show readerBackground;
@@ -366,8 +367,30 @@ class _WTajweedPageState extends State<WTajweedPage> {
     required Brightness brightness,
     required double fontSize,
     required double height,
+    // Exact mode passes this: selection/playback/bookmark tints are collected as
+    // character ranges and painted behind the text by [WAyahHighlightText] so the
+    // highlight grows taller without inflating line height. When null (reflow),
+    // the tint is a line-box backgroundColor as before.
+    List<AyahHighlight>? highlightsOut,
   }) {
     final spans = <InlineSpan>[];
+    final paintBg = highlightsOut == null;
+    var offset = 0;
+    // Per ayah key → the contiguous char range its words occupy in this line.
+    final hlStart = <String, int>{};
+    final hlEnd = <String, int>{};
+    final hlColor = <String, Color>{};
+
+    void add(InlineSpan span, {String? hlKey, Color? tint}) {
+      spans.add(span);
+      final len = span is WidgetSpan ? 1 : ((span as TextSpan).text?.length ?? 0);
+      if (highlightsOut != null && hlKey != null && tint != null) {
+        hlStart.putIfAbsent(hlKey, () => offset);
+        hlEnd[hlKey] = offset + len;
+        hlColor[hlKey] = tint;
+      }
+      offset += len;
+    }
 
     for (int wi = 0; wi < line.words.length; wi++) {
       final w = line.words[wi];
@@ -380,7 +403,7 @@ class _WTajweedPageState extends State<WTajweedPage> {
         fontSize: fontSize,
         height: height,
         color: colour,
-        backgroundColor: tint,
+        backgroundColor: paintBg ? tint : null,
       );
 
       final word = coloured[ref.key];
@@ -390,25 +413,21 @@ class _WTajweedPageState extends State<WTajweedPage> {
       if (segs == null) {
         // Fallback (e.g. the single word-segmentation outlier, 37:130): render
         // the QPC word's own text, uncoloured, so nothing is ever dropped.
-        spans.add(
-          TextSpan(
-            text: _stripNumber(w.word),
-            recognizer: recognizer,
-            style: styleFor(baseColour),
-          ),
+        add(
+          TextSpan(text: _stripNumber(w.word), recognizer: recognizer, style: styleFor(baseColour)),
+          hlKey: ref.key,
+          tint: tint,
         );
       } else {
         for (final s in segs) {
-          spans.add(
+          add(
             TextSpan(
               text: s.text,
               recognizer: recognizer,
-              style: styleFor(
-                s.rule == null
-                    ? baseColour
-                    : tajweedColour(s.rule!, brightness: brightness),
-              ),
+              style: styleFor(s.rule == null ? baseColour : tajweedColour(s.rule!, brightness: brightness)),
             ),
+            hlKey: ref.key,
+            tint: tint,
           );
         }
       }
@@ -421,8 +440,8 @@ class _WTajweedPageState extends State<WTajweedPage> {
         final v2 = w.qpcV2;
         final endGlyph = (v2 != null && v2.isNotEmpty) ? v2.split(' ').last : '';
         if (endGlyph.isNotEmpty) {
-          spans.add(const TextSpan(text: ' '));
-          spans.add(
+          add(const TextSpan(text: ' '), hlKey: ref.key, tint: tint);
+          add(
             TextSpan(
               text: endGlyph,
               recognizer: recognizer,
@@ -431,16 +450,32 @@ class _WTajweedPageState extends State<WTajweedPage> {
                 fontSize: fontSize,
                 height: height,
                 color: baseColour,
-                backgroundColor: tint,
+                backgroundColor: paintBg ? tint : null,
               ),
             ),
+            hlKey: ref.key,
+            tint: tint,
           );
         } else {
-          spans.add(_ayahEndBadge(ref, cubit, scale: scale, brightness: brightness, tint: tint));
+          add(
+            _ayahEndBadge(ref, cubit, scale: scale, brightness: brightness, tint: tint),
+            hlKey: ref.key,
+            tint: tint,
+          );
         }
       }
       if (wi != line.words.length - 1) {
-        spans.add(const TextSpan(text: ' '));
+        // Keep the pill continuous across words of the SAME ayah by tagging the
+        // separating space; a boundary space between two ayat stays untagged.
+        final next = line.words[wi + 1];
+        final sameNext = next.surah == w.surah && next.ayah == w.ayah;
+        add(const TextSpan(text: ' '), hlKey: sameNext ? ref.key : null, tint: sameNext ? tint : null);
+      }
+    }
+
+    if (highlightsOut != null) {
+      for (final key in hlStart.keys) {
+        highlightsOut.add(AyahHighlight(start: hlStart[key] ?? 0, end: hlEnd[key] ?? 0, color: hlColor[key] ?? baseColour));
       }
     }
     return spans;
@@ -469,6 +504,7 @@ class _WTajweedPageState extends State<WTajweedPage> {
     required Color baseColour,
     required Brightness brightness,
   }) {
+    final highlights = <AyahHighlight>[];
     final spans = _lineSpans(
       line,
       cubit: cubit,
@@ -481,6 +517,7 @@ class _WTajweedPageState extends State<WTajweedPage> {
       brightness: brightness,
       fontSize: fontSize,
       height: 1.0,
+      highlightsOut: highlights,
     );
 
     final rootStyle = TextStyle(
@@ -488,6 +525,9 @@ class _WTajweedPageState extends State<WTajweedPage> {
       fontSize: fontSize,
       height: 1.0,
     );
+
+    // Grow the selection pill above/below the glyphs without touching leading.
+    final pad = fontSize * 0.36;
 
     // The ayah-end badge fallback is a WidgetSpan the painter can't measure;
     // such (rare) lines keep the plain centered/scale-down path.
@@ -516,12 +556,11 @@ class _WTajweedPageState extends State<WTajweedPage> {
           padding: EdgeInsets.symmetric(vertical: 1.h),
           child: SizedBox(
             width: avail,
-            child: RichText(
-              textDirection: TextDirection.rtl,
-              text: TextSpan(
-                style: rootStyle.copyWith(wordSpacing: wordSpacing),
-                children: spans,
-              ),
+            child: WAyahHighlightText(
+              text: TextSpan(style: rootStyle.copyWith(wordSpacing: wordSpacing), children: spans),
+              ranges: highlights,
+              pad: pad,
+              maxWidth: avail,
             ),
           ),
         );
@@ -534,10 +573,11 @@ class _WTajweedPageState extends State<WTajweedPage> {
       child: FittedBox(
         fit: BoxFit.scaleDown,
         alignment: Alignment.center,
-        child: RichText(
-          textAlign: TextAlign.center,
-          textDirection: TextDirection.rtl,
+        child: WAyahHighlightText(
           text: TextSpan(style: rootStyle, children: spans),
+          ranges: highlights,
+          pad: pad,
+          textAlign: TextAlign.center,
         ),
       ),
     );

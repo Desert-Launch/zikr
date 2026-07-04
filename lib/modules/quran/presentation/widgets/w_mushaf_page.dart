@@ -17,6 +17,7 @@ import 'package:quran/modules/quran/presentation/cubits/cb_mushaf_reader.dart';
 import 'package:quran/modules/quran/presentation/cubits/cb_reader_settings.dart';
 import 'package:quran/modules/quran/presentation/cubits/s_audio_player.dart';
 import 'package:quran/modules/quran/presentation/cubits/s_mushaf_reader.dart';
+import 'package:quran/modules/quran/presentation/widgets/w_ayah_highlight_text.dart';
 import 'package:quran/modules/quran/presentation/widgets/w_basmala_line.dart';
 import 'package:quran/modules/quran/presentation/widgets/w_bookmark_color_picker.dart';
 import 'package:quran/modules/quran/presentation/widgets/w_mushaf_page_header.dart';
@@ -324,26 +325,29 @@ class _WMushafPageState extends State<WMushafPage> {
     required bool wrap,
     required Brightness brightness,
   }) {
+    final highlights = <AyahHighlight>[];
+    final spans = _lineSpans(
+      line,
+      cubit: cubit,
+      selected: selected,
+      playing: playing,
+      bookmarks: bookmarks,
+      fontFamily: fontFamily,
+      mode: mode,
+      scale: scale,
+      color: color,
+      wrap: wrap,
+      brightness: brightness,
+      highlightsOut: highlights,
+    );
     return Padding(
       padding: EdgeInsets.symmetric(vertical: 1.h),
-      child: RichText(
+      child: WAyahHighlightText(
+        text: TextSpan(children: spans),
+        ranges: highlights,
+        // Grow the pill above/below the glyphs without touching line height.
+        pad: 28.sp * scale * 0.36,
         textAlign: TextAlign.center,
-        textDirection: TextDirection.rtl,
-        text: TextSpan(
-          children: _lineSpans(
-            line,
-            cubit: cubit,
-            selected: selected,
-            playing: playing,
-            bookmarks: bookmarks,
-            fontFamily: fontFamily,
-            mode: mode,
-            scale: scale,
-            color: color,
-            wrap: wrap,
-            brightness: brightness,
-          ),
-        ),
       ),
     );
   }
@@ -363,6 +367,11 @@ class _WMushafPageState extends State<WMushafPage> {
     required Color color,
     required bool wrap,
     required Brightness brightness,
+    // Exact mode passes this: instead of a line-box backgroundColor (which
+    // would inflate line height), the selection/playback/bookmark tints are
+    // collected here as character ranges and painted behind the text by
+    // [WAyahHighlightText], so the highlight can grow taller independently.
+    List<AyahHighlight>? highlightsOut,
   }) {
     final isColored = mode.isColored;
     final groups = <_AyahGroup>[];
@@ -379,42 +388,67 @@ class _WMushafPageState extends State<WMushafPage> {
     }
 
     final spans = <InlineSpan>[];
+    var offset = 0;
     for (int i = 0; i < groups.length; i++) {
       final group = groups[i];
-      final isSelected = selected?.key == group.ref.key;
       final isPlaying = playing?.key == group.ref.key;
-      final isBookmarked = bookmarks.containsKey(group.ref.key);
+      final tint = _selectionColor(
+        isSelected: selected?.key == group.ref.key,
+        isPlaying: isPlaying,
+        bookmarkHex: bookmarks[group.ref.key],
+        hasBookmark: bookmarks.containsKey(group.ref.key),
+        brightness: brightness,
+      );
+      final text = group.glyphs.join(' ');
+      if (highlightsOut != null && tint != null) {
+        highlightsOut.add(AyahHighlight(start: offset, end: offset + text.length, color: tint));
+      }
       spans.add(
         TextSpan(
-          text: group.glyphs.join(' '),
+          text: text,
           recognizer: _recogniser(group.ref, cubit),
           style: TextStyle(
             fontFamily: fontFamily,
             fontSize: 28.sp * scale,
             // Coloured (V4) glyphs supply their own colour via the font's
-            // palette — never override it, just tint the background for
-            // selection/playback. Plain modes recolour the now-playing ayah.
+            // palette — never override it. Plain modes recolour the now-playing ayah.
             color: isColored ? color : (isPlaying ? AppColorsLight.accent : color),
             fontWeight: FontWeight.w500,
-            // Tight leading keeps exact pages packed; reflowed pages need room
-            // between wrapped rows so stacked lines stay legible.
+            // Exact pages stay tight (the pill is painted behind); reflowed pages
+            // need room between wrapped rows and keep the line-box tint.
             height: wrap ? 1.9 : 1.0,
-            // Priority: live selection → now-playing → saved bookmark colour.
-            backgroundColor: isSelected
-                ? (brightness == Brightness.dark
-                      ? AppColors.surfaceLightGreen.withValues(alpha: 0.22)
-                      : AppColors.surfaceLightGreen)
-                : (isPlaying
-                      ? AppColors.accentGoldAmber.withValues(alpha: 0.15)
-                      : (isBookmarked ? bookmarkHighlightFromHex(bookmarks[group.ref.key]) : null)),
+            backgroundColor: highlightsOut == null ? tint : null,
           ),
         ),
       );
+      offset += text.length;
       if (i != groups.length - 1) {
         spans.add(const TextSpan(text: ' '));
+        offset += 1;
       }
     }
     return spans;
+  }
+
+  /// Selection/playback/bookmark tint for an ayah, by priority: live selection →
+  /// now-playing → saved bookmark colour. `null` when the ayah is none of these.
+  Color? _selectionColor({
+    required bool isSelected,
+    required bool isPlaying,
+    required String? bookmarkHex,
+    required bool hasBookmark,
+    required Brightness brightness,
+  }) {
+    if (isSelected) {
+      // The solid green reads fine on cream but buries the text on the dark
+      // page, so drop it to a low-opacity tint there.
+      return brightness == Brightness.dark
+          ? AppColors.surfaceLightGreen.withValues(alpha: 0.22)
+          : AppColors.surfaceLightGreen;
+    }
+    if (isPlaying) return AppColors.accentGoldAmber.withValues(alpha: 0.15);
+    if (hasBookmark) return bookmarkHighlightFromHex(bookmarkHex);
+    return null;
   }
 }
 
