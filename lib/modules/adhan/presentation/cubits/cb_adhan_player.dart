@@ -4,6 +4,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:just_audio/just_audio.dart';
 import 'package:just_audio_background/just_audio_background.dart';
 import 'package:quran/core/services/logging/app_logger.dart';
+import 'package:quran/core/services/media/media_artwork.dart';
 import 'package:quran/modules/adhan/data/datasources/local/ds_local_adhan.dart';
 import 'package:quran/modules/adhan/data/models/m_adhan.dart';
 import 'package:quran/modules/adhan/data/sources/local/box_adhan_download.dart';
@@ -123,7 +124,7 @@ class CBAdhanPlayer extends Cubit<SAdhanPlayer> {
         album: 'الأذان',
         title: adhan.nameAr,
         artist: adhan.muezzinAr,
-        artUri: Uri.parse('asset:///assets/images/app_icon.png'),
+        artUri: MediaArtwork.uri,
       );
       final localPath = _downloads.localPath(adhan.id);
       final AudioSource source;

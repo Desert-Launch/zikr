@@ -23,7 +23,7 @@ class DSLocalRadio {
       id: 'national_qa_doha',
       name: 'إذاعة القرآن الكريم - الدوحة',
       nameEn: 'Holy Quran Radio — Doha',
-      url: 'https://qmclivestreaming.qa/QURAN/myStream/Playlist.m3u8',
+      url: 'https://live.kwikmotion.com/qmcquranradiolive/quranradio/playlist.m3u8',
       country: 'قطر',
       flag: '🇶🇦',
       frequency: '103.4 FM',

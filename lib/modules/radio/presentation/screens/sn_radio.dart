@@ -21,10 +21,25 @@ class SNRadio extends StatelessWidget {
   static const _green = Color(0xFF007A58);
   static const _canvas = Color(0xFFF6F5F2);
 
+  /// mp3quran's `?language=` param uses its own codes (e.g. `eng`, not `en`).
+  /// Map the active app language onto them; fall back to Arabic.
+  static String _apiLanguage() {
+    switch (LocalizeAndTranslate.getLanguageCode()) {
+      case 'en':
+        return 'eng';
+      case 'fr':
+        return 'fr';
+      case 'ur':
+        return 'ur';
+      case 'ar':
+      default:
+        return 'ar';
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
-    final language =
-        Directionality.of(context) == TextDirection.rtl ? 'ar' : 'eng';
+    final language = _apiLanguage();
     final player = Modular.get<CBRadioPlayer>();
 
     return MultiBlocProvider(

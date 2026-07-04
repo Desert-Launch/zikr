@@ -5,6 +5,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:just_audio/just_audio.dart';
 import 'package:just_audio_background/just_audio_background.dart';
 import 'package:quran/core/services/logging/app_logger.dart';
+import 'package:quran/core/services/media/media_artwork.dart';
 import 'package:quran/modules/radio/data/models/m_radio_station.dart';
 import 'package:quran/modules/radio/presentation/cubits/s_radio_player.dart';
 
@@ -120,7 +121,7 @@ class CBRadioPlayer extends Cubit<SRadioPlayer> {
             album: 'إذاعة القرآن الكريم',
             title: station.name,
             artist: station.country ?? '',
-            artUri: Uri.parse('asset:///assets/images/app_icon.png'),
+            artUri: MediaArtwork.uri,
           ),
         ),
       );

@@ -6,6 +6,7 @@ import 'package:just_audio/just_audio.dart';
 import 'package:just_audio_background/just_audio_background.dart';
 import 'package:localize_and_translate/localize_and_translate.dart';
 import 'package:quran/core/services/logging/app_logger.dart';
+import 'package:quran/core/services/media/media_artwork.dart';
 import 'package:quran/modules/quran/data/models/m_surah.dart';
 import 'package:quran/modules/quran/domain/entities/e_playback_options.dart';
 import 'package:quran/modules/quran/domain/entities/e_sleep_timer.dart';
@@ -219,7 +220,7 @@ class CBAudioPlayer extends Cubit<SAudioPlayer> {
           'القرآن الكريم${_activeReciterName != null ? ' - $_activeReciterName' : ''}',
       title: '${surah?.arabic ?? ''} - الآية ${ref.ayah}',
       artist: _activeReciterName ?? '',
-      artUri: Uri.parse('asset:///assets/images/app_icon.png'),
+      artUri: MediaArtwork.uri,
     );
     return AudioSource.uri(Uri.file(path), tag: tag);
   }

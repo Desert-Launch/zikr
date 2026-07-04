@@ -12,6 +12,7 @@ import 'package:quran/core/data/models/m_app_settings.dart';
 import 'package:quran/core/data/sources/local/box_app_settings.dart';
 import 'package:quran/core/extension/build_context.dart';
 import 'package:quran/core/services/logging/app_logger.dart';
+import 'package:quran/core/services/media/media_artwork.dart';
 import 'package:quran/core/services/notifications/notifications_service.dart';
 import 'package:quran/core/services/routes/app_module.dart';
 import 'package:quran/core/theme/app_themes.dart';
@@ -35,6 +36,7 @@ import 'package:quran/modules/quran/data/models/m_bookmark.dart';
 import 'package:quran/modules/quran/data/models/m_last_read.dart';
 import 'package:quran/modules/quran/data/models/m_reciter_pref.dart';
 import 'package:quran/modules/quran/data/sources/local/quran_hive_registrar.dart';
+import 'package:quran/modules/radio/presentation/widgets/w_radio_peek_tab.dart';
 import 'package:quran/modules/reminders/data/models/m_reminder.dart';
 import 'package:quran/modules/reminders/presentation/cubits/cb_reminders.dart';
 import 'package:quran/modules/settings/data/models/m_theme_pref.dart';
@@ -133,6 +135,9 @@ class _RootState extends State<_Root> with WidgetsBindingObserver {
     // Load theme + auth state in parallel before the first frame paints.
     Modular.get<CBTheme>().load();
     Modular.get<CBAuth>().bootstrap();
+    // Materialize the media-notification artwork to a file URI (asset:/// URIs
+    // aren't loadable by just_audio_background's artwork downloader).
+    MediaArtwork.prepare();
     // Wire notification channels + tap router (silent if not granted yet),
     // then re-register reminder alarms so schedules survive reboots / tz changes,
     // run the one-time adhan bootstrap, and rebuild the rolling adhan window.
@@ -194,6 +199,14 @@ class _RootState extends State<_Root> with WidgetsBindingObserver {
               routerConfig: Modular.routerConfig,
               localizationsDelegates: LocalizeAndTranslate.delegates,
               supportedLocales: LocalizeAndTranslate.getLocals(),
+              // Mount the app-wide radio peek tab above every route so it
+              // follows the user while a station plays.
+              builder: (context, child) => Stack(
+                children: [
+                  if (child != null) child,
+                  const WRadioPeekTab(),
+                ],
+              ),
             );
           },
         );

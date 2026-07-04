@@ -77,5 +77,22 @@
 		</array>
 		<key>ITSAppUsesNonExemptEncryption</key>
 		<false/>
+		<!-- radiojar entry points (https) 302-redirect to plain http nodes
+		     (n0x.radiojar.com). iOS ATS blocks that insecure hop (error -1022),
+		     breaking the Cairo/Saudi Quran radio streams. Scope the exception to
+		     radiojar.com only — the rest of the app stays https-only. -->
+		<key>NSAppTransportSecurity</key>
+		<dict>
+			<key>NSExceptionDomains</key>
+			<dict>
+				<key>radiojar.com</key>
+				<dict>
+					<key>NSIncludesSubdomains</key>
+					<true/>
+					<key>NSExceptionAllowsInsecureHTTPLoads</key>
+					<true/>
+				</dict>
+			</dict>
+		</dict>
 	</dict>
 </plist>
