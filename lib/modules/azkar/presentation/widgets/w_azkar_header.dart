@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:localize_and_translate/localize_and_translate.dart';
+import 'package:quran/core/extension/build_context.dart';
 import 'package:quran/modules/azkar/presentation/widgets/w_azkar_outline_circle.dart';
 import 'package:quran/modules/azkar/presentation/widgets/w_azkar_stat_card.dart';
 
@@ -71,10 +72,23 @@ class WAzkarHeader extends StatelessWidget {
                       Column(
                         crossAxisAlignment: CrossAxisAlignment.end,
                         children: [
-                          Text(
-                            title ?? 'azkar_header_title'.tr(),
-                            style: GoogleFonts.cairo(color: Colors.white, fontSize: 21.sp, fontWeight: FontWeight.w700),
+                          SizedBox(
+                            width: context.width * 0.61,
+                            child: FittedBox(
+                              fit: BoxFit.scaleDown,
+                              child: Text(
+                                title ?? 'azkar_header_title'.tr(),
+                                maxLines: 1,
+                                textAlign: TextAlign.end,
+                                style: GoogleFonts.cairo(
+                                  color: Colors.white,
+                                  fontSize: 21.sp,
+                                  fontWeight: FontWeight.w700,
+                                ),
+                              ),
+                            ),
                           ),
+                          SizedBox(height: 5.h),
                           Text(
                             'azkar_header_subtitle'.tr(),
                             style: TextStyle(color: Colors.white.withValues(alpha: 0.72), fontSize: 10.sp),
@@ -91,7 +105,7 @@ class WAzkarHeader extends StatelessWidget {
                 ),
                 const Spacer(),
                 Padding(
-                  padding: EdgeInsets.symmetric(horizontal: 20.w, vertical: 25.h),
+                  padding: EdgeInsets.symmetric(horizontal: 20.w, vertical: 20.h),
                   child: Row(
                     children: [
                       Expanded(

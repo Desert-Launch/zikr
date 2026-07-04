@@ -57,18 +57,22 @@ class WAzkarCategoryCard extends StatelessWidget {
                 child: Row(
                   children: [
                     Icon(Icons.chevron_left_rounded, color: Colors.white.withValues(alpha: 0.72), size: 18.r),
-                    const Spacer(),
-                    Column(
-                      mainAxisSize: MainAxisSize.min,
-                      crossAxisAlignment: CrossAxisAlignment.end,
-                      children: [
-                        Text(title, maxLines: 1, overflow: TextOverflow.ellipsis, style: AppTextStyles.white16W500),
-                        SizedBox(height: 2.h),
-                        Text(
-                          count >= 0 ? '$count ${'azkar_items_suffix'.tr()}' : 'azkar_browse'.tr(),
-                          style: AppTextStyles.white12W400,
-                        ),
-                      ],
+                    SizedBox(width: 4.w),
+                    Expanded(
+                      child: Column(
+                        mainAxisSize: MainAxisSize.min,
+                        crossAxisAlignment: CrossAxisAlignment.end,
+                        children: [
+                          Text(title, maxLines: 2, overflow: TextOverflow.ellipsis, style: AppTextStyles.white14W500),
+                          SizedBox(height: 2.h),
+                          Text(
+                            count >= 0 ? '$count ${'azkar_items_suffix'.tr()}' : 'azkar_browse'.tr(),
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                            style: AppTextStyles.white12W400,
+                          ),
+                        ],
+                      ),
                     ),
                   ],
                 ),

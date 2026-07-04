@@ -23,7 +23,7 @@ class WAzkarListTitle extends StatelessWidget {
         const Spacer(),
         Text(
           title,
-          style: TextStyle(fontSize: 15.sp, color: Colors.grey[700]),
+          style: TextStyle(fontSize: 10.sp, color: Colors.grey[700]),
         ),
       ],
     );
