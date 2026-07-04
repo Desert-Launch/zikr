@@ -12,7 +12,6 @@
   "common_resume": "Resume",
   "common_search": "Search",
   "common_all": "All",
-
   "surah_list_title": "Surahs",
   "surah_list_continue": "Continue reading",
   "surah_list_filter_makki": "Meccan",
@@ -29,7 +28,6 @@
   "quran_surah_total": "114 Surahs",
   "quran_surah_label": "Surah",
   "quran_ayah_label": "Ayah",
-
   "reader_play": "Play",
   "reader_pause": "Pause",
   "reader_repeat": "Repeat",
@@ -49,19 +47,16 @@
   "tafsir_delete_confirm": "Remove \"{{book}}\" from your device?",
   "tafsir_linked_note": "This commentary covers a group of ayat (from {{ayah}}).",
   "reader_settings": "Settings",
-
   "reciter_picker_title": "Choose reciter",
   "reciter_picker_preview": "Preview",
   "reciter_picker_set_default": "Set as default",
   "reciter_picker_downloaded": "Downloaded",
-
   "downloads_title": "Downloads",
   "downloads_available": "Available",
   "downloads_downloaded": "Downloaded",
   "downloads_by_surah": "By surah",
   "downloads_by_juz": "By juz",
   "downloads_low_storage": "Low storage",
-
   "quran_settings_title": "Quran settings",
   "quran_settings_audio_downloads": "Audio downloads",
   "quran_settings_audio_downloads_hint": "Manage offline reciter audio",
@@ -85,7 +80,6 @@
   "quran_tajweed_ikhfa": "Ikhfa / Idgham",
   "quran_tajweed_iqlab": "Iqlab",
   "quran_tajweed_silent": "Silent letters",
-
   "quran_downloads_title": "Reciter downloads",
   "quran_downloads_downloaded_label": "Downloaded",
   "quran_downloads_download_all": "Download all surahs",
@@ -99,17 +93,14 @@
   "quran_downloads_mb": "MB",
   "quran_download_notification_title": "Downloading recitation",
   "quran_audio_offline_error": "Could not download the ayah — please check your internet connection",
-
   "reciter_style_murattal": "Murattal",
   "reciter_style_mujawwad": "Mujawwad",
-
   "bookmarks_title": "Bookmarks",
   "bookmarks_subtitle": "Your saved verses",
   "bookmarks_empty": "No bookmarks yet",
   "bookmarks_add_note": "Add a note",
   "bookmarks_color_title": "Choose a colour",
   "bookmark_saved": "Bookmark saved",
-
   "search_title": "Search the Quran",
   "search_hint": "Search for a verse or word...",
   "search_no_results": "No results found",
@@ -117,7 +108,6 @@
   "search_min_chars": "Type at least 2 characters",
   "search_page": "Page {{page}}",
   "search_ayah": "Ayah {{ayah}}",
-
   "player_now_playing": "Now playing",
   "player_surah_label": "Surah",
   "player_ayah_label": "Ayah",
@@ -151,7 +141,6 @@
   "player_auto_advance": "Continue to next surah",
   "audio_offline_warning": "Airplane mode — only downloaded ayat will play",
   "audio_fallback_used": "Switched to backup audio source",
-
   "auth_login": "Log in",
   "auth_login_title": "Welcome back",
   "auth_login_subtitle": "Sign in to keep reading",
@@ -191,7 +180,6 @@
   "auth_demo_creds": "Demo credentials",
   "auth_birth_date": "Date of birth",
   "auth_resend_code": "Resend code?",
-
   "onboarding_skip": "Skip",
   "onboarding_next": "Next",
   "onboarding_get_started": "Start now",
@@ -215,14 +203,13 @@
   "onboarding_location_feat3_title": "Protected privacy",
   "onboarding_location_feat3_body": "Your data is safe and protected",
   "onboarding_location_note": "You can change this later from Settings.",
-
   "home_greeting_morning": "Good morning",
   "home_greeting_afternoon": "Good afternoon",
   "home_greeting_evening": "Good evening",
   "home_continue_reading": "Continue reading",
   "home_continue_reading_hint": "Open the Mushaf where you left off",
   "home_shortcuts": "Shortcuts",
-  "home_page_title": "Holy Quran",
+  "home_page_title": "Zikr",
   "home_verse_label": "Verse of the day",
   "home_verse": "My Lord, increase me in knowledge",
   "home_verse_source": "Surah Taha, verse 114",
@@ -294,7 +281,6 @@
   "shortcut_khatma": "Khatma",
   "shortcut_mosques": "Mosques",
   "shortcut_reminders": "Reminders",
-
   "settings_title": "Settings",
   "settings_subtitle": "Customize your experience",
   "settings_general": "General settings",
@@ -332,7 +318,6 @@
   "settings_theme_light_hint": "Daytime appearance",
   "settings_theme_dark": "Dark",
   "settings_theme_dark_hint": "Night appearance",
-
   "prayer_title": "Prayer times",
   "prayer_header_subtitle": "Accurate times based on your location",
   "prayer_location_unknown": "Tap to set your location",
@@ -353,7 +338,6 @@
   "prayer_all_done_today": "All today's prayers done — barakallahu feek",
   "prayer_permission_title": "Location required",
   "prayer_permission_body": "We need your location to compute prayer times. Enable location in system settings and try again.",
-
   "adhan_picker_title": "Choose adhan",
   "adhan_regular_section": "Default adhan",
   "adhan_fajr_section": "Fajr adhan",
@@ -420,7 +404,6 @@
   "adhan_before_alert": "Alert before adhan",
   "adhan_sound_section": "Prayer alert sound",
   "adhan_off": "Off",
-
   "azkar_title": "Azkar",
   "azkar_header_title": "Duas and Azkar",
   "azkar_header_subtitle": "Your daily Muslim fortress",
@@ -439,7 +422,6 @@
   "azkar_virtue": "Virtue",
   "azkar_other_title": "More Azkar",
   "azkar_browse": "Browse",
-
   "tasbih_title": "Tasbih",
   "tasbih_digital_title": "Digital Tasbih",
   "tasbih_digital_subtitle": "Remember Allah at every moment",
@@ -479,7 +461,6 @@
   "tasbih_hourly_enable": "Enable hourly reminders",
   "tasbih_hourly_hint": "Silent reminders 08:00 – 22:00",
   "tasbih_hourly_explainer": "A different zekr each hour. The notification is silent and doesn't vibrate so it doesn't interrupt your day.",
-
   "reminders_title": "Reminders",
   "reminders_add": "Add",
   "reminders_edit": "Edit",
@@ -518,7 +499,6 @@
   "reminders_permission_denied": "Notifications are off. Enable them in Settings to receive reminders.",
   "reminders_permission_title": "Notifications are off",
   "reminders_open_settings": "Open Settings",
-
   "qibla_title": "Qibla",
   "qibla_heading_label": "Your heading",
   "qibla_bearing_label": "Qibla bearing: {{deg}}° from North",
@@ -543,7 +523,6 @@
   "qibla_dir_sw": "Southwest",
   "qibla_dir_w": "West",
   "qibla_dir_nw": "Northwest",
-
   "khatma_title": "Khatma",
   "khatma_history": "History",
   "khatma_history_empty": "No completed khatmas yet. Start your first plan!",
@@ -599,7 +578,6 @@
   "khatma_from": "From",
   "khatma_to": "To",
   "khatma_ayah": "Ayah",
-
   "legal_privacy": "Privacy policy",
   "legal_terms": "Terms of use",
   "legal_about": "About"
