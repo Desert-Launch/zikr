@@ -78,12 +78,12 @@ class _SNSettingsState extends State<SNSettings> {
                   WSettingsSectionLabel('settings_about_app'.tr()),
                   WSettingsGroup(
                     children: [
-                      WSettingsRow(
-                        icon: Icons.info_outline_rounded,
-                        title: 'legal_about'.tr(),
-                        subtitle: 'settings_about_hint'.tr(),
-                        onTap: () => Modular.to.pushNamed(LegalRoutes.fullAbout()),
-                      ),
+                      // WSettingsRow(
+                      //   icon: Icons.info_outline_rounded,
+                      //   title: 'legal_about'.tr(),
+                      //   subtitle: 'settings_about_hint'.tr(),
+                      //   onTap: () => Modular.to.pushNamed(LegalRoutes.fullAbout()),
+                      // ),
                       WSettingsRow(
                         icon: Icons.info_outline_rounded,
                         title: 'settings_version'.tr(),
