@@ -53,7 +53,7 @@ class _SNLanguageSelectionState extends State<SNLanguageSelection> {
                           ),
                         ),
                         const Spacer(),
-                        WOnboardingContinueButton(onTap: () => Modular.to.pushNamed(OnboardingRoutes.fullLocation())),
+                        WOnboardingContinueButton(onTap: () => Modular.to.pushNamed(OnboardingRoutes.fullPager())),
                         SizedBox(height: 24.h),
                       ],
                     ),

@@ -54,7 +54,7 @@ class _SNOnboardingPagerState extends State<SNOnboardingPager> {
     if (_pageController.page!.round() < _slides.length - 1) {
       _pageController.nextPage(duration: const Duration(milliseconds: 280), curve: Curves.easeOut);
     } else {
-      Modular.to.pushNamed(OnboardingRoutes.fullLanguage());
+      Modular.to.pushNamed(OnboardingRoutes.fullLocation());
     }
   }
 
@@ -62,7 +62,7 @@ class _SNOnboardingPagerState extends State<SNOnboardingPager> {
     _pageController.previousPage(duration: const Duration(milliseconds: 280), curve: Curves.easeOut);
   }
 
-  void _skip() => Modular.to.pushNamed(OnboardingRoutes.fullLanguage());
+  void _skip() => Modular.to.pushNamed(OnboardingRoutes.fullLocation());
 
   @override
   Widget build(BuildContext context) {

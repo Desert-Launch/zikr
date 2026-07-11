@@ -183,12 +183,12 @@ class LegalRoutes {
 class OnboardingRoutes {
   OnboardingRoutes._();
 
-  static const String pager = '/';
-  static const String language = '/language';
+  static const String language = '/';
+  static const String pager = '/pager';
   static const String location = '/location';
 
-  static String fullPager() => RoutesNames.onboardingBase;
-  static String fullLanguage() => '${RoutesNames.onboardingBase}language';
+  static String fullLanguage() => RoutesNames.onboardingBase;
+  static String fullPager() => '${RoutesNames.onboardingBase}pager';
   static String fullLocation() => '${RoutesNames.onboardingBase}location';
 }
 
