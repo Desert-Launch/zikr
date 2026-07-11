@@ -327,8 +327,17 @@ class AppModule extends Module {
   }
 }
 
-/// Simple modular observer for navigation logging.
+/// Modular navigator observer: logs navigation and guards against the
+/// empty-stack black screen.
+///
+/// A screen opened straight from a notification tap has nothing beneath it
+/// (the router used `navigate(...)`/`pushNamed(...)` with no Home underneath).
+/// Popping the last route empties the router's page stack, and the delegate
+/// then paints a blank (black) surface instead of a screen. Whenever a pop or
+/// removal leaves the stack empty, fall back to Home.
 class AppModularObserver extends NavigatorObserver {
+  bool _recoveryScheduled = false;
+
   @override
   void didPush(Route<dynamic> route, Route<dynamic>? previousRoute) {
     super.didPush(route, previousRoute);
@@ -343,5 +352,27 @@ class AppModularObserver extends NavigatorObserver {
     debugPrint(
       '[Nav] POP ${route.settings.name} → ${previousRoute?.settings.name}',
     );
+    _recoverIfStackEmpty();
+  }
+
+  @override
+  void didRemove(Route<dynamic> route, Route<dynamic>? previousRoute) {
+    super.didRemove(route, previousRoute);
+    _recoverIfStackEmpty();
+  }
+
+  /// After the frame settles, if the router stack has no routes left, navigate
+  /// to Home. Deferred to a post-frame callback so a stack REPLACEMENT (e.g.
+  /// `navigate`, which tears down the old routes before adding the new one) has
+  /// finished first — the history is only genuinely empty when nothing remains.
+  void _recoverIfStackEmpty() {
+    if (_recoveryScheduled) return;
+    _recoveryScheduled = true;
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _recoveryScheduled = false;
+      if (Modular.to.navigateHistory.isEmpty) {
+        Modular.to.navigate(RoutesNames.homeBase);
+      }
+    });
   }
 }
