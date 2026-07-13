@@ -1,5 +1,6 @@
 import 'package:dartz/dartz.dart';
 import 'package:quran/core/errors/failure.dart';
+import 'package:quran/modules/quran/domain/entities/e_ayah_audio_source.dart';
 import 'package:quran/modules/quran/domain/entities/e_download_progress.dart';
 import 'package:quran/modules/quran/domain/entities/e_surah_download_status.dart';
 
@@ -9,6 +10,16 @@ abstract class RAudioDownloads {
   /// Ensures a single ayah's audio file exists at the canonical path,
   /// downloading it on demand. Returns the local file path.
   Future<Either<Failure, String>> ensureAyahFile(
+    String reciterId,
+    int surah,
+    int ayah,
+  );
+
+  /// Resolves a *playable* source for a single ayah without blocking on a
+  /// download: the local file when it is already on disk, otherwise the remote
+  /// CDN URL to stream immediately. Used by the player so playback starts at
+  /// once and each ayah independently prefers local audio when available.
+  Future<Either<Failure, EAyahAudioSource>> resolveAyahSource(
     String reciterId,
     int surah,
     int ayah,

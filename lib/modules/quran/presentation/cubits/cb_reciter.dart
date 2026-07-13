@@ -1,5 +1,6 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:just_audio/just_audio.dart';
+import 'package:quran/core/services/media/audio_focus.dart';
 import 'package:quran/modules/quran/data/datasources/remote/ds_remote_audio.dart';
 import 'package:quran/modules/quran/domain/usecases/uc_get_reciters.dart';
 import 'package:quran/modules/quran/domain/usecases/uc_set_active_reciter.dart';
@@ -18,7 +19,9 @@ class CBReciter extends Cubit<SReciter> {
        _setActive = setActive,
        _remote = remote,
        _audioPlayer = audioPlayer,
-       super(const SReciter());
+       super(const SReciter()) {
+    AudioFocus.instance.register(this, stopPreview);
+  }
 
   final UCGetReciters _getReciters;
   final UCSetActiveReciter _setActive;
@@ -62,6 +65,9 @@ class CBReciter extends Cubit<SReciter> {
     final url = _remote.primaryUrl(folder: reciter.folder, surah: 1, ayah: 1);
     try {
       emit(state.copyWith(previewingId: reciterId));
+      // Free the shared just_audio_background slot from any other domain player
+      // (Qur'an audio/radio/adhan) before previewing.
+      await AudioFocus.instance.take(this);
       await _preview.stop();
       await _preview.setUrl(url);
       await _preview.play();
@@ -75,11 +81,13 @@ class CBReciter extends Cubit<SReciter> {
 
   Future<void> stopPreview() async {
     await _previewPlayer?.stop();
+    AudioFocus.instance.release(this);
     emit(state.copyWith(clearPreviewing: true));
   }
 
   @override
   Future<void> close() async {
+    AudioFocus.instance.unregister(this);
     await _previewPlayer?.dispose();
     return super.close();
   }

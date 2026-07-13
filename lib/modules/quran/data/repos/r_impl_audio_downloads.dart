@@ -10,6 +10,7 @@ import 'package:quran/modules/quran/data/datasources/remote/ds_audio_downloader.
 import 'package:quran/modules/quran/data/datasources/remote/ds_remote_audio.dart';
 import 'package:quran/modules/quran/data/models/m_reciter.dart';
 import 'package:quran/modules/quran/domain/entities/ayah_counts.dart';
+import 'package:quran/modules/quran/domain/entities/e_ayah_audio_source.dart';
 import 'package:quran/modules/quran/domain/entities/e_download_progress.dart';
 import 'package:quran/modules/quran/domain/entities/e_surah_download_status.dart';
 import 'package:quran/modules/quran/domain/repos/r_audio_downloads.dart';
@@ -106,6 +107,39 @@ class RImplAudioDownloads implements RAudioDownloads {
     } catch (e, st) {
       ErrorHelper.printDebugError(
         name: 'RImplAudioDownloads.ensureAyahFile',
+        error: e,
+        stackTrace: st,
+      );
+      return Left(Failure.unexpectedFailure(message: e.toString()));
+    }
+  }
+
+  @override
+  Future<Either<Failure, EAyahAudioSource>> resolveAyahSource(
+    String reciterId,
+    int surah,
+    int ayah,
+  ) async {
+    try {
+      final path = await _files.pathFor(reciterId, surah, ayah);
+      if (await File(path).exists()) {
+        return Right(EAyahAudioSource(uri: path, isLocal: true));
+      }
+      final reciter = await _lookupReciter(reciterId);
+      if (reciter == null) {
+        return Left(
+          Failure.notFoundFailure(message: 'Reciter $reciterId not found'),
+        );
+      }
+      final url = _remote.primaryUrl(
+        folder: reciter.folder,
+        surah: surah,
+        ayah: ayah,
+      );
+      return Right(EAyahAudioSource(uri: url, isLocal: false));
+    } catch (e, st) {
+      ErrorHelper.printDebugError(
+        name: 'RImplAudioDownloads.resolveAyahSource',
         error: e,
         stackTrace: st,
       );

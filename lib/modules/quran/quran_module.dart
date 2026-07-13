@@ -68,6 +68,7 @@ import 'package:quran/modules/quran/domain/usecases/uc_get_tajweed_tokens.dart';
 import 'package:quran/modules/quran/domain/usecases/uc_play_ayah.dart';
 import 'package:quran/modules/quran/domain/usecases/uc_play_range.dart';
 import 'package:quran/modules/quran/domain/usecases/uc_resolve_audio_url.dart';
+import 'package:quran/modules/quran/domain/usecases/uc_resolve_ayah_source.dart';
 import 'package:quran/modules/quran/domain/usecases/uc_save_bookmark.dart';
 import 'package:quran/modules/quran/domain/usecases/uc_save_last_read.dart';
 import 'package:quran/modules/quran/domain/usecases/uc_save_playback_prefs.dart';
@@ -159,6 +160,7 @@ class QuranModule extends Module {
     i.add<UCPlayAyah>(UCPlayAyah.new);
     i.add<UCPlayRange>(UCPlayRange.new);
     i.add<UCEnsureAyahDownloaded>(() => UCEnsureAyahDownloaded(i.get<RAudioDownloads>()));
+    i.add<UCResolveAyahSource>(() => UCResolveAyahSource(i.get<RAudioDownloads>()));
     i.add<UCDownloadSurah>(() => UCDownloadSurah(i.get<RAudioDownloads>()));
     i.add<UCDownloadAllSurahs>(() => UCDownloadAllSurahs(i.get<RAudioDownloads>()));
     i.add<UCGetSurahStatus>(() => UCGetSurahStatus(i.get<RAudioDownloads>()));
@@ -191,6 +193,7 @@ class QuranModule extends Module {
         quran: i.get<RQuran>(),
         reciters: i.get<UCGetReciters>(),
         ensure: i.get<UCEnsureAyahDownloaded>(),
+        resolve: i.get<UCResolveAyahSource>(),
         getPrefs: i.get<UCGetPlaybackPrefs>(),
         savePrefs: i.get<UCSavePlaybackPrefs>(),
       ),

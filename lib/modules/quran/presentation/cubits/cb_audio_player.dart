@@ -6,8 +6,10 @@ import 'package:just_audio/just_audio.dart';
 import 'package:just_audio_background/just_audio_background.dart';
 import 'package:localize_and_translate/localize_and_translate.dart';
 import 'package:quran/core/services/logging/app_logger.dart';
+import 'package:quran/core/services/media/audio_focus.dart';
 import 'package:quran/core/services/media/media_artwork.dart';
 import 'package:quran/modules/quran/data/models/m_surah.dart';
+import 'package:quran/modules/quran/domain/entities/e_ayah_audio_source.dart';
 import 'package:quran/modules/quran/domain/entities/e_playback_options.dart';
 import 'package:quran/modules/quran/domain/entities/e_sleep_timer.dart';
 import 'package:quran/modules/quran/domain/entities/param_ayah_ref.dart';
@@ -15,32 +17,37 @@ import 'package:quran/modules/quran/domain/repos/r_quran.dart';
 import 'package:quran/modules/quran/domain/usecases/uc_ensure_ayah_downloaded.dart';
 import 'package:quran/modules/quran/domain/usecases/uc_get_playback_prefs.dart';
 import 'package:quran/modules/quran/domain/usecases/uc_get_reciters.dart';
+import 'package:quran/modules/quran/domain/usecases/uc_resolve_ayah_source.dart';
 import 'package:quran/modules/quran/domain/usecases/uc_save_playback_prefs.dart';
 import 'package:quran/modules/quran/presentation/cubits/s_audio_player.dart';
 
 /// App-wide audio player. Singleton (registered via Modular.addSingleton).
 ///
-/// Playback is strictly offline and plays **one ayah at a time**: each ayah is
-/// ensured on disk, set as a single local source, and played; on completion we
-/// advance to the next ayah in [SAudioPlayer.queue] (prefetching its file ahead
-/// of time so the gap stays small). We deliberately avoid a growing
-/// `ConcatenatingAudioSource` — appending to one while it plays under
-/// just_audio_background makes the auto-advanced item silent until a manual
-/// pause/resume re-issues `play()`.
+/// Plays **one ayah at a time**, offline-first: each ayah resolves to a local
+/// file when it is already on disk, otherwise it streams directly from the CDN
+/// so playback starts immediately without waiting for a download. On completion
+/// we advance to the next ayah in [SAudioPlayer.queue] — re-resolving it the
+/// same way — and prefetch its file in the background so a later replay is
+/// local. We deliberately avoid a growing `ConcatenatingAudioSource` — appending
+/// to one while it plays under just_audio_background makes the auto-advanced
+/// item silent until a manual pause/resume re-issues `play()`.
 class CBAudioPlayer extends Cubit<SAudioPlayer> {
   CBAudioPlayer({
     required RQuran quran,
     required UCGetReciters reciters,
     required UCEnsureAyahDownloaded ensure,
+    required UCResolveAyahSource resolve,
     required UCGetPlaybackPrefs getPrefs,
     required UCSavePlaybackPrefs savePrefs,
   }) : _quran = quran,
        _reciters = reciters,
        _ensure = ensure,
+       _resolve = resolve,
        _getPrefs = getPrefs,
        _savePrefs = savePrefs,
        _player = AudioPlayer(),
        super(const SAudioPlayer()) {
+    AudioFocus.instance.register(this, stop);
     _hydrate();
     _hydratePrefs();
     _wireStreams();
@@ -49,6 +56,7 @@ class CBAudioPlayer extends Cubit<SAudioPlayer> {
   final RQuran _quran;
   final UCGetReciters _reciters;
   final UCEnsureAyahDownloaded _ensure;
+  final UCResolveAyahSource _resolve;
   final UCGetPlaybackPrefs _getPrefs;
   final UCSavePlaybackPrefs _savePrefs;
   final AudioPlayer _player;
@@ -74,6 +82,9 @@ class CBAudioPlayer extends Cubit<SAudioPlayer> {
   /// When set, playback stops at the next ayah/surah boundary (checked in
   /// [_onTrackCompleted]). Null when no boundary sleep mode is armed.
   ESleepTimer? _stopAtBoundary;
+
+  /// Last seen processing state, to log only on transitions.
+  ProcessingState? _lastProcessingState;
 
   StreamSubscription<PlayerState>? _stateSub;
   StreamSubscription<Duration>? _posSub;
@@ -104,6 +115,15 @@ class CBAudioPlayer extends Cubit<SAudioPlayer> {
 
   void _wireStreams() {
     _stateSub = _player.playerStateStream.listen((ps) {
+      // Trace processing-state transitions to diagnose auto-advance issues.
+      if (ps.processingState != _lastProcessingState) {
+        _lastProcessingState = ps.processingState;
+        AppLogger.info(
+          'state=${ps.processingState.name} playing=${ps.playing} '
+          'idx=${state.queueIndex} queue=${state.queue.length}',
+          tag: 'CBAudioPlayer',
+        );
+      }
       // End of the current ayah → advance manually (or finish the queue).
       if (ps.processingState == ProcessingState.completed) {
         _onTrackCompleted();
@@ -210,10 +230,15 @@ class CBAudioPlayer extends Cubit<SAudioPlayer> {
     emit(state.copyWith(reciterId: reciterId));
   }
 
-  /// Builds a local-file audio source (with media-notification metadata) for an
-  /// already-downloaded ayah. `Uri.file` (not `Uri.parse`) is required for
-  /// local files to play on Android.
-  AudioSource _localSource(MSurah? surah, ParamAyahRef ref, String path) {
+  /// Builds an audio source (with media-notification metadata) for an ayah.
+  /// [isLocal] selects `Uri.file` for a downloaded file (required for local
+  /// playback on Android) versus `Uri.parse` for a streamed CDN URL.
+  AudioSource _ayahSource(
+    MSurah? surah,
+    ParamAyahRef ref,
+    String uri, {
+    required bool isLocal,
+  }) {
     final tag = MediaItem(
       id: '${ref.surah}_${ref.ayah}',
       album:
@@ -222,7 +247,10 @@ class CBAudioPlayer extends Cubit<SAudioPlayer> {
       artist: _activeReciterName ?? '',
       artUri: MediaArtwork.uri,
     );
-    return AudioSource.uri(Uri.file(path), tag: tag);
+    return AudioSource.uri(
+      isLocal ? Uri.file(uri) : Uri.parse(uri),
+      tag: tag,
+    );
   }
 
   Future<String> _resolveReciterId() async {
@@ -270,16 +298,18 @@ class CBAudioPlayer extends Cubit<SAudioPlayer> {
       ),
     );
 
-    final res = await _ensure(ref, reciterId);
+    // Resolve a playable source without blocking on a download: the local file
+    // when the ayah is on disk, otherwise the CDN URL to stream immediately.
+    final res = await _resolve(ref, reciterId);
     if (token != _playToken) return;
-    final path = res.fold<String?>((failure) {
+    final source = res.fold<EAyahAudioSource?>((failure) {
       AppLogger.warning(
-        'Ensure ayah ${ref.key} failed: ${failure.message}',
+        'Resolve ayah ${ref.key} failed: ${failure.message}',
         tag: 'CBAudioPlayer',
       );
       return null;
-    }, (p) => p);
-    if (path == null) {
+    }, (s) => s);
+    if (source == null) {
       emit(
         state.copyWith(
           status: PlayerStatus.error,
@@ -290,7 +320,18 @@ class CBAudioPlayer extends Cubit<SAudioPlayer> {
     }
 
     try {
-      await _player.setAudioSource(_localSource(_activeSurah, ref, path));
+      // Free the shared just_audio_background slot from any other domain player
+      // (radio/adhan/preview) before claiming it for this ayah.
+      await AudioFocus.instance.take(this);
+      if (token != _playToken) return;
+      await _player.setAudioSource(
+        _ayahSource(
+          _activeSurah,
+          ref,
+          source.uri,
+          isLocal: source.isLocal,
+        ),
+      );
       if (token != _playToken) return;
       await _player.setSpeed(state.options.speed);
       // All looping is handled manually in _onUnitCompleted so every track
@@ -298,6 +339,11 @@ class CBAudioPlayer extends Cubit<SAudioPlayer> {
       // finite repeat counts.
       await _player.setLoopMode(LoopMode.off);
       await _player.play();
+      AppLogger.info(
+        'playing ayah ${ref.key} idx=$index '
+        '${source.isLocal ? "local" : "stream"}',
+        tag: 'CBAudioPlayer',
+      );
     } catch (e, st) {
       if (token != _playToken) return;
       AppLogger.error(
@@ -328,6 +374,11 @@ class CBAudioPlayer extends Cubit<SAudioPlayer> {
   /// unit, advances to the next unit, or finishes — per the active repeat mode.
   void _onTrackCompleted() {
     final idx = state.queueIndex;
+    AppLogger.info(
+      'onTrackCompleted idx=$idx queue=${state.queue.length} '
+      'repeat=${state.options.repeatMode.name}',
+      tag: 'CBAudioPlayer',
+    );
     if (idx == null) {
       emit(state.copyWith(status: PlayerStatus.completed));
       return;
@@ -579,6 +630,7 @@ class CBAudioPlayer extends Cubit<SAudioPlayer> {
     _sleepTimer = null;
     _stopAtBoundary = null;
     await _player.stop();
+    AudioFocus.instance.release(this);
     emit(
       state.copyWith(
         status: PlayerStatus.idle,
@@ -721,6 +773,7 @@ class CBAudioPlayer extends Cubit<SAudioPlayer> {
     await _noisySub?.cancel();
     await _interruptSub?.cancel();
     _sleepTimer?.cancel();
+    AudioFocus.instance.unregister(this);
     await _player.dispose();
     return super.close();
   }

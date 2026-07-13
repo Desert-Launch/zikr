@@ -5,6 +5,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:just_audio/just_audio.dart';
 import 'package:just_audio_background/just_audio_background.dart';
 import 'package:quran/core/services/logging/app_logger.dart';
+import 'package:quran/core/services/media/audio_focus.dart';
 import 'package:quran/core/services/media/media_artwork.dart';
 import 'package:quran/modules/radio/data/models/m_radio_station.dart';
 import 'package:quran/modules/radio/presentation/cubits/s_radio_player.dart';
@@ -19,6 +20,7 @@ class CBRadioPlayer extends Cubit<SRadioPlayer> {
   CBRadioPlayer()
       : _player = AudioPlayer(),
         super(const SRadioPlayer()) {
+    AudioFocus.instance.register(this, stop);
     _wireStreams();
   }
 
@@ -113,6 +115,9 @@ class CBRadioPlayer extends Cubit<SRadioPlayer> {
       clearError: true,
     ));
     try {
+      // Free the shared just_audio_background slot from any other domain player
+      // (Qur'an audio/adhan/preview) before claiming it for this station.
+      await AudioFocus.instance.take(this);
       await _player.setAudioSource(
         AudioSource.uri(
           Uri.parse(station.url),
@@ -142,6 +147,7 @@ class CBRadioPlayer extends Cubit<SRadioPlayer> {
 
   Future<void> stop() async {
     await _player.stop();
+    AudioFocus.instance.release(this);
     emit(state.copyWith(status: RadioPlayerStatus.idle, clearCurrent: true));
   }
 
@@ -150,6 +156,7 @@ class CBRadioPlayer extends Cubit<SRadioPlayer> {
     await _stateSub?.cancel();
     await _errSub?.cancel();
     await _interruptSub?.cancel();
+    AudioFocus.instance.unregister(this);
     await _player.dispose();
     return super.close();
   }
