@@ -85,10 +85,21 @@ class DSLocalAzkar {
   }
 
   Future<MAzkarItem?> item(String itemId) async {
+    final located = await locate(itemId);
+    return located?.item;
+  }
+
+  /// Resolves a zekr together with its owning category and its position within
+  /// that category, so a favorite can reopen the counter screen at the right
+  /// zekr. Returns `null` if the id no longer exists in the bundled data.
+  Future<({MAzkarItem item, MAzkarCategory category, int index})?> locate(
+    String itemId,
+  ) async {
     final all = [...await allCategories(), ...await otherCategories()];
     for (final cat in all) {
-      for (final it in cat.items) {
-        if (it.id == itemId) return it;
+      final index = cat.items.indexWhere((it) => it.id == itemId);
+      if (index >= 0) {
+        return (item: cat.items[index], category: cat, index: index);
       }
     }
     return null;

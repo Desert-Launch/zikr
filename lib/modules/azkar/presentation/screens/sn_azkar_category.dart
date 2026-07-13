@@ -76,7 +76,13 @@ class _SNAzkarCategoryState extends State<SNAzkarCategory> {
                       favorite: _favorites.isFavorite(item.id),
                       gold: _gold,
                       onFavorite: () async {
-                        await _favorites.toggle(item.id);
+                        await _favorites.toggle(
+                          item.id,
+                          categoryId: category.id,
+                          categoryNameAr: category.nameAr,
+                          categoryNameEn: category.nameEn,
+                          itemIndex: itemIndex,
+                        );
                         if (mounted) setState(() {});
                       },
                       onTap: () async {

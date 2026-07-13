@@ -2,11 +2,11 @@ import 'package:flutter/material.dart';
 import 'package:flutter_modular/flutter_modular.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:localize_and_translate/localize_and_translate.dart';
+import 'package:quran/core/services/routes/routes_names.dart';
 import 'package:quran/core/theme/brand_colors.dart';
 import 'package:quran/core/widgets/w_gradient_app_bar.dart';
 import 'package:quran/core/widgets/w_shared_scaffold.dart';
 import 'package:quran/modules/azkar/data/datasources/local/ds_local_azkar.dart';
-import 'package:quran/modules/azkar/data/models/m_azkar_item.dart';
 import 'package:quran/modules/azkar/data/sources/local/box_azkar_favorite.dart';
 import 'package:quran/modules/azkar/presentation/widgets/w_azkar_favorite_tile.dart';
 
@@ -43,22 +43,17 @@ class SNAzkarFavorites extends StatelessWidget {
                     ),
                   );
                 }
-                return FutureBuilder<List<MAzkarCategory>>(
-                  future: ds.allCategories(),
-                  builder: (_, snap) {
-                    if (!snap.hasData) {
-                      return const Center(child: CircularProgressIndicator());
-                    }
-                    return ListView.builder(
-                      padding: EdgeInsets.all(12.w),
-                      itemCount: favorites.length,
-                      itemBuilder: (_, i) => WAzkarFavoriteTile(
-                        fav: favorites[i],
-                        ds: ds,
-                        onRemove: () => box.toggle(favorites[i].itemId),
-                      ),
-                    );
-                  },
+                return ListView.builder(
+                  padding: EdgeInsets.all(12.w),
+                  itemCount: favorites.length,
+                  itemBuilder: (_, i) => WAzkarFavoriteTile(
+                    fav: favorites[i],
+                    ds: ds,
+                    onRemove: () => box.toggle(favorites[i].itemId),
+                    onOpen: (categoryId, itemIndex) => Modular.to.pushNamed(
+                      AzkarRoutes.fullPlayer(categoryId, item: itemIndex),
+                    ),
+                  ),
                 );
               },
             ),
