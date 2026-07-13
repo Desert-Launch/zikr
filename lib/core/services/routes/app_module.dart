@@ -5,6 +5,9 @@ import 'package:quran/core/data/sources/local/box_app_settings.dart';
 import 'package:quran/core/services/mock_backend/mock_database.dart';
 import 'package:quran/core/services/mock_backend/mock_interceptor.dart';
 import 'package:quran/core/services/network/base_dio.dart';
+import 'package:quran/core/services/notifications/init/init_notifications_service.dart';
+import 'package:quran/core/services/notifications/notification_box/box_notifications.dart';
+import 'package:quran/core/services/notifications/notification_box/ds_notification.dart';
 import 'package:quran/core/services/notifications/notification_router.dart';
 import 'package:quran/core/services/notifications/notifications_service.dart';
 import 'package:quran/core/services/routes/routes_names.dart';
@@ -116,7 +119,10 @@ class AppModule extends Module {
 
     // Hourly tasbih scheduler — depends on the notifications service below.
     i.addSingleton<DSHourlyTasbih>(
-      () => DSHourlyTasbih(i.get<NotificationsService>()),
+      () => DSHourlyTasbih(
+        i.get<NotificationsService>(),
+        i.get<BoxTasbihCounter>(),
+      ),
     );
     // Salawat reminder scheduler.
     i.addSingleton<DSSalawatReminder>(
@@ -131,6 +137,19 @@ class AppModule extends Module {
     i.addSingleton<NotificationRouter>(NotificationRouter.new);
     i.addSingleton<NotificationsService>(
       () => NotificationsService(i.get<NotificationRouter>()),
+    );
+    // Persisted store of scheduled notifications + the JSON-driven init feed
+    // (azkar + quran reminders).
+    i.addSingleton<BoxNotifications>(BoxNotifications.new);
+    i.addSingleton<DSNotification>(
+      () => DSNotification(i.get<BoxNotifications>()),
+    );
+    i.addSingleton<InitNotificationsService>(
+      () => InitNotificationsService(
+        i.get<NotificationsService>(),
+        i.get<DSNotification>(),
+        i.get<BoxAppSettings>(),
+      ),
     );
     i.addSingleton<DSLocation>(DSLocation.new);
 
@@ -198,6 +217,8 @@ class AppModule extends Module {
         local: i.get<DSLocalAdhan>(),
         lastLocation: i.get<DSLastLocation>(),
         audioAlarms: i.get<AdhanAudioAlarms>(),
+        initNotifications: i.get<InitNotificationsService>(),
+        hourlyZekr: i.get<DSHourlyTasbih>(),
       ),
     );
     i.addSingleton<AdhanBootstrap>(

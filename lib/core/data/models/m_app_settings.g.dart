@@ -20,19 +20,23 @@ class MAppSettingsAdapter extends TypeAdapter<MAppSettings> {
       hasSeenOnboarding: fields[0] == null ? false : fields[0] as bool,
       lastLanguageCode: fields[1] as String?,
       hasGrantedLocation: fields[2] == null ? false : fields[2] as bool,
+      initNotificationsScheduled:
+          fields[3] == null ? false : fields[3] as bool,
     );
   }
 
   @override
   void write(BinaryWriter writer, MAppSettings obj) {
     writer
-      ..writeByte(3)
+      ..writeByte(4)
       ..writeByte(0)
       ..write(obj.hasSeenOnboarding)
       ..writeByte(1)
       ..write(obj.lastLanguageCode)
       ..writeByte(2)
-      ..write(obj.hasGrantedLocation);
+      ..write(obj.hasGrantedLocation)
+      ..writeByte(3)
+      ..write(obj.initNotificationsScheduled);
   }
 
   @override

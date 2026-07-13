@@ -4,7 +4,13 @@ import 'package:android_alarm_manager_plus/android_alarm_manager_plus.dart';
 import 'package:flutter/widgets.dart';
 import 'package:hive_ce_flutter/hive_flutter.dart';
 import 'package:localize_and_translate/localize_and_translate.dart';
+import 'package:quran/core/data/models/m_app_settings.dart';
+import 'package:quran/core/data/sources/local/box_app_settings.dart';
 import 'package:quran/core/services/logging/app_logger.dart';
+import 'package:quran/core/services/notifications/init/init_notifications_service.dart';
+import 'package:quran/core/services/notifications/notification_box/box_notifications.dart';
+import 'package:quran/core/services/notifications/notification_box/ds_notification.dart';
+import 'package:quran/core/services/notifications/notification_box/m_notification.dart';
 import 'package:quran/core/services/notifications/notification_router.dart';
 import 'package:quran/core/services/notifications/notifications_service.dart';
 import 'package:quran/modules/adhan/data/datasources/local/ds_local_adhan.dart';
@@ -23,6 +29,9 @@ import 'package:quran/modules/prayer/data/repos/r_impl_prayer.dart';
 import 'package:quran/modules/prayer/data/sources/local/box_prayer_settings.dart';
 import 'package:quran/modules/prayer/domain/usecases/uc_get_prayer_times.dart';
 import 'package:quran/modules/quran/data/sources/local/quran_hive_registrar.dart';
+import 'package:quran/modules/tasbih/data/datasources/local/ds_hourly_tasbih.dart';
+import 'package:quran/modules/tasbih/data/models/m_tasbih_counter.dart';
+import 'package:quran/modules/tasbih/data/sources/local/box_tasbih_counter.dart';
 import 'package:workmanager/workmanager.dart';
 
 /// Weekly background refresh of the adhan schedule (Android only).
@@ -161,6 +170,14 @@ Future<void> runAdhanBackgroundReschedule() async {
       local: DSLocalAdhan(),
       lastLocation: DSLastLocation(),
       audioAlarms: AdhanAudioAlarms(),
+      // Companion feeds aren't touched here (armAudioAlarms=false gates the
+      // reconciliation), but the constructor still needs them wired.
+      initNotifications: InitNotificationsService(
+        notifications,
+        DSNotification(BoxNotifications()),
+        BoxAppSettings(),
+      ),
+      hourlyZekr: DSHourlyTasbih(notifications, BoxTasbihCounter()),
     );
     // Background isolates can't reach the MainActivity method channel, so the
     // native alarms stay as the UI isolate / boot receiver last armed them;
@@ -187,4 +204,9 @@ Future<void> _openBoxes() async {
   await open<MAdhanPreference>('adhan_preference');
   await open<String>('prayer_timings_cache');
   await open<String>('last_location');
+  // Companion-notification boxes — the reconciliation is gated off in this
+  // isolate, but open them so the wired dependencies never touch a closed box.
+  await open<MAppSettings>('app_settings');
+  await open<MLocalNotification>('scheduled_notifications');
+  await open<MTasbihCounter>('tasbih_counter');
 }

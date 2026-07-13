@@ -13,6 +13,8 @@ import 'package:quran/core/data/sources/local/box_app_settings.dart';
 import 'package:quran/core/extension/build_context.dart';
 import 'package:quran/core/services/logging/app_logger.dart';
 import 'package:quran/core/services/media/media_artwork.dart';
+import 'package:quran/core/services/notifications/init/init_notifications_service.dart';
+import 'package:quran/core/services/notifications/notification_box/m_notification.dart';
 import 'package:quran/core/services/notifications/notifications_service.dart';
 import 'package:quran/core/services/routes/app_module.dart';
 import 'package:quran/core/theme/app_themes.dart';
@@ -83,6 +85,7 @@ Future<void> main() async {
   await Hive.openBox<MTasbihCounter>('tasbih_counter');
   await Hive.openBox<MTasbihHistory>('tasbih_history');
   await Hive.openBox<MReminder>('reminders');
+  await Hive.openBox<MLocalNotification>('scheduled_notifications');
   await Hive.openBox<MKhatmaPlan>('khatma_plan');
   await Hive.openBox<MKhatmaDay>('khatma_days');
   await Hive.openBox<MKhatmaCompletion>('khatma_completions');
@@ -147,6 +150,10 @@ class _RootState extends State<_Root> with WidgetsBindingObserver {
     // run the one-time adhan bootstrap, and rebuild the rolling adhan window.
     Modular.get<NotificationsService>().init().then((_) async {
       await Modular.get<CBReminders>().rescheduleAll();
+      // Seed the JSON-driven azkar + quran reminders once per install (live
+      // re-timing to prayer times happens later inside the adhan reschedule).
+      await Modular.get<InitNotificationsService>()
+          .scheduleInitialNotificationsIfNeeded();
       await Modular.get<AdhanBootstrap>().run();
       // Returning users who finished onboarding on an older build (or declined)
       // may never have granted the notification permission — without it the

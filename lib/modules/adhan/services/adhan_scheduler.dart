@@ -3,6 +3,7 @@ import 'dart:io';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:localize_and_translate/localize_and_translate.dart';
 import 'package:quran/core/services/logging/app_logger.dart';
+import 'package:quran/core/services/notifications/init/init_notifications_service.dart';
 import 'package:quran/core/services/notifications/notification_channels.dart';
 import 'package:quran/core/services/notifications/notification_payload.dart';
 import 'package:quran/core/services/notifications/notifications_service.dart';
@@ -19,6 +20,7 @@ import 'package:quran/modules/prayer/domain/entities/e_prayer.dart';
 import 'package:quran/modules/prayer/domain/entities/param_prayer_times.dart';
 import 'package:quran/modules/prayer/domain/usecases/uc_get_prayer_times.dart';
 import 'package:quran/modules/prayer/utils/prayer_method_mapper.dart';
+import 'package:quran/modules/tasbih/data/datasources/local/ds_hourly_tasbih.dart';
 
 /// Orchestrates prayer-time → adhan-notification scheduling. [reschedule]
 /// builds the current week (Saturday–Friday) plus the next week as a buffer,
@@ -40,6 +42,8 @@ class AdhanScheduler {
     required DSLocalAdhan local,
     required DSLastLocation lastLocation,
     required AdhanAudioAlarms audioAlarms,
+    required InitNotificationsService initNotifications,
+    required DSHourlyTasbih hourlyZekr,
   }) : _notifications = notifications,
        _location = location,
        _getTimes = getTimes,
@@ -48,7 +52,9 @@ class AdhanScheduler {
        _adhanPrefs = adhanPrefs,
        _local = local,
        _lastLocation = lastLocation,
-       _audioAlarms = audioAlarms;
+       _audioAlarms = audioAlarms,
+       _initNotifications = initNotifications,
+       _hourlyZekr = hourlyZekr;
 
   final NotificationsService _notifications;
   final DSLocation _location;
@@ -59,6 +65,8 @@ class AdhanScheduler {
   final DSLocalAdhan _local;
   final DSLastLocation _lastLocation;
   final AdhanAudioAlarms _audioAlarms;
+  final InitNotificationsService _initNotifications;
+  final DSHourlyTasbih _hourlyZekr;
 
   static const int _preWindowDays = 4; // pre-reminders only for the near days
 
@@ -192,6 +200,10 @@ class AdhanScheduler {
       final totalDays = 14 - daysIntoWeek; // 8..14
       _remaining = Platform.isIOS ? _iosBudget : 1 << 30;
 
+      // Today's prayer times, captured for the companion-notification
+      // reconciliation (azkar re-timing + hourly-zekr conflict avoidance).
+      MPrayerTimings? todayTimings;
+
       for (var dayOffset = 0; dayOffset < totalDays; dayOffset++) {
         if (_remaining <= 0) break;
         final date = DateTime(now.year, now.month, now.day + dayOffset);
@@ -209,6 +221,7 @@ class AdhanScheduler {
 
         final timings = result.fold((_) => null, (t) => t);
         if (timings == null) continue; // skip this day, keep going
+        if (dayOffset == 0) todayTimings = timings;
 
         await _scheduleDay(
           date: date,
@@ -242,8 +255,47 @@ class AdhanScheduler {
         '(app total: ${pending.length})',
         tag: 'AdhanScheduler',
       );
+
+      // Re-time the azkar to today's prayer times and reschedule the hourly
+      // zekr around the now-known prayer/azkar slots. UI-isolate only — the
+      // weekly background isolate (armAudioAlarms=false) may not have the
+      // companion Hive boxes open, and the UI isolate redoes this on next open.
+      if (armAudioAlarms && todayTimings != null) {
+        await _reconcileCompanionNotifications(todayTimings);
+      }
     } finally {
       _running = false;
+    }
+  }
+
+  /// Keeps the azkar and hourly-zekr feeds in sync with live prayer times:
+  ///   1. morning azkar → Fajr+1h, evening azkar → Maghrib−15m;
+  ///   2. reschedule the hourly zekr so no slot fires within 10 minutes of a
+  ///      prayer or azkar/quran notification in the same hour.
+  /// Failures here never break the adhan schedule (best-effort companion work).
+  Future<void> _reconcileCompanionNotifications(MPrayerTimings timings) async {
+    try {
+      await _initNotifications.updateAzkarNotifications(
+        fajrTime: timings.fajr,
+        maghribTime: timings.maghrib,
+      );
+
+      final reserved = <DateTime>[
+        timings.fajr,
+        timings.dhuhr,
+        timings.asr,
+        timings.maghrib,
+        timings.isha,
+        ..._initNotifications.occupiedTimesToday(),
+      ];
+      await _hourlyZekr.rescheduleWithReservedTimes(reserved);
+    } catch (e, st) {
+      AppLogger.error(
+        'Companion notification reconciliation failed',
+        tag: 'AdhanScheduler',
+        error: e,
+        stackTrace: st,
+      );
     }
   }
 

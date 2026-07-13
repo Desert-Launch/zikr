@@ -12,6 +12,7 @@ class MAppSettings extends HiveObject {
     this.hasSeenOnboarding = false,
     this.lastLanguageCode,
     this.hasGrantedLocation = false,
+    this.initNotificationsScheduled = false,
   });
 
   @HiveField(0)
@@ -22,4 +23,10 @@ class MAppSettings extends HiveObject {
 
   @HiveField(2)
   bool hasGrantedLocation;
+
+  /// First-run guard: true once the init_notifications.json feed (azkar +
+  /// quran reminders) has been scheduled, so it isn't re-seeded on every boot.
+  /// Reset by `InitNotificationsService.resetAndReschedule`.
+  @HiveField(3)
+  bool initNotificationsScheduled;
 }

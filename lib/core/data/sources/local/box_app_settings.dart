@@ -30,4 +30,10 @@ class BoxAppSettings extends HiveBoxBase<MAppSettings> {
     r.hasGrantedLocation = value;
     await r.save();
   }
+
+  Future<void> setInitNotificationsScheduled(bool value) async {
+    final r = current();
+    r.initNotificationsScheduled = value;
+    await r.save();
+  }
 }

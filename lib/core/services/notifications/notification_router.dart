@@ -27,7 +27,12 @@ class NotificationRouter {
         }
         Modular.to.navigate(RoutesNames.prayerBase);
       case 'azkar':
-        Modular.to.navigate(RoutesNames.azkarBase);
+        final category = payload.data['category']?.toString();
+        if (category != null && category.isNotEmpty) {
+          Modular.to.navigate(AzkarRoutes.fullCategory(category));
+        } else {
+          Modular.to.navigate(RoutesNames.azkarBase);
+        }
       case 'hourly':
         Modular.to.navigate(RoutesNames.tasbihBase);
       case 'salawat':

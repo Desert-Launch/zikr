@@ -4,6 +4,7 @@
 
 import 'package:hive_ce/hive.dart';
 import 'package:quran/core/data/models/m_app_settings.dart';
+import 'package:quran/core/services/notifications/notification_box/m_notification.dart';
 import 'package:quran/modules/adhan/data/models/m_adhan_download.dart';
 import 'package:quran/modules/adhan/data/models/m_adhan_preference.dart';
 import 'package:quran/modules/adhan/data/models/m_adhan_settings.dart';
@@ -38,6 +39,7 @@ extension HiveRegistrar on HiveInterface {
     registerAdapter(MKhatmaDayAdapter());
     registerAdapter(MKhatmaPlanAdapter());
     registerAdapter(MLastReadAdapter());
+    registerAdapter(MLocalNotificationAdapter());
     registerAdapter(MPrayerCacheAdapter());
     registerAdapter(MPrayerSettingsAdapter());
     registerAdapter(MReciterPrefAdapter());
@@ -63,6 +65,7 @@ extension IsolatedHiveRegistrar on IsolatedHiveInterface {
     registerAdapter(MKhatmaDayAdapter());
     registerAdapter(MKhatmaPlanAdapter());
     registerAdapter(MLastReadAdapter());
+    registerAdapter(MLocalNotificationAdapter());
     registerAdapter(MPrayerCacheAdapter());
     registerAdapter(MPrayerSettingsAdapter());
     registerAdapter(MReciterPrefAdapter());
