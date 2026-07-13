@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  Radio streaming exception.
+
+  The national Quran radio stations are served by radiojar. Their HTTPS entry
+  URL (https://stream.radiojar.com/<id>) answers a plain GET with a 302 that
+  redirects to a CLEARTEXT http:// streaming node (http://n0X.radiojar.com/...).
+  Android blocks cleartext traffic by default (API 28+), so ExoPlayer follows
+  the redirect, hits the http:// node, and fails with "Source error".
+
+  Allow cleartext ONLY for the radiojar host tree (node subdomains rotate:
+  n01..n12, n0a..n0f), leaving the app's default cleartext block intact for
+  everything else.
+-->
+<network-security-config>
+    <base-config cleartextTrafficPermitted="false" />
+    <domain-config cleartextTrafficPermitted="true">
+        <domain includeSubdomains="true">radiojar.com</domain>
+    </domain-config>
+</network-security-config>
