@@ -5,10 +5,11 @@ import 'package:localize_and_translate/localize_and_translate.dart';
 import 'package:quran/core/theme/app_text_styles.dart';
 import 'package:quran/modules/adhan/presentation/cubits/cb_adhan_settings.dart';
 import 'package:quran/modules/adhan/presentation/cubits/s_adhan_settings.dart';
+import 'package:quran/modules/adhan/presentation/widgets/w_adhan_before_sheet.dart';
 import 'package:quran/modules/adhan/presentation/widgets/w_adhan_icon_circle.dart';
 
-/// The standalone "alert before adhan" row on the voice picker, cycling the
-/// pre-notify minutes on tap.
+/// The standalone "alert before adhan" row on the voice picker. Tapping opens
+/// a bottom sheet to pick the pre-notify minutes (presets or a custom value).
 class WAdhanBeforeRow extends StatelessWidget {
   const WAdhanBeforeRow({super.key, required this.state, required this.cubit});
 
@@ -19,15 +20,7 @@ class WAdhanBeforeRow extends StatelessWidget {
   Widget build(BuildContext context) {
     return InkWell(
       borderRadius: BorderRadius.circular(19.r),
-      onTap: () {
-        final next = switch (state.preNotifyMinutes) {
-          0 => 5,
-          5 => 10,
-          10 => 15,
-          _ => 0,
-        };
-        cubit.setPreNotifyMinutes(next);
-      },
+      onTap: () => WAdhanBeforeSheet.show(context, cubit),
       child: Container(
         height: 76.h,
         padding: EdgeInsets.symmetric(horizontal: 15.w),
@@ -49,7 +42,6 @@ class WAdhanBeforeRow extends StatelessWidget {
                   : 'adhan_prenotify_minutes'.tr().replaceFirst('{{m}}', '${state.preNotifyMinutes}'),
               style: GoogleFonts.cairo(fontSize: 9.sp, color: const Color(0xFF777777)),
             ),
-            Icon(Icons.chevron_left_rounded, color: const Color(0xFF777777), size: 21.r),
           ],
         ),
       ),

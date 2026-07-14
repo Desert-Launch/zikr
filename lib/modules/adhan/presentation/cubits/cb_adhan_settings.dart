@@ -2,7 +2,10 @@ import 'dart:async';
 import 'dart:io';
 
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:permission_handler/permission_handler.dart';
+import 'package:quran/core/services/logging/app_logger.dart';
+import 'package:quran/core/services/notifications/notification_box/ds_notification.dart';
 import 'package:quran/core/services/notifications/notifications_service.dart';
 import 'package:quran/modules/adhan/data/datasources/local/ds_local_adhan.dart';
 import 'package:quran/modules/adhan/data/models/m_adhan.dart';
@@ -28,6 +31,7 @@ class CBAdhanSettings extends Cubit<SAdhanSettings> {
     required DSLocalAdhan local,
     required NotificationsService notifications,
     required AdhanScheduler scheduler,
+    required DSNotification notificationStore,
     required UCFetchAdhanCatalog fetchCatalog,
     required UCDownloadAdhanVoice downloadVoice,
     required BoxAdhanDownload downloads,
@@ -37,6 +41,7 @@ class CBAdhanSettings extends Cubit<SAdhanSettings> {
        _local = local,
        _notifications = notifications,
        _scheduler = scheduler,
+       _notificationStore = notificationStore,
        _fetchCatalog = fetchCatalog,
        _downloadVoice = downloadVoice,
        _downloads = downloads,
@@ -50,6 +55,7 @@ class CBAdhanSettings extends Cubit<SAdhanSettings> {
   final DSLocalAdhan _local;
   final NotificationsService _notifications;
   final AdhanScheduler _scheduler;
+  final DSNotification _notificationStore;
   final UCFetchAdhanCatalog _fetchCatalog;
   final UCDownloadAdhanVoice _downloadVoice;
   final BoxAdhanDownload _downloads;
@@ -273,6 +279,110 @@ class CBAdhanSettings extends Cubit<SAdhanSettings> {
     emit(state.copyWith(hasPermission: granted));
     if (!granted) return null;
     return _scheduler.scheduleTest();
+  }
+
+  /// Debug/testing helper: pretty-prints every notification currently scheduled
+  /// with the OS (the real schedule store — there is no Hive box for pending
+  /// notifications) as a single boxed, band-grouped table in the console, so
+  /// pre-adhan alerts are easy to eyeball. Returns the total count for the UI.
+  ///
+  /// Emitted in one log call (not line-by-line) so Talker renders it as a
+  /// single block instead of stamping every row with its own header.
+  Future<int> debugDumpPending() async {
+    final pending = await _notifications.pending();
+
+    // Fire times come from two sources: the scheduler's in-session registry
+    // (adhan/pre-adhan/test) and the persisted notification store (azkar/quran
+    // init-feed entries, which the scheduler never places). Merge both, the
+    // scheduler's live value winning when an id appears in both.
+    final times = <int, DateTime>{};
+    for (final r in pending) {
+      final stored = _notificationStore.get(r.id);
+      if (stored != null) times[r.id] = stored.scheduledAt;
+    }
+    times.addAll(_scheduler.scheduledTimes);
+
+    // Group by feature band, then sort each group by fire time (falling back to
+    // id) so the console reads chronologically.
+    final groups = <String, List<PendingNotificationRequest>>{};
+    for (final r in pending) {
+      groups.putIfAbsent(_bandLabel(r.id), () => []).add(r);
+    }
+    for (final list in groups.values) {
+      list.sort((a, b) {
+        final ta = times[a.id];
+        final tb = times[b.id];
+        if (ta != null && tb != null) return ta.compareTo(tb);
+        if (ta != null) return -1;
+        if (tb != null) return 1;
+        return a.id.compareTo(b.id);
+      });
+    }
+
+    const order = ['adhan', 'pre-adhan', 'test', 'other'];
+    final b = StringBuffer();
+    b.writeln('\n┌────────────────────────────────────────────────────────────┐');
+    b.writeln('│  SCHEDULED NOTIFICATIONS · ${pending.length} total');
+    b.writeln('├────────────────────────────────────────────────────────────┤');
+    if (pending.isEmpty) {
+      b.writeln('│  (nothing scheduled)');
+    }
+    for (final band in order) {
+      final list = groups[band];
+      if (list == null || list.isEmpty) continue;
+      b.writeln('│');
+      b.writeln('│  ▸ ${band.toUpperCase()} (${list.length})');
+      for (final r in list) {
+        final tag = _payloadPrayer(r.payload);
+        final when = times[r.id];
+        b.writeln(
+          '│    ${_fmtWhen(when)}  '
+          'id ${r.id.toString().padRight(7)} '
+          '${(r.title ?? '-')}${tag.isEmpty ? '' : '  · $tag'}',
+        );
+      }
+    }
+    b.writeln('└────────────────────────────────────────────────────────────┘');
+    AppLogger.info(b.toString(), tag: 'AdhanDebug');
+    return pending.length;
+  }
+
+  static const _weekdays = [
+    'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun', //
+  ];
+  static const _months = [
+    'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', //
+    'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec',
+  ];
+
+  /// Formats a fire time as a fixed-width `Tue 15 Jul  09:04` column. Shows a
+  /// dash placeholder when the time is unknown (e.g. an entry scheduled in a
+  /// previous session before the registry was populated).
+  String _fmtWhen(DateTime? d) {
+    if (d == null) return '     —  · · ·   ';
+    final wd = _weekdays[d.weekday - 1];
+    final mo = _months[d.month - 1];
+    final day = d.day.toString().padLeft(2, '0');
+    final hh = d.hour.toString().padLeft(2, '0');
+    final mm = d.minute.toString().padLeft(2, '0');
+    return '$wd $day $mo  $hh:$mm';
+  }
+
+  /// Human-readable band for a pending notification id, mirroring the id bands
+  /// [AdhanScheduler] allocates.
+  String _bandLabel(int id) {
+    if (id >= 200000 && id < 300000) return 'adhan';
+    if (id >= 300000 && id < 400000) return 'pre-adhan';
+    if (id == 999999) return 'test';
+    return 'other';
+  }
+
+  /// Pulls the `prayer` field out of an adhan/prayer notification payload for a
+  /// compact label, e.g. `dhuhr`. Empty when absent or unparseable.
+  String _payloadPrayer(String? raw) {
+    if (raw == null) return '';
+    final match = RegExp(r'"prayer"\s*:\s*"(\w+)"').firstMatch(raw);
+    return match?.group(1) ?? '';
   }
 
   /// Re-reads the selected voice (called when returning from the picker).

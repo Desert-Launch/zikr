@@ -27,16 +27,17 @@ class WAdhanSettingRow extends StatelessWidget {
     final subtitle = this.subtitle;
     return InkWell(
       onTap: onTap,
-      child: SizedBox(
-        height: 82.h,
+      child: ConstrainedBox(
+        constraints: BoxConstraints(minHeight: 82.h),
         child: Padding(
-          padding: EdgeInsets.symmetric(horizontal: 18.w),
+          padding: EdgeInsets.symmetric(horizontal: 18.w, vertical: 12.h),
           child: Row(
             children: [
               WAdhanIconCircle(icon: icon),
               SizedBox(width: 16.w),
               Expanded(
                 child: Column(
+                  mainAxisSize: MainAxisSize.min,
                   mainAxisAlignment: MainAxisAlignment.center,
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [

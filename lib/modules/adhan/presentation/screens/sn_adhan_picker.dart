@@ -129,6 +129,8 @@ class SNAdhanPicker extends StatelessWidget {
                               // ],
                               SizedBox(height: 30.h),
                               const WAdhanVirtueCard(),
+                              SizedBox(height: 16.h),
+                              _DumpPendingButton(cubit: settings),
                             ],
                           );
                         },
@@ -178,6 +180,70 @@ class SNAdhanPicker extends StatelessWidget {
     'isha' => 4,
     _ => -1,
   };
+}
+
+/// Debug/testing button: dumps every OS-scheduled notification to the logs and
+/// reports the count in a snackbar. Lets us confirm that changing the
+/// "alert before adhan" minutes actually rebuilds the pre-adhan notifications.
+class _DumpPendingButton extends StatefulWidget {
+  const _DumpPendingButton({required this.cubit});
+
+  final CBAdhanSettings cubit;
+
+  @override
+  State<_DumpPendingButton> createState() => _DumpPendingButtonState();
+}
+
+class _DumpPendingButtonState extends State<_DumpPendingButton> {
+  static const _green = Color(0xFF2F7E63);
+  bool _busy = false;
+
+  Future<void> _run() async {
+    if (_busy) return;
+    setState(() => _busy = true);
+    final count = await widget.cubit.debugDumpPending();
+    if (!mounted) return;
+    setState(() => _busy = false);
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(
+          'adhan_debug_pending_count'.tr().replaceFirst('{{n}}', '$count'),
+          style: GoogleFonts.cairo(fontSize: 12.sp, color: Colors.white),
+        ),
+        backgroundColor: _green,
+        behavior: SnackBarBehavior.floating,
+      ),
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return SizedBox(
+      width: double.infinity,
+      child: OutlinedButton.icon(
+        onPressed: _busy ? null : _run,
+        style: OutlinedButton.styleFrom(
+          foregroundColor: _green,
+          side: const BorderSide(color: _green),
+          padding: EdgeInsets.symmetric(vertical: 14.h),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(14.r),
+          ),
+        ),
+        icon: _busy
+            ? SizedBox(
+                width: 16.r,
+                height: 16.r,
+                child: CircularProgressIndicator(strokeWidth: 2.r, color: _green),
+              )
+            : Icon(Icons.bug_report_outlined, size: 18.r),
+        label: Text(
+          'adhan_debug_pending_button'.tr(),
+          style: GoogleFonts.cairo(fontSize: 12.sp, fontWeight: FontWeight.w700),
+        ),
+      ),
+    );
+  }
 }
 
 /// Small grey info card explaining how the full adhan plays at prayer time.

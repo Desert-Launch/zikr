@@ -284,6 +284,7 @@ class AppModule extends Module {
         local: i.get<DSLocalAdhan>(),
         notifications: i.get<NotificationsService>(),
         scheduler: i.get<AdhanScheduler>(),
+        notificationStore: i.get<DSNotification>(),
         fetchCatalog: i.get<UCFetchAdhanCatalog>(),
         downloadVoice: i.get<UCDownloadAdhanVoice>(),
         downloads: i.get<BoxAdhanDownload>(),

@@ -104,6 +104,15 @@ class AdhanScheduler {
 
   bool _running = false;
 
+  /// Debug-only registry of `notification id → resolved fire time`, populated
+  /// as the window is (re)built. The OS pending list doesn't expose the fire
+  /// time, so this is the only place the concrete date/time is known. Reflects
+  /// the most recent [reschedule]/[scheduleTest] in this app session.
+  final Map<int, DateTime> _scheduledTimes = {};
+
+  /// Read-only view of the scheduled fire times (see [_scheduledTimes]).
+  Map<int, DateTime> get scheduledTimes => Map.unmodifiable(_scheduledTimes);
+
   /// Cancels the current adhan window and rebuilds it from prayer times.
   /// Safe to call repeatedly; concurrent calls are coalesced.
   ///
@@ -356,6 +365,7 @@ class AdhanScheduler {
         data: {'prayer': 'dhuhr'},
       ),
     );
+    _scheduledTimes[_testId] = when;
 
     if (useFullAdhan) {
       await _audioAlarms.schedule(
@@ -441,6 +451,7 @@ class AdhanScheduler {
           data: {'prayer': prayer.key},
         ),
       );
+      _scheduledTimes[id] = time;
 
       if (useFullAdhan && armAudioAlarms) {
         await _audioAlarms.schedule(
@@ -456,9 +467,10 @@ class AdhanScheduler {
 
       if (scheduledPre && preMinutes > 0 && _remaining > 0) {
         final preTime = time.subtract(Duration(minutes: preMinutes));
+        final preId = _preBandStart + doy * 10 + i;
         if (preTime.isAfter(now)) {
           await _notifications.scheduleAt(
-            id: _preBandStart + doy * 10 + i,
+            id: preId,
             when: preTime,
             title: 'adhan_notif_pre_title'.tr().replaceFirst(
               '{{prayer}}',
@@ -475,6 +487,7 @@ class AdhanScheduler {
               data: {'prayer': prayer.key},
             ),
           );
+          _scheduledTimes[preId] = preTime;
           _remaining--;
         }
       }
@@ -504,6 +517,13 @@ class AdhanScheduler {
       final inPre = r.id >= _preBandStart && r.id < _preBandEnd;
       if (inMain || inPre) await _notifications.cancel(r.id);
     }
+    // Drop stale window entries from the debug registry (the test id lives
+    // outside these bands, so it survives).
+    _scheduledTimes.removeWhere(
+      (id, _) =>
+          (id >= _mainBandStart && id < _mainBandEnd) ||
+          (id >= _preBandStart && id < _preBandEnd),
+    );
     // Clear the legacy today-only ids (1000–1004) from the old scheduler.
     for (var id = 1000; id <= 1004; id++) {
       await _notifications.cancel(id);

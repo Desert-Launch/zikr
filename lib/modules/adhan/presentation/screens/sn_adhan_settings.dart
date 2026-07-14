@@ -74,8 +74,7 @@ class SNAdhanSettings extends StatelessWidget {
                           ],
                         ),
 
-                        if (defaultTargetPlatform ==
-                            TargetPlatform.android) ...[
+                        if (defaultTargetPlatform == TargetPlatform.android) ...[
                           SizedBox(height: 18.h),
                           WAdhanSectionLabel('adhan_playback_section'.tr()),
                           WAdhanGroup(
@@ -90,7 +89,7 @@ class SNAdhanSettings extends StatelessWidget {
                                     value: state.androidBackgroundFullAdhan,
                                     activeTrackColor: _green,
                                     thumbColor: WidgetStateProperty.all(
-                                      Colors.white,
+                                      state.androidBackgroundFullAdhan ? Colors.white : Colors.grey.shade400,
                                     ),
                                     onChanged: cubit.setAndroidBackground,
                                   ),
@@ -101,34 +100,20 @@ class SNAdhanSettings extends StatelessWidget {
                           // Aggressive OEM battery managers can delay/kill the
                           // exact alarm that fires the full adhan — surface the
                           // exemption prompt only once the feature is on.
-                          if (state.androidBackgroundFullAdhan &&
-                              state.showBatteryNote) ...[
+                          if (state.androidBackgroundFullAdhan && state.showBatteryNote) ...[
                             SizedBox(height: 12.h),
-                            _BatteryGuidanceNote(
-                              onAllow: cubit.requestBatteryExemption,
-                            ),
+                            _BatteryGuidanceNote(onAllow: cubit.requestBatteryExemption),
                           ],
-                        ] else if (defaultTargetPlatform ==
-                            TargetPlatform.iOS) ...[
+                        ] else if (defaultTargetPlatform == TargetPlatform.iOS) ...[
                           SizedBox(height: 18.h),
                           WAdhanSectionLabel('adhan_playback_section'.tr()),
                           Container(
-                            padding: EdgeInsets.symmetric(
-                              horizontal: 16.w,
-                              vertical: 14.h,
-                            ),
-                            decoration: BoxDecoration(
-                              color: Colors.white,
-                              borderRadius: BorderRadius.circular(14.r),
-                            ),
+                            padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 14.h),
+                            decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(14.r)),
                             child: Row(
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
-                                Icon(
-                                  Icons.info_outline_rounded,
-                                  size: 18.r,
-                                  color: const Color(0xFF858585),
-                                ),
+                                Icon(Icons.info_outline_rounded, size: 18.r, color: const Color(0xFF858585)),
                                 SizedBox(width: 10.w),
                                 Expanded(
                                   child: Text(
@@ -260,9 +245,7 @@ class _TestAdhanButtonState extends State<_TestAdhanButton> {
           text,
           style: GoogleFonts.cairo(fontSize: 12.sp, color: Colors.white),
         ),
-        backgroundColor: when == null
-            ? const Color(0xFFC0473F)
-            : const Color(0xFF2F7E63),
+        backgroundColor: when == null ? const Color(0xFFC0473F) : const Color(0xFF2F7E63),
         behavior: SnackBarBehavior.floating,
       ),
     );
@@ -278,9 +261,7 @@ class _TestAdhanButtonState extends State<_TestAdhanButton> {
           foregroundColor: _green,
           side: const BorderSide(color: _green),
           padding: EdgeInsets.symmetric(vertical: 14.h),
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(14.r),
-          ),
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14.r)),
         ),
         icon: _busy
             ? SizedBox(
