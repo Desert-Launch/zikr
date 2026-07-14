@@ -13,6 +13,7 @@ class MPrayerSettings extends HiveObject {
     this.notifyForPrayer = const [true, true, true, true, true],
     this.adhanIdPerPrayer,
     this.fajrAdhanId,
+    this.preNotifyMinutesPerPrayer,
   });
 
   /// Index into the `adhan` package's CalculationMethod enum.
@@ -35,4 +36,11 @@ class MPrayerSettings extends HiveObject {
   /// Optional Fajr-specific adhan override.
   @HiveField(4)
   String? fajrAdhanId;
+
+  /// Per-prayer "remind me X minutes before" offset, keyed by prayer
+  /// ('fajr','dhuhr','asr','maghrib','isha'). A missing key (or 0) = off. Set
+  /// independently from each prayer's picker, so Fajr's pre-alert never leaks
+  /// onto the other prayers.
+  @HiveField(5)
+  Map<String, int>? preNotifyMinutesPerPrayer;
 }

@@ -26,13 +26,14 @@ class MPrayerSettingsAdapter extends TypeAdapter<MPrayerSettings> {
           : (fields[2] as List).cast<bool>(),
       adhanIdPerPrayer: (fields[3] as Map?)?.cast<String, String>(),
       fajrAdhanId: fields[4] as String?,
+      preNotifyMinutesPerPrayer: (fields[5] as Map?)?.cast<String, int>(),
     );
   }
 
   @override
   void write(BinaryWriter writer, MPrayerSettings obj) {
     writer
-      ..writeByte(5)
+      ..writeByte(6)
       ..writeByte(0)
       ..write(obj.calculationMethodIndex)
       ..writeByte(1)
@@ -42,7 +43,9 @@ class MPrayerSettingsAdapter extends TypeAdapter<MPrayerSettings> {
       ..writeByte(3)
       ..write(obj.adhanIdPerPrayer)
       ..writeByte(4)
-      ..write(obj.fajrAdhanId);
+      ..write(obj.fajrAdhanId)
+      ..writeByte(5)
+      ..write(obj.preNotifyMinutesPerPrayer);
   }
 
   @override

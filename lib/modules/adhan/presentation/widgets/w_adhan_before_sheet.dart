@@ -13,8 +13,13 @@ import 'package:quran/modules/adhan/presentation/cubits/s_adhan_settings.dart';
 /// [CBAdhanSettings.setPreNotifyMinutes], which reschedules the adhan window
 /// so the pre-notifications rebuild with the new offset.
 class WAdhanBeforeSheet extends StatefulWidget {
-  const WAdhanBeforeSheet({required this.cubit, super.key});
+  const WAdhanBeforeSheet({
+    required this.prayerKey,
+    required this.cubit,
+    super.key,
+  });
 
+  final String prayerKey;
   final CBAdhanSettings cubit;
 
   static const _green = Color(0xFF007A58);
@@ -22,8 +27,12 @@ class WAdhanBeforeSheet extends StatefulWidget {
   /// Preset minute offsets. `0` is the "off" sentinel.
   static const _presets = [0, 5, 10, 15, 20, 30];
 
-  /// Opens the sheet for [cubit].
-  static Future<void> show(BuildContext context, CBAdhanSettings cubit) {
+  /// Opens the sheet for [prayerKey] on [cubit].
+  static Future<void> show(
+    BuildContext context,
+    String prayerKey,
+    CBAdhanSettings cubit,
+  ) {
     return showModalBottomSheet<void>(
       context: context,
       isScrollControlled: true,
@@ -31,7 +40,7 @@ class WAdhanBeforeSheet extends StatefulWidget {
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(24.r)),
       ),
-      builder: (_) => WAdhanBeforeSheet(cubit: cubit),
+      builder: (_) => WAdhanBeforeSheet(prayerKey: prayerKey, cubit: cubit),
     );
   }
 
@@ -49,7 +58,7 @@ class _WAdhanBeforeSheetState extends State<WAdhanBeforeSheet> {
   }
 
   Future<void> _apply(int minutes) async {
-    await widget.cubit.setPreNotifyMinutes(minutes);
+    await widget.cubit.setPreNotifyMinutes(widget.prayerKey, minutes);
     if (mounted) Navigator.of(context).pop();
   }
 
@@ -113,7 +122,10 @@ class _WAdhanBeforeSheetState extends State<WAdhanBeforeSheet> {
                       spacing: 8.w,
                       runSpacing: 8.h,
                       children: WAdhanBeforeSheet._presets.map((value) {
-                        final selected = state.preNotifyMinutes == value;
+                        final current =
+                            state.preNotifyMinutesPerPrayer[widget.prayerKey] ??
+                            0;
+                        final selected = current == value;
                         return ChoiceChip(
                           label: Text(_labelFor(value)),
                           selected: selected,

@@ -17,6 +17,7 @@ import 'package:quran/modules/adhan/domain/usecases/uc_download_adhan_voice.dart
 import 'package:quran/modules/adhan/domain/usecases/uc_fetch_adhan_catalog.dart';
 import 'package:quran/modules/adhan/presentation/cubits/s_adhan_settings.dart';
 import 'package:quran/modules/adhan/services/adhan_scheduler.dart';
+import 'package:quran/modules/prayer/data/models/m_prayer_settings.dart';
 import 'package:quran/modules/prayer/data/sources/local/box_prayer_settings.dart';
 
 /// Backs the adhan settings screen. Per-prayer toggles live in
@@ -78,7 +79,7 @@ class CBAdhanSettings extends Cubit<SAdhanSettings> {
         playbackMode: s.playbackMode,
         androidBackgroundFullAdhan: s.androidBackgroundFullAdhan,
         vibrate: s.vibrate,
-        preNotifyMinutes: s.preNotifyMinutes,
+        preNotifyMinutesPerPrayer: _readPreNotify(p, s),
         selectedVoiceNameAr: voiceName,
         voiceIdPerPrayer: Map<String, String>.of(
           p.adhanIdPerPrayer ?? const {},
@@ -249,11 +250,41 @@ class CBAdhanSettings extends Cubit<SAdhanSettings> {
     _scheduleSoon();
   }
 
-  Future<void> setPreNotifyMinutes(int minutes) async {
-    final s = _adhanSettings.current()..preNotifyMinutes = minutes;
-    await _adhanSettings.save(s);
-    emit(state.copyWith(preNotifyMinutes: minutes));
+  /// Sets the pre-adhan reminder offset for a SINGLE prayer, so e.g. Fajr's
+  /// 5-minute reminder never leaks onto the other prayers. Persisted in
+  /// `MPrayerSettings.preNotifyMinutesPerPrayer` (next to the per-prayer voice
+  /// and toggle) and reschedules the window.
+  Future<void> setPreNotifyMinutes(String prayerKey, int minutes) async {
+    const valid = {'fajr', 'dhuhr', 'asr', 'maghrib', 'isha'};
+    if (!valid.contains(prayerKey)) return;
+
+    final prayer = _prayerSettings.current();
+    final map = Map<String, int>.of(
+      prayer.preNotifyMinutesPerPrayer ?? const {},
+    );
+    if (minutes <= 0) {
+      map.remove(prayerKey);
+    } else {
+      map[prayerKey] = minutes;
+    }
+    prayer.preNotifyMinutesPerPrayer = map;
+    await _prayerSettings.save(prayer);
+    emit(state.copyWith(preNotifyMinutesPerPrayer: map));
     _scheduleSoon();
+  }
+
+  /// Reads the per-prayer pre-notify map, migrating the legacy single global
+  /// [MAdhanSettings.preNotifyMinutes] (applied to every prayer) into an
+  /// explicit per-prayer map the first time — so existing users keep their
+  /// reminder while gaining independent per-prayer control.
+  Map<String, int> _readPreNotify(MPrayerSettings p, MAdhanSettings s) {
+    final stored = p.preNotifyMinutesPerPrayer;
+    if (stored != null) return Map<String, int>.of(stored);
+    if (s.preNotifyMinutes <= 0) return const {};
+    return {
+      for (final k in const ['fajr', 'dhuhr', 'asr', 'maghrib', 'isha'])
+        k: s.preNotifyMinutes,
+    };
   }
 
   Future<void> requestPermission() async {

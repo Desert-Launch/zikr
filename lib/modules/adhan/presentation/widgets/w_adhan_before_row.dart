@@ -11,16 +11,23 @@ import 'package:quran/modules/adhan/presentation/widgets/w_adhan_icon_circle.dar
 /// The standalone "alert before adhan" row on the voice picker. Tapping opens
 /// a bottom sheet to pick the pre-notify minutes (presets or a custom value).
 class WAdhanBeforeRow extends StatelessWidget {
-  const WAdhanBeforeRow({super.key, required this.state, required this.cubit});
+  const WAdhanBeforeRow({
+    super.key,
+    required this.prayerKey,
+    required this.state,
+    required this.cubit,
+  });
 
+  final String prayerKey;
   final SAdhanSettings state;
   final CBAdhanSettings cubit;
 
   @override
   Widget build(BuildContext context) {
+    final minutes = state.preNotifyMinutesPerPrayer[prayerKey] ?? 0;
     return InkWell(
       borderRadius: BorderRadius.circular(19.r),
-      onTap: () => WAdhanBeforeSheet.show(context, cubit),
+      onTap: () => WAdhanBeforeSheet.show(context, prayerKey, cubit),
       child: Container(
         height: 76.h,
         padding: EdgeInsets.symmetric(horizontal: 15.w),
@@ -37,9 +44,9 @@ class WAdhanBeforeRow extends StatelessWidget {
             Text('adhan_before_alert'.tr(), style: AppTextStyles.ink12W400),
             const Spacer(),
             Text(
-              state.preNotifyMinutes == 0
+              minutes == 0
                   ? 'adhan_off'.tr()
-                  : 'adhan_prenotify_minutes'.tr().replaceFirst('{{m}}', '${state.preNotifyMinutes}'),
+                  : 'adhan_prenotify_minutes'.tr().replaceFirst('{{m}}', '$minutes'),
               style: GoogleFonts.cairo(fontSize: 9.sp, color: const Color(0xFF777777)),
             ),
           ],

@@ -8,7 +8,7 @@ class SAdhanSettings extends Equatable {
     this.playbackMode = 'clip',
     this.androidBackgroundFullAdhan = false,
     this.vibrate = true,
-    this.preNotifyMinutes = 0,
+    this.preNotifyMinutesPerPrayer = const {},
     this.selectedVoiceNameAr = '',
     this.voiceIdPerPrayer = const {},
     this.voiceNamePerPrayer = const {},
@@ -28,7 +28,10 @@ class SAdhanSettings extends Equatable {
   final String playbackMode; // 'clip' | 'full'
   final bool androidBackgroundFullAdhan;
   final bool vibrate;
-  final int preNotifyMinutes;
+
+  /// Per-prayer pre-notify offset in minutes, keyed by prayer key. Missing
+  /// key = off.
+  final Map<String, int> preNotifyMinutesPerPrayer;
   final String selectedVoiceNameAr;
   final Map<String, String> voiceIdPerPrayer;
   final Map<String, String> voiceNamePerPrayer;
@@ -58,7 +61,7 @@ class SAdhanSettings extends Equatable {
     String? playbackMode,
     bool? androidBackgroundFullAdhan,
     bool? vibrate,
-    int? preNotifyMinutes,
+    Map<String, int>? preNotifyMinutesPerPrayer,
     String? selectedVoiceNameAr,
     Map<String, String>? voiceIdPerPrayer,
     Map<String, String>? voiceNamePerPrayer,
@@ -78,7 +81,8 @@ class SAdhanSettings extends Equatable {
       androidBackgroundFullAdhan:
           androidBackgroundFullAdhan ?? this.androidBackgroundFullAdhan,
       vibrate: vibrate ?? this.vibrate,
-      preNotifyMinutes: preNotifyMinutes ?? this.preNotifyMinutes,
+      preNotifyMinutesPerPrayer:
+          preNotifyMinutesPerPrayer ?? this.preNotifyMinutesPerPrayer,
       selectedVoiceNameAr: selectedVoiceNameAr ?? this.selectedVoiceNameAr,
       voiceIdPerPrayer: voiceIdPerPrayer ?? this.voiceIdPerPrayer,
       voiceNamePerPrayer: voiceNamePerPrayer ?? this.voiceNamePerPrayer,
@@ -101,7 +105,7 @@ class SAdhanSettings extends Equatable {
     playbackMode,
     androidBackgroundFullAdhan,
     vibrate,
-    preNotifyMinutes,
+    preNotifyMinutesPerPrayer,
     selectedVoiceNameAr,
     voiceIdPerPrayer,
     voiceNamePerPrayer,

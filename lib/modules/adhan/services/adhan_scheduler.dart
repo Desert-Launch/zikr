@@ -238,6 +238,7 @@ class AdhanScheduler {
           notify: notify,
           settings: settings,
           voiceIdPerPrayer: prayer.adhanIdPerPrayer ?? const {},
+          preNotifyPerPrayer: prayer.preNotifyMinutesPerPrayer ?? const {},
           defaultVoiceId: pref.defaultAdhanId,
           fajrVoiceId: fajrVoiceId,
           fullAndroid: fullAndroid,
@@ -392,6 +393,7 @@ class AdhanScheduler {
     required List<bool> notify,
     required dynamic settings,
     required Map<String, String> voiceIdPerPrayer,
+    required Map<String, int> preNotifyPerPrayer,
     required String? defaultVoiceId,
     required String? fajrVoiceId,
     required bool fullAndroid,
@@ -401,7 +403,6 @@ class AdhanScheduler {
     required DateTime now,
   }) async {
     final doy = _dayOfYear(date);
-    final preMinutes = settings.preNotifyMinutes as int;
     final vibrate = settings.vibrate as bool;
 
     for (var i = 0; i < _salah.length; i++) {
@@ -465,6 +466,7 @@ class AdhanScheduler {
       }
       _remaining--;
 
+      final preMinutes = preNotifyPerPrayer[prayer.key] ?? 0;
       if (scheduledPre && preMinutes > 0 && _remaining > 0) {
         final preTime = time.subtract(Duration(minutes: preMinutes));
         final preId = _preBandStart + doy * 10 + i;

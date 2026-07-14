@@ -71,7 +71,7 @@ class SNAdhanPicker extends StatelessWidget {
                             padding: EdgeInsets.fromLTRB(27.w, 24.h, 27.w, 28.h),
                             children: [
                               WAdhanSectionLabel('adhan_before_section'.tr()),
-                              WAdhanBeforeRow(state: settingsState, cubit: settings),
+                              WAdhanBeforeRow(prayerKey: prayerKey, state: settingsState, cubit: settings),
                               SizedBox(height: 18.h),
                               WAdhanSectionLabel('adhan_sound_section'.tr()),
                               BlocConsumer<CBAdhanDownload, SAdhanDownload>(
