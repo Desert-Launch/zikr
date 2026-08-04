@@ -3,6 +3,8 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:localize_and_translate/localize_and_translate.dart';
 import 'package:quran/core/theme/app_text_styles.dart';
+import 'package:quran/core/widgets/w_localize_rotation.dart';
+import 'package:quran/core/widgets/w_search_field.dart';
 import 'package:quran/modules/quran/presentation/cubits/cb_surah_list.dart';
 
 class WQuranHeader extends StatelessWidget {
@@ -34,8 +36,34 @@ class WQuranHeader extends StatelessWidget {
         bottom: false,
         child: Column(
           children: [
+            // Back leads, settings trails — mirrors with the layout direction
+            // instead of being pinned to physical sides.
             Row(
               children: [
+                IconButton(
+                  onPressed: onBack,
+                  icon: const WLocalizeRotation(
+                    child: Icon(Icons.arrow_back_rounded, color: Colors.white),
+                  ),
+                ),
+                Expanded(
+                  child: Column(
+                    children: [
+                      Text(
+                        'app_name'.tr(),
+                        style: GoogleFonts.amiri(
+                          color: Colors.white,
+                          fontSize: 22.sp,
+                          fontWeight: FontWeight.w700,
+                        ),
+                      ),
+                      Text(
+                        'quran_surah_total'.tr(),
+                        style: AppTextStyles.white12W400,
+                      ),
+                    ],
+                  ),
+                ),
                 if (onSettings != null)
                   IconButton(
                     onPressed: onSettings,
@@ -46,67 +74,12 @@ class WQuranHeader extends StatelessWidget {
                   )
                 else
                   const SizedBox(width: 42),
-                const Spacer(),
-                Column(
-                  children: [
-                    Text(
-                      'app_name'.tr(),
-                      style: GoogleFonts.amiri(
-                        color: Colors.white,
-                        fontSize: 22.sp,
-                        fontWeight: FontWeight.w700,
-                      ),
-                    ),
-                    Text(
-                      'quran_surah_total'.tr(),
-                      style: AppTextStyles.white12W400,
-                    ),
-                  ],
-                ),
-                const Spacer(),
-                IconButton(
-                  onPressed: onBack,
-                  icon: const Icon(
-                    Icons.arrow_forward_rounded,
-                    color: Colors.white,
-                  ),
-                ),
               ],
             ),
             SizedBox(height: 8.h),
-            TextField(
-              onChanged: onQueryChanged ?? cubit.setQuery,
-              style: const TextStyle(color: Colors.white),
-              decoration: InputDecoration(
-                hintText: 'search_hint'.tr(),
-
-                hintStyle: TextStyle(
-                  color: Colors.white.withValues(alpha: 0.62),
-                  fontSize: 11.sp,
-                ),
-                suffixIcon: Icon(
-                  Icons.search_rounded,
-                  color: Colors.white.withValues(alpha: 0.7),
-                  size: 20.r,
-                ),
-                filled: true,
-                fillColor: Colors.white.withValues(alpha: 0.07),
-                contentPadding: EdgeInsets.symmetric(
-                  horizontal: 12.w,
-                  vertical: 8.h,
-                ),
-                enabledBorder: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(8.r),
-                  borderSide: BorderSide(
-                    color: Colors.white.withValues(alpha: 0.2),
-                  ),
-                ),
-                focusedBorder: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(8.r),
-                  borderSide: const BorderSide(color: Colors.white),
-                ),
-              ),
-            ),
+            // Shared search field — direction-aware, so the hint and caret
+            // follow the active language instead of the device locale.
+            WSearchField.onColor(onChanged: onQueryChanged ?? cubit.setQuery),
           ],
         ),
       ),

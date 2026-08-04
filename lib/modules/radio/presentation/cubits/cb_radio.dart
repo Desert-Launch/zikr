@@ -9,9 +9,9 @@ class CBRadio extends Cubit<SRadio> {
   CBRadio({
     required UCGetNationalStations getNational,
     required UCGetLiveStations getLive,
-  })  : _getNational = getNational,
-        _getLive = getLive,
-        super(const SRadio());
+  }) : _getNational = getNational,
+       _getLive = getLive,
+       super(const SRadio());
 
   final UCGetNationalStations _getNational;
   final UCGetLiveStations _getLive;
@@ -21,8 +21,9 @@ class CBRadio extends Cubit<SRadio> {
 
     final nationalRes = await _getNational();
     nationalRes.fold(
-      (failure) =>
-          emit(state.copyWith(status: RadioStatus.error, error: failure.message)),
+      (failure) => emit(
+        state.copyWith(status: RadioStatus.error, error: failure.message),
+      ),
       (stations) => emit(
         state.copyWith(
           status: RadioStatus.ready,
@@ -34,6 +35,12 @@ class CBRadio extends Cubit<SRadio> {
 
     if (state.status == RadioStatus.error) return;
     await _loadLive(language);
+  }
+
+  /// Filters both station sections by name as the user types.
+  void setQuery(String query) {
+    if (query == state.query) return;
+    emit(state.copyWith(query: query));
   }
 
   /// Re-runs only the live (network) section — used by pull-to-refresh / retry.

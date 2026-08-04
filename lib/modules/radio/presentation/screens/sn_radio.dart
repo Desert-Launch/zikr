@@ -6,6 +6,7 @@ import 'package:localize_and_translate/localize_and_translate.dart';
 import 'package:quran/core/theme/app_text_styles.dart';
 import 'package:quran/core/widgets/w_empty_state.dart';
 import 'package:quran/core/widgets/w_gradient_app_bar.dart';
+import 'package:quran/core/widgets/w_search_field.dart';
 import 'package:quran/core/widgets/w_shared_scaffold.dart';
 import 'package:quran/modules/radio/data/models/m_radio_station.dart';
 import 'package:quran/modules/radio/presentation/cubits/cb_radio.dart';
@@ -60,34 +61,54 @@ class SNRadio extends StatelessWidget {
           builder: (context, state) {
             return RefreshIndicator(
               color: _green,
-              onRefresh: () =>
-                  BlocProvider.of<CBRadio>(context).refreshLive(language: language),
+              onRefresh: () => BlocProvider.of<CBRadio>(
+                context,
+              ).refreshLive(language: language),
               child: CustomScrollView(
                 physics: const AlwaysScrollableScrollPhysics(),
                 slivers: [
-                SliverToBoxAdapter(
-                  child: WGradientAppBar(
-                    title: 'radio_title'.tr(),
-                    subtitle: 'radio_subtitle'.tr(),
-                  ),
-                ),
-                if (state.status == RadioStatus.error)
-                  SliverFillRemaining(
-                    hasScrollBody: false,
-                    child: WEmptyState(
-                      icon: Icons.wifi_off_rounded,
-                      title: 'radio_error'.tr(),
-                      subtitle: state.error,
-                      isDark: false,
-                    ),
-                  )
-                else
-                  SliverPadding(
-                    padding: EdgeInsets.fromLTRB(16.w, 14.h, 16.w, 28.h),
-                    sliver: SliverList.list(
-                      children: _content(context, state),
+                  SliverToBoxAdapter(
+                    child: WGradientAppBar(
+                      title: 'radio_title'.tr(),
+                      subtitle: 'radio_subtitle'.tr(),
                     ),
                   ),
+                  if (state.status != RadioStatus.error)
+                    SliverToBoxAdapter(
+                      child: Padding(
+                        padding: EdgeInsets.fromLTRB(16.w, 14.h, 16.w, 0),
+                        child: WSearchField(
+                          hint: 'radio_search_hint'.tr(),
+                          onChanged: BlocProvider.of<CBRadio>(context).setQuery,
+                        ),
+                      ),
+                    ),
+                  if (state.status == RadioStatus.error)
+                    SliverFillRemaining(
+                      hasScrollBody: false,
+                      child: WEmptyState(
+                        icon: Icons.wifi_off_rounded,
+                        title: 'radio_error'.tr(),
+                        subtitle: state.error,
+                        isDark: false,
+                      ),
+                    )
+                  else if (state.noMatches)
+                    SliverFillRemaining(
+                      hasScrollBody: false,
+                      child: WEmptyState(
+                        icon: Icons.search_off_rounded,
+                        title: 'search_no_results_generic'.tr(),
+                        isDark: false,
+                      ),
+                    )
+                  else
+                    SliverPadding(
+                      padding: EdgeInsets.fromLTRB(16.w, 14.h, 16.w, 28.h),
+                      sliver: SliverList.list(
+                        children: _content(context, state),
+                      ),
+                    ),
                 ],
               ),
             );
@@ -98,15 +119,21 @@ class SNRadio extends StatelessWidget {
   }
 
   List<Widget> _content(BuildContext context, SRadio state) {
+    final national = state.visibleNational;
+    final live = state.visibleLive;
     return [
-      _SectionHeader(label: 'radio_national_section'.tr()),
-      SizedBox(height: 12.h),
-      ..._tiles(state.national),
-      if (state.live.isNotEmpty || state.liveLoading) ...[
+      // Sections whose matches are all filtered out drop away entirely, so the
+      // list never shows an empty heading while searching.
+      if (national.isNotEmpty) ...[
+        _SectionHeader(label: 'radio_national_section'.tr()),
+        SizedBox(height: 12.h),
+        ..._tiles(national),
+      ],
+      if (live.isNotEmpty || state.liveLoading) ...[
         SizedBox(height: 14.h),
         _SectionHeader(label: 'radio_more_section'.tr()),
         SizedBox(height: 12.h),
-        if (state.live.isEmpty && state.liveLoading)
+        if (live.isEmpty && state.liveLoading)
           Padding(
             padding: EdgeInsets.symmetric(vertical: 20.h),
             child: Center(
@@ -121,7 +148,7 @@ class SNRadio extends StatelessWidget {
             ),
           )
         else
-          ..._tiles(state.live),
+          ..._tiles(live),
       ],
     ];
   }
