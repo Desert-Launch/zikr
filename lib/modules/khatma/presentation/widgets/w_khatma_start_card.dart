@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:quran/core/widgets/w_localize_rotation.dart';
 
 /// Call-to-action "start a new khatma" card on the empty screen.
 class WKhatmaStartCard extends StatelessWidget {
@@ -22,14 +23,8 @@ class WKhatmaStartCard extends StatelessWidget {
           border: Border.all(color: const Color(0xFFE0E7E2)),
         ),
         child: Row(
-          mainAxisAlignment: MainAxisAlignment.end,
+          mainAxisAlignment: MainAxisAlignment.start,
           children: [
-            Text(
-              title,
-              textAlign: TextAlign.end,
-              style: TextStyle(fontSize: 16.sp, color: const Color(0xFF1F2A24)),
-            ),
-            SizedBox(width: 12.w),
             Container(
               width: 52.r,
               height: 52.r,
@@ -41,7 +36,14 @@ class WKhatmaStartCard extends StatelessWidget {
                 ),
                 borderRadius: BorderRadius.circular(20.r),
               ),
-              child: const Icon(Icons.arrow_forward_rounded, color: Colors.white),
+              child: WLocalizeRotation(child: const Icon(Icons.arrow_forward_rounded, color: Colors.white)),
+            ),
+            SizedBox(width: 12.w),
+
+            Text(
+              title,
+              textAlign: TextAlign.end,
+              style: TextStyle(fontSize: 16.sp, color: const Color(0xFF1F2A24)),
             ),
           ],
         ),

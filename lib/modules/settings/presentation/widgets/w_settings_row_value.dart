@@ -35,7 +35,6 @@ class WSettingsRowValue extends StatelessWidget {
         ],
         if (showChevron)
           WLocalizeRotation(
-            reverse: true,
             child: Icon(Icons.chevron_left_rounded, color: const Color(0xFF6F6F6F), size: 21.r),
           ),
       ],

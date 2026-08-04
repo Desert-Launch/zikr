@@ -66,6 +66,7 @@ class WAzkarHeader extends StatelessWidget {
                       IconButton(
                         onPressed: onBack,
                         icon: const WLocalizeRotation(
+                          reverse: true,
                           child: Icon(
                             Icons.arrow_back_rounded,
                             color: Colors.white,

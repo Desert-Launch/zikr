@@ -72,7 +72,6 @@ class WReciterCard extends StatelessWidget {
                   ),
                 ),
                 WLocalizeRotation(
-                  reverse: true,
                   child: Icon(Icons.chevron_left_rounded, color: brand.muted, size: 24.r),
                 ),
               ],

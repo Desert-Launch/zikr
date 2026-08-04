@@ -47,7 +47,6 @@ class WAdhanSettingRow extends StatelessWidget {
                 ),
               ),
               WLocalizeRotation(
-                reverse: true,
                 child: trailing ?? Icon(Icons.chevron_left_rounded, color: const Color(0xFF777777), size: 22.r),
               ),
             ],

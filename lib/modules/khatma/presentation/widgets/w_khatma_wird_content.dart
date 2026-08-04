@@ -35,7 +35,6 @@ class WKhatmaWirdContent extends StatelessWidget {
           ),
         ),
         const WLocalizeRotation(
-          reverse: true,
           child: Icon(Icons.chevron_left_rounded, size: 18),
         ),
       ],

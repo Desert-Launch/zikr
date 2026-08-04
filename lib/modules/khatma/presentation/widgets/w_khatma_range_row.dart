@@ -60,7 +60,6 @@ class WKhatmaRangeRow extends StatelessWidget {
             ),
             SizedBox(width: 20.w),
             WLocalizeRotation(
-              reverse: true,
               child: Icon(
                 Icons.chevron_left_rounded,
                 size: 30.r,

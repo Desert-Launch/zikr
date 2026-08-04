@@ -36,7 +36,7 @@ class WKhatmaPlanRow extends StatelessWidget {
               ],
             ),
           ),
-          const WLocalizeRotation(reverse: true, child: Icon(Icons.chevron_left_rounded)),
+          const WLocalizeRotation(child: Icon(Icons.chevron_left_rounded)),
         ],
       ),
     );

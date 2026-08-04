@@ -59,7 +59,6 @@ class WAzkarCategoryTile extends StatelessWidget {
             SizedBox(width: 8.w),
             // Points toward the destination in whichever direction that is.
             WLocalizeRotation(
-              reverse: true,
               child: Icon(
                 Icons.chevron_left_rounded,
                 color: Colors.grey[400],

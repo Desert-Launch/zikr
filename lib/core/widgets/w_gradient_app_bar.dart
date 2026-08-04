@@ -72,6 +72,7 @@ class WGradientAppBar extends StatelessWidget implements PreferredSizeWidget {
                         // The glyph itself has to be mirrored: Flutter icons
                         // don't flip with the layout direction.
                         icon: WLocalizeRotation(
+                          reverse: true,
                           child: Icon(backIcon, color: Colors.white),
                         ),
                       )

@@ -94,7 +94,6 @@ class WAzkarCategoryCard extends StatelessWidget {
                     ),
                     SizedBox(width: 4.w),
                     WLocalizeRotation(
-                      reverse: true,
                       child: Icon(
                         Icons.chevron_left_rounded,
                         color: Colors.white.withValues(alpha: 0.72),

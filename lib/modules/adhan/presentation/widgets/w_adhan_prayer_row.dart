@@ -85,7 +85,6 @@ class WAdhanPrayerRow extends StatelessWidget {
 
               SizedBox(width: 4.w),
               WLocalizeRotation(
-                reverse: true,
                 child: Icon(Icons.chevron_left_rounded, color: const Color(0xFF777777), size: 21.r),
               ),
             ],

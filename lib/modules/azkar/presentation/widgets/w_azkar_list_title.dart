@@ -18,6 +18,7 @@ class WAzkarListTitle extends StatelessWidget {
         TextButton.icon(
           onPressed: onBack,
           icon: const WLocalizeRotation(
+            reverse: true,
             child: Icon(Icons.arrow_back_rounded, size: 16),
           ),
           label: Text('azkar_back_categories'.tr()),
