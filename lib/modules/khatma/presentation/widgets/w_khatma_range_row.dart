@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:quran/core/widgets/w_localize_rotation.dart';
 import 'package:flutter_modular/flutter_modular.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:quran/core/theme/app_text_styles.dart';
@@ -34,29 +35,36 @@ class WKhatmaRangeRow extends StatelessWidget {
         padding: EdgeInsets.symmetric(vertical: 20.h),
         child: Row(
           children: [
-            Icon(Icons.chevron_left_rounded, size: 30.r, color: const Color(0xFF6B6B6B)),
-            SizedBox(width: 20.w),
             Expanded(
               child: Column(
-                crossAxisAlignment: CrossAxisAlignment.end,
+                crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
                     title,
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
-                    textAlign: TextAlign.end,
                     style: AppTextStyles.ink16W400,
                   ),
                   SizedBox(height: 2.h),
+                  // Ayah text is Arabic regardless of the UI language.
                   Text(
                     subtitle,
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
-                    textAlign: TextAlign.end,
+                    textAlign: TextAlign.start,
                     textDirection: TextDirection.rtl,
                     style: AppTextStyles.grey12W400,
                   ),
                 ],
+              ),
+            ),
+            SizedBox(width: 20.w),
+            WLocalizeRotation(
+              reverse: true,
+              child: Icon(
+                Icons.chevron_left_rounded,
+                size: 30.r,
+                color: const Color(0xFF6B6B6B),
               ),
             ),
           ],

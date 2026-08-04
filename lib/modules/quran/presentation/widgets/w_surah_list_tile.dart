@@ -37,8 +37,10 @@ class WSurahListTile extends StatelessWidget {
                       ),
                     ),
                     SizedBox(height: 4.h),
+                    // Latin content — pinned LTR so bidi keeps it in order.
                     Text(
                       '${surah.name} · ${surah.translation}',
+                      textDirection: TextDirection.ltr,
                       style: TextStyle(
                         fontSize: 12.sp,
                         color: context.brand.muted,
@@ -51,12 +53,16 @@ class WSurahListTile extends StatelessWidget {
                 crossAxisAlignment: CrossAxisAlignment.end,
                 children: [
                   Container(
-                    padding: EdgeInsets.symmetric(horizontal: 8.w, vertical: 4.h),
+                    padding: EdgeInsets.symmetric(
+                      horizontal: 8.w,
+                      vertical: 4.h,
+                    ),
                     decoration: BoxDecoration(
-                      color: (surah.isMakki
-                              ? AppColorsLight.accent
-                              : AppColorsLight.primary)
-                          .withValues(alpha: 0.16),
+                      color:
+                          (surah.isMakki
+                                  ? AppColorsLight.accent
+                                  : AppColorsLight.primary)
+                              .withValues(alpha: 0.16),
                       borderRadius: BorderRadius.circular(8.r),
                     ),
                     child: Text(

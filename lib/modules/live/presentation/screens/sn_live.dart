@@ -66,7 +66,10 @@ class _LiveViewState extends State<_LiveView> {
   void initState() {
     super.initState();
     // Live broadcasts read best in landscape; portrait restored in dispose.
-    SystemChrome.setPreferredOrientations(const [DeviceOrientation.landscapeLeft, DeviceOrientation.landscapeRight]);
+    SystemChrome.setPreferredOrientations(const [
+      DeviceOrientation.landscapeLeft,
+      DeviceOrientation.landscapeRight,
+    ]);
     // The first load is driven by CBLive once it resolves the current id.
     _controller = _buildController();
   }
@@ -74,15 +77,22 @@ class _LiveViewState extends State<_LiveView> {
   @override
   void dispose() {
     // Restore the app-wide portrait lock (see main.dart) and the system bars.
-    SystemChrome.setEnabledSystemUIMode(SystemUiMode.manual, overlays: SystemUiOverlay.values);
-    SystemChrome.setPreferredOrientations(const [DeviceOrientation.portraitUp, DeviceOrientation.portraitDown]);
+    SystemChrome.setEnabledSystemUIMode(
+      SystemUiMode.manual,
+      overlays: SystemUiOverlay.values,
+    );
+    SystemChrome.setPreferredOrientations(const [
+      DeviceOrientation.portraitUp,
+      DeviceOrientation.portraitDown,
+    ]);
     super.dispose();
   }
 
   WebViewController _buildController() {
     // iOS (WKWebView) needs inline playback enabled so the video stays in-app
     // instead of jumping to the native fullscreen player.
-    final PlatformWebViewControllerCreationParams params = WebViewPlatform.instance is WebKitWebViewPlatform
+    final PlatformWebViewControllerCreationParams params =
+        WebViewPlatform.instance is WebKitWebViewPlatform
         ? WebKitWebViewControllerCreationParams(
             allowsInlineMediaPlayback: true,
             mediaTypesRequiringUserAction: const <PlaybackMediaTypes>{},
@@ -126,7 +136,8 @@ class _LiveViewState extends State<_LiveView> {
     // Android: allow the live stream to autoplay without a tap (the tap layer
     // is reserved for toggling the chrome, so there is no in-player play button).
     if (controller.platform is AndroidWebViewController) {
-      (controller.platform as AndroidWebViewController).setMediaPlaybackRequiresUserGesture(false);
+      (controller.platform as AndroidWebViewController)
+          .setMediaPlaybackRequiresUserGesture(false);
     }
     return controller;
   }
@@ -164,16 +175,22 @@ class _LiveViewState extends State<_LiveView> {
       _loading = true;
       _error = false;
     });
-    _controller.loadHtmlString(_embedHtml(ELiveChannel.embedUrlFor(id)), baseUrl: _origin);
+    _controller.loadHtmlString(
+      _embedHtml(ELiveChannel.embedUrlFor(id)),
+      baseUrl: _origin,
+    );
   }
 
   void _toggleChrome() {
     setState(() => _chromeVisible = !_chromeVisible);
-    SystemChrome.setEnabledSystemUIMode(_chromeVisible ? SystemUiMode.edgeToEdge : SystemUiMode.immersiveSticky);
+    SystemChrome.setEnabledSystemUIMode(
+      _chromeVisible ? SystemUiMode.edgeToEdge : SystemUiMode.immersiveSticky,
+    );
   }
 
   Future<void> _openInYoutube() async {
-    final id = _videoId ?? BlocProvider.of<CBLive>(context).state.channel.videoId;
+    final id =
+        _videoId ?? BlocProvider.of<CBLive>(context).state.channel.videoId;
     final uri = Uri.parse(ELiveChannel.watchUrlFor(id));
     if (await canLaunchUrl(uri)) {
       await launchUrl(uri, mode: LaunchMode.externalApplication);
@@ -202,13 +219,20 @@ class _LiveViewState extends State<_LiveView> {
               // 1. Video (or error) fills the whole screen.
               ColoredBox(
                 color: Colors.black,
-                child: Center(child: _error ? _errorView(context, state.channel) : _video(busy)),
+                child: Center(
+                  child: _error
+                      ? _errorView(context, state.channel)
+                      : _video(busy),
+                ),
               ),
               // 2. Transparent tap layer over the video toggles the chrome. Skipped
               //    in the error state so the retry/open buttons stay tappable.
               if (!_error)
                 Positioned.fill(
-                  child: GestureDetector(behavior: HitTestBehavior.opaque, onTap: _toggleChrome),
+                  child: GestureDetector(
+                    behavior: HitTestBehavior.opaque,
+                    onTap: _toggleChrome,
+                  ),
                 ),
               // 3. Chrome (a slim header) overlays the top, on top of the tap
               //    layer so its buttons win taps. Fades + ignores pointers when hidden.
@@ -240,7 +264,12 @@ class _LiveViewState extends State<_LiveView> {
         if (busy)
           const ColoredBox(
             color: Colors.black,
-            child: Center(child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2.6)),
+            child: Center(
+              child: CircularProgressIndicator(
+                color: Colors.white,
+                strokeWidth: 2.6,
+              ),
+            ),
           ),
       ],
     );
@@ -257,7 +286,10 @@ class _LiveViewState extends State<_LiveView> {
       ),
       child: Padding(
         padding: const EdgeInsets.only(bottom: 12),
-        child: _Header(title: channel.titleKey.tr(), onOpenExternal: _openInYoutube),
+        child: _Header(
+          title: channel.titleKey.tr(),
+          onOpenExternal: _openInYoutube,
+        ),
       ),
     );
   }
@@ -273,7 +305,11 @@ class _LiveViewState extends State<_LiveView> {
           Text(
             'live_error'.tr(),
             textAlign: TextAlign.center,
-            style: const TextStyle(color: Colors.white70, fontSize: 15, fontWeight: FontWeight.w600),
+            style: const TextStyle(
+              color: Colors.white70,
+              fontSize: 15,
+              fontWeight: FontWeight.w600,
+            ),
           ),
           const SizedBox(height: 18),
           Row(
@@ -286,7 +322,11 @@ class _LiveViewState extends State<_LiveView> {
                 onTap: () => BlocProvider.of<CBLive>(context).open(channel),
               ),
               const SizedBox(width: 12),
-              _PillButton(label: 'live_open_youtube'.tr(), filled: false, onTap: _openInYoutube),
+              _PillButton(
+                label: 'live_open_youtube'.tr(),
+                filled: false,
+                onTap: _openInYoutube,
+              ),
             ],
           ),
         ],
@@ -305,35 +345,45 @@ class _Header extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Directionality(
-      textDirection: TextDirection.rtl,
-      child: SafeArea(
-        bottom: false,
-        child: SizedBox(
-          height: 48,
-          child: Row(
-            children: [
-              WLocalizeRotation(
-                reverse: true,
-                child: IconButton(
-                  onPressed: Modular.to.pop,
-                  icon: const Icon(Icons.arrow_forward_rounded, color: Colors.white, size: 24),
+    // Back leads, the external-link action trails — the row follows the layout
+    // direction rather than being pinned to RTL.
+    return SafeArea(
+      bottom: false,
+      child: SizedBox(
+        height: 48,
+        child: Row(
+          children: [
+            IconButton(
+              onPressed: Modular.to.pop,
+              icon: const WLocalizeRotation(
+                child: Icon(
+                  Icons.arrow_back_rounded,
+                  color: Colors.white,
+                  size: 24,
                 ),
               ),
-              Expanded(
-                child: Text(
-                  title,
-                  textAlign: TextAlign.center,
-                  style: const TextStyle(color: Colors.white, fontSize: 19, fontWeight: FontWeight.w600),
+            ),
+            Expanded(
+              child: Text(
+                title,
+                textAlign: TextAlign.center,
+                style: const TextStyle(
+                  color: Colors.white,
+                  fontSize: 19,
+                  fontWeight: FontWeight.w600,
                 ),
               ),
-              IconButton(
-                tooltip: 'live_open_youtube'.tr(),
-                onPressed: onOpenExternal,
-                icon: const Icon(Icons.open_in_new_rounded, color: Colors.white, size: 22),
+            ),
+            IconButton(
+              tooltip: 'live_open_youtube'.tr(),
+              onPressed: onOpenExternal,
+              icon: const Icon(
+                Icons.open_in_new_rounded,
+                color: Colors.white,
+                size: 22,
               ),
-            ],
-          ),
+            ),
+          ],
         ),
       ),
     );
@@ -342,7 +392,11 @@ class _Header extends StatelessWidget {
 
 /// Small fixed-size pill button used in the error view.
 class _PillButton extends StatelessWidget {
-  const _PillButton({required this.label, required this.filled, required this.onTap});
+  const _PillButton({
+    required this.label,
+    required this.filled,
+    required this.onTap,
+  });
 
   final String label;
   final bool filled;
@@ -361,7 +415,11 @@ class _PillButton extends StatelessWidget {
         ),
         child: Text(
           label,
-          style: TextStyle(color: filled ? Colors.white : Colors.white70, fontSize: 14, fontWeight: FontWeight.w600),
+          style: TextStyle(
+            color: filled ? Colors.white : Colors.white70,
+            fontSize: 14,
+            fontWeight: FontWeight.w600,
+          ),
         ),
       ),
     );

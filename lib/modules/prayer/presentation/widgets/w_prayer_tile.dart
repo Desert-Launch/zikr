@@ -41,25 +41,54 @@ class WPrayerTile extends StatelessWidget {
               )
             : null,
         borderRadius: BorderRadius.circular(14.r),
-        border: Border.all(color: isNext ? gold : const Color(0xFFF0F0EE), width: isNext ? 2 : 1),
-        boxShadow: const [BoxShadow(color: Color(0x0E000000), blurRadius: 10, offset: Offset(0, 4))],
+        border: Border.all(
+          color: isNext ? gold : const Color(0xFFF0F0EE),
+          width: isNext ? 2 : 1,
+        ),
+        boxShadow: const [
+          BoxShadow(
+            color: Color(0x0E000000),
+            blurRadius: 10,
+            offset: Offset(0, 4),
+          ),
+        ],
       ),
       child: isNext ? _nextContent(context) : _normalContent(context),
     );
     return _isPast ? Opacity(opacity: 0.5, child: tile) : tile;
   }
 
+  /// Leading edge → prayer icon + name; trailing edge → time and the alert
+  /// toggle. Ordered leading-first so it mirrors correctly in both directions.
   Widget _normalContent(BuildContext context) {
     return Row(
       children: [
+        WPrayerIcon(prayer: slot.prayer, active: false, green: green),
+        SizedBox(width: 10.w),
         Column(
           crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(_label(slot.prayer), style: AppTextStyles.ink16W700),
+            if (!_isPast) ...[
+              SizedBox(height: 3.h),
+              Text('prayer_upcoming'.tr(), style: AppTextStyles.grey12W400),
+            ],
+          ],
+        ),
+        const Spacer(),
+        Column(
+          crossAxisAlignment: CrossAxisAlignment.end,
           children: [
             Text(_formatTime(slot.time), style: AppTextStyles.ink24W500),
             if (onNotificationChanged != null)
               Row(
                 children: [
-                  Icon(Icons.notifications_none_rounded, color: green, size: 24.r),
+                  Text(
+                    notificationEnabled
+                        ? 'prayer_notification_on'.tr()
+                        : 'prayer_notification_off'.tr(),
+                    style: AppTextStyles.grey12W400,
+                  ),
                   SizedBox(width: 2.w),
                   Switch.adaptive(
                     value: notificationEnabled,
@@ -67,24 +96,15 @@ class WPrayerTile extends StatelessWidget {
                     onChanged: onNotificationChanged,
                   ),
                   SizedBox(width: 2.w),
-                  Text(
-                    notificationEnabled ? 'prayer_notification_on'.tr() : 'prayer_notification_off'.tr(),
-                    style: AppTextStyles.grey12W400,
+                  Icon(
+                    Icons.notifications_none_rounded,
+                    color: green,
+                    size: 24.r,
                   ),
                 ],
               ),
           ],
         ),
-        const Spacer(),
-        Column(
-          crossAxisAlignment: CrossAxisAlignment.end,
-          children: [
-            Text(_label(slot.prayer), style: AppTextStyles.ink16W700),
-            if (!_isPast) ...[SizedBox(height: 3.h), Text('prayer_upcoming'.tr(), style: AppTextStyles.grey12W400)],
-          ],
-        ),
-        SizedBox(width: 10.w),
-        WPrayerIcon(prayer: slot.prayer, active: false, green: green),
       ],
     );
   }
@@ -96,13 +116,34 @@ class WPrayerTile extends StatelessWidget {
       children: [
         Row(
           children: [
+            WPrayerIcon(prayer: slot.prayer, active: true, green: green),
+            SizedBox(width: 10.w),
             Column(
               crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(_label(slot.prayer), style: AppTextStyles.white16W700),
+                Text(
+                  '${'prayer_after'.tr()} ${_formatDuration(remaining)}',
+                  style: AppTextStyles.white12W400,
+                ),
+              ],
+            ),
+            const Spacer(),
+            Column(
+              crossAxisAlignment: CrossAxisAlignment.end,
               children: [
                 Text(_formatTime(slot.time), style: AppTextStyles.white24W500),
                 Row(
                   children: [
-                    Icon(Icons.notifications_none_rounded, color: Colors.white, size: 24.r),
+                    Text(
+                      notificationEnabled
+                          ? 'prayer_notification_on'.tr()
+                          : 'prayer_notification_off'.tr(),
+                      style: TextStyle(
+                        color: Colors.white.withValues(alpha: 0.7),
+                        fontSize: 8.sp,
+                      ),
+                    ),
                     SizedBox(width: 2.w),
                     Switch.adaptive(
                       value: notificationEnabled,
@@ -111,34 +152,30 @@ class WPrayerTile extends StatelessWidget {
                       onChanged: onNotificationChanged,
                     ),
                     SizedBox(width: 2.w),
-                    Text(
-                      notificationEnabled ? 'prayer_notification_on'.tr() : 'prayer_notification_off'.tr(),
-                      style: TextStyle(color: Colors.white.withValues(alpha: 0.7), fontSize: 8.sp),
+                    Icon(
+                      Icons.notifications_none_rounded,
+                      color: Colors.white,
+                      size: 24.r,
                     ),
                   ],
                 ),
               ],
             ),
-            const Spacer(),
-            Column(
-              crossAxisAlignment: CrossAxisAlignment.end,
-              children: [
-                Text(_label(slot.prayer), style: AppTextStyles.white16W700),
-                Text('${'prayer_after'.tr()} ${_formatDuration(remaining)}', style: AppTextStyles.white12W400),
-              ],
-            ),
-            SizedBox(width: 10.w),
-            WPrayerIcon(prayer: slot.prayer, active: true, green: green),
           ],
         ),
         Divider(color: Colors.white.withValues(alpha: 0.24), height: 24.h),
         Row(
           children: [
-            Text('${(progress * 100).round()}%', style: AppTextStyles.white12W400),
-            const Spacer(),
             Text(
               'prayer_time_remaining'.tr(),
-              style: AppTextStyles.white12W400.copyWith(color: Colors.white.withValues(alpha: 0.72)),
+              style: AppTextStyles.white12W400.copyWith(
+                color: Colors.white.withValues(alpha: 0.72),
+              ),
+            ),
+            const Spacer(),
+            Text(
+              '${(progress * 100).round()}%',
+              style: AppTextStyles.white12W400,
             ),
           ],
         ),

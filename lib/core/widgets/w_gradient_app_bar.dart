@@ -23,7 +23,7 @@ class WGradientAppBar extends StatelessWidget implements PreferredSizeWidget {
     this.actions,
     this.onBack,
     this.showBack = true,
-    this.backIcon = Icons.arrow_forward_rounded,
+    this.backIcon = Icons.arrow_back_rounded,
     super.key,
   });
 
@@ -61,45 +61,53 @@ class WGradientAppBar extends StatelessWidget implements PreferredSizeWidget {
               bottom: false,
               child: Padding(
                 padding: EdgeInsets.fromLTRB(8.w, 6.h, 8.w, 16.h),
-                // Headers always read right-to-left (back on the right, actions
-                // on the left) regardless of the screen's ambient direction.
-                child: Directionality(
-                  textDirection: TextDirection.rtl,
-                  child: Row(
-                    children: [
-                      if (showBack)
-                        WLocalizeRotation(
-                          reverse: true,
-                          child: IconButton(
-                            onPressed: onBack ?? Modular.to.pop,
-                            icon: Icon(backIcon, color: Colors.white),
-                          ),
-                        )
-                      else
-                        SizedBox(width: 48.w),
-                      Expanded(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            Text(title, textAlign: TextAlign.center, style: AppTextStyles.white24W400),
-                            if (subtitle != null) ...[
-                              SizedBox(height: 2.h),
-                              Text(
-                                subtitle ?? '',
-                                textAlign: TextAlign.center,
-                                style: AppTextStyles.white12W400.copyWith(color: Colors.white70),
-                              ),
-                            ],
-                          ],
+                // Back leads, actions trail — the row inherits the ambient
+                // direction, so it reads right-to-left in Arabic and
+                // left-to-right in English without being pinned either way.
+                child: Row(
+                  children: [
+                    if (showBack)
+                      IconButton(
+                        onPressed: onBack ?? Modular.to.pop,
+                        // The glyph itself has to be mirrored: Flutter icons
+                        // don't flip with the layout direction.
+                        icon: WLocalizeRotation(
+                          child: Icon(backIcon, color: Colors.white),
                         ),
+                      )
+                    else
+                      SizedBox(width: 48.w),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.stretch,
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Text(
+                            title,
+                            textAlign: TextAlign.center,
+                            style: AppTextStyles.white24W400,
+                          ),
+                          if (subtitle != null) ...[
+                            SizedBox(height: 2.h),
+                            Text(
+                              subtitle ?? '',
+                              textAlign: TextAlign.center,
+                              style: AppTextStyles.white12W400.copyWith(
+                                color: Colors.white70,
+                              ),
+                            ),
+                          ],
+                        ],
                       ),
-                      if (actions != null && actions!.isNotEmpty)
-                        Row(mainAxisSize: MainAxisSize.min, children: actions ?? [])
-                      else
-                        SizedBox(width: 48.w),
-                    ],
-                  ),
+                    ),
+                    if (actions != null && actions!.isNotEmpty)
+                      Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: actions ?? [],
+                      )
+                    else
+                      SizedBox(width: 48.w),
+                  ],
                 ),
               ),
             ),

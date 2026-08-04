@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:localize_and_translate/localize_and_translate.dart';
-import 'package:quran/core/extension/build_context.dart';
+import 'package:quran/core/widgets/w_localize_rotation.dart';
 import 'package:quran/modules/azkar/presentation/widgets/w_azkar_outline_circle.dart';
 import 'package:quran/modules/azkar/presentation/widgets/w_azkar_stat_card.dart';
 
@@ -63,23 +63,26 @@ class WAzkarHeader extends StatelessWidget {
                   padding: EdgeInsets.symmetric(horizontal: 20.w),
                   child: Row(
                     children: [
-                      CircleAvatar(
-                        radius: 21.r,
-                        backgroundColor: Colors.white.withValues(alpha: 0.16),
-                        child: const Text('🤲', style: TextStyle(fontSize: 20)),
+                      IconButton(
+                        onPressed: onBack,
+                        icon: const WLocalizeRotation(
+                          child: Icon(
+                            Icons.arrow_back_rounded,
+                            color: Colors.white,
+                          ),
+                        ),
                       ),
-                      const Spacer(),
-                      Column(
-                        crossAxisAlignment: CrossAxisAlignment.end,
-                        children: [
-                          SizedBox(
-                            width: context.width * 0.61,
-                            child: FittedBox(
+                      SizedBox(width: 8.w),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            FittedBox(
                               fit: BoxFit.scaleDown,
+                              alignment: AlignmentDirectional.centerStart,
                               child: Text(
                                 title ?? 'azkar_header_title'.tr(),
                                 maxLines: 1,
-                                textAlign: TextAlign.end,
                                 style: GoogleFonts.cairo(
                                   color: Colors.white,
                                   fontSize: 21.sp,
@@ -87,37 +90,53 @@ class WAzkarHeader extends StatelessWidget {
                                 ),
                               ),
                             ),
-                          ),
-                          SizedBox(height: 5.h),
-                          Text(
-                            'azkar_header_subtitle'.tr(),
-                            style: TextStyle(color: Colors.white.withValues(alpha: 0.72), fontSize: 10.sp),
-                          ),
-                        ],
+                            SizedBox(height: 5.h),
+                            Text(
+                              'azkar_header_subtitle'.tr(),
+                              style: TextStyle(
+                                color: Colors.white.withValues(alpha: 0.72),
+                                fontSize: 10.sp,
+                              ),
+                            ),
+                          ],
+                        ),
                       ),
                       SizedBox(width: 8.w),
-                      IconButton(
-                        onPressed: onBack,
-                        icon: const Icon(Icons.arrow_forward_rounded, color: Colors.white),
+                      CircleAvatar(
+                        radius: 21.r,
+                        backgroundColor: Colors.white.withValues(alpha: 0.16),
+                        child: const Text('🤲', style: TextStyle(fontSize: 20)),
                       ),
                     ],
                   ),
                 ),
                 const Spacer(),
                 Padding(
-                  padding: EdgeInsets.symmetric(horizontal: 20.w, vertical: 20.h),
+                  padding: EdgeInsets.symmetric(
+                    horizontal: 20.w,
+                    vertical: 20.h,
+                  ),
                   child: Row(
                     children: [
                       Expanded(
-                        child: WAzkarStatCard(value: favorites, label: 'azkar_favorites'.tr()),
+                        child: WAzkarStatCard(
+                          value: favorites,
+                          label: 'azkar_favorites'.tr(),
+                        ),
                       ),
                       SizedBox(width: 10.w),
                       Expanded(
-                        child: WAzkarStatCard(value: completedToday, label: 'azkar_completed_today'.tr()),
+                        child: WAzkarStatCard(
+                          value: completedToday,
+                          label: 'azkar_completed_today'.tr(),
+                        ),
                       ),
                       SizedBox(width: 10.w),
                       Expanded(
-                        child: WAzkarStatCard(value: categoryCount, label: 'azkar_categories'.tr()),
+                        child: WAzkarStatCard(
+                          value: categoryCount,
+                          label: 'azkar_categories'.tr(),
+                        ),
                       ),
                     ],
                   ),

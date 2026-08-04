@@ -26,14 +26,37 @@ class WQiblaInfoCard extends StatelessWidget {
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(20.r),
-        boxShadow: const [BoxShadow(color: Color(0x12000000), blurRadius: 16, offset: Offset(0, 6))],
+        boxShadow: const [
+          BoxShadow(
+            color: Color(0x12000000),
+            blurRadius: 16,
+            offset: Offset(0, 6),
+          ),
+        ],
       ),
       child: Row(
-        mainAxisAlignment: MainAxisAlignment.end,
         children: [
+          // Direction button.
+          Container(
+            width: 46.r,
+            height: 46.r,
+            decoration: BoxDecoration(
+              color: green,
+              shape: BoxShape.circle,
+              boxShadow: [
+                BoxShadow(
+                  color: green.withValues(alpha: 0.3),
+                  blurRadius: 12,
+                  offset: const Offset(0, 4),
+                ),
+              ],
+            ),
+            child: const Icon(Icons.navigation_rounded, color: Colors.white),
+          ),
+          SizedBox(width: 16.w),
           // Bearing degree + cardinal name.
           Column(
-            crossAxisAlignment: CrossAxisAlignment.end,
+            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text(
                 '${localizeQiblaDigits(heading.round().toString())}°',
@@ -50,18 +73,7 @@ class WQiblaInfoCard extends StatelessWidget {
               ),
             ],
           ),
-          SizedBox(width: 16.w),
-          // Direction button.
-          Container(
-            width: 46.r,
-            height: 46.r,
-            decoration: BoxDecoration(
-              color: green,
-              shape: BoxShape.circle,
-              boxShadow: [BoxShadow(color: green.withValues(alpha: 0.3), blurRadius: 12, offset: const Offset(0, 4))],
-            ),
-            child: const Icon(Icons.navigation_rounded, color: Colors.white),
-          ),
+          const Spacer(),
         ],
       ),
     );
@@ -83,7 +95,10 @@ class WQiblaInfoCard extends StatelessWidget {
   }
 
   String _formatDistance(double km) {
-    final withSep = km.round().toString().replaceAllMapped(RegExp(r'\B(?=(\d{3})+(?!\d))'), (m) => ',');
+    final withSep = km.round().toString().replaceAllMapped(
+      RegExp(r'\B(?=(\d{3})+(?!\d))'),
+      (m) => ',',
+    );
     return localizeQiblaDigits(withSep);
   }
 }

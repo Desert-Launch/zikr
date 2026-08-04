@@ -4,7 +4,9 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:quran/core/theme/app_text_styles.dart';
 import 'package:quran/modules/home/presentation/widgets/w_home_icon_box.dart';
 
-/// Full-width feature card: icon on the right, title + subtitle right-aligned.
+/// Full-width feature card: icon on the leading edge, title + subtitle beside
+/// it. Direction-neutral — the icon leads, so it sits right in Arabic and left
+/// in English without any per-language branching.
 class WHomeWideFeature extends StatelessWidget {
   const WHomeWideFeature({
     super.key,
@@ -32,21 +34,39 @@ class WHomeWideFeature extends StatelessWidget {
         decoration: BoxDecoration(
           color: Colors.white,
           borderRadius: BorderRadius.circular(16.r),
-          boxShadow: const [BoxShadow(color: Color(0x0F000000), blurRadius: 10, offset: Offset(0, 4))],
+          boxShadow: const [
+            BoxShadow(
+              color: Color(0x0F000000),
+              blurRadius: 10,
+              offset: Offset(0, 4),
+            ),
+          ],
         ),
         child: Row(
           children: [
-            const Spacer(),
-            Column(
-              crossAxisAlignment: CrossAxisAlignment.end,
-              children: [
-                Text(title, style: AppTextStyles.ink18W500),
-                SizedBox(height: 2.h),
-                if (sub != null) Text(sub, style: AppTextStyles.grey12W400),
-              ],
-            ),
-            SizedBox(width: 12.w),
             WHomeIconBox(icon: icon, color: color),
+            SizedBox(width: 12.w),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    title,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: AppTextStyles.ink18W500,
+                  ),
+                  SizedBox(height: 2.h),
+                  if (sub != null)
+                    Text(
+                      sub,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: AppTextStyles.grey12W400,
+                    ),
+                ],
+              ),
+            ),
           ],
         ),
       ),

@@ -152,8 +152,7 @@ class _RootState extends State<_Root> with WidgetsBindingObserver {
       await Modular.get<CBReminders>().rescheduleAll();
       // Seed the JSON-driven azkar + quran reminders once per install (live
       // re-timing to prayer times happens later inside the adhan reschedule).
-      await Modular.get<InitNotificationsService>()
-          .scheduleInitialNotificationsIfNeeded();
+      await Modular.get<InitNotificationsService>().scheduleInitialNotificationsIfNeeded();
       await Modular.get<AdhanBootstrap>().run();
       // Returning users who finished onboarding on an older build (or declined)
       // may never have granted the notification permission — without it the
@@ -208,16 +207,16 @@ class _RootState extends State<_Root> with WidgetsBindingObserver {
               theme: buildLightTheme(),
               themeMode: ThemeMode.light,
               routerConfig: Modular.routerConfig,
+              // Pin the app's Directionality to the language the USER picked,
+              // not the device locale. Without this, an Arabic UI on an
+              // English-locale phone lays out LTR — mirroring every RTL row
+              // (index tabs, search hints, list chevrons).
+              locale: LocalizeAndTranslate.getLocale(),
               localizationsDelegates: LocalizeAndTranslate.delegates,
               supportedLocales: LocalizeAndTranslate.getLocals(),
               // Mount the app-wide radio peek tab above every route so it
               // follows the user while a station plays.
-              builder: (context, child) => Stack(
-                children: [
-                  if (child != null) child,
-                  const WRadioPeekTab(),
-                ],
-              ),
+              builder: (context, child) => Stack(children: [if (child != null) child, const WRadioPeekTab()]),
             );
           },
         );

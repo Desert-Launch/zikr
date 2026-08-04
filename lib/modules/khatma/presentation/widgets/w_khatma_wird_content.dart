@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:quran/core/widgets/w_localize_rotation.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:localize_and_translate/localize_and_translate.dart';
 import 'package:quran/modules/khatma/data/models/m_khatma_metadata.dart';
@@ -17,21 +18,25 @@ class WKhatmaWirdContent extends StatelessWidget {
     final endSurah = isArabic ? wird.endSurahAr : wird.endSurahEn;
     return Row(
       children: [
-        const Icon(Icons.chevron_left_rounded, size: 18),
-        const Spacer(),
-        Column(
-          crossAxisAlignment: CrossAxisAlignment.end,
-          children: [
-            Text(
-              '${'khatma_wird_day'.tr()} ${wird.index}',
-              style: TextStyle(fontSize: 15.sp),
-            ),
-            Text(
-              '$startSurah ${wird.startAyahNumber} - '
-              '$endSurah ${wird.endAyahNumber}',
-              style: TextStyle(fontSize: 12.sp, color: Colors.grey[600]),
-            ),
-          ],
+        Expanded(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                '${'khatma_wird_day'.tr()} ${wird.index}',
+                style: TextStyle(fontSize: 15.sp),
+              ),
+              Text(
+                '$startSurah ${wird.startAyahNumber} - '
+                '$endSurah ${wird.endAyahNumber}',
+                style: TextStyle(fontSize: 12.sp, color: Colors.grey[600]),
+              ),
+            ],
+          ),
+        ),
+        const WLocalizeRotation(
+          reverse: true,
+          child: Icon(Icons.chevron_left_rounded, size: 18),
         ),
       ],
     );

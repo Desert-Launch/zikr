@@ -10,7 +10,13 @@ import 'package:quran/modules/quran/presentation/widgets/w_star_number.dart';
 /// A juz' row in the index. Tapping the header expands it to reveal the two
 /// ahzab inside, each navigating to its start page via [onOpenPage].
 class WJuzCard extends StatefulWidget {
-  const WJuzCard({super.key, required this.entry, required this.green, required this.gold, required this.onOpenPage});
+  const WJuzCard({
+    super.key,
+    required this.entry,
+    required this.green,
+    required this.gold,
+    required this.onOpenPage,
+  });
 
   final EJuzEntry entry;
   final Color green;
@@ -31,7 +37,13 @@ class _WJuzCardState extends State<WJuzCard> {
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(14.r),
-        boxShadow: const [BoxShadow(color: Color(0x0B000000), blurRadius: 8, offset: Offset(0, 3))],
+        boxShadow: const [
+          BoxShadow(
+            color: Color(0x0B000000),
+            blurRadius: 8,
+            offset: Offset(0, 3),
+          ),
+        ],
       ),
       child: Column(
         children: [
@@ -46,16 +58,21 @@ class _WJuzCardState extends State<WJuzCard> {
                   SizedBox(width: 10.w),
                   Expanded(
                     child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.end,
+                      crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(
-                          'surah_list_juz_n'.tr().replaceFirst('{{juz}}', '${entry.number}'),
-                          style: GoogleFonts.amiri(fontSize: 18.sp, fontWeight: FontWeight.w700),
+                          'surah_list_juz_n'.tr().replaceFirst(
+                            '{{juz}}',
+                            '${entry.number}',
+                          ),
+                          style: GoogleFonts.amiri(
+                            fontSize: 18.sp,
+                            fontWeight: FontWeight.w700,
+                          ),
                         ),
                         SizedBox(height: 2.h),
                         Text(
                           entry.startSurahArabic,
-                          textAlign: TextAlign.end,
                           style: AppTextStyles.grey12W400,
                         ),
                       ],
@@ -63,21 +80,35 @@ class _WJuzCardState extends State<WJuzCard> {
                   ),
                   SizedBox(width: 10.w),
                   Container(
-                    padding: EdgeInsets.symmetric(horizontal: 7.w, vertical: 4.h),
+                    padding: EdgeInsets.symmetric(
+                      horizontal: 7.w,
+                      vertical: 4.h,
+                    ),
                     decoration: BoxDecoration(
                       color: widget.green.withValues(alpha: 0.12),
                       borderRadius: BorderRadius.circular(10.r),
                     ),
                     child: Text(
-                      'search_page'.tr().replaceFirst('{{page}}', '${entry.startPage}'),
-                      style: AppTextStyles.ink12W400.copyWith(color: widget.green, fontSize: 10.sp, height: 1.2),
+                      'search_page'.tr().replaceFirst(
+                        '{{page}}',
+                        '${entry.startPage}',
+                      ),
+                      style: AppTextStyles.ink12W400.copyWith(
+                        color: widget.green,
+                        fontSize: 10.sp,
+                        height: 1.2,
+                      ),
                     ),
                   ),
                   SizedBox(width: 6.w),
                   AnimatedRotation(
                     turns: _expanded ? 0.5 : 0,
                     duration: const Duration(milliseconds: 180),
-                    child: Icon(Icons.keyboard_arrow_down_rounded, color: widget.green, size: 22.r),
+                    child: Icon(
+                      Icons.keyboard_arrow_down_rounded,
+                      color: widget.green,
+                      size: 22.r,
+                    ),
                   ),
                 ],
               ),
@@ -90,7 +121,11 @@ class _WJuzCardState extends State<WJuzCard> {
                 children: [
                   Divider(height: 1.h, color: const Color(0xFFEDEFEC)),
                   for (final hizb in entry.hizbs)
-                    _WHizbRow(hizb: hizb, gold: widget.gold, onTap: () => widget.onOpenPage(hizb.startPage)),
+                    _WHizbRow(
+                      hizb: hizb,
+                      gold: widget.gold,
+                      onTap: () => widget.onOpenPage(hizb.startPage),
+                    ),
                 ],
               ),
             ),
@@ -102,7 +137,11 @@ class _WJuzCardState extends State<WJuzCard> {
 
 /// A single hizb line shown under an expanded juz' card.
 class _WHizbRow extends StatelessWidget {
-  const _WHizbRow({required this.hizb, required this.gold, required this.onTap});
+  const _WHizbRow({
+    required this.hizb,
+    required this.gold,
+    required this.onTap,
+  });
 
   final EHizbEntry hizb;
   final Color gold;
@@ -121,15 +160,17 @@ class _WHizbRow extends StatelessWidget {
             SizedBox(width: 8.w),
             Expanded(
               child: Text(
-                'surah_list_hizb_n'.tr().replaceFirst('{{hizb}}', '${hizb.number}'),
-                style: AppTextStyles.ink12W400.copyWith(fontWeight: FontWeight.w600),
+                'surah_list_hizb_n'.tr().replaceFirst(
+                  '{{hizb}}',
+                  '${hizb.number}',
+                ),
+                style: AppTextStyles.ink12W400.copyWith(
+                  fontWeight: FontWeight.w600,
+                ),
               ),
             ),
             SizedBox(width: 8.w),
-            Text(
-              hizb.startSurahArabic,
-              style: AppTextStyles.grey12W400,
-            ),
+            Text(hizb.startSurahArabic, style: AppTextStyles.grey12W400),
             SizedBox(width: 8.w),
             Text(
               'search_page'.tr().replaceFirst('{{page}}', '${hizb.startPage}'),

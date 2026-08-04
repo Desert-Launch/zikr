@@ -7,7 +7,12 @@ import 'package:quran/modules/quran/domain/entities/e_page_entry.dart';
 import 'package:quran/modules/quran/presentation/widgets/w_star_number.dart';
 
 class WPageCard extends StatelessWidget {
-  const WPageCard({super.key, required this.entry, required this.green, required this.onTap});
+  const WPageCard({
+    super.key,
+    required this.entry,
+    required this.green,
+    required this.onTap,
+  });
 
   final EPageEntry entry;
   final Color green;
@@ -23,7 +28,13 @@ class WPageCard extends StatelessWidget {
         decoration: BoxDecoration(
           color: Colors.white,
           borderRadius: BorderRadius.circular(14.r),
-          boxShadow: const [BoxShadow(color: Color(0x0B000000), blurRadius: 8, offset: Offset(0, 3))],
+          boxShadow: const [
+            BoxShadow(
+              color: Color(0x0B000000),
+              blurRadius: 8,
+              offset: Offset(0, 3),
+            ),
+          ],
         ),
         child: Row(
           children: [
@@ -31,16 +42,21 @@ class WPageCard extends StatelessWidget {
             SizedBox(width: 10.w),
             Expanded(
               child: Column(
-                crossAxisAlignment: CrossAxisAlignment.end,
+                crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
                     entry.surahArabic,
-                    style: GoogleFonts.amiri(fontSize: 18.sp, fontWeight: FontWeight.w700),
+                    style: GoogleFonts.amiri(
+                      fontSize: 18.sp,
+                      fontWeight: FontWeight.w700,
+                    ),
                   ),
                   SizedBox(height: 2.h),
                   Text(
-                    'search_page'.tr().replaceFirst('{{page}}', '${entry.page}'),
-                    textAlign: TextAlign.end,
+                    'search_page'.tr().replaceFirst(
+                      '{{page}}',
+                      '${entry.page}',
+                    ),
                     style: AppTextStyles.grey12W400,
                   ),
                 ],
