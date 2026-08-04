@@ -288,6 +288,7 @@ class AppModule extends Module {
         fetchCatalog: i.get<UCFetchAdhanCatalog>(),
         downloadVoice: i.get<UCDownloadAdhanVoice>(),
         downloads: i.get<BoxAdhanDownload>(),
+        audioAlarms: i.get<AdhanAudioAlarms>(),
       ),
     );
     i.addSingleton<CBTasbih>(

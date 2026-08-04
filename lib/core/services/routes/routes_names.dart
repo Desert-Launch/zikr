@@ -34,11 +34,18 @@ class AdhanRoutes {
   static const String notifications = '/notifications';
   static const String picker = '/picker';
 
+  /// Full-screen in-app adhan alarm, shown when the app is already foregrounded
+  /// at prayer time. The killed-app case is handled natively instead
+  /// (AdhanAlarmActivity on Android, AlarmKit/critical alerts on iOS).
+  static const String ringing = '/ringing';
+
   static String overview() => RoutesNames.adhanBase;
   static String notificationsScreen() =>
       '${RoutesNames.adhanBase}notifications';
   static String voicePicker(String prayerKey) =>
       '${RoutesNames.adhanBase}picker?prayer=$prayerKey';
+  static String ringingScreen(String prayerKey) =>
+      '${RoutesNames.adhanBase}ringing?prayer=$prayerKey';
 }
 
 class RadioRoutes {

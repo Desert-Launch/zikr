@@ -9,6 +9,7 @@ import 'package:quran/core/widgets/w_gradient_app_bar.dart';
 import 'package:quran/core/widgets/w_shared_scaffold.dart';
 import 'package:quran/modules/adhan/presentation/cubits/cb_adhan_settings.dart';
 import 'package:quran/modules/adhan/presentation/cubits/s_adhan_settings.dart';
+import 'package:quran/modules/adhan/presentation/widgets/w_adhan_alarm_readiness.dart';
 import 'package:quran/modules/adhan/presentation/widgets/w_adhan_before_row.dart';
 import 'package:quran/modules/adhan/presentation/widgets/w_adhan_group.dart';
 import 'package:quran/modules/adhan/presentation/widgets/w_adhan_prayer_row.dart';
@@ -73,6 +74,34 @@ class SNAdhanSettings extends StatelessWidget {
                               ),
                           ],
                         ),
+
+                        SizedBox(height: 18.h),
+                        WAdhanSectionLabel('adhan_alarm_section'.tr()),
+                        WAdhanGroup(
+                          children: [
+                            WAdhanSettingRow(
+                              icon: Icons.notifications_active_outlined,
+                              title: 'adhan_alarm_fullscreen'.tr(),
+                              subtitle: defaultTargetPlatform == TargetPlatform.iOS
+                                  ? 'adhan_alarm_fullscreen_hint_ios'.tr()
+                                  : 'adhan_alarm_fullscreen_hint'.tr(),
+                              trailing: Transform.scale(
+                                scale: .75,
+                                child: Switch(
+                                  value: state.fullScreenAlarm,
+                                  activeTrackColor: _green,
+                                  thumbColor: WidgetStateProperty.all(
+                                    state.fullScreenAlarm ? Colors.white : Colors.grey.shade400,
+                                  ),
+                                  onChanged: cubit.setFullScreenAlarm,
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                        // Only meaningful once the alarm is on — these are the
+                        // OS grants that decide whether it actually fires.
+                        if (state.fullScreenAlarm) const WAdhanAlarmReadiness(),
 
                         if (defaultTargetPlatform == TargetPlatform.android) ...[
                           SizedBox(height: 18.h),

@@ -12,6 +12,13 @@
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE"/>
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE_MEDIA_PLAYBACK"/>
     <uses-permission android:name="android.permission.REQUEST_IGNORE_BATTERY_OPTIMIZATIONS"/>
+    <!-- Lets AdhanPlaybackService's notification launch AdhanAlarmActivity over
+         the lockscreen. Auto-granted below API 34; user-revocable on Android 14+
+         (we degrade to a heads-up notification if revoked). -->
+    <uses-permission android:name="android.permission.USE_FULL_SCREEN_INTENT"/>
+    <!-- Turns the screen on when the adhan fires. -->
+    <uses-permission android:name="android.permission.TURN_SCREEN_ON"/>
+    <uses-permission android:name="android.permission.DISABLE_KEYGUARD"/>
     <application
         android:label="Zikr"
         android:name="${applicationName}"
@@ -101,6 +108,27 @@
             android:name=".adhan.AdhanPlaybackService"
             android:foregroundServiceType="mediaPlayback"
             android:exported="false" />
+
+        <!-- The unmissable full-screen alarm. Launched by the service's
+             full-screen-intent notification, so it appears over the lockscreen
+             and turns the screen on even from a killed app.
+             - showWhenLocked/turnScreenOn: the manifest half of the API 27+
+               Activity calls, so the window manager honours them before
+               onCreate runs.
+             - excludeFromRecents: an alarm shouldn't linger in the task
+               switcher after it's dismissed.
+             - singleInstance + own taskAffinity: keeps it out of the Flutter
+               MainActivity task, so dismissing the alarm never closes the app. -->
+        <activity
+            android:name=".adhan.AdhanAlarmActivity"
+            android:exported="false"
+            android:theme="@style/AdhanAlarmTheme"
+            android:launchMode="singleInstance"
+            android:taskAffinity=".adhan.alarm"
+            android:showWhenLocked="true"
+            android:turnScreenOn="true"
+            android:excludeFromRecents="true"
+            android:configChanges="orientation|keyboardHidden|keyboard|screenSize|smallestScreenSize|locale|layoutDirection|fontScale|screenLayout|density|uiMode" />
         <receiver
             android:name=".adhan.AdhanBootReceiver"
             android:exported="true">
@@ -137,5 +165,18 @@
             <action android:name="android.intent.action.PROCESS_TEXT"/>
             <data android:mimeType="text/plain"/>
         </intent>
+        <!-- Package visibility (Android 11+) for the OEM autostart / protected-app
+             managers probed by AdhanAlarmPlugin.oemAutostartIntent(). Without
+             these, resolveActivity() returns null on every one of them and the
+             app can't offer the whitelist deep-link that keeps background adhan
+             alarms alive on Xiaomi/Oppo/Vivo/Huawei builds. -->
+        <package android:name="com.miui.securitycenter"/>
+        <package android:name="com.coloros.safecenter"/>
+        <package android:name="com.oppo.safe"/>
+        <package android:name="com.vivo.permissionmanager"/>
+        <package android:name="com.iqoo.secure"/>
+        <package android:name="com.huawei.systemmanager"/>
+        <package android:name="com.letv.android.letvsafe"/>
+        <package android:name="com.asus.mobilemanager"/>
     </queries>
 </manifest>

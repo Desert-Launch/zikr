@@ -2,7 +2,6 @@ import 'package:flutter_modular/flutter_modular.dart';
 import 'package:quran/core/services/logging/app_logger.dart';
 import 'package:quran/core/services/notifications/notification_payload.dart';
 import 'package:quran/core/services/routes/routes_names.dart';
-import 'package:quran/modules/adhan/presentation/cubits/cb_adhan_player.dart';
 
 /// Maps a [NotificationPayload] tap to a screen. Lives in its own class so
 /// tests can swap it out and so each feature module doesn't have to know
@@ -19,13 +18,16 @@ class NotificationRouter {
       case 'prayer':
         Modular.to.navigate(RoutesNames.prayerBase);
       case 'adhan':
-        // Trigger adhan playback for the named prayer (fire-and-forget), then
-        // surface the prayer-times screen so the user sees what's playing.
+        // Route to the full-screen in-app alarm, which starts playback itself
+        // via CBAdhanRinging → CBAdhanPlayer. The native full-screen paths
+        // (AdhanAlarmActivity / AlarmKit) cover the killed-app case; this is
+        // the foreground equivalent.
         final prayer = payload.data['prayer']?.toString();
-        if (prayer != null) {
-          Modular.get<CBAdhanPlayer>().playForPrayer(prayer);
+        if (prayer != null && prayer.isNotEmpty) {
+          Modular.to.pushNamed(AdhanRoutes.ringingScreen(prayer));
+        } else {
+          Modular.to.navigate(RoutesNames.prayerBase);
         }
-        Modular.to.navigate(RoutesNames.prayerBase);
       case 'azkar':
         final category = payload.data['category']?.toString();
         if (category != null && category.isNotEmpty) {

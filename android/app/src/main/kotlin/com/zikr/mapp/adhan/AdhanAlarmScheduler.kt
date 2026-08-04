@@ -26,6 +26,9 @@ object AdhanAlarmScheduler {
     const val EXTRA_TITLE = "title"
     const val EXTRA_BODY = "body"
     const val EXTRA_STOP = "stop"
+    const val EXTRA_OPEN = "open"
+    const val EXTRA_PRAYER = "prayer"
+    const val EXTRA_FULLSCREEN = "fullScreen"
 
     /** True when exact alarms are allowed (always pre-API-31; gated after). */
     fun canScheduleExact(context: Context): Boolean {
@@ -42,26 +45,38 @@ object AdhanAlarmScheduler {
         title: String,
         body: String,
         stopLabel: String,
+        openLabel: String,
+        prayerKey: String,
+        fullScreen: Boolean,
     ) {
         val am = context.getSystemService(Context.ALARM_SERVICE) as AlarmManager
-        val pi = receiverPendingIntent(context, id, rawRes, title, body, stopLabel)
+        val pi = receiverPendingIntent(
+            context, id, rawRes, title, body, stopLabel, openLabel, prayerKey, fullScreen,
+        )
         try {
-            if (canScheduleExact(context)) {
-                am.setExactAndAllowWhileIdle(AlarmManager.RTC_WAKEUP, triggerAtMillis, pi)
-            } else {
-                // No exact-alarm grant: fall back to an inexact idle-safe alarm
-                // rather than dropping the adhan entirely.
-                am.setAndAllowWhileIdle(AlarmManager.RTC_WAKEUP, triggerAtMillis, pi)
-            }
+            // setAlarmClock is the strongest guarantee Android offers: it is
+            // treated as a user-visible alarm, so it pierces Doze and App
+            // Standby buckets that delay setExactAndAllowWhileIdle, and it
+            // surfaces the status-bar alarm icon. Paired with USE_EXACT_ALARM
+            // in the manifest (an "alarm clock" app is exactly our case), it
+            // also survives the SCHEDULE_EXACT_ALARM revoke on Android 13+.
+            val show = showPendingIntent(
+                context, id, title, body, stopLabel, openLabel, prayerKey,
+            )
+            am.setAlarmClock(AlarmManager.AlarmClockInfo(triggerAtMillis, show), pi)
         } catch (e: SecurityException) {
+            // No exact-alarm grant at all: degrade rather than drop the adhan.
             am.setAndAllowWhileIdle(AlarmManager.RTC_WAKEUP, triggerAtMillis, pi)
         }
-        persist(context, id, triggerAtMillis, rawRes, title, body, stopLabel)
+        persist(
+            context, id, triggerAtMillis, rawRes, title, body, stopLabel,
+            openLabel, prayerKey, fullScreen,
+        )
     }
 
     fun cancel(context: Context, id: Int) {
         val am = context.getSystemService(Context.ALARM_SERVICE) as AlarmManager
-        am.cancel(receiverPendingIntent(context, id, "", "", "", ""))
+        am.cancel(cancellationPendingIntent(context, id))
         remove(context, id)
     }
 
@@ -69,7 +84,7 @@ object AdhanAlarmScheduler {
         val am = context.getSystemService(Context.ALARM_SERVICE) as AlarmManager
         val all = read(context)
         for (i in 0 until all.length()) {
-            am.cancel(receiverPendingIntent(context, all.getJSONObject(i).getInt("id"), "", "", "", ""))
+            am.cancel(cancellationPendingIntent(context, all.getJSONObject(i).getInt("id")))
         }
         context.getSharedPreferences(PREFS, Context.MODE_PRIVATE).edit().remove(KEY).apply()
     }
@@ -90,8 +105,19 @@ object AdhanAlarmScheduler {
                 o.getString("title"),
                 o.getString("body"),
                 o.getString("stop"),
+                o.optString("open"),
+                o.optString("prayer"),
+                o.optBoolean("fullScreen", true),
             )
         }
+    }
+
+    private fun pendingIntentFlags(): Int {
+        var flags = PendingIntent.FLAG_UPDATE_CURRENT
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+            flags = flags or PendingIntent.FLAG_IMMUTABLE
+        }
+        return flags
     }
 
     private fun receiverPendingIntent(
@@ -101,23 +127,70 @@ object AdhanAlarmScheduler {
         title: String,
         body: String,
         stopLabel: String,
-    ): PendingIntent {
-        // The per-id action keeps each PendingIntent distinct for cancellation
-        // (extras are ignored by Intent.filterEquals, the action is not).
-        val intent = Intent(context, AdhanAlarmReceiver::class.java).apply {
+        openLabel: String,
+        prayerKey: String,
+        fullScreen: Boolean,
+    ): PendingIntent = PendingIntent.getBroadcast(
+        context,
+        id,
+        Intent(context, AdhanAlarmReceiver::class.java).apply {
+            // The per-id action keeps each PendingIntent distinct for
+            // cancellation (extras are ignored by Intent.filterEquals, the
+            // action is not).
             action = "com.zikr.mapp.adhan.FIRE_$id"
             putExtra(EXTRA_ID, id)
             putExtra(EXTRA_RAW, rawRes)
             putExtra(EXTRA_TITLE, title)
             putExtra(EXTRA_BODY, body)
             putExtra(EXTRA_STOP, stopLabel)
-        }
-        var flags = PendingIntent.FLAG_UPDATE_CURRENT
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-            flags = flags or PendingIntent.FLAG_IMMUTABLE
-        }
-        return PendingIntent.getBroadcast(context, id, intent, flags)
-    }
+            putExtra(EXTRA_OPEN, openLabel)
+            putExtra(EXTRA_PRAYER, prayerKey)
+            putExtra(EXTRA_FULLSCREEN, fullScreen)
+        },
+        pendingIntentFlags(),
+    )
+
+    /**
+     * Matches [receiverPendingIntent] for `AlarmManager.cancel`, which compares
+     * with `Intent.filterEquals` — only the component and action matter, so the
+     * extras are deliberately omitted here.
+     */
+    private fun cancellationPendingIntent(context: Context, id: Int): PendingIntent =
+        PendingIntent.getBroadcast(
+            context,
+            id,
+            Intent(context, AdhanAlarmReceiver::class.java).apply {
+                action = "com.zikr.mapp.adhan.FIRE_$id"
+            },
+            pendingIntentFlags(),
+        )
+
+    /**
+     * What the user reaches by tapping the status-bar alarm icon before the
+     * adhan fires: the same full-screen alarm UI, so the pending prayer is
+     * identifiable at a glance.
+     */
+    private fun showPendingIntent(
+        context: Context,
+        id: Int,
+        title: String,
+        body: String,
+        stopLabel: String,
+        openLabel: String,
+        prayerKey: String,
+    ): PendingIntent = PendingIntent.getActivity(
+        context,
+        id,
+        Intent(context, AdhanAlarmActivity::class.java).apply {
+            addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TOP)
+            putExtra(EXTRA_TITLE, title)
+            putExtra(EXTRA_BODY, body)
+            putExtra(EXTRA_STOP, stopLabel)
+            putExtra(EXTRA_OPEN, openLabel)
+            putExtra(EXTRA_PRAYER, prayerKey)
+        },
+        pendingIntentFlags(),
+    )
 
     // --- SharedPreferences mirror -------------------------------------------
 
@@ -143,6 +216,9 @@ object AdhanAlarmScheduler {
         title: String,
         body: String,
         stop: String,
+        open: String,
+        prayer: String,
+        fullScreen: Boolean,
     ) {
         val out = withoutId(read(context), id)
         out.put(
@@ -153,6 +229,9 @@ object AdhanAlarmScheduler {
                 put("title", title)
                 put("body", body)
                 put("stop", stop)
+                put("open", open)
+                put("prayer", prayer)
+                put("fullScreen", fullScreen)
             },
         )
         write(context, out)

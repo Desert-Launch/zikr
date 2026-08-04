@@ -11,12 +11,14 @@ part 'm_adhan_settings.g.dart';
 class MAdhanSettings extends HiveObject {
   MAdhanSettings({
     this.enabled = true,
-    this.playbackMode = 'clip', // == playbackClip; literal so the Hive
+    this.playbackMode = 'full', // == playbackFull; literal so the Hive
     // adapter generator can inline it as a field default.
-    this.androidBackgroundFullAdhan = false,
+    this.androidBackgroundFullAdhan = true,
     this.vibrate = true,
     this.preNotifyMinutes = 0,
     this.bootstrapped = false,
+    this.fullScreenAlarm = true,
+    this.alarmDefaultsApplied = false,
   });
 
   /// Notification sound is a short bundled clip (works while killed).
@@ -49,4 +51,20 @@ class MAdhanSettings extends HiveObject {
   /// doesn't repeat every cold start.
   @HiveField(5)
   bool bootstrapped;
+
+  /// Raise a full-screen, over-the-lockscreen alarm at prayer time instead of a
+  /// plain notification.
+  ///
+  /// Android: a full-screen-intent `AdhanAlarmActivity` with `showWhenLocked` +
+  /// `turnScreenOn`. iOS 26+: an AlarmKit alarm (system Lock Screen UI).
+  /// iOS < 26: a critical alert, which is as close as Apple allows.
+  @HiveField(6)
+  bool fullScreenAlarm;
+
+  /// Migration marker for the "unmissable by default" rollout. Records created
+  /// before it existed kept `playbackMode: 'clip'` and background full-adhan
+  /// off; [BoxAdhanSettings.current] flips those forward exactly once and sets
+  /// this, so a user who later opts back out isn't overridden again.
+  @HiveField(7)
+  bool alarmDefaultsApplied;
 }

@@ -16,6 +16,7 @@ import 'package:quran/modules/adhan/data/sources/local/box_adhan_settings.dart';
 import 'package:quran/modules/adhan/domain/usecases/uc_download_adhan_voice.dart';
 import 'package:quran/modules/adhan/domain/usecases/uc_fetch_adhan_catalog.dart';
 import 'package:quran/modules/adhan/presentation/cubits/s_adhan_settings.dart';
+import 'package:quran/modules/adhan/services/adhan_audio_alarms.dart';
 import 'package:quran/modules/adhan/services/adhan_scheduler.dart';
 import 'package:quran/modules/prayer/data/models/m_prayer_settings.dart';
 import 'package:quran/modules/prayer/data/sources/local/box_prayer_settings.dart';
@@ -36,7 +37,9 @@ class CBAdhanSettings extends Cubit<SAdhanSettings> {
     required UCFetchAdhanCatalog fetchCatalog,
     required UCDownloadAdhanVoice downloadVoice,
     required BoxAdhanDownload downloads,
-  }) : _adhanSettings = adhanSettings,
+    required AdhanAudioAlarms audioAlarms,
+  }) : _audioAlarms = audioAlarms,
+       _adhanSettings = adhanSettings,
        _prayerSettings = prayerSettings,
        _adhanPrefs = adhanPrefs,
        _local = local,
@@ -60,6 +63,7 @@ class CBAdhanSettings extends Cubit<SAdhanSettings> {
   final UCFetchAdhanCatalog _fetchCatalog;
   final UCDownloadAdhanVoice _downloadVoice;
   final BoxAdhanDownload _downloads;
+  final AdhanAudioAlarms _audioAlarms;
 
   Timer? _debounce;
 
@@ -71,6 +75,8 @@ class CBAdhanSettings extends Cubit<SAdhanSettings> {
     final voices = await _prayerVoices(p.adhanIdPerPrayer ?? const {});
     final pendingId = await _pendingDefaultDownloadId();
     final showBattery = await _shouldShowBatteryNote();
+    final alarmPerms = await _audioAlarms.permissions();
+    final manufacturer = await _audioAlarms.deviceManufacturer();
     emit(
       SAdhanSettings(
         loading: false,
@@ -78,6 +84,9 @@ class CBAdhanSettings extends Cubit<SAdhanSettings> {
         notifyForPrayer: List<bool>.of(p.notifyForPrayer),
         playbackMode: s.playbackMode,
         androidBackgroundFullAdhan: s.androidBackgroundFullAdhan,
+        fullScreenAlarm: s.fullScreenAlarm,
+        alarmPermissions: alarmPerms,
+        manufacturer: manufacturer,
         vibrate: s.vibrate,
         preNotifyMinutesPerPrayer: _readPreNotify(p, s),
         selectedVoiceNameAr: voiceName,
@@ -241,6 +250,39 @@ class CBAdhanSettings extends Cubit<SAdhanSettings> {
     await _adhanSettings.save(s);
     emit(state.copyWith(androidBackgroundFullAdhan: value, playbackMode: mode));
     _scheduleSoon();
+  }
+
+  /// Toggles the unmissable over-the-lockscreen alarm. Reschedules so the
+  /// change reaches the already-armed native alarms rather than only applying
+  /// to future ones.
+  Future<void> setFullScreenAlarm(bool value) async {
+    final s = _adhanSettings.current()..fullScreenAlarm = value;
+    await _adhanSettings.save(s);
+    emit(state.copyWith(fullScreenAlarm: value));
+    if (value) {
+      // iOS needs an explicit authorization grant before AlarmKit / critical
+      // alerts will deliver anything; Android's equivalent is a settings page,
+      // which the readiness card links to instead.
+      await _audioAlarms.requestAuthorization();
+      emit(
+        state.copyWith(alarmPermissions: await _audioAlarms.permissions()),
+      );
+    }
+    _scheduleSoon();
+  }
+
+  /// Re-reads the OS grants — call on returning from a settings page, since
+  /// there's no callback when the user changes one.
+  Future<void> refreshAlarmPermissions() async {
+    emit(state.copyWith(alarmPermissions: await _audioAlarms.permissions()));
+  }
+
+  /// Deep-links to the OS page for [which], then re-reads the grants so the
+  /// readiness card reflects whatever the user just did.
+  Future<bool> openAlarmSetting(AdhanOsSetting which) async {
+    final opened = await _audioAlarms.openOsSettings(which);
+    await refreshAlarmPermissions();
+    return opened;
   }
 
   Future<void> setVibrate(bool value) async {

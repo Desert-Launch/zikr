@@ -19,4 +19,16 @@
     <style name="NormalTheme" parent="@android:style/Theme.Light.NoTitleBar">
         <item name="android:windowBackground">?android:colorBackground</item>
     </style>
+
+    <!-- Full-screen adhan alarm (AdhanAlarmActivity). No title bar, no
+         animation (it must appear instantly when the screen turns on), and a
+         window background matching the layout so there's no white flash on a
+         cold launch over the lockscreen. -->
+    <style name="AdhanAlarmTheme" parent="@android:style/Theme.Black.NoTitleBar.Fullscreen">
+        <item name="android:windowBackground">@drawable/adhan_alarm_background</item>
+        <item name="android:windowAnimationStyle">@null</item>
+        <item name="android:windowIsTranslucent">false</item>
+        <item name="android:forceDarkAllowed">false</item>
+        <item name="android:windowLayoutInDisplayCutoutMode">shortEdges</item>
+    </style>
 </resources>

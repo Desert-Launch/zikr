@@ -61,6 +61,11 @@
 		<array>
 			<string>com.app.quran.adhanRefresh</string>
 		</array>
+		<!-- Shown in the iOS 26+ AlarmKit authorization prompt
+		     (ios/Runner/Adhan/AdhanAlarmKit.swift). Without it the prompt
+		     never appears and scheduling fails silently. -->
+		<key>NSAlarmKitUsageDescription</key>
+		<string>يُستخدم المنبّه للتنبيه بدخول وقت الصلاة ورفع الأذان في موعده. Alarms are used to announce the call to prayer at each prayer time you enable.</string>
 		<key>UIStatusBarHidden</key>
 		<false/>
 		<key>LSApplicationQueriesSchemes</key>

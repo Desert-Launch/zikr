@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<!--
+	  Critical alerts — lets the adhan pierce Silent mode and Focus on iOS < 26
+	  (see ios/Runner/Adhan/AdhanCriticalFallback.swift).
+
+	  THIS IS NOT SELF-SERVICE. Apple must approve it per App ID before the
+	  provisioning profile will carry it. Until then, signing a build with this
+	  key set will FAIL with "provisioning profile doesn't include the
+	  com.apple.developer.usernotifications.critical-alerts entitlement".
+
+	  The justification text to submit, and what to do while waiting, are in
+	  docs/ios_critical_alerts_justification.md. If you need to ship before
+	  approval, comment out the two lines below — the app still builds and the
+	  adhan is delivered as a normal (Silent-mode-respecting) notification.
+	-->
+	<key>com.apple.developer.usernotifications.critical-alerts</key>
+	<true/>
+</dict>
+</plist>

@@ -1,6 +1,8 @@
 import 'package:flutter_modular/flutter_modular.dart';
 import 'package:quran/core/services/routes/routes_names.dart';
+import 'package:quran/modules/adhan/presentation/cubits/cb_adhan_ringing.dart';
 import 'package:quran/modules/adhan/presentation/screens/sn_adhan_picker.dart';
+import 'package:quran/modules/adhan/presentation/screens/sn_adhan_ringing.dart';
 import 'package:quran/modules/adhan/presentation/screens/sn_adhan_settings.dart';
 import 'package:quran/modules/adhan/presentation/screens/sn_prayer_settings_overview.dart';
 
@@ -10,12 +12,22 @@ import 'package:quran/modules/adhan/presentation/screens/sn_prayer_settings_over
 /// this submodule is mounted.
 class AdhanModule extends Module {
   @override
-  void binds(Injector i) {}
+  void binds(Injector i) {
+    // Per-screen: the ringing screen owns its own instance and closes it on
+    // dispose. CBAdhanPlayer (the actual audio) stays an AppModule singleton.
+    i.add<CBAdhanRinging>(CBAdhanRinging.new);
+  }
 
   @override
   void routes(RouteManager r) {
     r.child('/', child: (_) => const SNPrayerSettingsOverview());
     r.child(AdhanRoutes.notifications, child: (_) => const SNAdhanSettings());
     r.child(AdhanRoutes.picker, child: (_) => SNAdhanPicker(prayerKey: Modular.args.queryParams['prayer'] ?? 'fajr'));
+    r.child(
+      AdhanRoutes.ringing,
+      child: (_) => SNAdhanRinging(
+        prayerKey: Modular.args.queryParams['prayer'] ?? 'fajr',
+      ),
+    );
   }
 }

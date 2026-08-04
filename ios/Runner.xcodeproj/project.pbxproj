@@ -13,6 +13,10 @@
 		331C808B294A63AB00263BE5 /* RunnerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 331C807B294A618700263BE5 /* RunnerTests.swift */; };
 		3B3967161E833CAA004F5970 /* AppFrameworkInfo.plist in Resources */ = {isa = PBXBuildFile; fileRef = 3B3967151E833CAA004F5970 /* AppFrameworkInfo.plist */; };
 		74858FAF1ED2DC5600515810 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 74858FAE1ED2DC5600515810 /* AppDelegate.swift */; };
+		AD4A4E0100000002AD4A4E01 /* AdhanAlarmChannel.swift in Sources */ = {isa = PBXBuildFile; fileRef = AD4A4E0100000001AD4A4E01 /* AdhanAlarmChannel.swift */; };
+		AD4A4E010000000AAD4A4E01 /* AdhanAlarmRequest.swift in Sources */ = {isa = PBXBuildFile; fileRef = AD4A4E0100000009AD4A4E01 /* AdhanAlarmRequest.swift */; };
+		AD4A4E0100000004AD4A4E01 /* AdhanAlarmKit.swift in Sources */ = {isa = PBXBuildFile; fileRef = AD4A4E0100000003AD4A4E01 /* AdhanAlarmKit.swift */; };
+		AD4A4E0100000006AD4A4E01 /* AdhanCriticalFallback.swift in Sources */ = {isa = PBXBuildFile; fileRef = AD4A4E0100000005AD4A4E01 /* AdhanCriticalFallback.swift */; };
 		76C0D917C67B51D17CA221A5 /* Pods_RunnerTests.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = AAD66BA6D5E8D474D93BB772 /* Pods_RunnerTests.framework */; };
 		804CC85E4AB86C447615FDE5 /* adhan_abdulbasit.caf in Resources */ = {isa = PBXBuildFile; fileRef = 9F319016576718D867BA3188 /* adhan_abdulbasit.caf */; };
 		97C146FC1CF9000F007C117D /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 97C146FA1CF9000F007C117D /* Main.storyboard */; };
@@ -61,6 +65,11 @@
 		5C6A2D3DD2924B936FD9AAA9 /* Pods-RunnerTests.profile.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-RunnerTests.profile.xcconfig"; path = "Target Support Files/Pods-RunnerTests/Pods-RunnerTests.profile.xcconfig"; sourceTree = "<group>"; };
 		74858FAD1ED2DC5600515810 /* Runner-Bridging-Header.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "Runner-Bridging-Header.h"; sourceTree = "<group>"; };
 		74858FAE1ED2DC5600515810 /* AppDelegate.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
+		AD4A4E0100000001AD4A4E01 /* AdhanAlarmChannel.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = AdhanAlarmChannel.swift; sourceTree = "<group>"; };
+		AD4A4E0100000009AD4A4E01 /* AdhanAlarmRequest.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = AdhanAlarmRequest.swift; sourceTree = "<group>"; };
+		AD4A4E0100000003AD4A4E01 /* AdhanAlarmKit.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = AdhanAlarmKit.swift; sourceTree = "<group>"; };
+		AD4A4E0100000005AD4A4E01 /* AdhanCriticalFallback.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = AdhanCriticalFallback.swift; sourceTree = "<group>"; };
+		AD4A4E0100000008AD4A4E01 /* Runner.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = Runner.entitlements; sourceTree = "<group>"; };
 		7AFA3C8E1D35360C0083082E /* Release.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; name = Release.xcconfig; path = Flutter/Release.xcconfig; sourceTree = "<group>"; };
 		7CF5D7FF762910833CBCBEC2 /* Pods-RunnerTests.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-RunnerTests.debug.xcconfig"; path = "Target Support Files/Pods-RunnerTests/Pods-RunnerTests.debug.xcconfig"; sourceTree = "<group>"; };
 		9740EEB21CF90195004384FC /* Debug.xcconfig */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xcconfig; name = Debug.xcconfig; path = Flutter/Debug.xcconfig; sourceTree = "<group>"; };
@@ -116,6 +125,17 @@
 				331C807B294A618700263BE5 /* RunnerTests.swift */,
 			);
 			path = RunnerTests;
+			sourceTree = "<group>";
+		};
+		AD4A4E0100000007AD4A4E01 /* Adhan */ = {
+			isa = PBXGroup;
+			children = (
+				AD4A4E0100000001AD4A4E01 /* AdhanAlarmChannel.swift */,
+				AD4A4E0100000009AD4A4E01 /* AdhanAlarmRequest.swift */,
+				AD4A4E0100000003AD4A4E01 /* AdhanAlarmKit.swift */,
+				AD4A4E0100000005AD4A4E01 /* AdhanCriticalFallback.swift */,
+			);
+			path = Adhan;
 			sourceTree = "<group>";
 		};
 		60511E544A7C0CFB3C389F05 /* Sounds */ = {
@@ -183,6 +203,8 @@
 				74858FAE1ED2DC5600515810 /* AppDelegate.swift */,
 				74858FAD1ED2DC5600515810 /* Runner-Bridging-Header.h */,
 				60511E544A7C0CFB3C389F05 /* Sounds */,
+				AD4A4E0100000007AD4A4E01 /* Adhan */,
+				AD4A4E0100000008AD4A4E01 /* Runner.entitlements */,
 			);
 			path = Runner;
 			sourceTree = "<group>";
@@ -423,6 +445,10 @@
 			buildActionMask = 2147483647;
 			files = (
 				74858FAF1ED2DC5600515810 /* AppDelegate.swift in Sources */,
+				AD4A4E0100000002AD4A4E01 /* AdhanAlarmChannel.swift in Sources */,
+				AD4A4E010000000AAD4A4E01 /* AdhanAlarmRequest.swift in Sources */,
+				AD4A4E0100000004AD4A4E01 /* AdhanAlarmKit.swift in Sources */,
+				AD4A4E0100000006AD4A4E01 /* AdhanCriticalFallback.swift in Sources */,
 				1498D2341E8E89220040F4C2 /* GeneratedPluginRegistrant.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -513,6 +539,7 @@
 			isa = XCBuildConfiguration;
 			baseConfigurationReference = 7AFA3C8E1D35360C0083082E /* Release.xcconfig */;
 			buildSettings = {
+				CODE_SIGN_ENTITLEMENTS = Runner/Runner.entitlements;
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CLANG_ENABLE_MODULES = YES;
 				CURRENT_PROJECT_VERSION = "$(FLUTTER_BUILD_NUMBER)";
@@ -696,6 +723,7 @@
 			isa = XCBuildConfiguration;
 			baseConfigurationReference = 9740EEB21CF90195004384FC /* Debug.xcconfig */;
 			buildSettings = {
+				CODE_SIGN_ENTITLEMENTS = Runner/Runner.entitlements;
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CLANG_ENABLE_MODULES = YES;
 				CURRENT_PROJECT_VERSION = "$(FLUTTER_BUILD_NUMBER)";
@@ -719,6 +747,7 @@
 			isa = XCBuildConfiguration;
 			baseConfigurationReference = 7AFA3C8E1D35360C0083082E /* Release.xcconfig */;
 			buildSettings = {
+				CODE_SIGN_ENTITLEMENTS = Runner/Runner.entitlements;
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CLANG_ENABLE_MODULES = YES;
 				CURRENT_PROJECT_VERSION = "$(FLUTTER_BUILD_NUMBER)";

@@ -23,6 +23,13 @@ import workmanager_apple
 
     GeneratedPluginRegistrant.register(with: self)
 
+    // Adhan alarm bridge (AlarmKit on iOS 26+, critical alerts below that).
+    // Registered after GeneratedPluginRegistrant so it can't be clobbered by a
+    // plugin claiming the same channel name.
+    if let controller = window?.rootViewController as? FlutterViewController {
+      AdhanAlarmChannel.register(with: controller.binaryMessenger)
+    }
+
     // Best-effort weekly adhan refresh. iOS decides when (or whether) this
     // runs; the reliable path is rescheduling on app open/resume. The
     // identifier must match Info.plist's BGTaskSchedulerPermittedIdentifiers

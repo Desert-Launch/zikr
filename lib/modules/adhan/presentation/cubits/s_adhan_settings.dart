@@ -1,12 +1,16 @@
 import 'package:equatable/equatable.dart';
+import 'package:quran/modules/adhan/services/adhan_audio_alarms.dart';
 
 class SAdhanSettings extends Equatable {
   const SAdhanSettings({
     this.loading = true,
     this.enabled = true,
     this.notifyForPrayer = const [true, true, true, true, true],
-    this.playbackMode = 'clip',
-    this.androidBackgroundFullAdhan = false,
+    this.playbackMode = 'full',
+    this.androidBackgroundFullAdhan = true,
+    this.fullScreenAlarm = true,
+    this.alarmPermissions = const AdhanAlarmPermissions(),
+    this.manufacturer = '',
     this.vibrate = true,
     this.preNotifyMinutesPerPrayer = const {},
     this.selectedVoiceNameAr = '',
@@ -27,6 +31,18 @@ class SAdhanSettings extends Equatable {
   final List<bool> notifyForPrayer;
   final String playbackMode; // 'clip' | 'full'
   final bool androidBackgroundFullAdhan;
+
+  /// Raise the unmissable over-the-lockscreen alarm rather than a plain
+  /// notification. See [MAdhanSettings.fullScreenAlarm].
+  final bool fullScreenAlarm;
+
+  /// Live snapshot of the OS grants the alarm depends on. Drives the readiness
+  /// card — everything granted means the card is hidden entirely.
+  final AdhanAlarmPermissions alarmPermissions;
+
+  /// Lowercase device manufacturer, used to pick the OEM-specific autostart
+  /// guidance copy. Empty off Android.
+  final String manufacturer;
   final bool vibrate;
 
   /// Per-prayer pre-notify offset in minutes, keyed by prayer key. Missing
@@ -60,6 +76,9 @@ class SAdhanSettings extends Equatable {
     List<bool>? notifyForPrayer,
     String? playbackMode,
     bool? androidBackgroundFullAdhan,
+    bool? fullScreenAlarm,
+    AdhanAlarmPermissions? alarmPermissions,
+    String? manufacturer,
     bool? vibrate,
     Map<String, int>? preNotifyMinutesPerPrayer,
     String? selectedVoiceNameAr,
@@ -80,6 +99,9 @@ class SAdhanSettings extends Equatable {
       playbackMode: playbackMode ?? this.playbackMode,
       androidBackgroundFullAdhan:
           androidBackgroundFullAdhan ?? this.androidBackgroundFullAdhan,
+      fullScreenAlarm: fullScreenAlarm ?? this.fullScreenAlarm,
+      alarmPermissions: alarmPermissions ?? this.alarmPermissions,
+      manufacturer: manufacturer ?? this.manufacturer,
       vibrate: vibrate ?? this.vibrate,
       preNotifyMinutesPerPrayer:
           preNotifyMinutesPerPrayer ?? this.preNotifyMinutesPerPrayer,
@@ -104,6 +126,9 @@ class SAdhanSettings extends Equatable {
     notifyForPrayer,
     playbackMode,
     androidBackgroundFullAdhan,
+    fullScreenAlarm,
+    alarmPermissions,
+    manufacturer,
     vibrate,
     preNotifyMinutesPerPrayer,
     selectedVoiceNameAr,

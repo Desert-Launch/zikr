@@ -18,18 +18,20 @@ class MAdhanSettingsAdapter extends TypeAdapter<MAdhanSettings> {
     };
     return MAdhanSettings(
       enabled: fields[0] == null ? true : fields[0] as bool,
-      playbackMode: fields[1] == null ? 'clip' : fields[1] as String,
-      androidBackgroundFullAdhan: fields[2] == null ? false : fields[2] as bool,
+      playbackMode: fields[1] == null ? 'full' : fields[1] as String,
+      androidBackgroundFullAdhan: fields[2] == null ? true : fields[2] as bool,
       vibrate: fields[3] == null ? true : fields[3] as bool,
       preNotifyMinutes: fields[4] == null ? 0 : (fields[4] as num).toInt(),
       bootstrapped: fields[5] == null ? false : fields[5] as bool,
+      fullScreenAlarm: fields[6] == null ? true : fields[6] as bool,
+      alarmDefaultsApplied: fields[7] == null ? false : fields[7] as bool,
     );
   }
 
   @override
   void write(BinaryWriter writer, MAdhanSettings obj) {
     writer
-      ..writeByte(6)
+      ..writeByte(8)
       ..writeByte(0)
       ..write(obj.enabled)
       ..writeByte(1)
@@ -41,7 +43,11 @@ class MAdhanSettingsAdapter extends TypeAdapter<MAdhanSettings> {
       ..writeByte(4)
       ..write(obj.preNotifyMinutes)
       ..writeByte(5)
-      ..write(obj.bootstrapped);
+      ..write(obj.bootstrapped)
+      ..writeByte(6)
+      ..write(obj.fullScreenAlarm)
+      ..writeByte(7)
+      ..write(obj.alarmDefaultsApplied);
   }
 
   @override

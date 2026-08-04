@@ -38,10 +38,38 @@ class AdhanPlaybackService : Service() {
         val title = intent?.getStringExtra(AdhanAlarmScheduler.EXTRA_TITLE) ?: "الأذان"
         val body = intent?.getStringExtra(AdhanAlarmScheduler.EXTRA_BODY).orEmpty()
         val stopLabel = intent?.getStringExtra(AdhanAlarmScheduler.EXTRA_STOP) ?: "إيقاف"
+        val openLabel = intent?.getStringExtra(AdhanAlarmScheduler.EXTRA_OPEN) ?: "فتح التطبيق"
+        val prayerKey = intent?.getStringExtra(AdhanAlarmScheduler.EXTRA_PRAYER).orEmpty()
+        val fullScreen = intent?.getBooleanExtra(AdhanAlarmScheduler.EXTRA_FULLSCREEN, true) ?: true
 
-        startInForeground(buildNotification(title, body, stopLabel))
+        startInForeground(
+            buildNotification(title, body, stopLabel, openLabel, prayerKey, fullScreen),
+        )
         playAdhan(rawRes)
         return START_NOT_STICKY
+    }
+
+    /**
+     * Intent for the full-screen alarm UI. Carries the already-localized labels
+     * so [AdhanAlarmActivity] never has to touch resources or Flutter.
+     */
+    private fun alarmActivityIntent(
+        title: String,
+        body: String,
+        stopLabel: String,
+        openLabel: String,
+        prayerKey: String,
+    ) = Intent(this, AdhanAlarmActivity::class.java).apply {
+        addFlags(
+            Intent.FLAG_ACTIVITY_NEW_TASK or
+                Intent.FLAG_ACTIVITY_CLEAR_TOP or
+                Intent.FLAG_ACTIVITY_NO_USER_ACTION,
+        )
+        putExtra(AdhanAlarmScheduler.EXTRA_TITLE, title)
+        putExtra(AdhanAlarmScheduler.EXTRA_BODY, body)
+        putExtra(AdhanAlarmScheduler.EXTRA_STOP, stopLabel)
+        putExtra(AdhanAlarmScheduler.EXTRA_OPEN, openLabel)
+        putExtra(AdhanAlarmScheduler.EXTRA_PRAYER, prayerKey)
     }
 
     private fun startInForeground(notification: Notification) {
@@ -121,6 +149,9 @@ class AdhanPlaybackService : Service() {
 
     private fun stopEverything() {
         releasePlayer()
+        // Tells a visible AdhanAlarmActivity to dismiss itself, whether the
+        // adhan finished on its own or was stopped from the notification.
+        sendBroadcast(Intent(ACTION_FINISHED).setPackage(packageName))
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
             stopForeground(STOP_FOREGROUND_REMOVE)
         } else {
@@ -135,7 +166,14 @@ class AdhanPlaybackService : Service() {
         super.onDestroy()
     }
 
-    private fun buildNotification(title: String, body: String, stopLabel: String): Notification {
+    private fun buildNotification(
+        title: String,
+        body: String,
+        stopLabel: String,
+        openLabel: String,
+        prayerKey: String,
+        fullScreen: Boolean,
+    ): Notification {
         ensureChannel()
 
         var piFlags = PendingIntent.FLAG_UPDATE_CURRENT
@@ -149,21 +187,44 @@ class AdhanPlaybackService : Service() {
             Intent(this, AdhanPlaybackService::class.java).apply { action = ACTION_STOP },
             piFlags,
         )
-        val contentPi = packageManager.getLaunchIntentForPackage(packageName)?.let {
+        val alarmPi = PendingIntent.getActivity(
+            this,
+            3,
+            alarmActivityIntent(title, body, stopLabel, openLabel, prayerKey),
+            piFlags,
+        )
+        val launchPi = packageManager.getLaunchIntentForPackage(packageName)?.let {
             PendingIntent.getActivity(this, 2, it, piFlags)
         }
 
-        return NotificationCompat.Builder(this, CHANNEL_ID)
+        val builder = NotificationCompat.Builder(this, CHANNEL_ID)
             .setSmallIcon(applicationInfo.icon)
             .setContentTitle(title)
             .setContentText(body)
             .setOngoing(true)
             .setOnlyAlertOnce(true)
+            .setPriority(NotificationCompat.PRIORITY_MAX)
             .setCategory(NotificationCompat.CATEGORY_ALARM)
             .setVisibility(NotificationCompat.VISIBILITY_PUBLIC)
-            .setContentIntent(contentPi)
             .addAction(0, stopLabel, stopPi)
-            .build()
+
+        if (fullScreen) {
+            // The ONLY reliable way to launch an Activity from the background on
+            // Android 10+. When the device is locked or the screen is off the
+            // system launches AdhanAlarmActivity directly; when the user is
+            // actively using the phone it degrades to a heads-up notification,
+            // which is the intended, OS-enforced behaviour.
+            //
+            // On Android 14+ this additionally requires the USE_FULL_SCREEN_INTENT
+            // grant (declared in the manifest, revocable in app settings) — if the
+            // user revoked it, the heads-up path is the graceful degradation.
+            builder.setFullScreenIntent(alarmPi, true)
+                .setContentIntent(alarmPi)
+        } else {
+            builder.setContentIntent(launchPi)
+        }
+
+        return builder.build()
     }
 
     private fun ensureChannel() {
@@ -186,6 +247,9 @@ class AdhanPlaybackService : Service() {
 
     companion object {
         const val ACTION_STOP = "com.zikr.mapp.adhan.STOP"
+
+        /** Broadcast when playback ends, so [AdhanAlarmActivity] can dismiss. */
+        const val ACTION_FINISHED = "com.zikr.mapp.adhan.FINISHED"
         private const val CHANNEL_ID = "adhan_playback_channel"
         private const val NOTIF_ID = 920100
     }
