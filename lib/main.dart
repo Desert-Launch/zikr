@@ -81,6 +81,7 @@ Future<void> main() async {
   await Hive.openBox<MAdhanSettings>('adhan_settings');
   await Hive.openBox<MAdhanDownload>('adhan_downloads');
   await Hive.openBox<MAzkarFavorite>('azkar_favorites');
+  await Hive.openBox<String>('azkar_category_favorites');
   await Hive.openBox<MAzkarProgress>('azkar_progress');
   await Hive.openBox<MTasbihCounter>('tasbih_counter');
   await Hive.openBox<MTasbihHistory>('tasbih_history');

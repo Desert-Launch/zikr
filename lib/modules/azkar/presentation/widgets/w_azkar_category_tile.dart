@@ -4,18 +4,27 @@ import 'package:localize_and_translate/localize_and_translate.dart';
 import 'package:quran/core/theme/app_text_styles.dart';
 import 'package:quran/core/widgets/w_localize_rotation.dart';
 
-/// A white row tile in the "other azkar" browser: category title and item count.
+/// A white row tile in the "other azkar" browser: category title, item count
+/// and a favorite toggle that pins the category to the top of the list.
 class WAzkarCategoryTile extends StatelessWidget {
   const WAzkarCategoryTile({
     super.key,
     required this.title,
     required this.count,
     required this.onTap,
+    this.favorite = false,
+    this.onFavorite,
   });
 
   final String title;
   final int count;
   final VoidCallback onTap;
+
+  /// Whether the category is favorited. Ignored when [onFavorite] is null.
+  final bool favorite;
+
+  /// When provided, a heart toggle is shown before the chevron.
+  final VoidCallback? onFavorite;
 
   @override
   Widget build(BuildContext context) {
@@ -57,6 +66,18 @@ class WAzkarCategoryTile extends StatelessWidget {
               ),
             ),
             SizedBox(width: 8.w),
+            if (onFavorite != null)
+              IconButton(
+                onPressed: onFavorite,
+                visualDensity: VisualDensity.compact,
+                icon: Icon(
+                  favorite
+                      ? Icons.favorite_rounded
+                      : Icons.favorite_border_rounded,
+                  size: 18.r,
+                  color: favorite ? Colors.red : Colors.grey[500],
+                ),
+              ),
             // Points toward the destination in whichever direction that is.
             WLocalizeRotation(
               child: Icon(

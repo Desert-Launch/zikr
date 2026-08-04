@@ -41,6 +41,7 @@ import 'package:quran/modules/auth/domain/usecases/uc_logout.dart';
 import 'package:quran/modules/auth/presentation/cubits/cb_auth.dart';
 import 'package:quran/modules/azkar/azkar_module.dart';
 import 'package:quran/modules/azkar/data/datasources/local/ds_local_azkar.dart';
+import 'package:quran/modules/azkar/data/sources/local/box_azkar_category_favorite.dart';
 import 'package:quran/modules/azkar/data/sources/local/box_azkar_favorite.dart';
 import 'package:quran/modules/azkar/data/sources/local/box_azkar_progress.dart';
 import 'package:quran/modules/home/home_module.dart';
@@ -106,6 +107,7 @@ class AppModule extends Module {
     i.addSingleton<BoxAdhanSettings>(BoxAdhanSettings.new);
     i.addSingleton<BoxAdhanDownload>(BoxAdhanDownload.new);
     i.addSingleton<BoxAzkarFavorite>(BoxAzkarFavorite.new);
+    i.addSingleton<BoxAzkarCategoryFavorite>(BoxAzkarCategoryFavorite.new);
     i.addSingleton<BoxAzkarProgress>(BoxAzkarProgress.new);
     i.addSingleton<BoxTasbihCounter>(BoxTasbihCounter.new);
     i.addSingleton<BoxTasbihHistory>(BoxTasbihHistory.new);

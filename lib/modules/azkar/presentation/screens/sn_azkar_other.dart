@@ -7,6 +7,7 @@ import 'package:quran/core/widgets/w_empty_state.dart';
 import 'package:quran/core/widgets/w_shared_scaffold.dart';
 import 'package:quran/modules/azkar/data/datasources/local/ds_local_azkar.dart';
 import 'package:quran/modules/azkar/data/models/m_azkar_item.dart';
+import 'package:quran/modules/azkar/data/sources/local/box_azkar_category_favorite.dart';
 import 'package:quran/modules/azkar/presentation/widgets/w_azkar_category_tile.dart';
 import 'package:quran/modules/azkar/presentation/widgets/w_azkar_other_header.dart';
 
@@ -25,6 +26,8 @@ class _SNAzkarOtherState extends State<SNAzkarOther> {
 
   late final Future<List<MAzkarCategory>> _future = Modular.get<DSLocalAzkar>()
       .otherCategories();
+  late final BoxAzkarCategoryFavorite _favorites =
+      Modular.get<BoxAzkarCategoryFavorite>();
 
   String _query = '';
 
@@ -37,6 +40,23 @@ class _SNAzkarOtherState extends State<SNAzkarOther> {
     return all
         .where((c) => _normalise(c.nameAr).contains(query))
         .toList(growable: false);
+  }
+
+  /// Splits the visible categories into a favorites section pinned above the
+  /// rest. Section labels are dropped entirely when nothing is favorited, so
+  /// the list looks exactly as it did before the first favorite.
+  List<_OtherRow> _rows(List<MAzkarCategory> visible, Set<String> favoriteIds) {
+    final favorites = visible.where((c) => favoriteIds.contains(c.id));
+    final rest = visible.where((c) => !favoriteIds.contains(c.id));
+    if (favorites.isEmpty) {
+      return [for (final c in rest) _OtherRow.category(c)];
+    }
+    return [
+      _OtherRow.label('azkar_favorites'.tr()),
+      for (final c in favorites) _OtherRow.category(c),
+      if (rest.isNotEmpty) _OtherRow.label('azkar_all_categories'.tr()),
+      for (final c in rest) _OtherRow.category(c),
+    ];
   }
 
   static String _normalise(String value) => value
@@ -61,47 +81,87 @@ class _SNAzkarOtherState extends State<SNAzkarOther> {
           }
           final categories = snapshot.data ?? const <MAzkarCategory>[];
           final visible = _filter(categories);
-          return CustomScrollView(
-            slivers: [
-              SliverToBoxAdapter(
-                child: WAzkarOtherHeader(
-                  green: _green,
-                  categoryCount: categories.length,
-                  onBack: Modular.to.pop,
-                  onQueryChanged: (q) => setState(() => _query = q),
-                ),
-              ),
-              if (visible.isEmpty)
-                SliverFillRemaining(
-                  hasScrollBody: false,
-                  child: WEmptyState(
-                    icon: Icons.search_off_rounded,
-                    title: 'search_no_results_generic'.tr(),
-                    isDark: false,
+          return ValueListenableBuilder(
+            valueListenable: _favorites.listenable,
+            builder: (_, __, ___) {
+              final favoriteIds = _favorites.ids();
+              final rows = _rows(visible, favoriteIds);
+              return CustomScrollView(
+                slivers: [
+                  SliverToBoxAdapter(
+                    child: WAzkarOtherHeader(
+                      green: _green,
+                      categoryCount: categories.length,
+                      onBack: Modular.to.pop,
+                      onQueryChanged: (q) => setState(() => _query = q),
+                    ),
                   ),
-                )
-              else
-                SliverPadding(
-                  padding: EdgeInsets.fromLTRB(18.w, 14.h, 18.w, 28.h),
-                  sliver: SliverList.separated(
-                    itemCount: visible.length,
-                    separatorBuilder: (_, __) => SizedBox(height: 10.h),
-                    itemBuilder: (_, index) {
-                      final category = visible[index];
-                      return WAzkarCategoryTile(
-                        title: category.nameAr,
-                        count: category.items.length,
-                        onTap: () => Modular.to.pushNamed(
-                          AzkarRoutes.fullCategory(category.id),
-                        ),
-                      );
-                    },
-                  ),
-                ),
-            ],
+                  if (rows.isEmpty)
+                    SliverFillRemaining(
+                      hasScrollBody: false,
+                      child: WEmptyState(
+                        icon: Icons.search_off_rounded,
+                        title: 'search_no_results_generic'.tr(),
+                        isDark: false,
+                      ),
+                    )
+                  else
+                    SliverPadding(
+                      padding: EdgeInsets.fromLTRB(18.w, 14.h, 18.w, 28.h),
+                      sliver: SliverList.separated(
+                        itemCount: rows.length,
+                        separatorBuilder: (_, __) => SizedBox(height: 10.h),
+                        itemBuilder: (_, index) {
+                          final row = rows[index];
+                          final label = row.label;
+                          if (label != null) {
+                            return Padding(
+                              padding: EdgeInsets.only(
+                                top: index == 0 ? 0 : 6.h,
+                                bottom: 2.h,
+                              ),
+                              child: Text(
+                                label,
+                                style: TextStyle(
+                                  fontSize: 12.sp,
+                                  fontWeight: FontWeight.w600,
+                                  color: _green,
+                                ),
+                              ),
+                            );
+                          }
+                          final category = row.category;
+                          if (category == null) return const SizedBox.shrink();
+                          return WAzkarCategoryTile(
+                            title: category.nameAr,
+                            count: category.items.length,
+                            favorite: favoriteIds.contains(category.id),
+                            onFavorite: () => _favorites.toggle(
+                              category.id,
+                              nameAr: category.nameAr,
+                            ),
+                            onTap: () => Modular.to.pushNamed(
+                              AzkarRoutes.fullCategory(category.id),
+                            ),
+                          );
+                        },
+                      ),
+                    ),
+                ],
+              );
+            },
           );
         },
       ),
     );
   }
+}
+
+/// One entry in the browser list — either a section label or a category tile.
+class _OtherRow {
+  const _OtherRow.label(this.label) : category = null;
+  const _OtherRow.category(this.category) : label = null;
+
+  final String? label;
+  final MAzkarCategory? category;
 }
