@@ -80,13 +80,8 @@ class _WMushafV4PageState extends State<WMushafV4Page> {
         Map<String, String?> bookmarks,
       })
     >(
-      selector: (s) => (
-        selected: s.selectedAyah,
-        theme: s.theme,
-        mode: s.fontMode,
-        fontScale: s.fontScale,
-        bookmarks: s.bookmarks,
-      ),
+      selector: (s) =>
+          (selected: s.selectedAyah, theme: s.theme, mode: s.fontMode, fontScale: s.fontScale, bookmarks: s.bookmarks),
       builder: (context, view) {
         final isDark = view.theme == ReaderTheme.dark;
         final tajweed = view.mode == EQuranFontMode.tajweedV4;
@@ -98,17 +93,9 @@ class _WMushafV4PageState extends State<WMushafV4Page> {
           );
         }
 
-        final fontFamily = _fonts.familyFor(
-          page,
-          dark: isDark,
-          tajweed: tajweed,
-        );
-        final baseColor = isDark
-            ? const Color(0xFFF2E9D8)
-            : const Color(0xFF0A0A0A);
-        final markerColor = isDark
-            ? const Color(0xFFE9C46A)
-            : AppColorsLight.primary;
+        final fontFamily = _fonts.familyFor(page, dark: isDark, tajweed: tajweed);
+        final baseColor = isDark ? const Color(0xFFF2E9D8) : const Color(0xFF0A0A0A);
+        final markerColor = isDark ? const Color(0xFFE9C46A) : AppColorsLight.primary;
         final muted = context.brand.muted;
         final headerColor = isDark ? Colors.white70 : muted;
         final brightness = isDark ? Brightness.dark : Brightness.light;
@@ -149,15 +136,11 @@ class _WMushafV4PageState extends State<WMushafV4Page> {
 
             return Container(
               color: readerBackground(view.theme),
-              padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 8.h),
+              padding: EdgeInsets.symmetric(horizontal: 5.w, vertical: 8.h),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
-                  WMushafPageHeader(
-                    surahName: _pageSurahName,
-                    page: page,
-                    color: headerColor,
-                  ),
+                  WMushafPageHeader(surahName: _pageSurahName, page: page, color: headerColor),
                   // At 100% every line fits one row and the page fills exactly
                   // one screen — the ConstrainedBox keeps the lines distributed
                   // as before and nothing scrolls. Above 100% the lines wrap,
@@ -167,18 +150,14 @@ class _WMushafV4PageState extends State<WMushafV4Page> {
                       builder: (context, constraints) => SingleChildScrollView(
                         physics: const ClampingScrollPhysics(),
                         child: ConstrainedBox(
-                          constraints: BoxConstraints(
-                            minHeight: constraints.maxHeight,
-                          ),
+                          constraints: BoxConstraints(minHeight: constraints.maxHeight),
                           child: Column(
                             // Reflowed runs are already as tall as their text
                             // needs; distributing them would just push the
                             // stream apart, so big text stacks from the top.
                             mainAxisAlignment: bigText
                                 ? MainAxisAlignment.start
-                                : (isFullPage
-                                      ? MainAxisAlignment.spaceEvenly
-                                      : MainAxisAlignment.center),
+                                : (isFullPage ? MainAxisAlignment.spaceEvenly : MainAxisAlignment.center),
                             crossAxisAlignment: CrossAxisAlignment.stretch,
                             children: wrapped,
                           ),
@@ -293,9 +272,7 @@ class _WMushafV4PageState extends State<WMushafV4Page> {
   Widget _surahHeader(int surahNumber, {required bool dark}) {
     final surah = _surahs[surahNumber];
     return WSurahHeader(
-      title: surah == null
-          ? ''
-          : (surah.arabicLong.isNotEmpty ? surah.arabicLong : surah.arabic),
+      title: surah == null ? '' : (surah.arabicLong.isNotEmpty ? surah.arabicLong : surah.arabic),
       surahNumber: surah?.number ?? surahNumber,
       ayahCount: surah?.totalAyah,
       dark: dark,
@@ -313,11 +290,7 @@ class _WMushafV4PageState extends State<WMushafV4Page> {
           'بِسْمِ ٱللَّهِ ٱلرَّحْمَٰنِ ٱلرَّحِيمِ',
           textAlign: TextAlign.center,
           textDirection: TextDirection.rtl,
-          style: GoogleFonts.amiri(
-            fontSize: 26.sp * fontScale,
-            color: color,
-            height: 1.4,
-          ),
+          style: GoogleFonts.amiri(fontSize: 26.sp * fontScale, color: color, height: 1.4),
         ),
       ),
     );

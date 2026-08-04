@@ -8,8 +8,7 @@ import 'package:quran/modules/quran/presentation/cubits/cb_audio_player.dart';
 import 'package:quran/modules/quran/presentation/cubits/cb_mushaf_reader.dart';
 import 'package:quran/modules/quran/presentation/cubits/s_audio_player.dart';
 import 'package:quran/modules/quran/presentation/cubits/s_mushaf_reader.dart';
-import 'package:quran/modules/quran/presentation/cubits/s_surah_list.dart'
-    show LoadStatus;
+import 'package:quran/modules/quran/presentation/cubits/s_surah_list.dart' show LoadStatus;
 import 'package:quran/modules/quran/presentation/widgets/w_ayah_action_sheet.dart';
 import 'package:quran/modules/quran/presentation/widgets/w_mini_player.dart';
 import 'package:quran/modules/quran/presentation/widgets/w_mushaf_v4_page.dart';
@@ -36,10 +35,7 @@ class _SNMushafReaderState extends State<SNMushafReader> {
   void initState() {
     super.initState();
     _resolvedStart = widget.initialPage ?? 1;
-    _pageController = PageController(
-      initialPage: _resolvedStart - 1,
-      viewportFraction: 1,
-    );
+    _pageController = PageController(initialPage: _resolvedStart - 1, viewportFraction: 1);
     _resolveInitial();
   }
 
@@ -47,19 +43,14 @@ class _SNMushafReaderState extends State<SNMushafReader> {
     int target = widget.initialPage ?? 1;
     final initialAyah = widget.initialAyah;
     if (initialAyah != null) {
-      target = await Modular.get<DSLocalQuran>().pageOfAyah(
-        initialAyah.surah,
-        initialAyah.ayah,
-      );
+      target = await Modular.get<DSLocalQuran>().pageOfAyah(initialAyah.surah, initialAyah.ayah);
       if (mounted) {
         _pageController.jumpToPage(target - 1);
       }
     }
     _cubit.openPage(target);
     if (initialAyah != null) {
-      _cubit.highlightAyah(
-        ParamAyahRef(surah: initialAyah.surah, ayah: initialAyah.ayah),
-      );
+      _cubit.highlightAyah(ParamAyahRef(surah: initialAyah.surah, ayah: initialAyah.ayah));
     }
   }
 
@@ -90,28 +81,17 @@ class _SNMushafReaderState extends State<SNMushafReader> {
 
   /// Resolves an ayah to its page, jumps there and highlights the verse.
   Future<void> _jumpToAyah(ParamAyahRef ref) async {
-    final page = await Modular.get<DSLocalQuran>().pageOfAyah(
-      ref.surah,
-      ref.ayah,
-    );
+    final page = await Modular.get<DSLocalQuran>().pageOfAyah(ref.surah, ref.ayah);
     if (!mounted) return;
     _jumpToPage(page);
     _cubit.highlightAyah(ref);
   }
 
   Future<void> _scrollToPlayingPage(ParamAyahRef ref) async {
-    final page = await Modular.get<DSLocalQuran>().pageOfAyah(
-      ref.surah,
-      ref.ayah,
-    );
+    final page = await Modular.get<DSLocalQuran>().pageOfAyah(ref.surah, ref.ayah);
     if (!mounted) return;
-    if (_pageController.hasClients &&
-        _pageController.page?.round() != page - 1) {
-      _pageController.animateToPage(
-        page - 1,
-        duration: const Duration(milliseconds: 300),
-        curve: Curves.easeOut,
-      );
+    if (_pageController.hasClients && _pageController.page?.round() != page - 1) {
+      _pageController.animateToPage(page - 1, duration: const Duration(milliseconds: 300), curve: Curves.easeOut);
     }
   }
 
@@ -190,15 +170,10 @@ class _SNMushafReaderState extends State<SNMushafReader> {
                     // the chrome + sheet) hides the player with it.
                     BlocBuilder<CBMushafReader, SMushafReader>(
                       buildWhen: (a, b) =>
-                          (a.selectedAyah == null) !=
-                              (b.selectedAyah == null) ||
-                          a.chromeVisible != b.chromeVisible,
+                          (a.selectedAyah == null) != (b.selectedAyah == null) || a.chromeVisible != b.chromeVisible,
                       builder: (_, s) {
-                        final showMini =
-                            s.chromeVisible && s.selectedAyah == null;
-                        return showMini
-                            ? const WMiniPlayer()
-                            : const SizedBox.shrink();
+                        final showMini = s.chromeVisible && s.selectedAyah == null;
+                        return showMini ? const WMiniPlayer() : const SizedBox.shrink();
                       },
                     ),
                     // Bottom chrome — rides the same show/hide tap as the top
@@ -233,16 +208,14 @@ class _PageLoader extends StatefulWidget {
   State<_PageLoader> createState() => _PageLoaderState();
 }
 
-class _PageLoaderState extends State<_PageLoader>
-    with AutomaticKeepAliveClientMixin {
+class _PageLoaderState extends State<_PageLoader> with AutomaticKeepAliveClientMixin {
   bool _keepAlive = false;
 
   @override
   bool get wantKeepAlive => _keepAlive;
 
   void _syncKeepAlive(int currentPage) {
-    final next =
-        (widget.pageNumber - currentPage).abs() <= CBMushafReader.preloadRadius;
+    final next = (widget.pageNumber - currentPage).abs() <= CBMushafReader.preloadRadius;
     if (next == _keepAlive) return;
     _keepAlive = next;
     // `updateKeepAlive` dispatches a KeepAliveNotification, which makes the
