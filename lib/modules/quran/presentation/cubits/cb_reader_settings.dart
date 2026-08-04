@@ -36,8 +36,17 @@ class CBReaderSettings extends Cubit<SReaderSettings> {
   final UCSetFontScale _setFontScale;
 
   /// Allowed text-size range; mirrors the data layer's clamp.
+  ///
+  /// The range runs past the printed page's own size on purpose: above
+  /// `kBigTextThreshold` the reader stops reproducing the printed line breaks
+  /// and reflows the page as one stream, which is what makes the large end of
+  /// the range readable instead of a page of stranded words.
   static const double minScale = 0.8;
-  static const double maxScale = 1.5;
+  static const double maxScale = 2.0;
+
+  /// Slider steps over [minScale]…[maxScale] — 0.2 apart, so 1.0 (the printed
+  /// size) lands exactly on a step and 1.6 is the first reflowed one.
+  static const int scaleDivisions = 6;
 
   Future<void> load() async {
     final mode = await _getFontMode();

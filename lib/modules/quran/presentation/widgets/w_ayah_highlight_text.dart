@@ -6,7 +6,11 @@ import 'package:flutter/material.dart';
 /// A highlighted character range inside a laid-out span tree, with its fill.
 @immutable
 class AyahHighlight {
-  const AyahHighlight({required this.start, required this.end, required this.color});
+  const AyahHighlight({
+    required this.start,
+    required this.end,
+    required this.color,
+  });
 
   /// Inclusive start / exclusive end offsets into the concatenated plain text
   /// of the span tree (WidgetSpans count as one character).
@@ -16,7 +20,10 @@ class AyahHighlight {
 
   @override
   bool operator ==(Object other) =>
-      other is AyahHighlight && other.start == start && other.end == end && other.color == color;
+      other is AyahHighlight &&
+      other.start == start &&
+      other.end == end &&
+      other.color == color;
 
   @override
   int get hashCode => Object.hash(start, end, color);
@@ -56,7 +63,14 @@ class WAyahHighlightText extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final child = RichText(textAlign: textAlign, textDirection: TextDirection.rtl, text: text);
+    // Wrapping is allowed: [WMushafLine] separates the QPC word-glyph runs with
+    // U+200B so the only break opportunities are real word boundaries. At 100%
+    // the line is sized to fit one row and never wraps anyway.
+    final child = RichText(
+      textAlign: textAlign,
+      textDirection: TextDirection.rtl,
+      text: text,
+    );
     if (ranges.isEmpty) return child;
     return CustomPaint(
       painter: _HighlightPainter(
@@ -107,15 +121,41 @@ class _HighlightPainter extends CustomPainter {
         boxHeightStyle: ui.BoxHeightStyle.max,
       );
       if (boxes.isEmpty) continue;
-      // Each highlighted range lives on a single visual line (exact mode renders
-      // one line per widget), so union its boxes into one pill — a single fill
-      // avoids seams where translucent boxes would otherwise overlap.
-      var rect = Rect.fromLTRB(boxes.first.left, boxes.first.top, boxes.first.right, boxes.first.bottom);
-      for (final b in boxes.skip(1)) {
-        rect = rect.expandToInclude(Rect.fromLTRB(b.left, b.top, b.right, b.bottom));
+      // Union the range's boxes into ONE pill per visual row: a single fill per
+      // row avoids the seams translucent overlapping boxes would leave.
+      //
+      // Rows are grouped by VERTICAL OVERLAP, not by an equal `top`. Spans on
+      // one row can report different tops when they use different fonts — the
+      // ayah-number glyphs are a separate family from the word glyphs — and
+      // keying on `top` split a single highlight into two rects of different
+      // heights. Genuinely wrapped rows don't overlap, so they still get their
+      // own pill instead of one block bridging the gap between them.
+      final ordered = boxes
+          .map((b) => Rect.fromLTRB(b.left, b.top, b.right, b.bottom))
+          .toList()
+        ..sort((a, b) => a.top.compareTo(b.top));
+      final rows = <Rect>[];
+      for (final rect in ordered) {
+        if (rows.isNotEmpty && rect.top < rows.last.bottom) {
+          rows[rows.length - 1] = rows.last.expandToInclude(rect);
+        } else {
+          rows.add(rect);
+        }
       }
-      rect = Rect.fromLTRB(rect.left, rect.top - pad, rect.right, rect.bottom + pad);
-      canvas.drawRRect(RRect.fromRectAndRadius(rect, Radius.circular(radius)), Paint()..color = hl.color);
+
+      final paint = Paint()..color = hl.color;
+      for (final row in rows) {
+        final rect = Rect.fromLTRB(
+          row.left,
+          row.top - pad,
+          row.right,
+          row.bottom + pad,
+        );
+        canvas.drawRRect(
+          RRect.fromRectAndRadius(rect, Radius.circular(radius)),
+          paint,
+        );
+      }
     }
   }
 

@@ -8,17 +8,26 @@ import 'package:quran/core/services/routes/routes_names.dart';
 import 'package:quran/core/theme/app_colors.dart';
 import 'package:quran/modules/quran/presentation/cubits/cb_mushaf_reader.dart';
 import 'package:quran/modules/quran/presentation/cubits/s_mushaf_reader.dart';
+import 'package:quran/modules/quran/presentation/widgets/w_quran_index_sheet.dart';
 
 /// Reader chrome: an app bar that slides down from the top of the Mushaf
 /// screen when [SMushafReader.chromeVisible] is on. Carries the back button
 /// plus the current surah name, juz' and page.
 class WReaderTopBar extends StatelessWidget {
-  const WReaderTopBar({super.key});
+  const WReaderTopBar({super.key, required this.onOpenPage});
+
+  /// Target page chosen from the index popup — the reader jumps in place.
+  final ValueChanged<int> onOpenPage;
 
   @override
   Widget build(BuildContext context) {
     return BlocSelector<CBMushafReader, SMushafReader, _TopBarVM>(
-      selector: (s) => _TopBarVM(visible: s.chromeVisible, surahName: s.surahName, juz: s.juz, page: s.currentPage),
+      selector: (s) => _TopBarVM(
+        visible: s.chromeVisible,
+        surahName: s.surahName,
+        juz: s.juz,
+        page: s.currentPage,
+      ),
       builder: (context, vm) {
         return IgnorePointer(
           ignoring: !vm.visible,
@@ -29,7 +38,7 @@ class WReaderTopBar extends StatelessWidget {
             child: AnimatedOpacity(
               opacity: vm.visible ? 1 : 0,
               duration: const Duration(milliseconds: 200),
-              child: _Bar(vm: vm),
+              child: _Bar(vm: vm, onOpenPage: onOpenPage),
             ),
           ),
         );
@@ -39,8 +48,9 @@ class WReaderTopBar extends StatelessWidget {
 }
 
 class _Bar extends StatelessWidget {
-  const _Bar({required this.vm});
+  const _Bar({required this.vm, required this.onOpenPage});
   final _TopBarVM vm;
+  final ValueChanged<int> onOpenPage;
 
   @override
   Widget build(BuildContext context) {
@@ -51,20 +61,33 @@ class _Bar extends StatelessWidget {
           color: AppColorsLight.primary,
           borderRadius: BorderRadius.vertical(bottom: Radius.circular(28.r)),
           boxShadow: [
-            BoxShadow(color: Colors.black.withValues(alpha: 0.18), blurRadius: 8, offset: const Offset(0, 3)),
+            BoxShadow(
+              color: Colors.black.withValues(alpha: 0.18),
+              blurRadius: 8,
+              offset: const Offset(0, 3),
+            ),
           ],
         ),
         child: SafeArea(
           bottom: false,
           child: SizedBox(
-            height: 62.h,
+            // Deliberately compact: the bar floats OVER the page, so every
+            // logical pixel here is one the first line of Quran text loses.
+            // 44.h clears the icon buttons and the two-line title without
+            // reaching the top of the text block on the smallest supported
+            // screen (or on a surah's opening page, where line 1 sits highest).
+            height: 44.h,
             child: Row(
               children: [
-                BackButton(color: Colors.white, onPressed: () => Modular.to.pop()),
-                IconButton(
+                BackButton(
+                  color: Colors.white,
+                  onPressed: () => Modular.to.pop(),
+                ),
+                _BarIcon(
                   tooltip: 'common_search'.tr(),
-                  onPressed: () => BlocProvider.of<CBMushafReader>(context).toggleSearch(),
-                  icon: const Icon(Icons.search_rounded, color: Colors.white),
+                  icon: Icons.search_rounded,
+                  onPressed: () =>
+                      BlocProvider.of<CBMushafReader>(context).toggleSearch(),
                 ),
                 Expanded(
                   child: Column(
@@ -76,35 +99,38 @@ class _Bar extends StatelessWidget {
                         overflow: TextOverflow.ellipsis,
                         textAlign: TextAlign.center,
                         style: GoogleFonts.amiri(
-                          fontSize: 17.sp,
+                          fontSize: 15.sp,
                           fontWeight: FontWeight.w700,
                           color: Colors.white,
                           height: 1.1,
                         ),
                       ),
-                      SizedBox(height: 2.h),
                       Text(
                         'الجزء ${vm.juz}  •  صفحة ${vm.page}',
                         textAlign: TextAlign.center,
                         style: TextStyle(
-                          fontSize: 11.sp,
+                          fontSize: 10.sp,
                           color: Colors.white.withValues(alpha: 0.75),
                           fontWeight: FontWeight.w500,
+                          height: 1.2,
                         ),
                       ),
                     ],
                   ),
                 ),
-
-                IconButton(
-                  tooltip: 'فهرس القرآن',
-                  onPressed: () => Modular.to.navigate(QuranRoutes.fullSurahList()),
-                  icon: const Icon(Icons.format_list_bulleted_rounded, color: Colors.white),
+                // Opens the index as a popup over the reader rather than
+                // navigating away — same content, page stays behind it.
+                _BarIcon(
+                  tooltip: 'reader_index'.tr(),
+                  icon: Icons.format_list_bulleted_rounded,
+                  onPressed: () =>
+                      WQuranIndexSheet.show(context, onOpenPage: onOpenPage),
                 ),
-                IconButton(
+                _BarIcon(
                   tooltip: 'quran_settings_title'.tr(),
-                  onPressed: () => Modular.to.pushNamed(QuranRoutes.fullSettings()),
-                  icon: const Icon(Icons.settings_rounded, color: Colors.white),
+                  icon: Icons.settings_rounded,
+                  onPressed: () =>
+                      Modular.to.pushNamed(QuranRoutes.fullSettings()),
                 ),
               ],
             ),
@@ -115,8 +141,40 @@ class _Bar extends StatelessWidget {
   }
 }
 
+/// Icon button sized for the compact reader bar — the Material default is 48px
+/// tall with 8px padding, which alone would blow the bar's height budget.
+class _BarIcon extends StatelessWidget {
+  const _BarIcon({
+    required this.tooltip,
+    required this.icon,
+    required this.onPressed,
+  });
+
+  final String tooltip;
+  final IconData icon;
+  final VoidCallback onPressed;
+
+  @override
+  Widget build(BuildContext context) {
+    return IconButton(
+      tooltip: tooltip,
+      onPressed: onPressed,
+      padding: EdgeInsets.symmetric(horizontal: 8.w),
+      constraints: BoxConstraints(minWidth: 40.w, minHeight: 40.h),
+      visualDensity: VisualDensity.compact,
+      iconSize: 22.r,
+      icon: Icon(icon, color: Colors.white),
+    );
+  }
+}
+
 class _TopBarVM {
-  const _TopBarVM({required this.visible, required this.surahName, required this.juz, required this.page});
+  const _TopBarVM({
+    required this.visible,
+    required this.surahName,
+    required this.juz,
+    required this.page,
+  });
 
   final bool visible;
   final String surahName;

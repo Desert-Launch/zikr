@@ -9,7 +9,7 @@ class DSLocalReaderSettings {
 
   /// Allowed text-size range, mirrored in [CBReaderSettings] and the reader.
   static const double minScale = 0.8;
-  static const double maxScale = 1.5;
+  static const double maxScale = 2.0;
 
   Future<void> init() => _box.init();
 

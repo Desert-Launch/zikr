@@ -9,7 +9,7 @@ import 'package:quran/modules/quran/presentation/cubits/s_surah_list.dart'
 class SMushafReader extends Equatable {
   const SMushafReader({
     this.currentPage = 1,
-    this.layout,
+    this.pages = const <int, MQpcV4Page>{},
     this.status = LoadStatus.idle,
     this.error,
     this.selectedAyah,
@@ -25,7 +25,17 @@ class SMushafReader extends Equatable {
   });
 
   final int currentPage;
-  final MQpcV4Page? layout;
+
+  /// Resolved page layouts kept warm around [currentPage] — a 7-page window
+  /// (current ±3). Entries outside the window are evicted by
+  /// [CBMushafReader.openPage], so this map never exceeds 7 pages regardless of
+  /// how far the user swipes. Each entry is parsed glyph/segment data (no
+  /// bitmaps), so the ceiling is a few hundred KB.
+  final Map<int, MQpcV4Page> pages;
+
+  /// The current page's layout, or `null` while it resolves.
+  MQpcV4Page? get layout => pages[currentPage];
+
   final LoadStatus status;
   final String? error;
   final ParamAyahRef? selectedAyah;
@@ -57,7 +67,7 @@ class SMushafReader extends Equatable {
 
   SMushafReader copyWith({
     int? currentPage,
-    MQpcV4Page? layout,
+    Map<int, MQpcV4Page>? pages,
     LoadStatus? status,
     String? error,
     ParamAyahRef? selectedAyah,
@@ -74,7 +84,7 @@ class SMushafReader extends Equatable {
   }) {
     return SMushafReader(
       currentPage: currentPage ?? this.currentPage,
-      layout: layout ?? this.layout,
+      pages: pages ?? this.pages,
       status: status ?? this.status,
       error: error,
       selectedAyah: clearSelected ? null : (selectedAyah ?? this.selectedAyah),
@@ -93,7 +103,7 @@ class SMushafReader extends Equatable {
   @override
   List<Object?> get props => [
     currentPage,
-    layout,
+    pages,
     status,
     error,
     selectedAyah,

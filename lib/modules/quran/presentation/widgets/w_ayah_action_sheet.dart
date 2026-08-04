@@ -9,7 +9,6 @@ import 'package:quran/core/services/routes/routes_names.dart';
 import 'package:quran/core/theme/app_colors.dart';
 import 'package:quran/core/theme/brand_colors.dart';
 import 'package:quran/modules/quran/domain/entities/param_ayah_ref.dart';
-import 'package:quran/modules/quran/domain/usecases/uc_save_bookmark.dart';
 import 'package:quran/modules/quran/presentation/cubits/cb_audio_player.dart';
 import 'package:quran/modules/quran/presentation/cubits/cb_mushaf_reader.dart';
 import 'package:quran/modules/quran/presentation/cubits/s_audio_player.dart';
@@ -214,18 +213,11 @@ class _SheetBody extends StatelessWidget {
   }
 
   Future<void> _bookmark(BuildContext context) async {
-    // Let the user pick a colour first; dismissing the picker cancels the save.
-    final colorHex = await showBookmarkColorPicker(context);
-    if (colorHex == null || !context.mounted) return;
-    final uc = Modular.get<UCSaveBookmark>();
-    final result = await uc(ref: ref, colorHex: colorHex);
-    if (!context.mounted) return;
-    final msg = result.fold(
-      (l) => 'common_error'.tr(),
-      (r) => 'bookmark_saved'.tr(),
-    );
-    ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(msg)));
-    BlocProvider.of<CBMushafReader>(context).clearSelection();
+    // The picker opens pre-marked with the ayah's current colour, so it doubles
+    // as a toggle: tapping that colour un-bookmarks. Dismissing changes nothing.
+    final cubit = BlocProvider.of<CBMushafReader>(context);
+    await toggleAyahBookmark(context, ref, cubit);
+    cubit.clearSelection();
   }
 
   Future<void> _copy(BuildContext context) async {

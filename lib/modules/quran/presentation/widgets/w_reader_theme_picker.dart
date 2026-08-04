@@ -16,12 +16,23 @@ import 'package:quran/modules/quran/presentation/cubits/s_reader_settings.dart';
 class WReaderThemePicker extends StatelessWidget {
   const WReaderThemePicker({super.key});
 
-  // (theme, i18n key, fallback, swatch colour) — swatches mirror `_bgFor` in
-  // the Mushaf renderer so the preview matches the real reading surface.
+  // (theme, i18n key, fallback, swatch colour) — swatches mirror
+  // `readerBackground` in the Mushaf renderer so the preview matches the real
+  // reading surface. Order matches [ReaderTheme]'s declaration order.
   static const _options = <(ReaderTheme, String, String, Color)>[
-    (ReaderTheme.light, 'quran_settings_theme_light', 'Light', AppColors.paperWarm),
-    (ReaderTheme.sepia, 'quran_settings_theme_sepia', 'Sepia', AppColors.paperCream),
-    (ReaderTheme.dark, 'quran_settings_theme_dark', 'Dark', AppColors.darkBackground),
+    (ReaderTheme.white, 'quran_settings_theme_white', 'White', Colors.white),
+    (
+      ReaderTheme.light,
+      'quran_settings_theme_light',
+      'Light',
+      AppColors.paperWarm,
+    ),
+    (
+      ReaderTheme.dark,
+      'quran_settings_theme_dark',
+      'Dark',
+      AppColors.darkBackground,
+    ),
   ];
 
   @override
@@ -96,7 +107,9 @@ class _ThemeRow extends StatelessWidget {
             SizedBox(width: 12.w),
             Expanded(child: Text(label, style: AppTextStyles.ink16W500)),
             Icon(
-              selected ? Icons.radio_button_checked_rounded : Icons.radio_button_off_rounded,
+              selected
+                  ? Icons.radio_button_checked_rounded
+                  : Icons.radio_button_off_rounded,
               color: selected ? brand.primary : brand.muted,
               size: 22.r,
             ),

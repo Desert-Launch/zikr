@@ -1,4 +1,8 @@
 {
+  "bookmarks_color_remove_hint": "Tap the selected colour to remove the bookmark",
+  "reader_bookmarks": "Bookmarks",
+  "reader_index": "Index",
+  "quran_settings_font_size": "Text size",
   "app_name": "Holy Quran",
   "common_loading": "Loading...",
   "common_retry": "Retry",
@@ -67,6 +71,7 @@
   "quran_settings_font_mode": "Font style",
   "quran_settings_reader_theme": "Reading theme",
   "quran_settings_text_size": "Text size",
+  "quran_settings_theme_white": "White",
   "quran_settings_theme_light": "Light",
   "quran_settings_theme_dark": "Dark",
   "quran_font_mode_plain": "Standard Mushaf",
@@ -99,6 +104,7 @@
   "bookmarks_empty": "No bookmarks yet",
   "bookmarks_add_note": "Add a note",
   "bookmarks_color_title": "Choose a colour",
+  "bookmark_removed": "Bookmark removed",
   "bookmark_saved": "Bookmark saved",
   "search_title": "Search the Quran",
   "search_hint": "Search for a verse or word...",
@@ -597,6 +603,5 @@
   "khatma_ayah": "Ayah",
   "legal_privacy": "Privacy policy",
   "legal_terms": "Terms of use",
-  "legal_about": "About",
-  "quran_settings_theme_sepia": "Sepia"
+  "legal_about": "About"
 }

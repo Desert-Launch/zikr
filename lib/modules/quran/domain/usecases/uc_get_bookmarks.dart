@@ -1,6 +1,7 @@
 import 'package:dartz/dartz.dart';
 import 'package:quran/core/errors/failure.dart';
 import 'package:quran/modules/quran/data/models/m_bookmark.dart';
+import 'package:quran/modules/quran/domain/entities/param_ayah_ref.dart';
 import 'package:quran/modules/quran/domain/repos/r_bookmarks.dart';
 
 class UCGetBookmarks {
@@ -13,4 +14,9 @@ class UCGetBookmarks {
   Stream<List<MBookmark>> watch() => _repo.watch();
 
   Future<Either<Failure, void>> delete(String id) => _repo.delete(id);
+
+  /// Removes the bookmark on an ayah without needing its generated id — the
+  /// reader's bookmark toggle only knows the verse.
+  Future<Either<Failure, void>> deleteByAyah(ParamAyahRef ref) =>
+      _repo.deleteByAyah(ref);
 }

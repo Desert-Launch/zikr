@@ -13,6 +13,7 @@ import 'package:quran/modules/quran/presentation/cubits/s_surah_list.dart'
 import 'package:quran/modules/quran/presentation/widgets/w_ayah_action_sheet.dart';
 import 'package:quran/modules/quran/presentation/widgets/w_mini_player.dart';
 import 'package:quran/modules/quran/presentation/widgets/w_mushaf_v4_page.dart';
+import 'package:quran/modules/quran/presentation/widgets/w_reader_bottom_bar.dart';
 import 'package:quran/modules/quran/presentation/widgets/w_reader_search_panel.dart';
 import 'package:quran/modules/quran/presentation/widgets/w_reader_top_bar.dart';
 
@@ -79,6 +80,25 @@ class _SNMushafReaderState extends State<SNMushafReader> {
     _cubit.highlightAyah(ref);
   }
 
+  /// Jumps the open reader to [page] — used by the index popup and the
+  /// bookmarks sheet, neither of which pushes a new reader route.
+  void _jumpToPage(int page) {
+    if (page < 1 || page > 604) return;
+    if (_pageController.hasClients) _pageController.jumpToPage(page - 1);
+    _cubit.openPage(page);
+  }
+
+  /// Resolves an ayah to its page, jumps there and highlights the verse.
+  Future<void> _jumpToAyah(ParamAyahRef ref) async {
+    final page = await Modular.get<DSLocalQuran>().pageOfAyah(
+      ref.surah,
+      ref.ayah,
+    );
+    if (!mounted) return;
+    _jumpToPage(page);
+    _cubit.highlightAyah(ref);
+  }
+
   Future<void> _scrollToPlayingPage(ParamAyahRef ref) async {
     final page = await Modular.get<DSLocalQuran>().pageOfAyah(
       ref.surah,
@@ -130,8 +150,16 @@ class _SNMushafReaderState extends State<SNMushafReader> {
                 child: SafeArea(
                   child: PageView.builder(
                     controller: _pageController,
-                    reverse: true, // RTL — page 1 on the right
+                    // NO `reverse`: a horizontal PageView already follows the
+                    // ambient direction, so under RTL page 1 sits on the right
+                    // and swiping left advances. `reverse: true` was needed
+                    // only while the app was pinned LTR — keeping it now
+                    // double-flips the paging.
                     itemCount: 604,
+                    // Builds the immediate neighbours ahead of the swipe; the
+                    // pages further out in the ±3 window are already parsed in
+                    // the cubit, so they mount instantly when reached.
+                    allowImplicitScrolling: true,
                     onPageChanged: (i) => _cubit.openPage(i + 1),
                     itemBuilder: (context, i) {
                       final pageNumber = i + 1;
@@ -145,7 +173,7 @@ class _SNMushafReaderState extends State<SNMushafReader> {
                 child: Column(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    const WReaderTopBar(),
+                    WReaderTopBar(onOpenPage: _jumpToPage),
                     WReaderSearchPanel(onHitTap: _openSearchHit),
                   ],
                 ),
@@ -173,6 +201,9 @@ class _SNMushafReaderState extends State<SNMushafReader> {
                             : const SizedBox.shrink();
                       },
                     ),
+                    // Bottom chrome — rides the same show/hide tap as the top
+                    // bar and carries the in-reader bookmarks shortcut.
+                    WReaderBottomBar(onOpenAyah: _jumpToAyah),
                   ],
                 ),
               ),
@@ -184,6 +215,16 @@ class _SNMushafReaderState extends State<SNMushafReader> {
   }
 }
 
+/// One slot in the reader's [PageView].
+///
+/// Renders straight from [SMushafReader.pages] — the cubit keeps a 7-page
+/// window (current ±3) warm, so a page swiped into view is already parsed and
+/// paints without a spinner.
+///
+/// Kept alive (not disposed) for exactly as long as it stays inside that
+/// window: `wantKeepAlive` flips to false the moment the page falls outside
+/// ±[CBMushafReader.preloadRadius], which is what bounds memory — the built
+/// subtree is torn down in step with the cubit evicting the layout.
 class _PageLoader extends StatefulWidget {
   const _PageLoader({required this.pageNumber});
   final int pageNumber;
@@ -192,25 +233,43 @@ class _PageLoader extends StatefulWidget {
   State<_PageLoader> createState() => _PageLoaderState();
 }
 
-class _PageLoaderState extends State<_PageLoader> {
+class _PageLoaderState extends State<_PageLoader>
+    with AutomaticKeepAliveClientMixin {
+  bool _keepAlive = false;
+
+  @override
+  bool get wantKeepAlive => _keepAlive;
+
+  void _syncKeepAlive(int currentPage) {
+    final next =
+        (widget.pageNumber - currentPage).abs() <= CBMushafReader.preloadRadius;
+    if (next == _keepAlive) return;
+    _keepAlive = next;
+    // `updateKeepAlive` dispatches a KeepAliveNotification, which makes the
+    // enclosing AutomaticKeepAlive rebuild — illegal during a build, so defer
+    // it to the end of the frame.
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted) updateKeepAlive();
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
+    super.build(context);
     return BlocBuilder<CBMushafReader, SMushafReader>(
       buildWhen: (a, b) =>
           a.currentPage != b.currentPage ||
           a.status != b.status ||
-          a.layout?.page != b.layout?.page,
+          a.pages[widget.pageNumber] != b.pages[widget.pageNumber],
       builder: (context, state) {
+        _syncKeepAlive(state.currentPage);
+        final layout = state.pages[widget.pageNumber];
+        if (layout != null) return WMushafV4Page(layout: layout);
         final isCurrent = state.currentPage == widget.pageNumber;
-        if (isCurrent && state.layout?.page == widget.pageNumber) {
-          return WMushafV4Page(layout: state.layout!);
-        }
         if (isCurrent && state.status == LoadStatus.loading) {
           return const Center(child: CircularProgressIndicator());
         }
-        // For non-current pages we don't have layout cached — render nothing
-        // (PageView preloads neighbour widgets but they're never visible
-        // until swiped; openPage() fires when the swipe completes).
+        // Outside the warm window (or still resolving) — nothing to paint yet.
         return const SizedBox.shrink();
       },
     );
