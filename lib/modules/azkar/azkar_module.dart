@@ -14,10 +14,7 @@ class AzkarModule extends Module {
   void binds(Injector i) {
     // Per-screen cubit (factory). Boxes + DS live in AppModule.
     i.add<CBAzkarSession>(
-      () => CBAzkarSession(
-        local: Modular.get<DSLocalAzkar>(),
-        progress: Modular.get<BoxAzkarProgress>(),
-      ),
+      () => CBAzkarSession(local: Modular.get<DSLocalAzkar>(), progress: Modular.get<BoxAzkarProgress>()),
     );
   }
 

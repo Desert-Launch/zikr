@@ -51,6 +51,7 @@ class _SNAzkarCategoryState extends State<SNAzkarCategory> {
               SliverToBoxAdapter(
                 child: WAzkarHeader(
                   green: _green,
+                  title: _categoryName(category),
                   categoryCount: category.items.length,
                   completedToday: completed,
                   favorites: _favorites.all().length,
@@ -64,10 +65,7 @@ class _SNAzkarCategoryState extends State<SNAzkarCategory> {
                   separatorBuilder: (_, __) => SizedBox(height: 10.h),
                   itemBuilder: (_, index) {
                     if (index == 0) {
-                      return WAzkarListTitle(
-                        title: _categoryName(category),
-                        onBack: Modular.to.pop,
-                      );
+                      return WAzkarListTitle(onBack: Modular.to.pop);
                     }
                     final itemIndex = index - 1;
                     final item = category.items[itemIndex];

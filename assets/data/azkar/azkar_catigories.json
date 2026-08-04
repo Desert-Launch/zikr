@@ -42,6 +42,13 @@
         "emoji": "🕌"
     },
     {
+        "id": 8,
+        "arName": "مفاتيح الفرج العشرة",
+        "enName": "Ten Keys of Relief",
+        "filename": "faraj_keys.json",
+        "emoji": "🗝️"
+    },
+    {
         "id": 7,
         "arName": "اذكار اضافية",
         "enName": "Other Azkar",

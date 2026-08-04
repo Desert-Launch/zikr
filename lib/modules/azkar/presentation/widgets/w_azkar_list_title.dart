@@ -1,14 +1,12 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:localize_and_translate/localize_and_translate.dart';
 import 'package:quran/core/widgets/w_localize_rotation.dart';
 
-/// Row above the category list: a "back to categories" button and the category
-/// title.
+/// Row above the category list: a "back to categories" button. The category
+/// name itself lives in the header.
 class WAzkarListTitle extends StatelessWidget {
-  const WAzkarListTitle({super.key, required this.title, required this.onBack});
+  const WAzkarListTitle({super.key, required this.onBack});
 
-  final String title;
   final VoidCallback onBack;
 
   @override
@@ -24,10 +22,6 @@ class WAzkarListTitle extends StatelessWidget {
           label: Text('azkar_back_categories'.tr()),
         ),
         const Spacer(),
-        Text(
-          title,
-          style: TextStyle(fontSize: 10.sp, color: Colors.grey[700]),
-        ),
       ],
     );
   }
