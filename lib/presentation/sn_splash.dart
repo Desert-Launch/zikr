@@ -1,13 +1,16 @@
-import 'dart:async';
-
 import 'package:flutter/material.dart';
 import 'package:flutter_modular/flutter_modular.dart';
 import 'package:quran/core/data/sources/local/box_app_settings.dart';
 import 'package:quran/core/services/routes/routes_names.dart';
 
-/// Boot screen. Shows the branded splash image for ~1s, then opens onboarding
-/// on first install, otherwise the guest-friendly home screen. Authentication
-/// is requested only when a protected feature is opened.
+/// Boot screen. A plain green surface — the same brand green as the native
+/// splash, so the hand-off is invisible — that routes to onboarding on first
+/// install and to the guest-friendly home screen otherwise. Authentication is
+/// requested only when a protected feature is opened.
+///
+/// Nothing is drawn and nothing is awaited: this screen exists only to read
+/// [BoxAppSettings] and pick a destination, so it should be on screen for a
+/// single frame.
 class SNSplash extends StatefulWidget {
   const SNSplash({super.key});
 
@@ -22,14 +25,14 @@ class _SNSplashState extends State<SNSplash> {
   @override
   void initState() {
     super.initState();
-    unawaited(_routeWhenReady());
+    // Post-frame, not inline: navigating while this widget is still building
+    // tears down the route that is mid-build. One frame is also all it takes
+    // for the green to be painted, so there's no white flash on the way out.
+    WidgetsBinding.instance.addPostFrameCallback((_) => _route());
   }
 
-  Future<void> _routeWhenReady() async {
-    // Hold the splash image on screen for one second before routing.
-    await Future<void>.delayed(const Duration(seconds: 1));
+  void _route() {
     if (!mounted) return;
-
     final settings = Modular.get<BoxAppSettings>().current();
     final target = settings.hasSeenOnboarding
         ? RoutesNames.homeBase
@@ -38,15 +41,5 @@ class _SNSplashState extends State<SNSplash> {
   }
 
   @override
-  Widget build(BuildContext context) {
-    return const Scaffold(
-      backgroundColor: _bg,
-      body: SizedBox.expand(
-        child: Image(
-          image: AssetImage('assets/images/splash_screen.png'),
-          fit: BoxFit.cover,
-        ),
-      ),
-    );
-  }
+  Widget build(BuildContext context) => const Scaffold(backgroundColor: _bg);
 }
