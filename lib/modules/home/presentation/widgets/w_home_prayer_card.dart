@@ -27,6 +27,123 @@ String _prayerLabel(EPrayer prayer) => switch (prayer) {
   EPrayer.isha => 'prayer_isha'.tr(),
 };
 
+/// The prayer card before any timings exist — while the location fix and the
+/// timings fetch are still in flight, or after they failed with nothing cached
+/// to fall back on.
+///
+/// Keeps the real card's shell (same padding, divider and chip row) so the home
+/// layout doesn't shift when the data lands; only the head row swaps between a
+/// spinner and a retry hint. Tapping opens the prayer screen, which owns the
+/// full error copy and the retry control.
+class _PrayerCardPlaceholder extends StatelessWidget {
+  const _PrayerCardPlaceholder({required this.status, required this.green});
+
+  final PrayerLoadStatus status;
+  final Color green;
+
+  /// Spin unless the cubit has positively reported a failure. `idle` counts as
+  /// loading — the cubit sits there between construction and the first refresh,
+  /// and that gap is still "we don't have times yet" from the user's side.
+  bool get _loading =>
+      status != PrayerLoadStatus.error &&
+      status != PrayerLoadStatus.permissionDenied;
+
+  @override
+  Widget build(BuildContext context) {
+    return InkWell(
+      borderRadius: BorderRadius.circular(18.r),
+      onTap: () => Modular.to.pushNamed(RoutesNames.prayerBase),
+      child: Container(
+        padding: EdgeInsets.fromLTRB(18.w, 18.h, 18.w, 16.h),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(18.r),
+          boxShadow: const [
+            BoxShadow(color: Color(0x12000000), blurRadius: 16, offset: Offset(0, 6)),
+          ],
+        ),
+        child: Column(
+          children: [
+            Row(
+              children: [
+                CircleAvatar(
+                  radius: 24.r,
+                  backgroundColor: green,
+                  child: _loading
+                      ? SizedBox(
+                          width: 20.r,
+                          height: 20.r,
+                          child: CircularProgressIndicator(
+                            strokeWidth: 2.5.r,
+                            color: Colors.white,
+                          ),
+                        )
+                      : Icon(
+                          Icons.location_off_rounded,
+                          color: Colors.white,
+                          size: 24.r,
+                        ),
+                ),
+                SizedBox(width: 12.w),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        'prayer_next_label'.tr(),
+                        style: TextStyle(color: Colors.grey[600], fontSize: 10.sp),
+                      ),
+                      SizedBox(height: 4.h),
+                      Text(
+                        _loading
+                            ? 'home_prayer_loading'.tr()
+                            : 'home_prayer_unavailable'.tr(),
+                        maxLines: 2,
+                        overflow: TextOverflow.ellipsis,
+                        style: TextStyle(
+                          color: const Color(0xFF252525),
+                          fontSize: 15.sp,
+                          fontWeight: FontWeight.w700,
+                          height: 1.3,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+            SizedBox(height: 18.h),
+            // Empty track — the real card's progress bar with nothing elapsed.
+            ClipRRect(
+              borderRadius: BorderRadius.circular(6.r),
+              child: SizedBox(
+                height: 8.h,
+                child: const ColoredBox(color: Color(0xFFEDEAE3)),
+              ),
+            ),
+            SizedBox(height: 18.h),
+            Container(height: 1, color: const Color(0xFFEDEAE3)),
+            SizedBox(height: 16.h),
+            Row(
+              children: EPrayer.values
+                  .map(
+                    (p) => Expanded(
+                      child: WHomePrayerChip(
+                        label: _prayerLabel(p),
+                        time: '--:--',
+                        style: _prayerStyle(p),
+                      ),
+                    ),
+                  )
+                  .toList(),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
 /// Home prayer card: next prayer, countdown, progress bar, and the chip row.
 class WHomePrayerCard extends StatelessWidget {
   const WHomePrayerCard({super.key, required this.state, required this.green});
@@ -38,6 +155,13 @@ class WHomePrayerCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    // Nothing to show yet: the first launch has no cached timings, so the card
+    // would otherwise render "now" as the next prayer and six `--:--` chips —
+    // indistinguishable from real data. Show the fetch in progress instead.
+    if (state.slots.isEmpty) {
+      return _PrayerCardPlaceholder(status: state.status, green: green);
+    }
+
     final next = state.nextPrayer;
     final allSlots = state.slots.isNotEmpty
         ? state.slots
