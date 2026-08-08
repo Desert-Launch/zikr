@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_modular/flutter_modular.dart';
@@ -45,6 +47,14 @@ class SNLocationPermission extends StatelessWidget {
     // scheduled on first launch; Home then requests location + fetches times.
     await cubit.requestNotificationPermission();
     await cubit.setLocationOptIn(granted);
+    if (!context.mounted) return;
+    // Android gets one more step — the overlay / full-screen grants that decide
+    // whether the adhan can take over the screen. That screen owns
+    // markComplete; iOS has neither grant, so it finishes here.
+    if (Platform.isAndroid) {
+      Modular.to.pushNamed(OnboardingRoutes.fullAlarm());
+      return;
+    }
     await cubit.markComplete();
     if (!context.mounted) return;
     Modular.to.navigate(RoutesNames.homeBase);

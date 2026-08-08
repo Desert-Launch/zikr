@@ -9,6 +9,7 @@ import android.content.IntentFilter
 import android.os.Build
 import android.os.Bundle
 import android.view.WindowManager
+import android.widget.ImageView
 import android.widget.TextView
 import com.zikr.mapp.R
 import java.text.SimpleDateFormat
@@ -50,6 +51,13 @@ class AdhanAlarmActivity : Activity() {
         val body = intent?.getStringExtra(AdhanAlarmScheduler.EXTRA_BODY).orEmpty()
         val stopLabel = intent?.getStringExtra(AdhanAlarmScheduler.EXTRA_STOP) ?: "إيقاف"
         val openLabel = intent?.getStringExtra(AdhanAlarmScheduler.EXTRA_OPEN) ?: "فتح التطبيق"
+
+        // App name + launcher icon, read from ApplicationInfo so this screen
+        // never carries a second copy of the branding to keep in sync.
+        findViewById<ImageView>(R.id.adhan_alarm_logo)
+            .setImageDrawable(applicationInfo.loadIcon(packageManager))
+        findViewById<TextView>(R.id.adhan_alarm_app).text =
+            applicationInfo.loadLabel(packageManager)
 
         findViewById<TextView>(R.id.adhan_alarm_title).text = title
         findViewById<TextView>(R.id.adhan_alarm_body).text = body

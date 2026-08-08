@@ -14,6 +14,7 @@ import android.media.MediaPlayer
 import android.os.Build
 import android.os.IBinder
 import android.os.PowerManager
+import android.provider.Settings
 import androidx.core.app.NotificationCompat
 
 /**
@@ -26,6 +27,15 @@ class AdhanPlaybackService : Service() {
 
     private var player: MediaPlayer? = null
 
+    /**
+     * The alarm id this run was started with. It doubles as the id of the Dart
+     * companion notification scheduled by `AdhanScheduler` for the same prayer,
+     * which is what [stopEverything] has to cancel — stopping the service only
+     * removes the service's OWN notification, leaving the companion sitting in
+     * the tray with the adhan already silenced.
+     */
+    private var alarmId: Int = 0
+
     override fun onBind(intent: Intent?): IBinder? = null
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
@@ -34,6 +44,7 @@ class AdhanPlaybackService : Service() {
             return START_NOT_STICKY
         }
 
+        alarmId = intent?.getIntExtra(AdhanAlarmScheduler.EXTRA_ID, 0) ?: 0
         val rawRes = intent?.getStringExtra(AdhanAlarmScheduler.EXTRA_RAW).orEmpty()
         val title = intent?.getStringExtra(AdhanAlarmScheduler.EXTRA_TITLE) ?: "الأذان"
         val body = intent?.getStringExtra(AdhanAlarmScheduler.EXTRA_BODY).orEmpty()
@@ -45,8 +56,45 @@ class AdhanPlaybackService : Service() {
         startInForeground(
             buildNotification(title, body, stopLabel, openLabel, prayerKey, fullScreen),
         )
+        if (fullScreen) {
+            launchAlarmActivity(
+                alarmActivityIntent(title, body, stopLabel, openLabel, prayerKey),
+            )
+        }
         playAdhan(rawRes)
         return START_NOT_STICKY
+    }
+
+    /**
+     * Starts [AdhanAlarmActivity] directly, on top of whatever the user is
+     * doing.
+     *
+     * The full-screen intent alone is not enough: Android only auto-launches an
+     * FSI Activity when the screen is off or locked — with the device unlocked
+     * and in use it deliberately degrades to a heads-up notification, so the
+     * adhan screen never appears "over apps". A direct start is normally blocked
+     * by the Android 10+ background-activity-start rules, but holding
+     * SYSTEM_ALERT_WINDOW ("Display over other apps") is a documented exemption,
+     * and it's also the flag Xiaomi/Oppo/Vivo check before allowing a background
+     * launch at all.
+     *
+     * Gated on the permission being actually granted; when it isn't, this is a
+     * no-op and the full-screen-intent notification stays the only path (which
+     * still covers the screen-off / locked case). Never fatal — the audio and
+     * the notification are already running by this point.
+     */
+    private fun launchAlarmActivity(intent: Intent) {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q &&
+            !Settings.canDrawOverlays(this)
+        ) {
+            return
+        }
+        try {
+            startActivity(intent)
+        } catch (e: Exception) {
+            // Background start refused by the OS/OEM — the full-screen-intent
+            // notification remains as the fallback.
+        }
     }
 
     /**
@@ -152,6 +200,7 @@ class AdhanPlaybackService : Service() {
         // Tells a visible AdhanAlarmActivity to dismiss itself, whether the
         // adhan finished on its own or was stopped from the notification.
         sendBroadcast(Intent(ACTION_FINISHED).setPackage(packageName))
+        clearCompanionNotification()
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
             stopForeground(STOP_FOREGROUND_REMOVE)
         } else {
@@ -159,6 +208,26 @@ class AdhanPlaybackService : Service() {
             stopForeground(true)
         }
         stopSelf()
+    }
+
+    /**
+     * Removes the Dart-scheduled adhan notification for this prayer.
+     *
+     * Two notifications exist at prayer time: the one this service posts (which
+     * `stopForeground(STOP_FOREGROUND_REMOVE)` takes down) and the companion
+     * `AdhanScheduler` scheduled through flutter_local_notifications, posted
+     * under the SAME integer id and no tag. Stopping the adhan has to clear both
+     * or the user silences the audio and still finds an adhan alert waiting in
+     * the notification centre.
+     */
+    private fun clearCompanionNotification() {
+        if (alarmId == 0) return
+        try {
+            val nm = getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
+            nm.cancel(alarmId)
+        } catch (e: Exception) {
+            // Never let tray cleanup keep the service alive.
+        }
     }
 
     override fun onDestroy() {
@@ -187,6 +256,17 @@ class AdhanPlaybackService : Service() {
             Intent(this, AdhanPlaybackService::class.java).apply { action = ACTION_STOP },
             piFlags,
         )
+        // Android 14 lets the user swipe away an ongoing foreground-service
+        // notification (setOngoing no longer prevents it). Without a delete
+        // intent the adhan then keeps playing with its only stop control gone,
+        // so dismissal is treated exactly like tapping Stop. A distinct request
+        // code keeps it from colliding with stopPi's PendingIntent.
+        val dismissPi = PendingIntent.getService(
+            this,
+            4,
+            Intent(this, AdhanPlaybackService::class.java).apply { action = ACTION_STOP },
+            piFlags,
+        )
         val alarmPi = PendingIntent.getActivity(
             this,
             3,
@@ -206,6 +286,7 @@ class AdhanPlaybackService : Service() {
             .setPriority(NotificationCompat.PRIORITY_MAX)
             .setCategory(NotificationCompat.CATEGORY_ALARM)
             .setVisibility(NotificationCompat.VISIBILITY_PUBLIC)
+            .setDeleteIntent(dismissPi)
             .addAction(0, stopLabel, stopPi)
 
         if (fullScreen) {

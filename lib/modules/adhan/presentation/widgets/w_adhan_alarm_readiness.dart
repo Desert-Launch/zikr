@@ -36,7 +36,14 @@ class WAdhanAlarmReadiness extends StatelessWidget {
             _ReadinessRow(
               title: 'adhan_alarm_issue_fullscreen'.tr(),
               action: 'adhan_alarm_fix'.tr(),
-              onTap: () => cubit.openAlarmSetting(AdhanOsSetting.notifications),
+              onTap: () =>
+                  cubit.openAlarmSetting(AdhanOsSetting.fullScreenIntent),
+            ),
+          if (!perms.canDrawOverlays)
+            _ReadinessRow(
+              title: 'adhan_alarm_issue_overlay'.tr(),
+              action: 'adhan_alarm_fix'.tr(),
+              onTap: () => cubit.openAlarmSetting(AdhanOsSetting.overlay),
             ),
           if (perms.isBatteryOptimized)
             _ReadinessRow(

@@ -16,6 +16,16 @@
          the lockscreen. Auto-granted below API 34; user-revocable on Android 14+
          (we degrade to a heads-up notification if revoked). -->
     <uses-permission android:name="android.permission.USE_FULL_SCREEN_INTENT"/>
+    <!-- "Display over other apps". Android 10+ blocks background activity
+         starts, and a full-screen-intent notification only auto-launches the
+         Activity when the screen is off/locked — while the user is actively on
+         another app it degrades to a heads-up banner. Holding this permission
+         is a documented exemption from the background-activity-start block, so
+         AdhanPlaybackService can launch AdhanAlarmActivity directly and the
+         adhan screen appears OVER whatever app is open. Also what MIUI/ColorOS
+         actually check for background starts. Optional: without it the app
+         falls back to the full-screen-intent path. -->
+    <uses-permission android:name="android.permission.SYSTEM_ALERT_WINDOW"/>
     <!-- Turns the screen on when the adhan fires. -->
     <uses-permission android:name="android.permission.TURN_SCREEN_ON"/>
     <uses-permission android:name="android.permission.DISABLE_KEYGUARD"/>

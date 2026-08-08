@@ -275,6 +275,10 @@ class $AssetsIconsGen {
 class $AssetsImagesGen {
   const $AssetsImagesGen();
 
+  /// File path: assets/images/adhan_background_image.png
+  AssetGenImage get adhanBackgroundImage =>
+      const AssetGenImage('assets/images/adhan_background_image.png');
+
   /// File path: assets/images/verse_ornament_end.png
   AssetGenImage get verseOrnamentEnd =>
       const AssetGenImage('assets/images/verse_ornament_end.png');
@@ -284,7 +288,11 @@ class $AssetsImagesGen {
       const AssetGenImage('assets/images/verse_ornament_start.png');
 
   /// List of all assets
-  List<AssetGenImage> get values => [verseOrnamentEnd, verseOrnamentStart];
+  List<AssetGenImage> get values => [
+    adhanBackgroundImage,
+    verseOrnamentEnd,
+    verseOrnamentStart,
+  ];
 }
 
 class $AssetsLangGen {

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_modular/flutter_modular.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:localize_and_translate/localize_and_translate.dart';
@@ -6,6 +7,10 @@ import 'package:package_info_plus/package_info_plus.dart';
 import 'package:quran/core/services/routes/routes_names.dart';
 import 'package:quran/core/widgets/w_gradient_app_bar.dart';
 import 'package:quran/core/widgets/w_shared_scaffold.dart';
+import 'package:quran/modules/adhan/presentation/cubits/cb_adhan_settings.dart';
+import 'package:quran/modules/adhan/presentation/cubits/s_adhan_settings.dart';
+import 'package:quran/modules/adhan/presentation/widgets/w_alarm_permission_switch.dart';
+import 'package:quran/modules/adhan/services/adhan_audio_alarms.dart';
 import 'package:quran/modules/settings/presentation/widgets/w_app_footer.dart';
 import 'package:quran/modules/settings/presentation/widgets/w_profile_card.dart';
 import 'package:quran/modules/settings/presentation/widgets/w_settings_group.dart';
@@ -74,6 +79,7 @@ class _SNSettingsState extends State<SNSettings> {
                       ),
                     ],
                   ),
+                  const _AlarmPermissionsSection(),
                   SizedBox(height: 15.h),
                   WSettingsSectionLabel('settings_about_app'.tr()),
                   WSettingsGroup(
@@ -131,5 +137,49 @@ class _SNSettingsState extends State<SNSettings> {
     if (selected == null || selected == current) return;
     await LocalizeAndTranslate.setLanguageCode(selected);
     if (mounted) setState(() {});
+  }
+}
+
+/// Android-only section for the two OS grants the over-the-lockscreen adhan
+/// depends on. Duplicated here (they also live in the adhan screen) because a
+/// user who skipped them during onboarding looks in Settings first.
+///
+/// Collapses to nothing on iOS, where [alarmPermissionInfos] is empty.
+class _AlarmPermissionsSection extends StatelessWidget {
+  const _AlarmPermissionsSection();
+
+  @override
+  Widget build(BuildContext context) {
+    return WAlarmPermissionRefresher(
+      child: BlocSelector<CBAdhanSettings, SAdhanSettings, AdhanAlarmPermissions>(
+        selector: (s) => s.alarmPermissions,
+        builder: (context, perms) {
+          final infos = alarmPermissionInfos(perms);
+          if (infos.isEmpty) return const SizedBox.shrink();
+          final cubit = Modular.get<CBAdhanSettings>();
+          return Column(
+            children: [
+              SizedBox(height: 15.h),
+              WSettingsSectionLabel('alarm_perm_section'.tr()),
+              WSettingsGroup(
+                children: [
+                  for (final info in infos)
+                    WSettingsRow(
+                      icon: info.icon,
+                      title: info.titleKey.tr(),
+                      subtitle: info.subtitleKey.tr(),
+                      leading: WAlarmPermissionSwitch(
+                        granted: info.granted,
+                        onTap: () => cubit.openAlarmSetting(info.setting),
+                      ),
+                      onTap: () => cubit.openAlarmSetting(info.setting),
+                    ),
+                ],
+              ),
+            ],
+          );
+        },
+      ),
+    );
   }
 }

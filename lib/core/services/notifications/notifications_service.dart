@@ -71,6 +71,18 @@ class NotificationsService {
       for (final c in AppNotificationChannels.all) {
         await android.createNotificationChannel(c);
       }
+      // Drop channels superseded by a re-created id (sound / audio attributes
+      // can't be edited in place). Best-effort: a missing channel is a no-op.
+      for (final id in AppNotificationChannels.legacyIds) {
+        try {
+          await android.deleteNotificationChannel(id);
+        } catch (e) {
+          AppLogger.warning(
+            'Failed to delete legacy channel $id: $e',
+            tag: 'NotificationsService',
+          );
+        }
+      }
     }
 
     // Cold start: the app was launched by tapping a notification while it was
@@ -234,8 +246,30 @@ class NotificationsService {
         importance: Importance.max,
         playSound: true,
         sound: RawResourceAndroidNotificationSound(rawResource),
+        // Alarm stream, not the notification one — the adhan follows the
+        // device's alarm volume like the native full-adhan service does.
+        audioAttributesUsage: AudioAttributesUsage.alarm,
       ),
     );
+  }
+
+  /// Removes a channel by id. Used to retire a channel whose sound or audio
+  /// attributes changed (both immutable after creation, so the replacement
+  /// needs a new id). Safe when the channel doesn't exist.
+  Future<void> deleteChannel(String id) async {
+    final android = _plugin
+        .resolvePlatformSpecificImplementation<
+          AndroidFlutterLocalNotificationsPlugin
+        >();
+    if (android == null) return;
+    try {
+      await android.deleteNotificationChannel(id);
+    } catch (e) {
+      AppLogger.warning(
+        'Failed to delete channel $id: $e',
+        tag: 'NotificationsService',
+      );
+    }
   }
 
   /// Schedules a daily-repeating notification at [hour]:[minute] local time.

@@ -27,12 +27,20 @@ class AppNotificationChannels {
   /// even while idle. Default device sound until a bundled clip channel is
   /// created for the selected voice (see
   /// [NotificationsService.createVoiceChannel]).
+  ///
+  /// [AudioAttributesUsage.alarm] puts the adhan on the device's ALARM volume
+  /// slider rather than the notification one — matching the native full-adhan
+  /// service (which uses `USAGE_ALARM`) so the two paths can't end up at
+  /// different loudness, and so a silenced notification volume never mutes the
+  /// call to prayer. Audio attributes are frozen when a channel is first
+  /// created, hence the `_v2` id — see [legacyIds].
   static const adhan = AndroidNotificationChannel(
-    'adhan_channel',
+    'adhan_channel_v2',
     'Adhan',
     description: 'Call-to-prayer (adhan) alerts at each prayer time',
     importance: Importance.max,
     playSound: true,
+    audioAttributesUsage: AudioAttributesUsage.alarm,
   );
 
   /// Silent companion for the adhan when the FULL audio is played by the native
@@ -123,4 +131,17 @@ class AppNotificationChannels {
     quranReminders,
     downloads,
   ];
+
+  /// Channel ids replaced by a re-created version above. A channel's sound and
+  /// audio attributes are immutable once Android has created it, so changing
+  /// either means publishing a new id — and deleting the old one, or it lingers
+  /// forever in the app's notification settings as a dead duplicate.
+  /// [NotificationsService.init] deletes these once at boot.
+  static const List<String> legacyIds = ['adhan_channel'];
+
+  /// Prefix of the per-voice adhan channels created by
+  /// [NotificationsService.createVoiceChannel] before they moved to the alarm
+  /// stream. Their ids embed the voice id, so they're matched by prefix rather
+  /// than listed; see `AdhanScheduler._resolveChannel` for the current naming.
+  static const String legacyVoiceChannelPrefix = 'adhan_';
 }

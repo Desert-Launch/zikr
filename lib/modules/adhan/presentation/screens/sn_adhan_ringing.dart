@@ -3,8 +3,8 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_modular/flutter_modular.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:localize_and_translate/localize_and_translate.dart';
+import 'package:quran/core/assets/assets.gen.dart';
 import 'package:quran/core/services/routes/routes_names.dart';
-import 'package:quran/core/theme/app_colors.dart';
 import 'package:quran/core/widgets/w_shared_scaffold.dart';
 import 'package:quran/modules/adhan/presentation/cubits/cb_adhan_ringing.dart';
 import 'package:quran/modules/adhan/presentation/cubits/s_adhan_ringing.dart';
@@ -67,7 +67,9 @@ class _SNAdhanRingingState extends State<SNAdhanRinging> {
           if (!didPop) _dismiss();
         },
         child: WSharedScaffold(
-          backgroundColor: AppColorsLight.primaryDark,
+          // Black behind the artwork so any letterboxed edge blends into the
+          // scrim rather than flashing a green frame.
+          backgroundColor: Colors.black,
           withSafeArea: false,
           body: BlocListener<CBAdhanRinging, SAdhanRinging>(
             // Playback finishing on its own dismisses the screen, so the user
@@ -98,11 +100,17 @@ class _RingingBody extends StatelessWidget {
     return Container(
       width: double.infinity,
       height: double.infinity,
-      decoration: const BoxDecoration(
-        gradient: LinearGradient(
-          begin: Alignment.topCenter,
-          end: Alignment.bottomCenter,
-          colors: [AppColorsLight.primary, AppColorsLight.primaryDark],
+      decoration: BoxDecoration(
+        image: DecorationImage(
+          image: AssetImage(Assets.images.adhanBackgroundImage.path),
+          fit: BoxFit.cover,
+          // Black at 62%, matching the native AdhanAlarmActivity's scrim
+          // (res/layout/activity_adhan_alarm.xml) so the in-app and
+          // over-the-lockscreen adhan screens are the same screen to the user.
+          colorFilter: ColorFilter.mode(
+            Colors.black.withValues(alpha: 0.62),
+            BlendMode.srcOver,
+          ),
         ),
       ),
       child: SafeArea(

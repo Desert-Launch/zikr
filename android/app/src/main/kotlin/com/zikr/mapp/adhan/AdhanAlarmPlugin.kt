@@ -73,9 +73,21 @@ class AdhanAlarmPlugin(private val context: Context) : MethodChannel.MethodCallH
     private fun permissions(): Map<String, Any> = mapOf(
         "canScheduleExact" to AdhanAlarmScheduler.canScheduleExact(context),
         "canUseFullScreenIntent" to canUseFullScreenIntent(),
+        "canDrawOverlays" to canDrawOverlays(),
         "isBatteryOptimized" to isBatteryOptimized(),
         "hasOemAutostartManager" to (oemAutostartIntent() != null),
     )
+
+    /**
+     * "Display over other apps". Without it the adhan screen can only appear
+     * when the device is locked or the screen is off (the full-screen-intent
+     * path); with it, [AdhanPlaybackService] can launch the alarm Activity
+     * directly over whatever app is in front.
+     */
+    private fun canDrawOverlays(): Boolean {
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.M) return true
+        return Settings.canDrawOverlays(context)
+    }
 
     /**
      * Android 14 (API 34) made USE_FULL_SCREEN_INTENT a user-revocable grant for
@@ -95,24 +107,95 @@ class AdhanAlarmPlugin(private val context: Context) : MethodChannel.MethodCallH
         return !pm.isIgnoringBatteryOptimizations(context.packageName)
     }
 
+    /**
+     * Opens the settings page for [which], trying each candidate in order until
+     * one resolves. The lists are ordered most-specific-first: the per-app page
+     * that acts on THIS app, then the system-wide list it lives in, so a device
+     * that doesn't ship the direct page still lands somewhere useful.
+     */
     private fun openOsSettings(which: String?): Boolean {
-        val intent = when (which) {
-            "exactAlarm" -> exactAlarmIntent()
-            "batteryOptimization" -> Intent(Settings.ACTION_IGNORE_BATTERY_OPTIMIZATION_SETTINGS)
-            "notifications" -> notificationSettingsIntent()
-            "oemAutostart" -> oemAutostartIntent()
-            else -> null
-        } ?: return false
-
-        return try {
-            context.startActivity(intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK))
-            true
-        } catch (e: ActivityNotFoundException) {
-            false
-        } catch (e: SecurityException) {
-            false
+        val candidates = when (which) {
+            "exactAlarm" -> listOfNotNull(exactAlarmIntent())
+            "batteryOptimization" -> batteryOptimizationIntents()
+            "fullScreenIntent" -> fullScreenIntentIntents()
+            "overlay" -> overlayIntents()
+            "notifications" -> listOf(notificationSettingsIntent())
+            "oemAutostart" -> listOfNotNull(oemAutostartIntent())
+            else -> emptyList()
         }
+
+        for (intent in candidates) {
+            try {
+                context.startActivity(intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK))
+                return true
+            } catch (e: ActivityNotFoundException) {
+                continue
+            } catch (e: SecurityException) {
+                continue
+            }
+        }
+        return false
     }
+
+    /**
+     * ACTION_IGNORE_BATTERY_OPTIMIZATION_SETTINGS only opens the system-wide
+     * list, which defaults to the "Not optimised" filter — an app that IS
+     * optimised is absent from it, so the user is told to whitelist an app they
+     * can't find. ACTION_REQUEST_IGNORE_BATTERY_OPTIMIZATIONS instead raises the
+     * direct "Allow app to run in the background?" dialog for this package
+     * (allowed: REQUEST_IGNORE_BATTERY_OPTIMIZATIONS is declared, and an
+     * alarm-clock app is one of Play's permitted use cases). The list and the
+     * app-details page remain as fallbacks for OEMs that block the dialog.
+     */
+    private fun batteryOptimizationIntents(): List<Intent> {
+        val out = mutableListOf<Intent>()
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+            out += Intent(Settings.ACTION_REQUEST_IGNORE_BATTERY_OPTIMIZATIONS)
+                .setData(Uri.fromParts("package", context.packageName, null))
+            out += Intent(Settings.ACTION_IGNORE_BATTERY_OPTIMIZATION_SETTINGS)
+        }
+        out += appDetailsIntent()
+        return out
+    }
+
+    /**
+     * Android 14+ keeps USE_FULL_SCREEN_INTENT under "Special app access →
+     * Full screen notifications", NOT the app's notification settings — apps
+     * installed on 14+ that aren't calling/alarm apps start DENIED, which is
+     * exactly why the adhan degrades to a heads-up notification. This is the
+     * only page with that toggle; older versions fall through to the app's
+     * notification settings, where the grant doesn't exist to begin with.
+     */
+    private fun fullScreenIntentIntents(): List<Intent> {
+        val out = mutableListOf<Intent>()
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.UPSIDE_DOWN_CAKE) {
+            out += Intent(Settings.ACTION_MANAGE_APP_USE_FULL_SCREEN_INTENT)
+                .setData(Uri.fromParts("package", context.packageName, null))
+        }
+        out += notificationSettingsIntent()
+        out += appDetailsIntent()
+        return out
+    }
+
+    /**
+     * "Display over other apps" for THIS app. The per-package page is the one
+     * with the actual toggle; the system-wide list is the fallback for builds
+     * that don't honour the package URI.
+     */
+    private fun overlayIntents(): List<Intent> {
+        val out = mutableListOf<Intent>()
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+            out += Intent(Settings.ACTION_MANAGE_OVERLAY_PERMISSION)
+                .setData(Uri.fromParts("package", context.packageName, null))
+            out += Intent(Settings.ACTION_MANAGE_OVERLAY_PERMISSION)
+        }
+        out += appDetailsIntent()
+        return out
+    }
+
+    private fun appDetailsIntent(): Intent =
+        Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS)
+            .setData(Uri.fromParts("package", context.packageName, null))
 
     private fun exactAlarmIntent(): Intent? {
         if (Build.VERSION.SDK_INT < Build.VERSION_CODES.S) return null

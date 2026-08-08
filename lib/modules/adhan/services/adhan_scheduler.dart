@@ -633,7 +633,13 @@ class AdhanScheduler {
     if (voiceId == null || voiceId.isEmpty) {
       return AppNotificationChannels.adhan;
     }
-    final channelId = 'adhan_$voiceId';
+    // `_alarm` suffix: the pre-alarm-stream channels were created as
+    // `adhan_<voiceId>` with notification audio attributes, which Android
+    // freezes at creation — the only way to move the adhan onto the alarm
+    // volume is a new id, retiring the old one so it doesn't linger in the
+    // app's notification settings.
+    final channelId = 'adhan_${voiceId}_alarm';
+    await _notifications.deleteChannel('adhan_$voiceId');
     await _notifications.createVoiceChannel(
       id: channelId,
       name: 'Adhan',

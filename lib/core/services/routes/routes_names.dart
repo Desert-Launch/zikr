@@ -194,9 +194,13 @@ class OnboardingRoutes {
   static const String pager = '/pager';
   static const String location = '/location';
 
+  /// Android-only final step: the two OS grants the full-screen adhan needs.
+  static const String alarm = '/alarm';
+
   static String fullLanguage() => RoutesNames.onboardingBase;
   static String fullPager() => '${RoutesNames.onboardingBase}pager';
   static String fullLocation() => '${RoutesNames.onboardingBase}location';
+  static String fullAlarm() => '${RoutesNames.onboardingBase}alarm';
 }
 
 class HomeRoutes {

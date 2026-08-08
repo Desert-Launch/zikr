@@ -15,8 +15,17 @@ enum AdhanOsSetting {
   /// Android: battery-optimization exemption. iOS: no-op.
   batteryOptimization,
 
-  /// Android: the app's notification settings (covers the full-screen-intent
-  /// grant on Android 14+). iOS: the app's Settings page.
+  /// Android 14+: "Special app access → Full screen notifications", the only
+  /// page carrying the USE_FULL_SCREEN_INTENT toggle. Falls back to the app's
+  /// notification settings on older versions. iOS: the app's Settings page.
+  fullScreenIntent,
+
+  /// Android: "Display over other apps" for this package — what lets the adhan
+  /// screen appear over a foreground app rather than only on the lockscreen.
+  /// iOS: no-op.
+  overlay,
+
+  /// Android: the app's notification settings. iOS: the app's Settings page.
   notifications,
 
   /// Android: the OEM autostart / protected-app manager, where one exists
@@ -31,6 +40,7 @@ class AdhanAlarmPermissions extends Equatable {
   const AdhanAlarmPermissions({
     this.canScheduleExact = true,
     this.canUseFullScreenIntent = true,
+    this.canDrawOverlays = true,
     this.isBatteryOptimized = false,
     this.hasOemAutostartManager = false,
   });
@@ -41,6 +51,11 @@ class AdhanAlarmPermissions extends Equatable {
   /// Android 14+ USE_FULL_SCREEN_INTENT grant — without it the lockscreen
   /// activity is demoted to a heads-up notification.
   final bool canUseFullScreenIntent;
+
+  /// Android 6+ "Display over other apps". Without it the adhan screen can
+  /// only appear on the lockscreen / with the screen off — never over an app
+  /// the user is currently using.
+  final bool canDrawOverlays;
 
   /// True when the app is still subject to battery optimization, which lets
   /// the OS delay or drop the alarm.
@@ -54,6 +69,7 @@ class AdhanAlarmPermissions extends Equatable {
   bool get allGranted =>
       canScheduleExact &&
       canUseFullScreenIntent &&
+      canDrawOverlays &&
       !isBatteryOptimized &&
       !hasOemAutostartManager;
 
@@ -61,6 +77,7 @@ class AdhanAlarmPermissions extends Equatable {
   List<Object?> get props => [
     canScheduleExact,
     canUseFullScreenIntent,
+    canDrawOverlays,
     isBatteryOptimized,
     hasOemAutostartManager,
   ];
@@ -178,6 +195,7 @@ class AdhanAudioAlarms {
       return AdhanAlarmPermissions(
         canScheduleExact: raw['canScheduleExact'] as bool? ?? true,
         canUseFullScreenIntent: raw['canUseFullScreenIntent'] as bool? ?? true,
+        canDrawOverlays: raw['canDrawOverlays'] as bool? ?? true,
         isBatteryOptimized: raw['isBatteryOptimized'] as bool? ?? false,
         hasOemAutostartManager:
             raw['hasOemAutostartManager'] as bool? ?? false,

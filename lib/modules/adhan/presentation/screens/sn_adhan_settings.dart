@@ -16,6 +16,7 @@ import 'package:quran/modules/adhan/presentation/widgets/w_adhan_prayer_row.dart
 import 'package:quran/modules/adhan/presentation/widgets/w_adhan_section_label.dart';
 import 'package:quran/modules/adhan/presentation/widgets/w_adhan_setting_row.dart';
 import 'package:quran/modules/adhan/presentation/widgets/w_adhan_virtue_card.dart';
+import 'package:quran/modules/adhan/presentation/widgets/w_alarm_permission_switch.dart';
 
 class SNAdhanSettings extends StatelessWidget {
   const SNAdhanSettings({super.key});
@@ -34,8 +35,10 @@ class SNAdhanSettings extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final cubit = Modular.get<CBAdhanSettings>();
-    return BlocProvider.value(
-      value: cubit,
+    // Provides the same cubit a plain BlocProvider.value would, and additionally
+    // re-reads the OS grants on resume so the permission switches below are
+    // correct after a trip to system settings.
+    return WAlarmPermissionRefresher(
       child: WSharedScaffold(
         backgroundColor: _canvas,
         withSafeArea: false,
@@ -97,11 +100,26 @@ class SNAdhanSettings extends StatelessWidget {
                                 ),
                               ),
                             ),
+                            // The OS grants the toggle above depends on. Each
+                            // flip deep-links to its settings page — Android
+                            // exposes no in-app way to change either.
+                            for (final info in alarmPermissionInfos(state.alarmPermissions))
+                              WAdhanSettingRow(
+                                icon: info.icon,
+                                title: info.titleKey.tr(),
+                                subtitle: info.subtitleKey.tr(),
+                                trailing: WAlarmPermissionSwitch(
+                                  granted: info.granted,
+                                  onTap: () => cubit.openAlarmSetting(info.setting),
+                                ),
+                              ),
                           ],
                         ),
                         // Only meaningful once the alarm is on — these are the
                         // OS grants that decide whether it actually fires.
                         if (state.fullScreenAlarm) const WAdhanAlarmReadiness(),
+                        SizedBox(height: 12.h),
+                        _TestAdhanButton(cubit: cubit),
 
                         if (defaultTargetPlatform == TargetPlatform.android) ...[
                           SizedBox(height: 18.h),
@@ -230,6 +248,77 @@ class _DefaultDownloadPrompt extends StatelessWidget {
                 style: GoogleFonts.cairo(fontSize: 11.sp, fontWeight: FontWeight.w700, color: const Color(0xFFC8841F)),
               ),
           ],
+        ),
+      ),
+    );
+  }
+}
+
+/// Diagnostic: schedules a real test adhan ~1 minute out (same channel / sound
+/// / native-alarm path as a live prayer, so the full-screen ringing UI shows
+/// exactly as it would for a real adhan) without waiting for a prayer time.
+/// Shows a confirmation / failure snackbar.
+class _TestAdhanButton extends StatefulWidget {
+  const _TestAdhanButton({required this.cubit});
+
+  final CBAdhanSettings cubit;
+
+  @override
+  State<_TestAdhanButton> createState() => _TestAdhanButtonState();
+}
+
+class _TestAdhanButtonState extends State<_TestAdhanButton> {
+  static const _green = Color(0xFF2F7E63);
+  bool _busy = false;
+
+  Future<void> _run() async {
+    if (_busy) return;
+    setState(() => _busy = true);
+    final when = await widget.cubit.scheduleTestAdhan();
+    if (!mounted) return;
+    setState(() => _busy = false);
+    final messenger = ScaffoldMessenger.of(context);
+    final text = when == null
+        ? 'adhan_test_no_permission'.tr()
+        : 'adhan_test_scheduled'.tr().replaceFirst(
+            '{{time}}',
+            '${when.hour.toString().padLeft(2, '0')}:'
+                '${when.minute.toString().padLeft(2, '0')}',
+          );
+    messenger.showSnackBar(
+      SnackBar(
+        content: Text(
+          text,
+          style: GoogleFonts.cairo(fontSize: 12.sp, color: Colors.white),
+        ),
+        backgroundColor: when == null ? const Color(0xFFC0473F) : const Color(0xFF2F7E63),
+        behavior: SnackBarBehavior.floating,
+      ),
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return SizedBox(
+      width: double.infinity,
+      child: OutlinedButton.icon(
+        onPressed: _busy ? null : _run,
+        style: OutlinedButton.styleFrom(
+          foregroundColor: _green,
+          side: const BorderSide(color: _green),
+          padding: EdgeInsets.symmetric(vertical: 14.h),
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14.r)),
+        ),
+        icon: _busy
+            ? SizedBox(
+                width: 16.r,
+                height: 16.r,
+                child: CircularProgressIndicator(strokeWidth: 2.r, color: _green),
+              )
+            : Icon(Icons.notifications_active_outlined, size: 18.r),
+        label: Text(
+          'adhan_test_button'.tr(),
+          style: GoogleFonts.cairo(fontSize: 12.sp, fontWeight: FontWeight.w700),
         ),
       ),
     );
