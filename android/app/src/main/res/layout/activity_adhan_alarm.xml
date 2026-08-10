@@ -7,8 +7,9 @@
   All strings arrive as intent extras already localized by Dart — nothing here
   is hardcoded copy. layoutDirection=locale keeps it correct in Arabic RTL.
 
-  Background is the shared adhan artwork (res/drawable-nodpi/adhan_alarm_bg.png,
-  the same file as assets/images/adhan_background_image.png used by the in-app
+  Background is the shared adhan artwork (res/drawable-nodpi/adhan_alarm_bg.jpg —
+  JPEG bytes, so the extension has to stay .jpg or release-build PNG crunching
+  fails; same image as assets/images/adhan_background_image.png used by the in-app
   SNAdhanRinging screen) under a black scrim, so both adhan screens look
   identical and the white text stays readable over any part of the photo.
 -->
