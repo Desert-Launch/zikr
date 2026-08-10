@@ -86,6 +86,27 @@ class DSLocation {
     );
   }
 
+  /// Shows the OS location prompt (when it can still be shown) and reports
+  /// whether the permission ended up granted.
+  ///
+  /// Unlike [currentPosition] this never throws and never waits on a GPS fix —
+  /// it exists for the onboarding "Allow" button, where the whole point is that
+  /// the system dialog appears on that tap. A permanently denied or restricted
+  /// permission simply returns false; the caller records the answer and moves
+  /// on rather than blocking the flow.
+  Future<bool> requestPermission() async {
+    try {
+      var permission = await Geolocator.checkPermission();
+      if (permission == LocationPermission.denied) {
+        permission = await Geolocator.requestPermission();
+      }
+      return permission == LocationPermission.always ||
+          permission == LocationPermission.whileInUse;
+    } catch (_) {
+      return false;
+    }
+  }
+
   /// Opens the system location settings, where device location can be switched
   /// back on. Returns whether the screen was opened.
   Future<bool> openLocationSettings() => Geolocator.openLocationSettings();

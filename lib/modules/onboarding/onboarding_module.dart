@@ -8,6 +8,7 @@ import 'package:quran/modules/onboarding/presentation/screens/sn_alarm_permissio
 import 'package:quran/modules/onboarding/presentation/screens/sn_language_selection.dart';
 import 'package:quran/modules/onboarding/presentation/screens/sn_location_permission.dart';
 import 'package:quran/modules/onboarding/presentation/screens/sn_onboarding_pager.dart';
+import 'package:quran/modules/prayer/data/datasources/local/ds_location.dart';
 
 class OnboardingModule extends Module {
   @override
@@ -19,6 +20,7 @@ class OnboardingModule extends Module {
         Modular.get<BoxAppSettings>(),
         Modular.get<NotificationsService>(),
         Modular.get<AdhanScheduler>(),
+        Modular.get<DSLocation>(),
       ),
     );
   }

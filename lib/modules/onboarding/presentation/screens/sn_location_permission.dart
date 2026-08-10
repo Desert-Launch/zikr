@@ -16,10 +16,10 @@ import 'package:quran/modules/onboarding/presentation/widgets/w_allow_button.dar
 import 'package:quran/modules/onboarding/presentation/widgets/w_feature_card.dart';
 import 'package:quran/modules/onboarding/presentation/widgets/w_onboarding_backdrop.dart';
 
-/// Final onboarding step. We don't request the OS permission here — that
-/// happens inside Prayer Times when it first needs coordinates. This screen
-/// captures the user's *intent* so we can show prayer times immediately if
-/// they opted in (and a softer ask later if they didn't).
+/// Final onboarding step. Tapping allow raises the OS location prompt right
+/// there — the user just asked for it, so deferring it to the first Prayer
+/// Times run would leave the tap looking like it did nothing. Skipping records
+/// intent only, and Prayer Times still asks when it first needs coordinates.
 class SNLocationPermission extends StatelessWidget {
   const SNLocationPermission({super.key});
 
@@ -41,12 +41,18 @@ class SNLocationPermission extends StatelessWidget {
     ),
   ];
 
-  Future<void> _finish(BuildContext context, {required bool granted}) async {
+  Future<void> _finish(BuildContext context, {required bool allow}) async {
     final cubit = Modular.get<CBOnboarding>();
-    // Ask for notification permission up front so adhan/prayer alerts can be
-    // scheduled on first launch; Home then requests location + fetches times.
+    // Location first — it's the grant this screen is about, so its dialog
+    // should be the one that answers the tap. A refusal doesn't stop the flow.
+    if (allow) {
+      await cubit.requestLocationPermission();
+    } else {
+      await cubit.setLocationOptIn(false);
+    }
+    // Then notifications, so adhan/prayer alerts can be scheduled on first
+    // launch; Home fetches times once coordinates are available.
     await cubit.requestNotificationPermission();
-    await cubit.setLocationOptIn(granted);
     if (!context.mounted) return;
     // Android gets one more step — the overlay / full-screen grants that decide
     // whether the adhan can take over the screen. That screen owns
@@ -113,10 +119,10 @@ class SNLocationPermission extends StatelessWidget {
                     SizedBox(height: 28.h),
                     ..._features.map((f) => WFeatureCard(data: f)),
                     SizedBox(height: 28.h),
-                    WAllowButton(onTap: () => _finish(context, granted: true)),
+                    WAllowButton(onTap: () => _finish(context, allow: true)),
                     SizedBox(height: 10.h),
                     TextButton(
-                      onPressed: () => _finish(context, granted: false),
+                      onPressed: () => _finish(context, allow: false),
                       child: Text(
                         'onboarding_location_skip'.tr(),
                         style: TextStyle(fontSize: 14.sp, color: context.brand.muted),
