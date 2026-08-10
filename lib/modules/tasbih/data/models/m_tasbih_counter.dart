@@ -12,7 +12,7 @@ class MTasbihCounter extends HiveObject {
     this.target = 33,
     this.count = 0,
     this.vibrate = true,
-    this.hourlyEnabled = false,
+    this.hourlyEnabled = true,
     this.reminderEnabled = true,
     this.reminderIntervalHours = 3,
     this.reminderHour = 9,
@@ -36,7 +36,10 @@ class MTasbihCounter extends HiveObject {
   @HiveField(3)
   bool vibrate;
 
-  /// Whether hourly tasbih notifications fire 08–22 (Decision 2).
+  /// Whether hourly tasbih notifications fire 08–22 (Decision 2). On by default
+  /// so a fresh install starts receiving them without visiting SNTasbihHourly.
+  /// Installs that predate this default are seeded once by
+  /// [DSHourlyTasbih.seedDefaultIfNeeded].
   @HiveField(4)
   bool hourlyEnabled;
 

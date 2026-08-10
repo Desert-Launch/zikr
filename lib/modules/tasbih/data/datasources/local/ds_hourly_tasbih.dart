@@ -2,6 +2,7 @@ import 'dart:convert';
 
 import 'package:flutter/services.dart' show rootBundle;
 import 'package:localize_and_translate/localize_and_translate.dart';
+import 'package:quran/core/data/sources/local/box_app_settings.dart';
 import 'package:quran/core/services/logging/app_logger.dart';
 import 'package:quran/core/services/notifications/notification_channels.dart';
 import 'package:quran/core/services/notifications/notification_payload.dart';
@@ -23,10 +24,11 @@ import 'package:quran/modules/tasbih/data/sources/local/box_tasbih_counter.dart'
 ///
 /// Notification IDs reserved: 5008..5022 (one per active hour, `_baseId + hour`).
 class DSHourlyTasbih {
-  DSHourlyTasbih(this._notifications, this._counter);
+  DSHourlyTasbih(this._notifications, this._counter, this._appSettings);
 
   final NotificationsService _notifications;
   final BoxTasbihCounter _counter;
+  final BoxAppSettings _appSettings;
 
   static const _assetPath =
       'assets/data/notifictaions/hourly_notifications.json';
@@ -102,8 +104,31 @@ class DSHourlyTasbih {
     // Recorded even when the feature is off, so switching it on later from the
     // UI (which passes no reserved times) still lands on conflict-free slots.
     _lastReserved = reservedTimes;
+    await seedDefaultIfNeeded();
     if (!_counter.current().hourlyEnabled) return;
     await enable(reservedTimes: reservedTimes);
+  }
+
+  /// Turns the hourly zekr on once, for installs carrying the old default.
+  ///
+  /// The feature shipped off by default, so `MTasbihCounter.hourlyEnabled` is
+  /// already persisted as `false` on those devices — bumping the model default
+  /// only reaches fresh installs. This writes the new default through on the
+  /// first launch after the change and records
+  /// [MAppSettings.hourlyTasbihSeeded], so a user who switches the reminder
+  /// off afterwards is never flipped back on by a later boot.
+  ///
+  /// Runs on the boot reschedule path (before [CBTasbih] is ever constructed),
+  /// so the settings switch reads the seeded value rather than a stale `false`.
+  Future<void> seedDefaultIfNeeded() async {
+    if (_appSettings.current().hourlyTasbihSeeded) return;
+    final counter = _counter.current();
+    if (!counter.hourlyEnabled) {
+      counter.hourlyEnabled = true;
+      await counter.save();
+      AppLogger.info('Hourly zekr seeded on by default', tag: 'HourlyZekr');
+    }
+    await _appSettings.setHourlyTasbihSeeded(true);
   }
 
   Future<void> disable() async {

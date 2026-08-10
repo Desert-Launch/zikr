@@ -22,13 +22,14 @@ class MAppSettingsAdapter extends TypeAdapter<MAppSettings> {
       hasGrantedLocation: fields[2] == null ? false : fields[2] as bool,
       initNotificationsScheduled:
           fields[3] == null ? false : fields[3] as bool,
+      hourlyTasbihSeeded: fields[4] == null ? false : fields[4] as bool,
     );
   }
 
   @override
   void write(BinaryWriter writer, MAppSettings obj) {
     writer
-      ..writeByte(4)
+      ..writeByte(5)
       ..writeByte(0)
       ..write(obj.hasSeenOnboarding)
       ..writeByte(1)
@@ -36,7 +37,9 @@ class MAppSettingsAdapter extends TypeAdapter<MAppSettings> {
       ..writeByte(2)
       ..write(obj.hasGrantedLocation)
       ..writeByte(3)
-      ..write(obj.initNotificationsScheduled);
+      ..write(obj.initNotificationsScheduled)
+      ..writeByte(4)
+      ..write(obj.hourlyTasbihSeeded);
   }
 
   @override

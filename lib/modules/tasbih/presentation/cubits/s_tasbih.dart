@@ -6,7 +6,7 @@ class STasbih extends Equatable {
     this.target = 33,
     this.count = 0,
     this.vibrate = true,
-    this.hourlyEnabled = false,
+    this.hourlyEnabled = true,
     this.reminderEnabled = true,
     this.reminderIntervalHours = 3,
     this.reminderHour = 9,

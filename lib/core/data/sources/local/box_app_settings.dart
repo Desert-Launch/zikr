@@ -36,4 +36,10 @@ class BoxAppSettings extends HiveBoxBase<MAppSettings> {
     r.initNotificationsScheduled = value;
     await r.save();
   }
+
+  Future<void> setHourlyTasbihSeeded(bool value) async {
+    final r = current();
+    r.hourlyTasbihSeeded = value;
+    await r.save();
+  }
 }

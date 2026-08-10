@@ -21,7 +21,7 @@ class MTasbihCounterAdapter extends TypeAdapter<MTasbihCounter> {
       target: fields[1] == null ? 33 : (fields[1] as num).toInt(),
       count: fields[2] == null ? 0 : (fields[2] as num).toInt(),
       vibrate: fields[3] == null ? true : fields[3] as bool,
-      hourlyEnabled: fields[4] == null ? false : fields[4] as bool,
+      hourlyEnabled: fields[4] == null ? true : fields[4] as bool,
       reminderEnabled: fields[5] == null ? true : fields[5] as bool,
       reminderIntervalHours: fields[6] == null ? 3 : (fields[6] as num).toInt(),
       reminderHour: fields[7] == null ? 9 : (fields[7] as num).toInt(),

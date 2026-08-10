@@ -178,7 +178,11 @@ Future<void> runAdhanBackgroundReschedule() async {
         DSNotification(BoxNotifications()),
         BoxAppSettings(),
       ),
-      hourlyZekr: DSHourlyTasbih(notifications, BoxTasbihCounter()),
+      hourlyZekr: DSHourlyTasbih(
+        notifications,
+        BoxTasbihCounter(),
+        BoxAppSettings(),
+      ),
       salawat: DSSalawatReminder(notifications, BoxTasbihCounter()),
     );
     // Background isolates can't reach the MainActivity method channel, so the

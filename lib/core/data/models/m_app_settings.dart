@@ -13,6 +13,7 @@ class MAppSettings extends HiveObject {
     this.lastLanguageCode,
     this.hasGrantedLocation = false,
     this.initNotificationsScheduled = false,
+    this.hourlyTasbihSeeded = false,
   });
 
   @HiveField(0)
@@ -29,4 +30,12 @@ class MAppSettings extends HiveObject {
   /// Reset by `InitNotificationsService.resetAndReschedule`.
   @HiveField(3)
   bool initNotificationsScheduled;
+
+  /// One-time guard for the hourly tasbih default-on seed. The feature shipped
+  /// off by default, so installs from before that change carry an explicit
+  /// `false` on disk that the new model default can't reach — see
+  /// `DSHourlyTasbih.seedDefaultIfNeeded`. Set once, so a user who later
+  /// switches the reminder off is never flipped back on.
+  @HiveField(4)
+  bool hourlyTasbihSeeded;
 }

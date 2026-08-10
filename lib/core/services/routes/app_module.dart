@@ -124,6 +124,7 @@ class AppModule extends Module {
       () => DSHourlyTasbih(
         i.get<NotificationsService>(),
         i.get<BoxTasbihCounter>(),
+        i.get<BoxAppSettings>(),
       ),
     );
     // Salawat reminder scheduler.
