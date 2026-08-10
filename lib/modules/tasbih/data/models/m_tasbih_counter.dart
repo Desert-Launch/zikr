@@ -13,8 +13,8 @@ class MTasbihCounter extends HiveObject {
     this.count = 0,
     this.vibrate = true,
     this.hourlyEnabled = false,
-    this.reminderEnabled = false,
-    this.reminderIntervalHours = 2,
+    this.reminderEnabled = true,
+    this.reminderIntervalHours = 3,
     this.reminderHour = 9,
     this.reminderMinute = 30,
   });
@@ -43,12 +43,14 @@ class MTasbihCounter extends HiveObject {
   /// Salawat reminder fields — only meaningful on the salawat record
   /// (see [BoxTasbihCounter.salawatKey]); harmless defaults on the tasbih one.
   ///
-  /// Whether the salawat-upon-the-Prophet reminder is scheduled.
+  /// Whether the salawat-upon-the-Prophet reminder is scheduled. On by default
+  /// so a fresh install starts receiving it without visiting the settings sheet
+  /// (see `DSSalawatReminder.rescheduleFromSettings`).
   @HiveField(5)
   bool reminderEnabled;
 
-  /// Hours between reminders within the 08:30–22:30 window. `0` switches to
-  /// a single daily reminder at [reminderHour]:[reminderMinute] instead.
+  /// Hours between reminders within the 08:00–22:00 window — 3 by default. `0`
+  /// switches to a single daily reminder at [reminderHour]:[reminderMinute].
   @HiveField(6)
   int reminderIntervalHours;
 

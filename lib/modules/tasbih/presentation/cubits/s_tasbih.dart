@@ -7,8 +7,8 @@ class STasbih extends Equatable {
     this.count = 0,
     this.vibrate = true,
     this.hourlyEnabled = false,
-    this.reminderEnabled = false,
-    this.reminderIntervalHours = 2,
+    this.reminderEnabled = true,
+    this.reminderIntervalHours = 3,
     this.reminderHour = 9,
     this.reminderMinute = 30,
   });
@@ -22,8 +22,8 @@ class STasbih extends Equatable {
   /// Salawat reminder settings (used by the salawat screen only).
   final bool reminderEnabled;
 
-  /// Hours between reminders (08:30–22:30). `0` means a single daily reminder
-  /// at [reminderHour]:[reminderMinute].
+  /// Hours between reminders (08:00–22:00), 3 by default. `0` means a single
+  /// daily reminder at [reminderHour]:[reminderMinute].
   final int reminderIntervalHours;
   final int reminderHour;
   final int reminderMinute;

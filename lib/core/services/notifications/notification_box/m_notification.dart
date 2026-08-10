@@ -70,7 +70,7 @@ class MLocalNotification extends HiveObject {
 
   /// When true, this entry's fire time tracks live prayer times (morning azkar
   /// → Fajr+1h, evening azkar → Maghrib−15m) rather than the seed time from
-  /// JSON. Only such entries are re-timed by `updateAzkarNotifications`.
+  /// JSON. Only such entries are re-timed by `InitNotificationsService`.
   @HiveField(9)
   bool autoSchedule;
 

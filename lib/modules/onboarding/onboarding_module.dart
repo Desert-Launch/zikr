@@ -2,6 +2,7 @@ import 'package:flutter_modular/flutter_modular.dart';
 import 'package:quran/core/data/sources/local/box_app_settings.dart';
 import 'package:quran/core/services/notifications/notifications_service.dart';
 import 'package:quran/core/services/routes/routes_names.dart';
+import 'package:quran/modules/adhan/services/adhan_scheduler.dart';
 import 'package:quran/modules/onboarding/presentation/cubits/cb_onboarding.dart';
 import 'package:quran/modules/onboarding/presentation/screens/sn_alarm_permission.dart';
 import 'package:quran/modules/onboarding/presentation/screens/sn_language_selection.dart';
@@ -17,6 +18,7 @@ class OnboardingModule extends Module {
       () => CBOnboarding(
         Modular.get<BoxAppSettings>(),
         Modular.get<NotificationsService>(),
+        Modular.get<AdhanScheduler>(),
       ),
     );
   }

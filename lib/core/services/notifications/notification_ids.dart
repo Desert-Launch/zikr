@@ -2,8 +2,9 @@
 /// with each other or with the feature schedulers.
 ///
 /// Existing bands owned elsewhere (kept here for reference — do not reuse):
-///   * 5000–5014 → hourly tasbih / zekr (`DSHourlyTasbih`)
-///   * 5099, 5108–5122 → salawat reminders (`DSSalawatReminder`)
+///   * 5008–5022 → hourly tasbih / zekr (`DSHourlyTasbih`, `5000 + hour`)
+///   * 5099 → salawat specific-time reminder (`DSSalawatReminder`)
+///   * 5108–5122 → salawat interval reminders (`5100 + hour`)
 ///   * 7000–7999 → user reminders (`MReminder.notifId`)
 ///   * 200000–399999 → adhan window (`AdhanScheduler`)
 ///   * 999999 → adhan test

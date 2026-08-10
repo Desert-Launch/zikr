@@ -128,7 +128,10 @@ class AppModule extends Module {
     );
     // Salawat reminder scheduler.
     i.addSingleton<DSSalawatReminder>(
-      () => DSSalawatReminder(i.get<NotificationsService>()),
+      () => DSSalawatReminder(
+        i.get<NotificationsService>(),
+        i.get<BoxTasbihCounter>(),
+      ),
     );
 
     // Adhan
@@ -221,6 +224,7 @@ class AppModule extends Module {
         audioAlarms: i.get<AdhanAudioAlarms>(),
         initNotifications: i.get<InitNotificationsService>(),
         hourlyZekr: i.get<DSHourlyTasbih>(),
+        salawat: i.get<DSSalawatReminder>(),
       ),
     );
     i.addSingleton<AdhanBootstrap>(

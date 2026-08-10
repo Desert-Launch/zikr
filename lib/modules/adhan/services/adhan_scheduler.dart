@@ -21,6 +21,7 @@ import 'package:quran/modules/prayer/domain/entities/param_prayer_times.dart';
 import 'package:quran/modules/prayer/domain/usecases/uc_get_prayer_times.dart';
 import 'package:quran/modules/prayer/utils/prayer_method_mapper.dart';
 import 'package:quran/modules/tasbih/data/datasources/local/ds_hourly_tasbih.dart';
+import 'package:quran/modules/tasbih/data/datasources/local/ds_salawat_reminder.dart';
 
 /// Orchestrates prayer-time → adhan-notification scheduling. [reschedule]
 /// builds the current week (Saturday–Friday) plus the next week as a buffer,
@@ -44,6 +45,7 @@ class AdhanScheduler {
     required AdhanAudioAlarms audioAlarms,
     required InitNotificationsService initNotifications,
     required DSHourlyTasbih hourlyZekr,
+    required DSSalawatReminder salawat,
   }) : _notifications = notifications,
        _location = location,
        _getTimes = getTimes,
@@ -54,7 +56,8 @@ class AdhanScheduler {
        _lastLocation = lastLocation,
        _audioAlarms = audioAlarms,
        _initNotifications = initNotifications,
-       _hourlyZekr = hourlyZekr;
+       _hourlyZekr = hourlyZekr,
+       _salawat = salawat;
 
   final NotificationsService _notifications;
   final DSLocation _location;
@@ -67,6 +70,7 @@ class AdhanScheduler {
   final AdhanAudioAlarms _audioAlarms;
   final InitNotificationsService _initNotifications;
   final DSHourlyTasbih _hourlyZekr;
+  final DSSalawatReminder _salawat;
 
   static const int _preWindowDays = 4; // pre-reminders only for the near days
 
@@ -81,9 +85,15 @@ class AdhanScheduler {
   /// survive a user who doesn't open the app for a week.
   static const int _iosAlarmWindowDays = 7;
 
-  /// Adhan's slice of iOS's 64 pending-notification budget (the rest is left
-  /// for reminders/azkar/etc.). Ignored on Android.
-  static const int _iosBudget = 56;
+  /// Adhan's slice of iOS's 64 pending-notification budget. Ignored on Android.
+  ///
+  /// iOS drops everything past 64 pending requests silently, and the companion
+  /// feeds are all *repeating* requests that sit in that list permanently:
+  /// 6 azkar/quran + 5 salawat (every 3h) + up to 15 hourly zekr, before the
+  /// user's own reminders. At 56 the adhan window swallowed the budget and
+  /// those feeds simply never fired on iOS. 40 still buys ~8 days of adhan
+  /// (5 prayers/day, pre-reminders included) while leaving room for the rest.
+  static const int _iosBudget = 40;
 
   /// Notifications still allowed in the current [reschedule] run (iOS budget).
   int _remaining = 0;
@@ -288,34 +298,58 @@ class AdhanScheduler {
       // weekly background isolate (armAudioAlarms=false) may not have the
       // companion Hive boxes open, and the UI isolate redoes this on next open.
       if (armAudioAlarms && todayTimings != null) {
-        await _reconcileCompanionNotifications(todayTimings);
+        await reconcileCompanionNotifications(timings: todayTimings);
       }
     } finally {
       _running = false;
     }
   }
 
-  /// Keeps the azkar and hourly-zekr feeds in sync with live prayer times:
-  ///   1. morning azkar → Fajr+1h, evening azkar → Maghrib−15m;
-  ///   2. reschedule the hourly zekr so no slot fires within 10 minutes of a
-  ///      prayer or azkar/quran notification in the same hour.
+  /// Places every non-adhan feed in one deterministic priority order, so no two
+  /// notifications land within 10 minutes of each other:
+  ///
+  ///   1. **prayer times** — fixed, never moved;
+  ///   2. **azkar / quran feed** — morning azkar → Fajr+1h, evening azkar →
+  ///      Maghrib−15m (the rest keep their JSON times);
+  ///   3. **salawat reminders** — nudged off `:30` only where 1–2 collide;
+  ///   4. **hourly zekr** — nudged off `:00` only where 1–3 collide.
+  ///
+  /// Each step feeds the times it claimed into the next step's reserved set.
+  /// Pass [timings] when live prayer times are known; without them (boot, before
+  /// a location fix) steps 2–4 still run so the feeds are scheduled — the next
+  /// call with timings refines their minutes.
+  ///
   /// Failures here never break the adhan schedule (best-effort companion work).
-  Future<void> _reconcileCompanionNotifications(MPrayerTimings timings) async {
+  Future<void> reconcileCompanionNotifications({
+    MPrayerTimings? timings,
+  }) async {
     try {
-      await _initNotifications.updateAzkarNotifications(
-        fajrTime: timings.fajr,
-        maghribTime: timings.maghrib,
+      final prayers = <DateTime>[
+        if (timings != null) ...[
+          timings.fajr,
+          timings.dhuhr,
+          timings.asr,
+          timings.maghrib,
+          timings.isha,
+        ],
+      ];
+
+      // Re-registers the azkar/quran feed every launch — ids are stable, so
+      // this overwrites in place and heals a schedule the OS dropped.
+      final initTimes = await _initNotifications.reconcile(
+        reservedTimes: prayers,
+        fajrTime: timings?.fajr,
+        maghribTime: timings?.maghrib,
       );
 
-      final reserved = <DateTime>[
-        timings.fajr,
-        timings.dhuhr,
-        timings.asr,
-        timings.maghrib,
-        timings.isha,
-        ..._initNotifications.occupiedTimesToday(),
-      ];
-      await _hourlyZekr.rescheduleWithReservedTimes(reserved);
+      final reserved = [...prayers, ...initTimes];
+      final salawatTimes = await _salawat.rescheduleFromSettings(
+        reservedTimes: reserved,
+      );
+      await _hourlyZekr.rescheduleWithReservedTimes([
+        ...reserved,
+        ...salawatTimes,
+      ]);
     } catch (e, st) {
       AppLogger.error(
         'Companion notification reconciliation failed',

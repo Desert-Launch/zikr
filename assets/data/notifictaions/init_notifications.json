@@ -9,7 +9,7 @@
             "enabled": true,
             "schedule": {
                 "type": "daily",
-                "time": "08:00"
+                "time": "08:15"
             },
             "content": {
                 "title": {
@@ -41,7 +41,7 @@
             "enabled": true,
             "schedule": {
                 "type": "daily",
-                "time": "18:00"
+                "time": "18:15"
             },
             "content": {
                 "title": {
@@ -73,7 +73,7 @@
             "enabled": true,
             "schedule": {
                 "type": "daily",
-                "time": "22:00"
+                "time": "22:15"
             },
             "content": {
                 "title": {
@@ -105,7 +105,7 @@
             "enabled": true,
             "schedule": {
                 "type": "daily",
-                "time": "22:00"
+                "time": "21:45"
             },
             "content": {
                 "title": {
@@ -138,7 +138,7 @@
             "enabled": true,
             "schedule": {
                 "type": "daily",
-                "time": "20:00"
+                "time": "20:45"
             },
             "content": {
                 "title": {
@@ -172,7 +172,7 @@
             "schedule": {
                 "type": "weekly",
                 "day": "friday",
-                "time": "10:00"
+                "time": "10:15"
             },
             "content": {
                 "title": {

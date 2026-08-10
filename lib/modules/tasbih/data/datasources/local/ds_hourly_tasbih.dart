@@ -5,6 +5,7 @@ import 'package:localize_and_translate/localize_and_translate.dart';
 import 'package:quran/core/services/logging/app_logger.dart';
 import 'package:quran/core/services/notifications/notification_channels.dart';
 import 'package:quran/core/services/notifications/notification_payload.dart';
+import 'package:quran/core/services/notifications/notification_slots.dart';
 import 'package:quran/core/services/notifications/notifications_service.dart';
 import 'package:quran/modules/tasbih/data/sources/local/box_tasbih_counter.dart';
 
@@ -29,10 +30,6 @@ class DSHourlyTasbih {
 
   static const _assetPath =
       'assets/data/notifictaions/hourly_notifications.json';
-
-  /// Minimum gap (minutes) enforced between an hourly zekr and any reserved
-  /// notification in the same hour.
-  static const _gap = 10;
 
   static const _baseId = 5000;
   static const _activeHours = [
@@ -61,12 +58,24 @@ class DSHourlyTasbih {
   /// Cached `{ar, en}` phrase rows loaded from JSON (null until first load).
   List<Map<String, String>>? _azkar;
 
+  /// Times claimed by the other feeds on the last coordinated run. Cached so a
+  /// UI-triggered toggle (which carries no prayer-time context) still places
+  /// the slots around the known prayer / azkar / salawat times.
+  List<DateTime> _lastReserved = const [];
+
   /// (Re)schedules every active hour. [reservedTimes] are times already claimed
   /// by other feeds today; any hour that would collide is shifted off `:00`.
-  Future<void> enable({List<DateTime> reservedTimes = const []}) async {
+  /// Omit it to reuse the set from the last coordinated run.
+  Future<void> enable({List<DateTime>? reservedTimes}) async {
+    final reserved = reservedTimes ?? _lastReserved;
+    _lastReserved = reserved;
     await _loadAzkar();
+    // Each placed slot joins the reserved set so consecutive hours can't be
+    // shifted onto each other (e.g. 12:50 and 13:00).
+    final taken = NotificationSlots.minutesOfDay(reserved);
     for (final hour in _activeHours) {
-      final minute = _minuteForHour(hour, reservedTimes);
+      final minute = _minuteForHour(hour, taken);
+      taken.add(hour * 60 + minute);
       await _notifications.scheduleDaily(
         id: _baseId + hour,
         hour: hour,
@@ -79,7 +88,7 @@ class DSHourlyTasbih {
     }
     AppLogger.info(
       'Hourly zekr scheduled (${_activeHours.length} slots, '
-      '${reservedTimes.length} reserved times)',
+      '${reserved.length} reserved times)',
       tag: 'HourlyZekr',
     );
   }
@@ -90,6 +99,9 @@ class DSHourlyTasbih {
   Future<void> rescheduleWithReservedTimes(
     List<DateTime> reservedTimes,
   ) async {
+    // Recorded even when the feature is off, so switching it on later from the
+    // UI (which passes no reserved times) still lands on conflict-free slots.
+    _lastReserved = reservedTimes;
     if (!_counter.current().hourlyEnabled) return;
     await enable(reservedTimes: reservedTimes);
   }
@@ -100,21 +112,14 @@ class DSHourlyTasbih {
     }
   }
 
-  /// First preferred minute that keeps a [_gap]-minute distance from every
-  /// reserved time in [hour]. Falls back to `:10` (off the `:00` boundary) if
-  /// nothing clears — better than stacking on `:00`.
-  int _minuteForHour(int hour, List<DateTime> reservedTimes) {
-    final sameHour = reservedTimes
-        .where((t) => t.hour == hour)
-        .map((t) => t.minute)
-        .toList(growable: false);
-    if (sameHour.isEmpty) return 0;
-    for (final minute in _minuteCandidates) {
-      final clears = sameHour.every((m) => (m - minute).abs() >= _gap);
-      if (clears) return minute;
-    }
-    return 10;
-  }
+  /// First preferred minute in [hour] that clears every reserved time. Compared
+  /// in absolute minutes-of-day, so a prayer at 12:55 correctly blocks 13:00.
+  int _minuteForHour(int hour, List<int> reserved) =>
+      NotificationSlots.pickMinute(
+        hour: hour,
+        reserved: reserved,
+        candidates: _minuteCandidates,
+      );
 
   String _bodyForHour(int hour) {
     final list = _azkar;

@@ -10,18 +10,21 @@ import 'package:quran/core/services/notifications/notification_box/m_notificatio
 import 'package:quran/core/services/notifications/notification_channels.dart';
 import 'package:quran/core/services/notifications/notification_ids.dart';
 import 'package:quran/core/services/notifications/notification_payload.dart';
+import 'package:quran/core/services/notifications/notification_slots.dart';
 import 'package:quran/core/services/notifications/notifications_service.dart';
 
 /// Schedules the "init" notification feed — the daily/weekly azkar and Quran
 /// reminders defined in `assets/data/notifictaions/init_notifications.json`.
 ///
 /// Content (title/body, localized) lives in the JSON; timing for the morning
-/// and evening azkar is dynamic — it tracks live prayer times via
-/// [updateAzkarNotifications] (morning → Fajr+1h, evening → Maghrib−15m). The
-/// JSON `time` values are the seed/fallback used until prayer times are known.
+/// and evening azkar is dynamic — it tracks live prayer times (morning →
+/// Fajr+1h, evening → Maghrib−15m). The JSON `time` values are the
+/// seed/fallback used until prayer times are known.
 ///
 /// Every scheduled entry is persisted via [DSNotification] so the schedule can
-/// be reconciled and re-timed across restarts.
+/// be reconciled and re-timed across restarts. [reconcile] is the single
+/// placement pass — it re-registers the feed, re-times the prayer-tracked
+/// entries, and spaces everything off the reserved times it's handed.
 class InitNotificationsService {
   InitNotificationsService(this._notifications, this._store, this._appSettings);
 
@@ -32,19 +35,41 @@ class InitNotificationsService {
   static const _assetPath =
       'assets/data/notifictaions/init_notifications.json';
 
-  /// azkar ids whose fire time tracks prayer times (re-timed by
-  /// [updateAzkarNotifications]); everything else keeps its JSON seed time.
+  /// azkar ids whose fire time tracks live prayer times (see [_targetMinute]);
+  /// everything else keeps its JSON seed time.
   static const _autoScheduleIds = {'azkar_morning', 'azkar_evening'};
 
   String _defaultLocale = 'ar';
 
-  /// Schedules the feed once per install. Guarded by the
-  /// `initNotificationsScheduled` flag so it only seeds on first run; live
-  /// re-timing afterwards goes through [updateAzkarNotifications].
-  Future<void> scheduleInitialNotificationsIfNeeded() async {
-    if (_appSettings.current().initNotificationsScheduled) return;
-    await _scheduleAll();
+  /// Re-registers every entry in the feed and returns the times it placed
+  /// (today's clock times) so the caller can pass them on as reserved to the
+  /// next feed. Safe — and intended — to run on every launch: the ids are
+  /// stable, so each `zonedSchedule` overwrites its own pending alarm in place
+  /// rather than stacking a duplicate.
+  ///
+  /// This is what makes the feed self-healing. Seeding once per install left an
+  /// install whose alarms the OS dropped — force-stop, an app-data restore, a
+  /// seed that ran before notifications were permitted — with the
+  /// `initNotificationsScheduled` flag set and nothing actually queued.
+  ///
+  /// The morning and evening azkar track live prayer times when [fajrTime] /
+  /// [maghribTime] are given (morning → Fajr+1h, evening → Maghrib−15m), and
+  /// fall back to their stored time otherwise. Every entry is then nudged clear
+  /// of [reservedTimes] (the prayer times) and of the entries already placed in
+  /// this pass. A stored entry the user turned off stays off.
+  Future<List<DateTime>> reconcile({
+    List<DateTime> reservedTimes = const [],
+    DateTime? fajrTime,
+    DateTime? maghribTime,
+  }) async {
+    final placed = await _scheduleAll(
+      preferStoredTimes: true,
+      reservedTimes: reservedTimes,
+      fajrTime: fajrTime,
+      maghribTime: maghribTime,
+    );
     await _appSettings.setInitNotificationsScheduled(true);
+    return placed;
   }
 
   /// Cancels + clears the stored init notifications and reschedules from JSON.
@@ -62,79 +87,13 @@ class InitNotificationsService {
     await _appSettings.setInitNotificationsScheduled(true);
   }
 
-  /// Re-times the auto-scheduled azkar to track live prayer times:
-  /// morning → [fajrTime] + 1h, evening → [maghribTime] − 15m. No-op for a
-  /// prayer whose time is null (keeps the current seed time). Recompute this on
-  /// every prayer-time refresh (location / date change).
-  Future<void> updateAzkarNotifications({
+  /// Schedules every entry in the feed, returning the times placed today.
+  Future<List<DateTime>> _scheduleAll({
+    bool preferStoredTimes = false,
+    List<DateTime> reservedTimes = const [],
     DateTime? fajrTime,
     DateTime? maghribTime,
   }) async {
-    if (fajrTime != null) {
-      await _retime(
-        NotificationIds.azkarMorning,
-        fajrTime.add(const Duration(hours: 1)),
-      );
-    }
-    if (maghribTime != null) {
-      await _retime(
-        NotificationIds.azkarEvening,
-        maghribTime.subtract(const Duration(minutes: 15)),
-      );
-    }
-  }
-
-  /// Today's fire times for every stored init notification that fires today —
-  /// used by the hourly-zekr scheduler to avoid same-hour collisions.
-  List<DateTime> occupiedTimesToday() {
-    final now = DateTime.now();
-    final out = <DateTime>[];
-    for (final n in _store.getAll()) {
-      if (!n.isEnabled) continue;
-      if (n.isWeekly && n.weekday != now.weekday) continue;
-      out.add(
-        DateTime(
-          now.year,
-          now.month,
-          now.day,
-          n.scheduledAt.hour,
-          n.scheduledAt.minute,
-        ),
-      );
-    }
-    return out;
-  }
-
-  Future<void> _retime(int id, DateTime when) async {
-    final record = _store.get(id);
-    if (record == null || !record.autoSchedule || !record.isEnabled) return;
-    await _notifications.scheduleDaily(
-      id: id,
-      hour: when.hour,
-      minute: when.minute,
-      title: record.title,
-      body: record.body,
-      channel: _channelFor(record.channelId),
-      payload: NotificationPayload(
-        type: record.payloadType,
-        data: _decodeData(record.payloadJson),
-      ),
-    );
-    record.scheduledAt = DateTime(
-      when.year,
-      when.month,
-      when.day,
-      when.hour,
-      when.minute,
-    );
-    await _store.put(record);
-    AppLogger.info(
-      'Re-timed init notification $id to ${when.hour}:${when.minute}',
-      tag: 'InitNotifications',
-    );
-  }
-
-  Future<void> _scheduleAll() async {
     final Map<String, dynamic> root;
     try {
       root = jsonDecode(await rootBundle.loadString(_assetPath))
@@ -146,25 +105,50 @@ class InitNotificationsService {
         error: e,
         stackTrace: st,
       );
-      return;
+      return const [];
     }
 
     _defaultLocale = root['default_locale'] as String? ?? 'ar';
     final entries = (root['notifications'] as List?) ?? const [];
-    var scheduled = 0;
+    // Grows as entries are placed, so the feed also spaces itself internally.
+    final taken = NotificationSlots.minutesOfDay(reservedTimes);
+    final placed = <DateTime>[];
     for (final raw in entries) {
       if (raw is! Map<String, dynamic>) continue;
-      if (await _scheduleEntry(raw)) scheduled++;
+      final at = await _scheduleEntry(
+        raw,
+        preferStoredTimes: preferStoredTimes,
+        taken: taken,
+        fajrTime: fajrTime,
+        maghribTime: maghribTime,
+      );
+      if (at == null) continue;
+      taken.add(at.hour * 60 + at.minute);
+      placed.add(at);
     }
     AppLogger.info(
-      'Init notifications scheduled: $scheduled/${entries.length}',
+      'Init notifications scheduled: ${placed.length}/${entries.length} '
+      '(${reservedTimes.length} reserved times)',
       tag: 'InitNotifications',
     );
+    return placed;
   }
 
-  /// Returns true if the entry was scheduled.
-  Future<bool> _scheduleEntry(Map<String, dynamic> entry) async {
-    if (entry['enabled'] == false) return false;
+  /// Schedules one entry and returns the time it was placed at (today's clock
+  /// time), or null when it was skipped.
+  ///
+  /// [taken] is the running set of minutes-of-day already claimed; the entry is
+  /// nudged off any of them. With [preferStoredTimes] a prayer-tracked entry
+  /// falls back to its persisted time when [fajrTime] / [maghribTime] aren't
+  /// available yet.
+  Future<DateTime?> _scheduleEntry(
+    Map<String, dynamic> entry, {
+    required List<int> taken,
+    bool preferStoredTimes = false,
+    DateTime? fajrTime,
+    DateTime? maghribTime,
+  }) async {
+    if (entry['enabled'] == false) return null;
 
     final stringId = entry['id'] as String? ?? '';
     final id = NotificationIds.forStringId(stringId);
@@ -173,7 +157,14 @@ class InitNotificationsService {
         'Unknown init notification id "$stringId" — skipped',
         tag: 'InitNotifications',
       );
-      return false;
+      return null;
+    }
+
+    final stored = preferStoredTimes ? _store.get(id) : null;
+    // The user switched this one off — leave it cancelled.
+    if (stored != null && !stored.isEnabled) {
+      await _notifications.cancel(id);
+      return null;
     }
 
     final content = (entry['content'] as Map?)?.cast<String, dynamic>() ?? {};
@@ -182,18 +173,34 @@ class InitNotificationsService {
     final channel = _channelFor(content['channel_id'] as String?);
     final payload = _resolvePayload(entry);
     final schedule = (entry['schedule'] as Map?)?.cast<String, dynamic>() ?? {};
-    final time = _parseTime(schedule['time'] as String?);
-    if (time == null) return false;
+    final seed = _parseTime(schedule['time'] as String?);
+    if (seed == null) return null;
 
     final autoSchedule = _autoScheduleIds.contains(stringId);
+    final target = _targetMinute(
+      stringId: stringId,
+      autoSchedule: autoSchedule,
+      seed: seed,
+      stored: stored,
+      fajrTime: fajrTime,
+      maghribTime: maghribTime,
+    );
+    final minuteOfDay = NotificationSlots.nudge(
+      minuteOfDay: target,
+      reserved: taken,
+    );
+    final hour = minuteOfDay ~/ 60;
+    final minute = minuteOfDay % 60;
+
     final now = DateTime.now();
+    final at = DateTime(now.year, now.month, now.day, hour, minute);
 
     switch (schedule['type']) {
       case 'daily':
         await _notifications.scheduleDaily(
           id: id,
-          hour: time.$1,
-          minute: time.$2,
+          hour: hour,
+          minute: minute,
           title: title,
           body: body,
           channel: channel,
@@ -205,20 +212,20 @@ class InitNotificationsService {
           body: body,
           channel: channel,
           payload: payload,
-          scheduledAt: DateTime(now.year, now.month, now.day, time.$1, time.$2),
+          scheduledAt: at,
           repeatDaily: true,
           weekday: 0,
           autoSchedule: autoSchedule,
         );
-        return true;
+        return at;
       case 'weekly':
         final weekday = _parseWeekday(schedule['day'] as String?);
-        if (weekday == null) return false;
+        if (weekday == null) return null;
         await _notifications.scheduleWeekly(
           id: id,
           weekday: weekday,
-          hour: time.$1,
-          minute: time.$2,
+          hour: hour,
+          minute: minute,
           title: title,
           body: body,
           channel: channel,
@@ -230,15 +237,45 @@ class InitNotificationsService {
           body: body,
           channel: channel,
           payload: payload,
-          scheduledAt: DateTime(now.year, now.month, now.day, time.$1, time.$2),
+          scheduledAt: at,
           repeatDaily: false,
           weekday: weekday,
           autoSchedule: autoSchedule,
         );
-        return true;
+        // Only claims a slot on the day it actually fires.
+        return weekday == now.weekday ? at : null;
       default:
-        return false;
+        return null;
     }
+  }
+
+  /// The minute-of-day an entry *wants* to fire at, before collision nudging.
+  ///
+  /// Prayer-tracked entries follow live prayer times when available and fall
+  /// back to their stored time. Fixed entries always resolve to the JSON seed —
+  /// never to the stored value, or each reconcile would nudge yesterday's
+  /// already-nudged time and the reminder would drift a little further every
+  /// day.
+  int _targetMinute({
+    required String stringId,
+    required bool autoSchedule,
+    required (int, int) seed,
+    required MLocalNotification? stored,
+    required DateTime? fajrTime,
+    required DateTime? maghribTime,
+  }) {
+    if (!autoSchedule) return seed.$1 * 60 + seed.$2;
+
+    final anchored = switch (stringId) {
+      'azkar_morning' => fajrTime?.add(const Duration(hours: 1)),
+      'azkar_evening' => maghribTime?.subtract(const Duration(minutes: 15)),
+      _ => null,
+    };
+    if (anchored != null) return anchored.hour * 60 + anchored.minute;
+    if (stored != null) {
+      return stored.scheduledAt.hour * 60 + stored.scheduledAt.minute;
+    }
+    return seed.$1 * 60 + seed.$2;
   }
 
   Future<void> _persist({
@@ -338,13 +375,4 @@ class InitNotificationsService {
     'sunday' => DateTime.sunday,
     _ => null,
   };
-
-  Map<String, dynamic> _decodeData(String json) {
-    if (json.isEmpty) return const {};
-    try {
-      return Map<String, dynamic>.from(jsonDecode(json) as Map);
-    } catch (_) {
-      return const {};
-    }
-  }
 }

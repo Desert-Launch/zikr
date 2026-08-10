@@ -13,7 +13,6 @@ import 'package:quran/core/data/sources/local/box_app_settings.dart';
 import 'package:quran/core/extension/build_context.dart';
 import 'package:quran/core/services/logging/app_logger.dart';
 import 'package:quran/core/services/media/media_artwork.dart';
-import 'package:quran/core/services/notifications/init/init_notifications_service.dart';
 import 'package:quran/core/services/notifications/notification_box/m_notification.dart';
 import 'package:quran/core/services/notifications/notifications_service.dart';
 import 'package:quran/core/services/routes/app_module.dart';
@@ -44,6 +43,7 @@ import 'package:quran/modules/reminders/presentation/cubits/cb_reminders.dart';
 import 'package:quran/modules/settings/data/models/m_theme_pref.dart';
 import 'package:quran/modules/tasbih/data/models/m_tasbih_counter.dart';
 import 'package:quran/modules/tasbih/data/models/m_tasbih_history.dart';
+import 'package:toastification/toastification.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -83,6 +83,7 @@ Future<void> main() async {
   await Hive.openBox<MAzkarFavorite>('azkar_favorites');
   await Hive.openBox<String>('azkar_category_favorites');
   await Hive.openBox<MAzkarProgress>('azkar_progress');
+  await Hive.openBox<String>('radio_favorites');
   await Hive.openBox<MTasbihCounter>('tasbih_counter');
   await Hive.openBox<MTasbihHistory>('tasbih_history');
   await Hive.openBox<MReminder>('reminders');
@@ -146,21 +147,23 @@ class _RootState extends State<_Root> with WidgetsBindingObserver {
     // Materialize the media-notification artwork to a file URI (asset:/// URIs
     // aren't loadable by just_audio_background's artwork downloader).
     MediaArtwork.prepare();
-    // Wire notification channels + tap router (silent if not granted yet),
-    // then re-register reminder alarms so schedules survive reboots / tz changes,
-    // run the one-time adhan bootstrap, and rebuild the rolling adhan window.
+    // Wire notification channels + tap router (silent if not granted yet), then
+    // rebuild every schedule so they survive reboots / timezone changes / an OS
+    // cleanup, run the one-time adhan bootstrap, and rebuild the adhan window.
     Modular.get<NotificationsService>().init().then((_) async {
-      await Modular.get<CBReminders>().rescheduleAll();
-      // Seed the JSON-driven azkar + quran reminders once per install (live
-      // re-timing to prayer times happens later inside the adhan reschedule).
-      await Modular.get<InitNotificationsService>().scheduleInitialNotificationsIfNeeded();
-      await Modular.get<AdhanBootstrap>().run();
       // Returning users who finished onboarding on an older build (or declined)
       // may never have granted the notification permission — without it the
-      // adhan/reminder/azkar schedulers silently no-op. Re-ask once here (new
-      // users are prompted during onboarding, so this is gated on
-      // hasSeenOnboarding inside).
+      // adhan/reminder/azkar schedulers silently no-op. Re-ask FIRST so the
+      // reschedules below actually register (new users are prompted during
+      // onboarding, so this is gated on hasSeenOnboarding inside).
       await _ensureNotificationPermission();
+      await Modular.get<CBReminders>().rescheduleAll();
+      // Re-register the azkar/quran feed, the salawat reminders and the hourly
+      // zekr, spaced apart from one another. Prayer times aren't known yet on a
+      // cold start, so this runs without them and the adhan reschedule below
+      // repeats it with live timings to fine-tune the minutes.
+      await Modular.get<AdhanScheduler>().reconcileCompanionNotifications();
+      await Modular.get<AdhanBootstrap>().run();
       // Rebuild the rolling adhan window on every cold start so scheduling
       // never depends solely on opening Home or an app-resume event — the
       // resume callback does NOT fire on the initial launch. Cached location
@@ -202,22 +205,27 @@ class _RootState extends State<_Root> with WidgetsBindingObserver {
         return BlocBuilder<CBTheme, STheme>(
           bloc: Modular.get<CBTheme>(),
           builder: (_, __) {
-            return MaterialApp.router(
-              title: 'قرآن',
-              debugShowCheckedModeBanner: false,
-              theme: buildLightTheme(),
-              themeMode: ThemeMode.light,
-              routerConfig: Modular.routerConfig,
-              // Pin the app's Directionality to the language the USER picked,
-              // not the device locale. Without this, an Arabic UI on an
-              // English-locale phone lays out LTR — mirroring every RTL row
-              // (index tabs, search hints, list chevrons).
-              locale: LocalizeAndTranslate.getLocale(),
-              localizationsDelegates: LocalizeAndTranslate.delegates,
-              supportedLocales: LocalizeAndTranslate.getLocals(),
-              // Mount the app-wide radio peek tab above every route so it
-              // follows the user while a station plays.
-              builder: (context, child) => Stack(children: [if (child != null) child, const WRadioPeekTab()]),
+            // ToastificationWrapper must sit ABOVE MaterialApp — it walks down
+            // for the Navigator's overlay so `AppAlert` can fire without a
+            // BuildContext.
+            return ToastificationWrapper(
+              child: MaterialApp.router(
+                title: 'قرآن',
+                debugShowCheckedModeBanner: false,
+                theme: buildLightTheme(),
+                themeMode: ThemeMode.light,
+                routerConfig: Modular.routerConfig,
+                // Pin the app's Directionality to the language the USER picked,
+                // not the device locale. Without this, an Arabic UI on an
+                // English-locale phone lays out LTR — mirroring every RTL row
+                // (index tabs, search hints, list chevrons).
+                locale: LocalizeAndTranslate.getLocale(),
+                localizationsDelegates: LocalizeAndTranslate.delegates,
+                supportedLocales: LocalizeAndTranslate.getLocals(),
+                // Mount the app-wide radio peek tab above every route so it
+                // follows the user while a station plays.
+                builder: (context, child) => Stack(children: [if (child != null) child, const WRadioPeekTab()]),
+              ),
             );
           },
         );

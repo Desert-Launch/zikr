@@ -30,6 +30,7 @@ import 'package:quran/modules/prayer/data/sources/local/box_prayer_settings.dart
 import 'package:quran/modules/prayer/domain/usecases/uc_get_prayer_times.dart';
 import 'package:quran/modules/quran/data/sources/local/quran_hive_registrar.dart';
 import 'package:quran/modules/tasbih/data/datasources/local/ds_hourly_tasbih.dart';
+import 'package:quran/modules/tasbih/data/datasources/local/ds_salawat_reminder.dart';
 import 'package:quran/modules/tasbih/data/models/m_tasbih_counter.dart';
 import 'package:quran/modules/tasbih/data/sources/local/box_tasbih_counter.dart';
 import 'package:workmanager/workmanager.dart';
@@ -178,6 +179,7 @@ Future<void> runAdhanBackgroundReschedule() async {
         BoxAppSettings(),
       ),
       hourlyZekr: DSHourlyTasbih(notifications, BoxTasbihCounter()),
+      salawat: DSSalawatReminder(notifications, BoxTasbihCounter()),
     );
     // Background isolates can't reach the MainActivity method channel, so the
     // native alarms stay as the UI isolate / boot receiver last armed them;
