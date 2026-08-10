@@ -17,7 +17,10 @@
 
          This Theme is only used starting with V2 of Flutter's Android embedding. -->
     <style name="NormalTheme" parent="@android:style/Theme.Light.NoTitleBar">
-        <item name="android:windowBackground">?android:colorBackground</item>
+        <!-- Brand green, not ?android:colorBackground (white): this window
+             background is what shows between the native splash tearing down and
+             Flutter's first frame, and white there is a visible flash. -->
+        <item name="android:windowBackground">@drawable/background</item>
     </style>
 
     <!-- Full-screen adhan alarm (AdhanAlarmActivity). No title bar, no

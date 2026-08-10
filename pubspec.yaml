@@ -124,20 +124,30 @@ flutter_launcher_icons:
   ios: true
   remove_alpha_ios: true
 
-# Native splash: solid green, no logo, and no icon on the Android 12 splash
-# (transparent image — assets/images/transparent.png must stay FULLY
-# transparent; a semi-opaque pixel there paints a blob over the green).
-# SNSplash continues the same green with no artwork, so launch is one flat
-# colour end to end. Run: dart run flutter_native_splash:create — note it
-# rewrites android values/styles.xml, which also holds AdhanAlarmTheme.
+# Native splash: solid brand green (#085B43), no logo. The artwork lives in
+# SNSplash (assets/images/splash_screen.png), which paints the same #085B43
+# behind it — so the native → Flutter hand-off is one flat colour, then the
+# logo fades in.
+#
+# The Android 12 icon slot uses assets/images/splash_icon_blank.png: a SOLID
+# #085B43 square, NOT a transparent pixel. A fully transparent icon makes the
+# platform fall back to its own app-icon placeholder, which painted a bright
+# green square in the middle of the splash. An opaque drawable in the brand
+# colour is never substituted, and with icon + icon_background_color + color
+# all #085B43 nothing shows.
+#
+# Run: dart run flutter_native_splash:create — note it rewrites android
+# values/styles.xml, which also holds AdhanAlarmTheme, and resets NormalTheme's
+# windowBackground (we point it at @drawable/background to avoid a white flash).
 flutter_native_splash:
-  color: "#0D7E5E"
+  color: "#085B43"
   android: true
   ios: true
   web: false
   android_12:
-    color: "#0D7E5E"
-    image: assets/images/transparent.png
+    color: "#085B43"
+    image: assets/images/splash_icon_blank.png
+    icon_background_color: "#085B43"
 
 flutter_gen:
   output: lib/core/assets

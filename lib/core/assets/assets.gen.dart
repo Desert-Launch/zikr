@@ -279,6 +279,10 @@ class $AssetsImagesGen {
   AssetGenImage get adhanBackgroundImage =>
       const AssetGenImage('assets/images/adhan_background_image.png');
 
+  /// File path: assets/images/splash_screen.png
+  AssetGenImage get splashScreen =>
+      const AssetGenImage('assets/images/splash_screen.png');
+
   /// File path: assets/images/verse_ornament_end.png
   AssetGenImage get verseOrnamentEnd =>
       const AssetGenImage('assets/images/verse_ornament_end.png');
@@ -290,6 +294,7 @@ class $AssetsImagesGen {
   /// List of all assets
   List<AssetGenImage> get values => [
     adhanBackgroundImage,
+    splashScreen,
     verseOrnamentEnd,
     verseOrnamentStart,
   ];

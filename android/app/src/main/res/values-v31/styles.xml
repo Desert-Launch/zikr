@@ -6,8 +6,17 @@
         <item name="android:windowFullscreen">false</item>
         <item name="android:windowDrawsSystemBarBackgrounds">false</item>
         <item name="android:windowLayoutInDisplayCutoutMode">shortEdges</item>
-        <item name="android:windowSplashScreenBackground">#0D7E5E</item>
+        <!-- Android 12+ splash: one flat brand green, no artwork.
+             The icon drawable is a SOLID #085B43 square (not a transparent
+             pixel): a fully transparent / degenerate icon makes the platform
+             fall back to its own app-icon placeholder, which painted a bright
+             green square in the middle of the splash. A valid opaque drawable
+             in the brand colour is never substituted, and because the icon,
+             the icon background and the window background are all #085B43,
+             nothing is visible. Keep all three in sync. -->
+        <item name="android:windowSplashScreenBackground">#085B43</item>
         <item name="android:windowSplashScreenAnimatedIcon">@drawable/android12splash</item>
+        <item name="android:windowSplashScreenIconBackgroundColor">#085B43</item>
     </style>
     <!-- Theme applied to the Android Window as soon as the process has started.
          This theme determines the color of the Android Window while your
