@@ -1,6 +1,6 @@
-import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:localize_and_translate/localize_and_translate.dart';
+import 'package:quran/core/utils/helper/haptics_helper.dart';
 import 'package:quran/modules/tasbih/data/datasources/local/ds_salawat_reminder.dart';
 import 'package:quran/modules/tasbih/data/models/m_tasbih_history.dart';
 import 'package:quran/modules/tasbih/data/sources/local/box_tasbih_counter.dart';
@@ -22,6 +22,7 @@ class CBSalawat extends Cubit<STasbih> {
         _reminder = reminder,
         super(const STasbih(target: 100)) {
     _hydrate();
+    HapticsHelper.prepare();
   }
 
   final BoxTasbihCounter _counter;
@@ -60,10 +61,10 @@ class CBSalawat extends Cubit<STasbih> {
     final next = state.count + 1;
     emit(state.copyWith(count: next));
     if (state.vibrate) {
-      HapticFeedback.lightImpact();
+      HapticsHelper.tick();
     }
     if (!wasComplete && next >= state.target) {
-      if (state.vibrate) HapticFeedback.mediumImpact();
+      if (state.vibrate) HapticsHelper.complete();
       await _history.log(MTasbihHistory(
         id: _uuid.v4(),
         zekrAr: state.zekrAr,
