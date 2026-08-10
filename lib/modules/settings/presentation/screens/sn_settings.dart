@@ -17,7 +17,16 @@ import 'package:quran/modules/settings/presentation/widgets/w_profile_card.dart'
 import 'package:quran/modules/settings/presentation/widgets/w_settings_group.dart';
 import 'package:quran/modules/settings/presentation/widgets/w_settings_row.dart';
 import 'package:quran/modules/settings/presentation/widgets/w_settings_section_label.dart';
+import 'package:quran/modules/settings/presentation/widgets/w_settings_switch.dart';
+import 'package:quran/modules/tasbih/presentation/cubits/cb_salawat.dart';
+import 'package:quran/modules/tasbih/presentation/widgets/w_salawat_reminder_sheet.dart';
 
+/// The app's settings hub.
+///
+/// Grouped by feature, and every feature row is a *reference* — it pushes the
+/// screen (or opens the sheet) that already owns those controls. Nothing here
+/// duplicates a toggle that lives elsewhere, so there is only ever one place a
+/// given preference can be changed.
 class SNSettings extends StatefulWidget {
   const SNSettings({super.key});
 
@@ -40,6 +49,7 @@ class _SNSettingsState extends State<SNSettings> {
   @override
   Widget build(BuildContext context) {
     final isTab = context.isTablet;
+    final gap = SizedBox(height: isTab ? 12 : 15.h);
     return WSharedScaffold(
       backgroundColor: _canvas,
       withSafeArea: false,
@@ -58,7 +68,7 @@ class _SNSettingsState extends State<SNSettings> {
               sliver: SliverList.list(
                 children: [
                   const WProfileCard(),
-                  SizedBox(height: isTab ? 12 : 15.h),
+                  gap,
                   WSettingsSectionLabel('settings_general'.tr()),
                   WSettingsGroup(
                     children: [
@@ -75,25 +85,57 @@ class _SNSettingsState extends State<SNSettings> {
                         subtitle: 'settings_notifications_hint'.tr(),
                         onTap: () => Modular.to.pushNamed(RoutesNames.remindersBase),
                       ),
+                    ],
+                  ),
+                  gap,
+                  WSettingsSectionLabel('settings_adhan_section'.tr()),
+                  WSettingsGroup(
+                    children: [
                       WSettingsRow(
                         icon: Icons.access_time_rounded,
                         title: 'prayer_settings_title'.tr(),
-                        subtitle: 'settings_adhan_hint'.tr(),
+                        subtitle: 'prayer_settings_subtitle'.tr(),
                         onTap: () => Modular.to.pushNamed(AdhanRoutes.overview()),
+                      ),
+                      WSettingsRow(
+                        icon: Icons.volume_up_outlined,
+                        title: 'settings_adhan'.tr(),
+                        subtitle: 'settings_adhan_hint'.tr(),
+                        onTap: () => Modular.to.pushNamed(AdhanRoutes.notificationsScreen()),
+                      ),
+                      WSettingsRow(
+                        icon: Icons.explore_outlined,
+                        title: 'prayer_settings_qibla'.tr(),
+                        subtitle: 'prayer_settings_qibla_hint'.tr(),
+                        onTap: () => Modular.to.pushNamed(RoutesNames.qiblaBase),
                       ),
                     ],
                   ),
                   const _AlarmPermissionsSection(),
-                  SizedBox(height: isTab ? 12 : 15.h),
+                  gap,
+                  WSettingsSectionLabel('settings_tasbih_section'.tr()),
+                  WSettingsGroup(
+                    children: [
+                      WSettingsRow(
+                        icon: Icons.timer_outlined,
+                        title: 'tasbih_hourly_title'.tr(),
+                        subtitle: 'tasbih_hourly_subtitle'.tr(),
+                        onTap: () => Modular.to.pushNamed(TasbihRoutes.fullHourly()),
+                      ),
+                      WSettingsRow(
+                        icon: Icons.favorite_border_rounded,
+                        title: 'salawat_reminder_title'.tr(),
+                        subtitle: 'salawat_reminder_subtitle'.tr(),
+                        // Opens the very sheet SNSalawat opens — same cubit
+                        // singleton, so the two entry points can't drift.
+                        onTap: () => WSalawatReminderSheet.show(context, Modular.get<CBSalawat>()),
+                      ),
+                    ],
+                  ),
+                  gap,
                   WSettingsSectionLabel('settings_about_app'.tr()),
                   WSettingsGroup(
                     children: [
-                      // WSettingsRow(
-                      //   icon: Icons.info_outline_rounded,
-                      //   title: 'legal_about'.tr(),
-                      //   subtitle: 'settings_about_hint'.tr(),
-                      //   onTap: () => Modular.to.pushNamed(LegalRoutes.fullAbout()),
-                      // ),
                       WSettingsRow(
                         icon: Icons.info_outline_rounded,
                         title: 'settings_version'.tr(),
@@ -145,8 +187,9 @@ class _SNSettingsState extends State<SNSettings> {
 }
 
 /// Android-only section for the two OS grants the over-the-lockscreen adhan
-/// depends on. Duplicated here (they also live in the adhan screen) because a
-/// user who skipped them during onboarding looks in Settings first.
+/// depends on. These are system permissions rather than app preferences — they
+/// have no owning settings screen to link to, so the grant rows themselves live
+/// here, next to the adhan group.
 ///
 /// Collapses to nothing on iOS, where [alarmPermissionInfos] is empty.
 class _AlarmPermissionsSection extends StatelessWidget {
@@ -162,6 +205,9 @@ class _AlarmPermissionsSection extends StatelessWidget {
           if (infos.isEmpty) return const SizedBox.shrink();
           final cubit = Modular.get<CBAdhanSettings>();
           return Column(
+            // Every other section label is a direct sliver child and so spans
+            // the list width; without this the Column would centre it instead.
+            crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
               SizedBox(height: context.isTablet ? 12 : 15.h),
               WSettingsSectionLabel('alarm_perm_section'.tr()),
@@ -172,9 +218,11 @@ class _AlarmPermissionsSection extends StatelessWidget {
                       icon: info.icon,
                       title: info.titleKey.tr(),
                       subtitle: info.subtitleKey.tr(),
-                      leading: WAlarmPermissionSwitch(
-                        granted: info.granted,
-                        onTap: () => cubit.openAlarmSetting(info.setting),
+                      trailing: WSettingsSwitch(
+                        value: info.granted,
+                        // Neither direction can be applied in-process; both
+                        // flips deep-link to the OS settings page.
+                        onChanged: (_) => cubit.openAlarmSetting(info.setting),
                       ),
                       onTap: () => cubit.openAlarmSetting(info.setting),
                     ),

@@ -2,15 +2,20 @@ import 'package:flutter/material.dart';
 import 'package:flutter_modular/flutter_modular.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:localize_and_translate/localize_and_translate.dart';
+import 'package:quran/core/extension/build_context.dart';
 import 'package:quran/core/services/routes/routes_names.dart';
-import 'package:quran/core/theme/app_text_styles.dart';
 import 'package:quran/core/widgets/w_gradient_app_bar.dart';
 import 'package:quran/core/widgets/w_shared_scaffold.dart';
-import 'package:quran/modules/adhan/presentation/widgets/w_adhan_group.dart';
-import 'package:quran/modules/adhan/presentation/widgets/w_adhan_setting_row.dart';
 import 'package:quran/modules/home/presentation/widgets/w_home_verse_card.dart';
 import 'package:quran/modules/quran/domain/entities/e_daily_verse.dart';
+import 'package:quran/modules/settings/presentation/widgets/w_settings_group.dart';
+import 'package:quran/modules/settings/presentation/widgets/w_settings_row.dart';
+import 'package:quran/modules/settings/presentation/widgets/w_settings_section_label.dart';
+import 'package:quran/modules/settings/presentation/widgets/w_settings_switch.dart';
 
+/// Prayer-time preferences hub, laid out with the shared settings primitives so
+/// it reads as one surface with [SNSettings] — which links here rather than
+/// repeating these rows.
 class SNPrayerSettingsOverview extends StatefulWidget {
   const SNPrayerSettingsOverview({super.key});
 
@@ -19,7 +24,6 @@ class SNPrayerSettingsOverview extends StatefulWidget {
 }
 
 class _SNPrayerSettingsOverviewState extends State<SNPrayerSettingsOverview> {
-  static const _green = Color(0xFF2F7E63);
   static const _canvas = Color(0xFFFAF9F7);
   static const _gold = Color(0xFFD6A72C);
 
@@ -37,71 +41,67 @@ class _SNPrayerSettingsOverviewState extends State<SNPrayerSettingsOverview> {
 
   @override
   Widget build(BuildContext context) {
+    final isTab = context.isTablet;
     return WSharedScaffold(
       backgroundColor: _canvas,
       withSafeArea: false,
       padding: EdgeInsets.zero,
       body: Directionality(
-        textDirection: context.isRTL ? TextDirection.rtl : TextDirection.ltr,
-        child: Column(
-          children: [
-            WGradientAppBar(title: 'prayer_settings_title'.tr()),
-            Expanded(
-              child: ListView(
-                padding: EdgeInsets.fromLTRB(19.w, 26.h, 19.w, 28.h),
+        // Explicit extension — `localize_and_translate` also defines `isRTL`
+        // on BuildContext, and importing the app extension makes it ambiguous.
+        textDirection: ContextExtensions(context).isRTL ? TextDirection.rtl : TextDirection.ltr,
+        child: CustomScrollView(
+          slivers: [
+            SliverToBoxAdapter(
+              child: WGradientAppBar(
+                title: 'prayer_settings_title'.tr(),
+                subtitle: 'prayer_settings_subtitle'.tr(),
+              ),
+            ),
+            SliverPadding(
+              padding: EdgeInsets.fromLTRB(19.w, isTab ? 14 : 18.h, 19.w, isTab ? 20 : 28.h),
+              sliver: SliverList.list(
                 children: [
-                  WAdhanGroup(
+                  WSettingsSectionLabel('prayer_settings_general_section'.tr()),
+                  WSettingsGroup(
                     children: [
-                      WAdhanSettingRow(
-                        icon: Icons.explore_outlined,
-                        title: 'prayer_settings_qibla'.tr(),
-                        subtitle: 'prayer_settings_qibla_hint'.tr(),
-                        onTap: () => Modular.to.pushNamed(RoutesNames.qiblaBase),
-                        trailing: SizedBox(),
-                      ),
-                    ],
-                  ),
-                  SizedBox(height: 14.h),
-                  WAdhanGroup(
-                    children: [
-                      WAdhanSettingRow(
+                      WSettingsRow(
                         icon: Icons.notifications_none_rounded,
                         title: 'prayer_settings_alerts'.tr(),
                         subtitle: 'prayer_settings_alerts_hint'.tr(),
                         onTap: () => Modular.to.pushNamed(AdhanRoutes.notificationsScreen()),
-                        trailing: SizedBox(),
+                      ),
+                      WSettingsRow(
+                        icon: Icons.explore_outlined,
+                        title: 'prayer_settings_qibla'.tr(),
+                        subtitle: 'prayer_settings_qibla_hint'.tr(),
+                        onTap: () => Modular.to.pushNamed(RoutesNames.qiblaBase),
                       ),
                     ],
                   ),
-                  SizedBox(height: 15.h),
-                  Padding(
-                    padding: EdgeInsetsDirectional.only(start: 8.w, bottom: 8.h),
-                    child: Text('prayer_settings_location_section'.tr(), style: AppTextStyles.grey12W400),
-                  ),
-                  WAdhanGroup(
+                  SizedBox(height: isTab ? 12 : 15.h),
+                  WSettingsSectionLabel('prayer_settings_location_section'.tr()),
+                  WSettingsGroup(
                     children: [
-                      WAdhanSettingRow(
-                        icon: Icons.location_on_outlined,
+                      WSettingsRow(
+                        icon: Icons.my_location_rounded,
                         title: 'prayer_settings_auto_location'.tr(),
                         subtitle: 'prayer_settings_auto_location_hint'.tr(),
-                        trailing: Transform.scale(
-                          scale: .75,
-                          child: Switch(
-                            value: _automaticLocation,
-                            activeTrackColor: _green,
-                            thumbColor: WidgetStateProperty.all(Colors.white),
-                            onChanged: (value) => setState(() => _automaticLocation = value),
-                          ),
+                        trailing: WSettingsSwitch(
+                          value: _automaticLocation,
+                          onChanged: (value) => setState(() => _automaticLocation = value),
                         ),
+                        onTap: () => setState(() => _automaticLocation = !_automaticLocation),
                       ),
-                      WAdhanSettingRow(
+                      WSettingsRow(
                         icon: Icons.location_on_outlined,
                         title: 'prayer_settings_manual_location'.tr(),
+                        subtitle: 'prayer_settings_manual_location_hint'.tr(),
                         onTap: () => Modular.to.pushNamed(RoutesNames.prayerBase),
                       ),
                     ],
                   ),
-                  SizedBox(height: 40.h),
+                  SizedBox(height: isTab ? 28 : 34.h),
                   WHomeVerseCard.staticVerse(gold: _gold, verse: _virtueVerse, label: 'khatma_virtue_title'.tr()),
                 ],
               ),

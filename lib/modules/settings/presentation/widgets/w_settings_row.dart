@@ -9,9 +9,9 @@ class WSettingsRow extends StatelessWidget {
   const WSettingsRow({
     required this.icon,
     required this.title,
-    required this.subtitle,
+    this.subtitle,
     this.value,
-    this.leading,
+    this.trailing,
     this.onTap,
     this.showChevron = true,
     super.key,
@@ -19,15 +19,21 @@ class WSettingsRow extends StatelessWidget {
 
   final IconData icon;
   final String title;
-  final String subtitle;
+
+  /// One-line hint under [title]. Omit for rows that read on their own (a
+  /// frequency choice, a picked time) — the row then centres the title.
+  final String? subtitle;
   final String? value;
-  final Widget? leading;
+
+  /// Replaces the default value/chevron end slot — a switch, a checkmark, etc.
+  final Widget? trailing;
   final VoidCallback? onTap;
   final bool showChevron;
 
   @override
   Widget build(BuildContext context) {
-    final leadingWidget = leading;
+    final subtitle = this.subtitle;
+    final trailingWidget = trailing;
     // On tablet the 780x844 design height stretches every `.h` by ~1.6x, which
     // leaves a 39px-tall row floating in 114px of empty space. Fixed logical
     // values keep the tablet rows as tight as they read on phones.
@@ -56,23 +62,25 @@ class WSettingsRow extends StatelessWidget {
                         height: 1.1,
                       ),
                     ),
-                    SizedBox(height: isTab ? 3 : 4.h),
-                    Text(
-                      subtitle,
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                      style: GoogleFonts.cairo(
-                        fontSize: isTab ? 11.5 : 9.sp,
-                        color: const Color(0xFF858585),
-                        height: 1,
+                    if (subtitle != null) ...[
+                      SizedBox(height: isTab ? 3 : 4.h),
+                      Text(
+                        subtitle,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: GoogleFonts.cairo(
+                          fontSize: isTab ? 11.5 : 9.sp,
+                          color: const Color(0xFF858585),
+                          height: 1,
+                        ),
                       ),
-                    ),
+                    ],
                   ],
                 ),
               ),
               SizedBox(width: 8.w),
-              if (leadingWidget != null)
-                leadingWidget
+              if (trailingWidget != null)
+                trailingWidget
               else
                 WSettingsRowValue(value: value, showChevron: showChevron),
             ],

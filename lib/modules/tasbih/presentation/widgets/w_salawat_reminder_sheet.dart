@@ -2,9 +2,16 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_modular/flutter_modular.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:localize_and_translate/localize_and_translate.dart';
+import 'package:quran/core/extension/build_context.dart';
 import 'package:quran/core/services/notifications/notifications_service.dart';
-import 'package:quran/core/theme/app_text_styles.dart';
+import 'package:quran/modules/settings/presentation/widgets/w_settings_check.dart';
+import 'package:quran/modules/settings/presentation/widgets/w_settings_group.dart';
+import 'package:quran/modules/settings/presentation/widgets/w_settings_note.dart';
+import 'package:quran/modules/settings/presentation/widgets/w_settings_row.dart';
+import 'package:quran/modules/settings/presentation/widgets/w_settings_section_label.dart';
+import 'package:quran/modules/settings/presentation/widgets/w_settings_switch.dart';
 import 'package:quran/modules/tasbih/presentation/cubits/cb_salawat.dart';
 import 'package:quran/modules/tasbih/presentation/cubits/s_tasbih.dart';
 
@@ -12,12 +19,15 @@ import 'package:quran/modules/tasbih/presentation/cubits/s_tasbih.dart';
 /// a master toggle plus a frequency choice (every 1/2/3 hours, or a single
 /// specific time). Interval reminders fire 08:30–22:30; the specific time is
 /// clamped to that same window.
+///
+/// Built from the shared settings primitives so it matches [SNSettings], which
+/// opens this sheet directly instead of carrying its own copy of the controls.
 class WSalawatReminderSheet extends StatelessWidget {
   const WSalawatReminderSheet({required this.cubit, super.key});
 
   final CBSalawat cubit;
 
-  static const _green = Color(0xFF007A58);
+  static const _canvas = Color(0xFFFAF9F7);
 
   /// Frequency options. `0` is the "specific time" sentinel.
   static const _intervals = [1, 2, 3, 0];
@@ -27,7 +37,7 @@ class WSalawatReminderSheet extends StatelessWidget {
     return showModalBottomSheet<void>(
       context: context,
       isScrollControlled: true,
-      backgroundColor: Colors.white,
+      backgroundColor: _canvas,
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(24.r)),
       ),
@@ -37,98 +47,73 @@ class WSalawatReminderSheet extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final isTab = context.isTablet;
     return BlocProvider.value(
       value: cubit,
       child: Directionality(
-        textDirection: context.isRTL ? TextDirection.rtl : TextDirection.ltr,
+        // Explicit extension — `localize_and_translate` also defines `isRTL`
+        // on BuildContext, and importing the app extension makes it ambiguous.
+        textDirection: ContextExtensions(context).isRTL ? TextDirection.rtl : TextDirection.ltr,
         child: SafeArea(
-          child: Padding(
-            padding: EdgeInsets.fromLTRB(20.w, 12.h, 20.w, 16.h),
+          child: SingleChildScrollView(
+            padding: EdgeInsets.fromLTRB(19.w, 12.h, 19.w, isTab ? 20 : 24.h),
             child: BlocBuilder<CBSalawat, STasbih>(
               builder: (context, state) {
                 return Column(
                   mainAxisSize: MainAxisSize.min,
                   crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: [
-                    Center(
-                      child: Container(
-                        width: 40.w,
-                        height: 4.h,
-                        decoration: BoxDecoration(
-                          color: Colors.black12,
-                          borderRadius: BorderRadius.circular(2.r),
-                        ),
-                      ),
-                    ),
-                    SizedBox(height: 16.h),
-                    Row(
+                    const _DragHandle(),
+                    SizedBox(height: isTab ? 14 : 18.h),
+                    _SheetTitle(text: 'salawat_reminder_title'.tr()),
+                    SizedBox(height: isTab ? 12 : 15.h),
+                    WSettingsGroup(
                       children: [
-                        Icon(Icons.notifications_active_outlined,
-                            color: _green, size: 22.sp),
-                        SizedBox(width: 8.w),
-                        Expanded(
-                          child: Text('salawat_reminder_title'.tr(),
-                              style: AppTextStyles.ink16W500),
+                        WSettingsRow(
+                          icon: Icons.notifications_active_outlined,
+                          title: 'salawat_reminder_enable'.tr(),
+                          subtitle: 'salawat_reminder_enable_hint'.tr(),
+                          trailing: WSettingsSwitch(
+                            value: state.reminderEnabled,
+                            onChanged: (value) => _setEnabled(value),
+                          ),
+                          onTap: () => _setEnabled(!state.reminderEnabled),
                         ),
                       ],
                     ),
-                    SizedBox(height: 8.h),
-                    SwitchListTile(
-                      contentPadding: EdgeInsets.zero,
-                      activeThumbColor: _green,
-                      title: Text('salawat_reminder_enable'.tr(),
-                          style: AppTextStyles.ink14W700),
-                      subtitle: Text('salawat_reminder_enable_hint'.tr(),
-                          style: AppTextStyles.grey12W400),
-                      value: state.reminderEnabled,
-                      onChanged: (v) async {
-                        if (v) {
-                          final granted = await Modular.get<NotificationsService>()
-                              .requestPermission();
-                          if (!granted) return;
-                        }
-                        await cubit.setReminderEnabled(v);
-                      },
-                    ),
                     if (state.reminderEnabled) ...[
-                      Divider(height: 24.h),
-                      Text('salawat_reminder_frequency'.tr(),
-                          style: AppTextStyles.ink14W700),
-                      SizedBox(height: 12.h),
-                      Wrap(
-                        spacing: 8.w,
-                        runSpacing: 8.h,
-                        children: _intervals.map((value) {
-                          final selected =
-                              state.reminderIntervalHours == value;
-                          return ChoiceChip(
-                            label: Text(_labelFor(value)),
-                            selected: selected,
-                            selectedColor: _green,
-                            labelStyle: TextStyle(
-                              color: selected ? Colors.white : Colors.black87,
-                              fontSize: 13.sp,
+                      SizedBox(height: isTab ? 12 : 15.h),
+                      WSettingsSectionLabel('salawat_reminder_frequency'.tr()),
+                      WSettingsGroup(
+                        children: [
+                          for (final value in _intervals)
+                            WSettingsRow(
+                              icon: value == 0 ? Icons.alarm_rounded : Icons.schedule_rounded,
+                              title: _labelFor(value),
+                              trailing: WSettingsCheck(selected: _isSelected(state, value)),
+                              onTap: () => _select(state, value),
                             ),
-                            backgroundColor: const Color(0xFFF1F0EC),
-                            showCheckmark: false,
-                            onSelected: (_) {
-                              if (value == 0) {
-                                cubit.setReminderTime(
-                                    state.reminderHour, state.reminderMinute);
-                              } else {
-                                cubit.setReminderInterval(value);
-                              }
-                            },
-                          );
-                        }).toList(),
+                        ],
                       ),
-                      SizedBox(height: 12.h),
-                      if (state.reminderIsSpecificTime)
-                        _TimeRow(state: state, cubit: cubit, green: _green)
-                      else
-                        _Hint(text: 'salawat_reminder_window_hint'.tr()),
+                      if (state.reminderIsSpecificTime) ...[
+                        SizedBox(height: isTab ? 12 : 15.h),
+                        WSettingsGroup(
+                          children: [
+                            WSettingsRow(
+                              icon: Icons.access_time_rounded,
+                              title: 'salawat_reminder_pick_time'.tr(),
+                              value: TimeOfDay(
+                                hour: state.reminderHour,
+                                minute: state.reminderMinute,
+                              ).format(context),
+                              onTap: () => _pickTime(context, state),
+                            ),
+                          ],
+                        ),
+                        WSettingsNote('salawat_reminder_specific_hint'.tr()),
+                      ] else
+                        WSettingsNote('salawat_reminder_window_hint'.tr()),
                     ],
-                    SizedBox(height: 8.h),
                   ],
                 );
               },
@@ -137,6 +122,37 @@ class WSalawatReminderSheet extends StatelessWidget {
         ),
       ),
     );
+  }
+
+  /// Enabling needs the notification grant first — a denied prompt leaves the
+  /// toggle off rather than persisting a reminder that can never fire.
+  Future<void> _setEnabled(bool value) async {
+    if (value) {
+      final granted = await Modular.get<NotificationsService>().requestPermission();
+      if (!granted) return;
+    }
+    await cubit.setReminderEnabled(value);
+  }
+
+  bool _isSelected(STasbih state, int value) {
+    return value == 0 ? state.reminderIsSpecificTime : state.reminderIntervalHours == value;
+  }
+
+  Future<void> _select(STasbih state, int value) {
+    if (value == 0) {
+      return cubit.setReminderTime(state.reminderHour, state.reminderMinute);
+    }
+    return cubit.setReminderInterval(value);
+  }
+
+  Future<void> _pickTime(BuildContext context, STasbih state) async {
+    final picked = await showTimePicker(
+      context: context,
+      initialTime: TimeOfDay(hour: state.reminderHour, minute: state.reminderMinute),
+    );
+    if (picked == null) return;
+    // Clamp into the 08:00–22:00 window.
+    await cubit.setReminderTime(picked.hour.clamp(8, 22), picked.minute);
   }
 
   String _labelFor(int value) {
@@ -153,63 +169,44 @@ class WSalawatReminderSheet extends StatelessWidget {
   }
 }
 
-/// Row showing the chosen specific time with a button to change it.
-class _TimeRow extends StatelessWidget {
-  const _TimeRow({
-    required this.state,
-    required this.cubit,
-    required this.green,
-  });
-
-  final STasbih state;
-  final CBSalawat cubit;
-  final Color green;
+class _DragHandle extends StatelessWidget {
+  const _DragHandle();
 
   @override
   Widget build(BuildContext context) {
-    final time = TimeOfDay(hour: state.reminderHour, minute: state.reminderMinute);
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.stretch,
-      children: [
-        OutlinedButton.icon(
-          style: OutlinedButton.styleFrom(
-            foregroundColor: green,
-            side: BorderSide(color: green),
-            padding: EdgeInsets.symmetric(vertical: 12.h),
-          ),
-          icon: Icon(Icons.access_time_rounded, size: 20.sp),
-          label: Text(
-            '${'salawat_reminder_pick_time'.tr()} — ${time.format(context)}',
-            style: TextStyle(fontSize: 14.sp, fontWeight: FontWeight.w600),
-          ),
-          onPressed: () async {
-            final picked = await showTimePicker(
-              context: context,
-              initialTime: time,
-            );
-            if (picked == null) return;
-            // Clamp into the 08:00–22:00 window.
-            final hour = picked.hour.clamp(8, 22);
-            await cubit.setReminderTime(hour, picked.minute);
-          },
+    return Center(
+      child: Container(
+        width: 40.w,
+        height: 4.h,
+        decoration: BoxDecoration(
+          color: Colors.black12,
+          borderRadius: BorderRadius.circular(2.r),
         ),
-        SizedBox(height: 8.h),
-        _Hint(text: 'salawat_reminder_specific_hint'.tr()),
-      ],
+      ),
     );
   }
 }
 
-class _Hint extends StatelessWidget {
-  const _Hint({required this.text});
+/// Matches the weight of the gradient app bar's title, so the sheet reads as
+/// the same kind of surface as a full settings screen.
+class _SheetTitle extends StatelessWidget {
+  const _SheetTitle({required this.text});
 
   final String text;
 
   @override
   Widget build(BuildContext context) {
-    return Text(
-      text,
-      style: TextStyle(fontSize: 12.sp, color: Colors.black54, height: 1.5),
+    return Padding(
+      padding: EdgeInsetsDirectional.only(start: 8.w),
+      child: Text(
+        text,
+        style: GoogleFonts.cairo(
+          fontSize: context.isTablet ? 19 : 16.sp,
+          fontWeight: FontWeight.w700,
+          color: const Color(0xFF303030),
+          height: 1.2,
+        ),
+      ),
     );
   }
 }

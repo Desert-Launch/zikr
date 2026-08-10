@@ -3,76 +3,90 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_modular/flutter_modular.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:localize_and_translate/localize_and_translate.dart';
+import 'package:quran/core/extension/build_context.dart';
 import 'package:quran/core/services/notifications/notifications_service.dart';
-import 'package:quran/core/theme/app_text_styles.dart';
-import 'package:quran/core/theme/brand_colors.dart';
 import 'package:quran/core/widgets/w_gradient_app_bar.dart';
 import 'package:quran/core/widgets/w_shared_scaffold.dart';
+import 'package:quran/modules/settings/presentation/widgets/w_settings_group.dart';
+import 'package:quran/modules/settings/presentation/widgets/w_settings_note.dart';
+import 'package:quran/modules/settings/presentation/widgets/w_settings_row.dart';
+import 'package:quran/modules/settings/presentation/widgets/w_settings_section_label.dart';
+import 'package:quran/modules/settings/presentation/widgets/w_settings_switch.dart';
 import 'package:quran/modules/tasbih/presentation/cubits/cb_tasbih.dart';
 import 'package:quran/modules/tasbih/presentation/cubits/s_tasbih.dart';
 
-/// Lets the user enable / disable the hourly tasbih notifications. The
-/// schedule (08:00–22:00, silent channel) is fixed; only the on/off bit is
-/// editable.
+/// Tasbih preferences: the hourly notification (fixed 08:00–22:00 silent
+/// schedule, only the on/off bit is editable) and the counter's haptics.
+///
+/// Laid out with the shared settings primitives so it reads as one surface
+/// with [SNSettings], which links here rather than repeating the toggles.
 class SNTasbihHourly extends StatelessWidget {
   const SNTasbihHourly({super.key});
+
+  static const _canvas = Color(0xFFFAF9F7);
 
   @override
   Widget build(BuildContext context) {
     final cb = Modular.get<CBTasbih>();
+    final isTab = context.isTablet;
     return BlocProvider.value(
       value: cb,
       child: WSharedScaffold(
+        backgroundColor: _canvas,
         withSafeArea: false,
         padding: EdgeInsets.zero,
         body: Directionality(
-          textDirection: context.isRTL ? TextDirection.rtl : TextDirection.ltr,
-          child: Column(
-            children: [
-              WGradientAppBar(title: 'tasbih_hourly_title'.tr()),
-              Expanded(
-                child: BlocBuilder<CBTasbih, STasbih>(
-                  builder: (context, state) {
-                    return ListView(
-                      padding: EdgeInsets.symmetric(vertical: 16.h),
-                      children: [
-                        Card(
-                          margin: EdgeInsets.symmetric(horizontal: 12.w),
-                          elevation: 0,
-                          child: Column(
-                            children: [
-                              SwitchListTile(
-                                title: Text('tasbih_hourly_enable'.tr(), style: AppTextStyles.ink16W500),
-                                subtitle: Text('tasbih_hourly_hint'.tr(), style: AppTextStyles.grey12W400),
-                                value: state.hourlyEnabled,
-                                onChanged: (v) async {
-                                  if (v) {
-                                    final granted = await Modular.get<NotificationsService>().requestPermission();
-                                    if (!granted) return;
-                                  }
-                                  await cb.setHourlyEnabled(v);
-                                },
-                              ),
-                              Divider(height: 1.h),
-                              SwitchListTile(
-                                title: Text('tasbih_vibrate'.tr(), style: AppTextStyles.ink14W700),
-                                subtitle: Text('tasbih_vibrate_hint'.tr(), style: AppTextStyles.grey12W400),
-                                value: state.vibrate,
-                                onChanged: cb.setVibrate,
-                              ),
-                            ],
+          // Explicit extension — `localize_and_translate` also defines `isRTL`
+          // on BuildContext, and importing the app extension makes it ambiguous.
+          textDirection: ContextExtensions(context).isRTL ? TextDirection.rtl : TextDirection.ltr,
+          child: CustomScrollView(
+            slivers: [
+              SliverToBoxAdapter(
+                child: WGradientAppBar(
+                  title: 'tasbih_hourly_title'.tr(),
+                  subtitle: 'tasbih_hourly_subtitle'.tr(),
+                ),
+              ),
+              SliverPadding(
+                padding: EdgeInsets.fromLTRB(19.w, isTab ? 14 : 18.h, 19.w, isTab ? 20 : 24.h),
+                sliver: SliverList.list(
+                  children: [
+                    WSettingsSectionLabel('tasbih_hourly_section'.tr()),
+                    BlocSelector<CBTasbih, STasbih, bool>(
+                      selector: (s) => s.hourlyEnabled,
+                      builder: (context, enabled) => WSettingsGroup(
+                        children: [
+                          WSettingsRow(
+                            icon: Icons.notifications_active_outlined,
+                            title: 'tasbih_hourly_enable'.tr(),
+                            subtitle: 'tasbih_hourly_hint'.tr(),
+                            trailing: WSettingsSwitch(
+                              value: enabled,
+                              onChanged: (value) => _setHourly(cb, value),
+                            ),
+                            onTap: () => _setHourly(cb, !enabled),
                           ),
-                        ),
-                        Padding(
-                          padding: EdgeInsets.fromLTRB(20.w, 12.h, 20.w, 0),
-                          child: Text(
-                            'tasbih_hourly_explainer'.tr(),
-                            style: TextStyle(fontSize: 12.sp, color: context.brand.muted, height: 1.6),
+                        ],
+                      ),
+                    ),
+                    WSettingsNote('tasbih_hourly_explainer'.tr()),
+                    SizedBox(height: isTab ? 12 : 15.h),
+                    WSettingsSectionLabel('tasbih_counter_section'.tr()),
+                    BlocSelector<CBTasbih, STasbih, bool>(
+                      selector: (s) => s.vibrate,
+                      builder: (context, vibrate) => WSettingsGroup(
+                        children: [
+                          WSettingsRow(
+                            icon: Icons.vibration_rounded,
+                            title: 'tasbih_vibrate'.tr(),
+                            subtitle: 'tasbih_vibrate_hint'.tr(),
+                            trailing: WSettingsSwitch(value: vibrate, onChanged: cb.setVibrate),
+                            onTap: () => cb.setVibrate(!vibrate),
                           ),
-                        ),
-                      ],
-                    );
-                  },
+                        ],
+                      ),
+                    ),
+                  ],
                 ),
               ),
             ],
@@ -80,5 +94,16 @@ class SNTasbihHourly extends StatelessWidget {
         ),
       ),
     );
+  }
+
+  /// Turning the reminder on needs the notification grant first — a silent
+  /// channel still counts as a notification, so a denied prompt leaves the
+  /// switch off rather than persisting a setting that can never fire.
+  Future<void> _setHourly(CBTasbih cb, bool value) async {
+    if (value) {
+      final granted = await Modular.get<NotificationsService>().requestPermission();
+      if (!granted) return;
+    }
+    await cb.setHourlyEnabled(value);
   }
 }
