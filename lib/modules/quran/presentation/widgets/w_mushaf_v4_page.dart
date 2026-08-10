@@ -39,9 +39,19 @@ import 'package:quran/modules/quran/presentation/widgets/w_surah_header.dart';
 ///   reflows as one continuous stream through [WMushafPageReflow], so enlarged
 ///   text fills every row instead of stranding two words on a row of its own.
 class WMushafV4Page extends StatefulWidget {
-  const WMushafV4Page({required this.layout, super.key});
+  const WMushafV4Page({required this.layout, this.continuousHeight, super.key});
 
   final MQpcV4Page layout;
+
+  /// Height of one screen, passed in only by the reader's **continuous**
+  /// (vertical) mode, where the page's slot is unbounded.
+  ///
+  /// Non-null puts the page in continuous mode: it lays out at its natural
+  /// height — floored at this — and carries no scroll view of its own, so the
+  /// list around it scrolls straight through a page break. Null is paged mode:
+  /// the page fills the slot it was given and scrolls inside it if enlarged
+  /// text outgrows it.
+  final double? continuousHeight;
 
   @override
   State<WMushafV4Page> createState() => _WMushafV4PageState();
@@ -50,6 +60,57 @@ class WMushafV4Page extends StatefulWidget {
 class _WMushafV4PageState extends State<WMushafV4Page> {
   late final DSQpcV4FontLoader _fonts = Modular.get<DSQpcV4FontLoader>();
   Map<int, MSurah> _surahs = const {};
+
+  /// Cached result of [_printSize] — the measurement lays out every line on the
+  /// page, so it must not run on a rebuild that only changed a colour or the
+  /// selected ayah. Width and family are the only inputs that can move it.
+  double? _printSizeCache;
+  double? _printSizeWidth;
+  String? _printSizeFamily;
+
+  /// The glyph size at which this page's text fills a [width]-wide column — the
+  /// page's 100%, before the reader's scale.
+  ///
+  /// Solved from the widest line the printed Mushaf set justified, so that line
+  /// reaches both margins and every other line on the page — set at the same
+  /// size, as the printed page does — falls where the print does. Lines the
+  /// layout marks `isCentered` (a surah's closing line, an opener) are excluded:
+  /// they are short by design, and fitting the page to one of them would blow
+  /// the rest of the page off the screen. A page with nothing but centred lines
+  /// — the openers on pp. 1–2, which the printed Mushaf also sets large — falls
+  /// back to its widest line.
+  double _printSize(double width, String fontFamily) {
+    final cached = _printSizeCache;
+    if (cached != null &&
+        _printSizeWidth == width &&
+        _printSizeFamily == fontFamily) {
+      return cached;
+    }
+
+    const measure = WMushafLine.measureSize;
+    var widest = 0.0;
+    var widestJustified = 0.0;
+    for (final block in widget.layout.blocks) {
+      if (block is! MQpcV4LineBlock) continue;
+      final natural = mushafLineNaturalWidth(
+        block,
+        fontFamily: fontFamily,
+        size: measure,
+      );
+      if (natural > widest) widest = natural;
+      if (!block.isCentered && natural > widestJustified) {
+        widestJustified = natural;
+      }
+    }
+
+    final natural = widestJustified > 0 ? widestJustified : widest;
+    final size = natural <= 0 ? measure : measure * (width * 0.995 / natural);
+
+    _printSizeCache = size;
+    _printSizeWidth = width;
+    _printSizeFamily = fontFamily;
+    return size;
+  }
 
   @override
   void initState() {
@@ -77,19 +138,26 @@ class _WMushafV4PageState extends State<WMushafV4Page> {
         ReaderTheme theme,
         EQuranFontMode mode,
         double fontScale,
+        bool bold,
         Map<String, String?> bookmarks,
       })
     >(
       selector: (s) =>
-          (selected: s.selectedAyah, theme: s.theme, mode: s.fontMode, fontScale: s.fontScale, bookmarks: s.bookmarks),
+          (selected: s.selectedAyah, theme: s.theme, mode: s.fontMode, fontScale: s.fontScale, bold: s.bold, bookmarks: s.bookmarks),
       builder: (context, view) {
         final isDark = view.theme == ReaderTheme.dark;
         final tajweed = view.mode == EQuranFontMode.tajweedV4;
 
         if (!_fonts.isPageReady(page) || widget.layout.blocks.isEmpty) {
-          return Container(
-            color: readerBackground(view.theme),
-            child: const Center(child: CircularProgressIndicator()),
+          return SizedBox(
+            // A page still waiting on its font must hold a screen's worth of
+            // space in continuous mode, or the pages below it slide up and then
+            // snap back down the moment the glyphs arrive.
+            height: widget.continuousHeight,
+            child: Container(
+              color: readerBackground(view.theme),
+              child: const Center(child: CircularProgressIndicator()),
+            ),
           );
         }
 
@@ -105,75 +173,112 @@ class _WMushafV4PageState extends State<WMushafV4Page> {
           selector: (s) => s.currentAyah,
           builder: (context, playing) {
             final bigText = isBigTextScale(view.fontScale);
-            final lineWidgets = _blockWidgets(
-              context: context,
-              cubit: cubit,
-              bigText: bigText,
-              selected: view.selected,
-              playing: playing,
-              bookmarks: view.bookmarks,
-              fontFamily: fontFamily,
-              baseColor: baseColor,
-              markerColor: markerColor,
-              brightness: brightness,
-              fontScale: view.fontScale,
-              isDark: isDark,
-            );
+            final hPad = 5.w;
 
-            final isFullPage = widget.layout.blocks.length >= 12;
-            // The openers (pp. 1–2) sit centred with spare vertical room, so add
-            // breathing space between their lines.
-            final openerGap = page <= 2 ? 7.h : 0.0;
-            final wrapped = lineWidgets
-                .map((w) {
-                  if (w is WSurahHeader || openerGap == 0) return w;
-                  return Padding(
-                    padding: EdgeInsets.symmetric(vertical: openerGap),
-                    child: w,
-                  );
-                })
-                .toList(growable: false);
+            // The page's own width decides its glyph size, so it has to be known
+            // before a single line is built — hence the outer LayoutBuilder.
+            return LayoutBuilder(
+              builder: (context, pageConstraints) {
+                final baseSize = _printSize(
+                  pageConstraints.maxWidth - hPad * 2,
+                  fontFamily,
+                );
+                final lineWidgets = _blockWidgets(
+                  context: context,
+                  cubit: cubit,
+                  bigText: bigText,
+                  baseSize: baseSize,
+                  selected: view.selected,
+                  playing: playing,
+                  bookmarks: view.bookmarks,
+                  fontFamily: fontFamily,
+                  baseColor: baseColor,
+                  markerColor: markerColor,
+                  brightness: brightness,
+                  fontScale: view.fontScale,
+                  bold: view.bold,
+                  isDark: isDark,
+                );
 
-            return Container(
-              color: readerBackground(view.theme),
-              padding: EdgeInsets.symmetric(horizontal: 5.w, vertical: 8.h),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.stretch,
-                children: [
-                  WMushafPageHeader(surahName: _pageSurahName, page: page, color: headerColor),
-                  // At 100% every line fits one row and the page fills exactly
-                  // one screen — the ConstrainedBox keeps the lines distributed
-                  // as before and nothing scrolls. Above 100% the lines wrap,
-                  // the page outgrows the viewport, and it scrolls vertically.
-                  Expanded(
-                    child: LayoutBuilder(
-                      builder: (context, constraints) => SingleChildScrollView(
-                        physics: const ClampingScrollPhysics(),
-                        child: ConstrainedBox(
-                          constraints: BoxConstraints(minHeight: constraints.maxHeight),
-                          child: Column(
-                            // Reflowed runs are already as tall as their text
-                            // needs; distributing them would just push the
-                            // stream apart, so big text stacks from the top.
-                            mainAxisAlignment: bigText
-                                ? MainAxisAlignment.start
-                                : (isFullPage ? MainAxisAlignment.spaceEvenly : MainAxisAlignment.center),
-                            crossAxisAlignment: CrossAxisAlignment.stretch,
-                            children: wrapped,
+                final isFullPage = widget.layout.blocks.length >= 12;
+                // The openers (pp. 1–2) sit centred with spare vertical room, so
+                // add breathing space between their lines.
+                final openerGap = page <= 2 ? 7.h : 0.0;
+                final wrapped = lineWidgets
+                    .map((w) {
+                      if (w is WSurahHeader || openerGap == 0) return w;
+                      return Padding(
+                        padding: EdgeInsets.symmetric(vertical: openerGap),
+                        child: w,
+                      );
+                    })
+                    .toList(growable: false);
+
+                // A reflowed run stacks from the very top of the viewport, and
+                // QPC tashkeel reach well above the font's ascent — without this
+                // the first row's marks are shaved off by the scroll view's clip.
+                // The printed layout distributes its lines and never needs it.
+                final topPad = bigText ? baseSize * view.fontScale * kPillPadTop : 0.0;
+
+                // One screen's worth of height. In paged mode that is the slot
+                // the PageView handed down; in continuous mode the slot is
+                // unbounded, so the reader passes the viewport height in.
+                final screenHeight = widget.continuousHeight ?? pageConstraints.maxHeight;
+
+                // The page is exactly as tall as its content needs, floored at
+                // one screen.
+                //
+                // `mainAxisSize.min` under a minHeight is what does it: the
+                // Column measures its children against unbounded height, then
+                // the constraint floors the result — so a printed page that
+                // falls short of a screen still gets the slack `spaceEvenly`
+                // spreads between its lines, and an enlarged page that outgrows
+                // a screen simply reports the taller height. THAT is what makes
+                // continuous scrolling work: the page never has to scroll
+                // itself, so the list around it is the only scrollable and a
+                // page break is just another line boundary.
+                final body = ConstrainedBox(
+                  constraints: BoxConstraints(minHeight: screenHeight),
+                  child: Container(
+                    color: readerBackground(view.theme),
+                    padding: EdgeInsets.symmetric(horizontal: hPad, vertical: 8.h),
+                    child: Padding(
+                      padding: EdgeInsets.only(top: topPad),
+                      child: Column(
+                        mainAxisSize: MainAxisSize.min,
+                        // Reflowed runs are already as tall as their text needs;
+                        // distributing them would just push the stream apart, so
+                        // big text stacks from the top.
+                        mainAxisAlignment: bigText
+                            ? MainAxisAlignment.start
+                            : (isFullPage ? MainAxisAlignment.spaceEvenly : MainAxisAlignment.center),
+                        crossAxisAlignment: CrossAxisAlignment.stretch,
+                        children: [
+                          WMushafPageHeader(surahName: _pageSurahName, page: page, color: headerColor),
+                          ...wrapped,
+                          SizedBox(height: 4.h),
+                          Center(
+                            child: Text(
+                              '$page',
+                              style: TextStyle(fontSize: 11.sp, color: muted),
+                            ),
                           ),
-                        ),
+                        ],
                       ),
                     ),
                   ),
-                  SizedBox(height: 4.h),
-                  Center(
-                    child: Text(
-                      '$page',
-                      style: TextStyle(fontSize: 11.sp, color: muted),
-                    ),
-                  ),
-                ],
-              ),
+                );
+
+                // Paged mode keeps a scroll view of its own, because a page
+                // enlarged past its slot has nowhere else to go. Continuous mode
+                // must NOT have one — a second scrollable inside the list is
+                // exactly what makes a drag stop dead at a page boundary.
+                if (widget.continuousHeight != null) return body;
+                return SingleChildScrollView(
+                  physics: const ClampingScrollPhysics(),
+                  child: body,
+                );
+              },
             );
           },
         );
@@ -193,6 +298,7 @@ class _WMushafV4PageState extends State<WMushafV4Page> {
     required BuildContext context,
     required CBMushafReader cubit,
     required bool bigText,
+    required double baseSize,
     required ParamAyahRef? selected,
     required ParamAyahRef? playing,
     required Map<String, String?> bookmarks,
@@ -201,6 +307,7 @@ class _WMushafV4PageState extends State<WMushafV4Page> {
     required Color markerColor,
     required Brightness brightness,
     required double fontScale,
+    required bool bold,
     required bool isDark,
   }) {
     final widgets = <Widget>[];
@@ -211,6 +318,7 @@ class _WMushafV4PageState extends State<WMushafV4Page> {
       widgets.add(
         WMushafPageReflow(
           blocks: List<MQpcV4LineBlock>.of(run),
+          baseSize: baseSize,
           selected: selected,
           playing: playing,
           bookmarks: bookmarks,
@@ -219,6 +327,7 @@ class _WMushafV4PageState extends State<WMushafV4Page> {
           markerColor: markerColor,
           brightness: brightness,
           fontScale: fontScale,
+          bold: bold,
           onSelect: cubit.selectAyah,
           onLongPress: (ref) => toggleAyahBookmark(context, ref, cubit),
         ),
@@ -233,7 +342,7 @@ class _WMushafV4PageState extends State<WMushafV4Page> {
           widgets.add(_surahHeader(block.surahNumber, dark: isDark));
         case MQpcV4BasmalaBlock():
           flushRun();
-          widgets.add(_basmala(baseColor, fontScale));
+          widgets.add(_basmala(baseColor, baseSize * fontScale, bold: bold));
         case MQpcV4LineBlock():
           if (bigText) {
             run.add(block);
@@ -241,6 +350,7 @@ class _WMushafV4PageState extends State<WMushafV4Page> {
             widgets.add(
               WMushafLine(
                 block: block,
+                baseSize: baseSize,
                 selected: selected,
                 playing: playing,
                 bookmarks: bookmarks,
@@ -249,6 +359,7 @@ class _WMushafV4PageState extends State<WMushafV4Page> {
                 markerColor: markerColor,
                 brightness: brightness,
                 fontScale: fontScale,
+                bold: bold,
                 onSelect: cubit.selectAyah,
                 onLongPress: (ref) => toggleAyahBookmark(context, ref, cubit),
               ),
@@ -279,7 +390,9 @@ class _WMushafV4PageState extends State<WMushafV4Page> {
     );
   }
 
-  Widget _basmala(Color color, double fontScale) {
+  /// [textSize] is the page's rendered glyph size — the basmala is set as a
+  /// fraction of it so it grows with the page instead of with the screen.
+  Widget _basmala(Color color, double textSize, {required bool bold}) {
     return Padding(
       padding: EdgeInsets.symmetric(vertical: 6.h),
       // Scaled down if the enlarged size would exceed the page width, so the
@@ -290,7 +403,22 @@ class _WMushafV4PageState extends State<WMushafV4Page> {
           'بِسْمِ ٱللَّهِ ٱلرَّحْمَٰنِ ٱلرَّحِيمِ',
           textAlign: TextAlign.center,
           textDirection: TextDirection.rtl,
-          style: GoogleFonts.amiri(fontSize: 26.sp * fontScale, color: color, height: 1.4),
+          // Amiri, not the page's QPC font, so it cannot simply borrow the page
+          // size: the same point size reads much larger here, because a QPC line
+          // spends most of its height on tashkeel while Amiri spends it on the
+          // letters. Measured on device by comparing ascender strokes, an equal
+          // size ran 1.4–1.7x the surrounding text.
+          //
+          // 0.6 is that correction. It used to be a flat 17.sp against a 28.sp
+          // page reference — the same ratio, but pinned to the screen rather
+          // than to the page, so it stayed phone-sized on a tablet while the
+          // Quran text around it grew.
+          style: GoogleFonts.amiri(
+            fontSize: textSize * 0.6,
+            color: color,
+            height: 1.4,
+            fontWeight: bold ? FontWeight.w700 : FontWeight.w400,
+          ),
         ),
       ),
     );

@@ -38,7 +38,13 @@ class WQuranSummaryCard extends StatelessWidget {
               SizedBox(height: 12.h),
               Text(value, style: AppTextStyles.ink14W700.copyWith(color: color)),
               SizedBox(height: 5.h),
-              Text(label, style: AppTextStyles.ink12W400.copyWith(color: Colors.grey[600])),
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 4),
+                child: FittedBox(
+                  fit: BoxFit.scaleDown,
+                  child: Text(label, style: AppTextStyles.ink12W400.copyWith(color: Colors.grey[600])),
+                ),
+              ),
             ],
           ),
         ),

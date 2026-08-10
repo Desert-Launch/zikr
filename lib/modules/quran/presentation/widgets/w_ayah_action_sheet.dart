@@ -8,6 +8,7 @@ import 'package:localize_and_translate/localize_and_translate.dart';
 import 'package:quran/core/services/routes/routes_names.dart';
 import 'package:quran/core/theme/app_colors.dart';
 import 'package:quran/core/theme/brand_colors.dart';
+import 'package:quran/core/utils/helper/app_alert.dart';
 import 'package:quran/modules/quran/domain/entities/param_ayah_ref.dart';
 import 'package:quran/modules/quran/presentation/cubits/cb_audio_player.dart';
 import 'package:quran/modules/quran/presentation/cubits/cb_mushaf_reader.dart';
@@ -138,8 +139,8 @@ class _SheetBody extends StatelessWidget {
               onTap: _openTafsir,
             ),
             _Action(
-              icon: Icons.bookmark_add_outlined,
-              label: 'reader_bookmark'.tr(),
+              icon: Icons.bookmark_outline_rounded,
+              label: 'reader_bookmarks'.tr(),
               onTap: _bookmark,
             ),
             _Action(
@@ -216,8 +217,9 @@ class _SheetBody extends StatelessWidget {
     // The picker opens pre-marked with the ayah's current colour, so it doubles
     // as a toggle: tapping that colour un-bookmarks. Dismissing changes nothing.
     final cubit = BlocProvider.of<CBMushafReader>(context);
-    await toggleAyahBookmark(context, ref, cubit);
-    cubit.clearSelection();
+    // `false` means the full bookmarks list took over and already navigated —
+    // clearing here would drop the highlight it just placed.
+    if (await toggleAyahBookmark(context, ref, cubit)) cubit.clearSelection();
   }
 
   Future<void> _copy(BuildContext context) async {
@@ -225,10 +227,8 @@ class _SheetBody extends StatelessWidget {
     await Clipboard.setData(
       ClipboardData(text: '$text\n(${ref.surah}:${ref.ayah})'),
     );
+    AppAlert.success('reader_copy'.tr());
     if (!context.mounted) return;
-    ScaffoldMessenger.of(
-      context,
-    ).showSnackBar(SnackBar(content: Text('reader_copy'.tr())));
     BlocProvider.of<CBMushafReader>(context).clearSelection();
   }
 

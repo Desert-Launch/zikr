@@ -33,6 +33,10 @@ class RImplBookmarks implements RBookmarks {
         folder: folder ?? existing?.folder,
         colorHex: colorHex,
       );
+      // A colour holds exactly one verse. The picker asks the user before
+      // reassigning one; this is the enforcement, so no entry point can leave
+      // two verses sharing a colour.
+      await _releaseColor(colorHex, keepId: bookmark.id);
       await _local.putBookmark(bookmark);
       return Right(bookmark);
     } catch (e, st) {
@@ -74,6 +78,29 @@ class RImplBookmarks implements RBookmarks {
       );
       return Left(Failure.cacheFailure(message: e.toString()));
     }
+  }
+
+  /// Deletes every bookmark carrying [colorHex] except [keepId], so the colour
+  /// is free for its new owner. Colourless (legacy) bookmarks carry no colour
+  /// to release and are left alone.
+  Future<void> _releaseColor(String? colorHex, {required String keepId}) async {
+    final wanted = _colorKey(colorHex);
+    if (wanted == null) return;
+    for (final other in _local.listBookmarks()) {
+      if (other.id == keepId) continue;
+      if (_colorKey(other.colorHex) == wanted) {
+        await _local.deleteBookmark(other.id);
+      }
+    }
+  }
+
+  /// Normalised colour so `#EF4444`, `ef4444` and `FFEF4444` all compare equal.
+  /// `null` for empty/absent values — those aren't a claim on any colour.
+  String? _colorKey(String? hex) {
+    if (hex == null || hex.trim().isEmpty) return null;
+    var h = hex.replaceFirst('#', '').trim().toUpperCase();
+    if (h.length == 8) h = h.substring(2);
+    return h;
   }
 
   /// The stored bookmark on [ref], or `null`. Legacy installs may hold more

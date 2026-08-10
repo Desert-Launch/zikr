@@ -1,5 +1,6 @@
 import 'package:quran/modules/quran/data/sources/local/box_reader_settings.dart';
 import 'package:quran/modules/quran/domain/entities/e_quran_font_mode.dart';
+import 'package:quran/modules/quran/domain/entities/e_reader_scroll_mode.dart';
 import 'package:quran/modules/quran/domain/entities/e_reader_theme.dart';
 
 /// Reads/writes reader display preferences from the local box.
@@ -8,8 +9,11 @@ class DSLocalReaderSettings {
   final BoxReaderSettings _box;
 
   /// Allowed text-size range, mirrored in [CBReaderSettings] and the reader.
+  /// A value persisted by an older build outside this range is clamped on read,
+  /// so lowering the ceiling cannot strand a reader at a size the slider can no
+  /// longer express.
   static const double minScale = 0.8;
-  static const double maxScale = 2.0;
+  static const double maxScale = 1.6;
 
   Future<void> init() => _box.init();
 
@@ -35,4 +39,16 @@ class DSLocalReaderSettings {
         BoxReaderSettings.fontScaleKey,
         scale.clamp(minScale, maxScale).toString(),
       );
+
+  bool getFontBold() => _box.box.get(BoxReaderSettings.fontBoldKey) == 'true';
+
+  Future<void> setFontBold(bool bold) =>
+      _box.box.put(BoxReaderSettings.fontBoldKey, bold.toString());
+
+  EReaderScrollMode getScrollMode() => EReaderScrollModeX.fromStorage(
+        _box.box.get(BoxReaderSettings.scrollModeKey),
+      );
+
+  Future<void> setScrollMode(EReaderScrollMode mode) =>
+      _box.box.put(BoxReaderSettings.scrollModeKey, mode.storageKey);
 }

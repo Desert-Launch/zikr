@@ -52,12 +52,14 @@ import 'package:quran/modules/quran/domain/usecases/uc_get_all_surahs_status.dar
 import 'package:quran/modules/quran/domain/usecases/uc_get_ayah_tafsir.dart';
 import 'package:quran/modules/quran/domain/usecases/uc_get_bookmarks.dart';
 import 'package:quran/modules/quran/domain/usecases/uc_get_downloaded_tafsirs.dart';
+import 'package:quran/modules/quran/domain/usecases/uc_get_font_bold.dart';
 import 'package:quran/modules/quran/domain/usecases/uc_get_font_mode.dart';
 import 'package:quran/modules/quran/domain/usecases/uc_get_font_scale.dart';
 import 'package:quran/modules/quran/domain/usecases/uc_get_juz_index.dart';
 import 'package:quran/modules/quran/domain/usecases/uc_get_page_layout.dart';
 import 'package:quran/modules/quran/domain/usecases/uc_get_playback_prefs.dart';
 import 'package:quran/modules/quran/domain/usecases/uc_get_qpc_v4_page.dart';
+import 'package:quran/modules/quran/domain/usecases/uc_get_reader_scroll_mode.dart';
 import 'package:quran/modules/quran/domain/usecases/uc_get_reader_theme.dart';
 import 'package:quran/modules/quran/domain/usecases/uc_get_reciter_stats.dart';
 import 'package:quran/modules/quran/domain/usecases/uc_get_reciters.dart';
@@ -74,8 +76,10 @@ import 'package:quran/modules/quran/domain/usecases/uc_save_last_read.dart';
 import 'package:quran/modules/quran/domain/usecases/uc_save_playback_prefs.dart';
 import 'package:quran/modules/quran/domain/usecases/uc_search_quran.dart';
 import 'package:quran/modules/quran/domain/usecases/uc_set_active_reciter.dart';
+import 'package:quran/modules/quran/domain/usecases/uc_set_font_bold.dart';
 import 'package:quran/modules/quran/domain/usecases/uc_set_font_mode.dart';
 import 'package:quran/modules/quran/domain/usecases/uc_set_font_scale.dart';
+import 'package:quran/modules/quran/domain/usecases/uc_set_reader_scroll_mode.dart';
 import 'package:quran/modules/quran/domain/usecases/uc_set_reader_theme.dart';
 import 'package:quran/modules/quran/presentation/cubits/cb_audio_player.dart';
 import 'package:quran/modules/quran/presentation/cubits/cb_bookmarks.dart';
@@ -179,6 +183,10 @@ class QuranModule extends Module {
     i.add<UCSetReaderTheme>(() => UCSetReaderTheme(i.get<RReaderSettings>()));
     i.add<UCGetFontScale>(() => UCGetFontScale(i.get<RReaderSettings>()));
     i.add<UCSetFontScale>(() => UCSetFontScale(i.get<RReaderSettings>()));
+    i.add<UCGetFontBold>(() => UCGetFontBold(i.get<RReaderSettings>()));
+    i.add<UCSetFontBold>(() => UCSetFontBold(i.get<RReaderSettings>()));
+    i.add<UCGetReaderScrollMode>(() => UCGetReaderScrollMode(i.get<RReaderSettings>()));
+    i.add<UCSetReaderScrollMode>(() => UCSetReaderScrollMode(i.get<RReaderSettings>()));
     i.add<UCGetPlaybackPrefs>(() => UCGetPlaybackPrefs(i.get<RPlaybackPrefs>()));
     i.add<UCSavePlaybackPrefs>(() => UCSavePlaybackPrefs(i.get<RPlaybackPrefs>()));
     i.add<UCGetTafsirCatalog>(() => UCGetTafsirCatalog(i.get<RTafsir>()));
@@ -216,6 +224,10 @@ class QuranModule extends Module {
         i.get<UCSetReaderTheme>(),
         i.get<UCGetFontScale>(),
         i.get<UCSetFontScale>(),
+        i.get<UCGetFontBold>(),
+        i.get<UCSetFontBold>(),
+        i.get<UCGetReaderScrollMode>(),
+        i.get<UCSetReaderScrollMode>(),
       ),
     );
 

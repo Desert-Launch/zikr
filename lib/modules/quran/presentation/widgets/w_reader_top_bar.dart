@@ -89,35 +89,47 @@ class _Bar extends StatelessWidget {
                   onPressed: () =>
                       BlocProvider.of<CBMushafReader>(context).toggleSearch(),
                 ),
+
                 Expanded(
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      Text(
-                        vm.surahName.isEmpty ? '—' : vm.surahName,
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                        textAlign: TextAlign.center,
-                        style: GoogleFonts.amiri(
-                          fontSize: 15.sp,
-                          fontWeight: FontWeight.w700,
-                          color: Colors.white,
-                          height: 1.1,
+                  child: InkWell(
+                    onTap: () =>
+                        WQuranIndexSheet.show(context, onOpenPage: onOpenPage),
+                    // Plain Column, NOT another Expanded. Expanded is a
+                    // ParentDataWidget: it only means anything as a direct
+                    // child of a Flex, and this slot belongs to an InkWell.
+                    // The Expanded just above already claims the Row's spare
+                    // width — the inner one only threw "Incorrect use of
+                    // ParentDataWidget" on every build of the reader.
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Text(
+                          vm.surahName.isEmpty ? '—' : vm.surahName,
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          textAlign: TextAlign.center,
+                          style: GoogleFonts.amiri(
+                            fontSize: 15.sp,
+                            fontWeight: FontWeight.w700,
+                            color: Colors.white,
+                            height: 1.1,
+                          ),
                         ),
-                      ),
-                      Text(
-                        'الجزء ${vm.juz}  •  صفحة ${vm.page}',
-                        textAlign: TextAlign.center,
-                        style: TextStyle(
-                          fontSize: 10.sp,
-                          color: Colors.white.withValues(alpha: 0.75),
-                          fontWeight: FontWeight.w500,
-                          height: 1.2,
+                        Text(
+                          'الجزء ${vm.juz}  •  صفحة ${vm.page}',
+                          textAlign: TextAlign.center,
+                          style: TextStyle(
+                            fontSize: 10.sp,
+                            color: Colors.white.withValues(alpha: 0.75),
+                            fontWeight: FontWeight.w500,
+                            height: 1.2,
+                          ),
                         ),
-                      ),
-                    ],
+                      ],
+                    ),
                   ),
                 ),
+
                 // Opens the index as a popup over the reader rather than
                 // navigating away — same content, page stays behind it.
                 _BarIcon(

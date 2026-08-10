@@ -8,6 +8,9 @@ abstract class RBookmarks {
   /// Upserts the bookmark for [ref]: an ayah has at most one bookmark, so
   /// saving an already-bookmarked verse recolours it in place instead of
   /// stacking a duplicate entry.
+  ///
+  /// The reverse also holds — a colour holds at most one verse. Saving with a
+  /// [colorHex] another verse already carries un-bookmarks that verse.
   Future<Either<Failure, MBookmark>> save({
     required ParamAyahRef ref,
     String? note,

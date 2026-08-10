@@ -119,14 +119,20 @@ class DSLocalQuran {
   /// the diacritic-stripped text (a closer proxy for rendered width than the raw
   /// Uthmani string, since harakat add glyphs but little width). When no
   /// candidate fits within the attempt budget, the primary day-pick is used.
+  ///
+  /// [seed] shifts the pick away from the day's canonical verse — `0` is the
+  /// verse of the day, any other value is a different (still deterministic)
+  /// ayah. Used by the home card's manual "another verse" refresh.
   Future<({ParamAyahRef ref, MSurah surah, String text})> dailyVerse(
     DateTime day, {
     int maxChars = 80,
     int minChars = 10,
+    int seed = 0,
   }) async {
     final surahs = await loadSurahs();
     final total = surahs.fold<int>(0, (sum, s) => sum + s.totalAyah);
-    final dayNumber = DateTime.utc(day.year, day.month, day.day).difference(DateTime.utc(1970)).inDays;
+    final dayNumber =
+        DateTime.utc(day.year, day.month, day.day).difference(DateTime.utc(1970)).inDays + seed * 104729;
 
     // Resolve a global 0-based ayah index to its surah + 1-based ayah number.
     ({MSurah surah, int ayah}) locate(int globalIndex) {

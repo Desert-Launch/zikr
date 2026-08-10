@@ -7,19 +7,26 @@ import 'package:quran/modules/quran/domain/entities/param_ayah_ref.dart';
 import 'package:quran/modules/quran/presentation/widgets/w_ayah_highlight_text.dart';
 import 'package:quran/modules/quran/presentation/widgets/w_bookmark_color_picker.dart';
 
-/// One printed Mushaf line, sized to the page.
+/// One printed Mushaf line, set at the page's glyph size.
 ///
 /// The QPC-V4 layout is fixed — the words on a line are decided by the printed
-/// Mushaf, not by wrapping — so the line is measured and scaled to exactly fill
-/// the page width. That fitted size is the 100% reference; [fontScale] then
-/// multiplies it, which is what makes the reader's text-size control real:
+/// Mushaf, not by wrapping — so the line cannot be fitted to the page on its
+/// own. Instead the *page* solves for one glyph size at which its widest
+/// justified line spans the text column exactly (see `printSizeForPage`), hands
+/// that down as [baseSize], and every line on the page is set at it. That is
+/// what the printed Mushaf does: one size per page, full lines reaching both
+/// margins and centred lines falling short — and it is what makes the page fill
+/// the width on a tablet as well as on a phone.
 ///
-/// - `1.0` → the line fills the width exactly (one row, the printed look).
-/// - `<1.0` → smaller glyphs, the line no longer reaches the edges.
-/// - `>1.0` → bigger glyphs; the line is wider than the page so it wraps onto a
-///   second row and the page grows taller (the page scrolls — see
-///   [WMushafV4Page]). The Mushaf's own line breaks are preserved: each printed
-///   line is still one widget.
+/// [fontScale] then multiplies it, which is what makes the reader's text-size
+/// control real:
+///
+/// - `1.0` → the printed look, every line on one row.
+/// - `<1.0` → smaller glyphs, the lines no longer reach the margins.
+///
+/// Above `1.0` this widget is not used at all: the line would be wider than the
+/// page and wrap, stranding its last word on a row of its own, so the page
+/// switches to [WMushafPageReflow]. See [kBigTextThreshold].
 ///
 /// Taps on any word select the whole ayah; a long press opens the bookmark
 /// colour picker for it.
@@ -27,6 +34,7 @@ class WMushafLine extends StatefulWidget {
   const WMushafLine({
     super.key,
     required this.block,
+    required this.baseSize,
     required this.selected,
     required this.playing,
     required this.bookmarks,
@@ -35,11 +43,15 @@ class WMushafLine extends StatefulWidget {
     required this.markerColor,
     required this.brightness,
     required this.fontScale,
+    required this.bold,
     required this.onSelect,
     required this.onLongPress,
   });
 
   final MQpcV4LineBlock block;
+
+  /// The page's printed glyph size at 100%, solved once by the page renderer.
+  final double baseSize;
   final ParamAyahRef? selected;
   final ParamAyahRef? playing;
   final Map<String, String?> bookmarks;
@@ -48,15 +60,68 @@ class WMushafLine extends StatefulWidget {
   final Color markerColor;
   final Brightness brightness;
   final double fontScale;
+
+  /// Heavier glyph weight, from the reader's text settings.
+  final bool bold;
   final ValueChanged<ParamAyahRef> onSelect;
   final ValueChanged<ParamAyahRef> onLongPress;
 
-  /// Intrinsic glyph size the line is measured at before being fitted to the
-  /// page width. Only the ratio matters — text width scales linearly with it.
-  static double get referenceSize => 28.sp;
+  /// Arbitrary size the page's lines are measured at before being solved for
+  /// the size that fills the text column. Only the ratio matters — text width
+  /// scales linearly with it — so this is a measuring stick, never a rendered
+  /// size, and it must NOT track the screen: a device-dependent stick would
+  /// cancel out of the ratio anyway.
+  static const double measureSize = 28;
 
   @override
   State<WMushafLine> createState() => _WMushafLineState();
+}
+
+/// Natural (unwrapped) width of the printed line [block] at [size], with the
+/// ayah-number rosettes it carries.
+///
+/// Mirrors what [WMushafLine] actually renders: the word glyph runs in
+/// [fontFamily] and each ayah's closing rosette in `ayahNumberV4`. The U+200B
+/// joiners are omitted — they are zero-width by definition, so they cannot move
+/// the total — and colour, selection and the fake-bold shadows are omitted too
+/// because none of them touch advance widths.
+double mushafLineNaturalWidth(
+  MQpcV4LineBlock block, {
+  required String fontFamily,
+  required double size,
+}) {
+  final glyphStyle = TextStyle(
+    fontFamily: fontFamily,
+    fontSize: size,
+    height: 1,
+    fontWeight: FontWeight.w500,
+  );
+  final markerStyle = TextStyle(
+    fontFamily: 'ayahNumberV4',
+    fontSize: size,
+    height: 1,
+  );
+
+  final spans = <InlineSpan>[];
+  for (final seg in block.segments) {
+    spans.add(TextSpan(text: seg.glyphs, style: glyphStyle));
+    if (seg.isAyahEnd) {
+      spans.add(
+        TextSpan(
+          text: '${arabicAyahDigits(seg.ayah)}  ',
+          style: markerStyle,
+        ),
+      );
+    }
+  }
+  if (spans.isEmpty) return 0;
+
+  final painter = TextPainter(
+    text: TextSpan(children: spans),
+    textDirection: TextDirection.rtl,
+    textScaler: TextScaler.noScaling,
+  )..layout();
+  return painter.width;
 }
 
 /// U+200B ZERO WIDTH SPACE — a zero-width, shaping-transparent line-break
@@ -64,6 +129,45 @@ class WMushafLine extends StatefulWidget {
 ///
 /// Shared with `WMushafPageReflow` so both layouts break in the same places.
 const String kQpcWordBreak = '\u200B';
+
+/// How far the highlight pill grows above and below the measured text box, as a
+/// fraction of the font size. Shared with `WMushafPageReflow` so a highlighted
+/// ayah reads the same in both layouts.
+///
+/// The pair is lopsided because the box it inflates is: it runs from the font's
+/// ascent to its descent, and the QPC glyphs do not sit centred in it. Arabic
+/// marks reach far above the ascent, so the top needs real padding to cover
+/// them; the descent already sits below the tails, so the bottom needs almost
+/// none — and any it gets is spent on the gap to the next printed line.
+const double kPillPadTop = 0.40;
+const double kPillPadBottom = 0.08;
+
+/// Fake-bold for the QPC page glyphs, as a list of zero-blur shadows.
+///
+/// `fontWeight` cannot do this job here. The page fonts ship a single weight and
+/// are registered at runtime through `FontLoader`, so a request for w800 has no
+/// heavier face to resolve to and Skia does not synthesise one — measured on
+/// device, w500 and w800 render byte-identical pages. Painting the glyph four
+/// more times, offset a hair in each direction and in its own colour, dilates
+/// the silhouette instead, which is what "bolder" actually looks like.
+///
+/// Returns `null` when off so the style keeps its normal single-draw path.
+/// The offset is a fraction of the font size, so the weight holds its
+/// proportions across the whole text-size range.
+List<Shadow>? emboldenShadows({
+  required bool bold,
+  required Color color,
+  required double size,
+}) {
+  if (!bold) return null;
+  final d = size * 0.018;
+  return [
+    Shadow(color: color, offset: Offset(d, 0)),
+    Shadow(color: color, offset: Offset(-d, 0)),
+    Shadow(color: color, offset: Offset(0, d)),
+    Shadow(color: color, offset: Offset(0, -d)),
+  ];
+}
 
 /// Line height for a given text [scale].
 ///
@@ -84,13 +188,6 @@ class _WMushafLineState extends State<WMushafLine> {
   TextSpan? _painted;
   double _paintedWidth = 0;
   TextAlign _paintedAlign = TextAlign.center;
-
-  /// Cached natural width of the line at the reference size. It depends only on
-  /// the glyphs and the font family — not on colour, selection or scale — so it
-  /// survives the rebuilds those trigger and the measuring layout runs once per
-  /// font change instead of once per frame.
-  double? _naturalWidth;
-  String? _measuredFamily;
 
   @override
   void dispose() {
@@ -133,6 +230,11 @@ class _WMushafLineState extends State<WMushafLine> {
       height: lineHeight,
       color: widget.baseColor,
       fontWeight: FontWeight.w500,
+      shadows: emboldenShadows(
+        bold: widget.bold,
+        color: widget.baseColor,
+        size: size,
+      ),
     );
     final markerStyle = TextStyle(
       fontFamily: 'ayahNumberV4',
@@ -219,20 +321,6 @@ class _WMushafLineState extends State<WMushafLine> {
     );
   }
 
-  /// Natural (unwrapped) width of the line at [WMushafLine.referenceSize].
-  double _naturalWidthAt(List<_AyahGroup> groups, double reference) {
-    final cached = _naturalWidth;
-    if (cached != null && _measuredFamily == widget.fontFamily) return cached;
-    final painter = TextPainter(
-      text: _build(groups, reference, 1).span,
-      textDirection: TextDirection.rtl,
-      textScaler: TextScaler.noScaling,
-    )..layout();
-    _naturalWidth = painter.width;
-    _measuredFamily = widget.fontFamily;
-    return painter.width;
-  }
-
   /// Maps a long press at [local] back to the ayah under the finger.
   void _handleLongPress(Offset local) {
     final span = _painted;
@@ -243,7 +331,12 @@ class _WMushafLineState extends State<WMushafLine> {
       textAlign: _paintedAlign,
       textDirection: TextDirection.rtl,
       textScaler: TextScaler.noScaling,
-    )..layout(maxWidth: _paintedWidth);
+      // The page stretches every line to its full width, so the rendered text
+      // is centred across the page. Without a matching minWidth this painter
+      // would collapse to the text's own width and place a short line hard
+      // against the start, mapping presses on a surah's last line to the
+      // wrong verse.
+    )..layout(minWidth: _paintedWidth, maxWidth: _paintedWidth);
     final offset = painter.getPositionForOffset(local).offset;
     for (final range in _ranges) {
       if (offset >= range.start && offset < range.end) {
@@ -258,24 +351,18 @@ class _WMushafLineState extends State<WMushafLine> {
   @override
   Widget build(BuildContext context) {
     final groups = _groups();
-    final reference = WMushafLine.referenceSize;
 
     return LayoutBuilder(
       builder: (context, constraints) {
         final maxWidth = constraints.maxWidth;
-        // Measure once at the reference size, then solve for the size that fits
-        // the page width. Never upscale past the reference — short lines (surah
-        // openers, the last line of a surah) keep their printed proportions
-        // instead of being stretched across the page.
-        // Solve for the size that makes this line span the page width exactly —
-        // that is 100%, the printed look — then apply the reader's scale on top.
-        final natural = _naturalWidthAt(groups, reference);
-        final fit = natural <= 0
-            ? 1.0
-            // Short lines (surah openers, a surah's last line) are not stretched
-            // across the page; they keep their printed proportions.
-            : (maxWidth * 0.995 / natural).clamp(0.0, 1.0);
-        final size = reference * fit * widget.fontScale;
+        // One size for the whole page, solved by the page renderer so its widest
+        // justified line spans the text column exactly — the printed look at
+        // 100% — with the reader's scale applied on top. Fitting each line on
+        // its own instead would either stretch a surah's closing line across the
+        // page, or (the bug this replaced) refuse to grow any line past a fixed
+        // reference and leave a tablet reading with phone-sized text between two
+        // fat margins.
+        final size = widget.baseSize * widget.fontScale;
 
         // Line height opens up with the text size: at 100% it stays 1.0 (the
         // tight printed spacing), and grows from there so the extra rows a
@@ -296,7 +383,20 @@ class _WMushafLineState extends State<WMushafLine> {
         // height, so cancel that out of the pill padding — otherwise the tint
         // would balloon past the glyphs as the text size goes up.
         final leading = size * (lineHeight - 1) / 2;
-        final pillPad = (size * 0.36 - leading).clamp(0.0, size * 0.36);
+        // Asymmetric on purpose. The measured box spans the font's ascent to
+        // its descent, and on a printed Mushaf line those two edges sit very
+        // differently against the ink: the tashkeel climb well above the
+        // ascent, while the descent already clears the tails underneath. An
+        // equal pad on both edges therefore left the marks on the pill's very
+        // edge and hung an empty skirt below that reached into the next line.
+        final padTop = (size * kPillPadTop - leading).clamp(
+          0.0,
+          size * kPillPadTop,
+        );
+        final padBottom = (size * kPillPadBottom - leading).clamp(
+          0.0,
+          size * kPillPadBottom,
+        );
 
         return GestureDetector(
           behavior: HitTestBehavior.deferToChild,
@@ -308,7 +408,8 @@ class _WMushafLineState extends State<WMushafLine> {
               ranges: built.highlights,
               maxWidth: maxWidth,
               // Grow the pill above/below the glyphs without touching line height.
-              pad: pillPad,
+              padTop: padTop,
+              padBottom: padBottom,
               textAlign: align,
             ),
           ),

@@ -10,12 +10,7 @@ import 'package:quran/modules/quran/presentation/cubits/s_audio_player.dart';
 /// Reused by the floating [WMiniPlayer] and embedded at the bottom of the ayah
 /// action sheet, so the same controls appear wherever playback is shown.
 class WPlayerBar extends StatelessWidget {
-  const WPlayerBar({
-    super.key,
-    required this.state,
-    required this.cubit,
-    this.onStop,
-  });
+  const WPlayerBar({super.key, required this.state, required this.cubit, this.onStop});
 
   final SAudioPlayer state;
   final CBAudioPlayer cubit;
@@ -28,9 +23,7 @@ class WPlayerBar extends StatelessWidget {
     final ayah = state.currentAyah;
     final loading = state.isLoadingLike;
     final maxMs = state.duration.inMilliseconds;
-    final progress = maxMs <= 0
-        ? 0.0
-        : (state.position.inMilliseconds / maxMs).clamp(0.0, 1.0);
+    final progress = maxMs <= 0 ? 0.0 : (state.position.inMilliseconds / maxMs).clamp(0.0, 1.0);
     return Row(
       children: [
         // Artwork — shows a spinner while the track is loading/buffering.
@@ -50,10 +43,7 @@ class WPlayerBar extends StatelessWidget {
               ? SizedBox(
                   width: 20.r,
                   height: 20.r,
-                  child: const CircularProgressIndicator(
-                    strokeWidth: 2,
-                    color: Colors.white,
-                  ),
+                  child: const CircularProgressIndicator(strokeWidth: 2, color: Colors.white),
                 )
               : Icon(Icons.headphones_rounded, color: Colors.white, size: 22.r),
         ),
@@ -86,8 +76,8 @@ class WPlayerBar extends StatelessWidget {
         IconButton(
           visualDensity: VisualDensity.compact,
           color: context.brand.onSurface,
-          icon: const Icon(Icons.skip_previous_rounded),
-          onPressed: cubit.previous,
+          icon: const Icon(Icons.skip_next_rounded),
+          onPressed: cubit.next,
         ),
         // Primary play/pause — a filled disc so the main action stands out.
         GestureDetector(
@@ -114,11 +104,12 @@ class WPlayerBar extends StatelessWidget {
             ),
           ),
         ),
+
         IconButton(
           visualDensity: VisualDensity.compact,
           color: context.brand.onSurface,
-          icon: const Icon(Icons.skip_next_rounded),
-          onPressed: cubit.next,
+          icon: const Icon(Icons.skip_previous_rounded),
+          onPressed: cubit.previous,
         ),
         if (onStop != null)
           IconButton(

@@ -11,10 +11,47 @@ import 'package:quran/modules/quran/presentation/widgets/w_mushaf_line.dart';
 /// At or below this the page renders line-by-line through [WMushafLine] and is
 /// pixel-identical to the printed Mushaf. The cut-off is deliberately a single
 /// constant so it can be re-tuned in one place.
-const double kBigTextThreshold = 1.5;
+///
+/// It sits at 1.0 — the printed size — because that is precisely where the
+/// per-line layout stops working. Each printed line is fitted to span the page
+/// exactly at 100%, so *any* enlargement pushes it past the width and it wraps,
+/// dropping its last word or two onto a row of their own. At 120% that happened
+/// on nearly every line and the page read as a column of orphans. Reflow has no
+/// such cliff, so everything above print size goes through it.
+const double kBigTextThreshold = 1.0;
 
 /// Whether [scale] should use the reflowed big-text layout.
-bool isBigTextScale(double scale) => scale > kBigTextThreshold;
+///
+/// The epsilon keeps a continuous slider that lands a hair over 1.0 (or a value
+/// that survived a float round-trip through storage) on the printed layout,
+/// where it belongs — the difference is invisible, the layout switch is not.
+bool isBigTextScale(double scale) => scale > kBigTextThreshold + 0.005;
+
+/// Word separator in the reflowed layout: a real U+0020 SPACE, not the U+200B
+/// the printed layout uses.
+///
+/// The printed layout needs no separator width at all — a QPC line is a
+/// pre-shaped run whose spacing is baked into the glyphs *for the width that
+/// line was set at*, and the reader reproduces it by scaling the whole line.
+/// Reflow throws that away: it breaks the run at word boundaries and re-packs
+/// the words to a new width, so whatever sits between two words is the only
+/// spacing there is.
+///
+/// It has to be real whitespace because that is the only thing justification
+/// can stretch — Flutter distributes a row's slack across its whitespace
+/// clusters, and U+200B is category Cf, so a row joined with it can never be
+/// justified and always ends short of the margin. A space is safe here where it
+/// would not be inside a word: the QPC glyphs are Private Use codepoints with no
+/// Arabic joining behaviour, so nothing either side of it reshapes.
+const String _kReflowWordSpace = ' ';
+
+/// Extra width added to each word space, as a fraction of the font size.
+///
+/// This is the floor, not the final gap: justification opens the spaces further
+/// to reach the margin. It only shows as-is on a run's last row, which is the
+/// one row justification leaves alone — so it is tuned to match what the
+/// justified rows above it settle at.
+const double _kExtraWordSpacing = 0.06;
 
 /// Line height used by the reflowed layout.
 ///
@@ -54,6 +91,7 @@ class WMushafPageReflow extends StatefulWidget {
   const WMushafPageReflow({
     super.key,
     required this.blocks,
+    required this.baseSize,
     required this.selected,
     required this.playing,
     required this.bookmarks,
@@ -62,12 +100,19 @@ class WMushafPageReflow extends StatefulWidget {
     required this.markerColor,
     required this.brightness,
     required this.fontScale,
+    required this.bold,
     required this.onSelect,
     required this.onLongPress,
   });
 
   /// The run's printed lines, in reading order. Their boundaries are dissolved.
   final List<MQpcV4LineBlock> blocks;
+
+  /// The page's printed glyph size at 100% — the same one [WMushafLine] is set
+  /// at, so crossing [kBigTextThreshold] changes the line breaking and nothing
+  /// else. Deriving it from a fixed reference instead made the text jump a size
+  /// at the threshold on any screen the page had to grow to fill.
+  final double baseSize;
   final ParamAyahRef? selected;
   final ParamAyahRef? playing;
   final Map<String, String?> bookmarks;
@@ -76,6 +121,9 @@ class WMushafPageReflow extends StatefulWidget {
   final Color markerColor;
   final Brightness brightness;
   final double fontScale;
+
+  /// Heavier glyph weight, from the reader's text settings.
+  final bool bold;
   final ValueChanged<ParamAyahRef> onSelect;
   final ValueChanged<ParamAyahRef> onLongPress;
 
@@ -94,9 +142,19 @@ class _WMushafPageReflowState extends State<WMushafPageReflow> {
   TextSpan? _painted;
   double _paintedWidth = 0;
 
-  /// Always right-aligned in RTL: rows fill from the page edge, and only the
-  /// run's last row is allowed to fall short.
-  static const TextAlign _align = TextAlign.start;
+  /// Justified, like the printed Mushaf.
+  ///
+  /// Wrapping alone only guarantees a row does not *exceed* the width; where it
+  /// actually ends is wherever the next word stopped fitting, so the rows come
+  /// out ragged by up to a word. Justifying spreads each row's leftover width
+  /// across its spaces instead, so every row reaches both margins — which is
+  /// what the printed page does, and the reason the separator has to be real
+  /// whitespace (see [_kReflowWordSpace]).
+  ///
+  /// The one row this leaves alone is the last of each run, which keeps its
+  /// natural spacing and sits against the start edge — the same thing a printed
+  /// page does with the line that ends a surah.
+  static const TextAlign _align = TextAlign.justify;
 
   @override
   void dispose() {
@@ -142,12 +200,24 @@ class _WMushafPageReflowState extends State<WMushafPageReflow> {
       height: _reflowLineHeight,
       color: widget.baseColor,
       fontWeight: FontWeight.w500,
+      shadows: emboldenShadows(
+        bold: widget.bold,
+        color: widget.baseColor,
+        size: size,
+      ),
     );
     final markerStyle = TextStyle(
       fontFamily: 'ayahNumberV4',
       fontSize: size,
       height: _reflowLineHeight,
       color: widget.markerColor,
+    );
+    // The word space. `wordSpacing` widens U+0020 specifically, so it can sit on
+    // the same style the words use without touching the letters inside them —
+    // unlike `letterSpacing`, which would push every glyph of every word apart
+    // and take the Arabic script's joining with it.
+    final spacerStyle = glyphStyle.copyWith(
+      wordSpacing: size * _kExtraWordSpacing,
     );
 
     final spans = <InlineSpan>[];
@@ -156,13 +226,6 @@ class _WMushafPageReflowState extends State<WMushafPageReflow> {
     var offset = 0;
 
     for (final group in groups) {
-      // Join the words with U+200B ZERO WIDTH SPACE — never a real space. QPC
-      // glyph runs are pre-shaped PUA runs with the spacing baked in, so a space
-      // would corrupt them; U+200B adds a zero-width break opportunity at every
-      // word boundary without touching shaping or advance widths. Merging the
-      // lines is exactly what makes those boundaries matter here: the wrap can
-      // now land anywhere in the run, not just inside one printed line.
-      final glyphText = group.segments.map((s) => s.glyphs).join(kQpcWordBreak);
       MQpcV4Segment? endSeg;
       for (final s in group.segments) {
         if (s.isAyahEnd) {
@@ -175,11 +238,45 @@ class _WMushafPageReflowState extends State<WMushafPageReflow> {
       // deepest span at that offset, so a parent carrying only `children` would
       // never receive it.
       final recognizer = _recogniser(group.ref);
-      final children = <InlineSpan>[
-        TextSpan(text: glyphText, style: glyphStyle, recognizer: recognizer),
-      ];
-      var len = glyphText.length;
+      final children = <InlineSpan>[];
+      var len = 0;
+
+      // One span per word, separated by U+200B ZERO WIDTH SPACE — never a real
+      // space. QPC glyph runs are pre-shaped PUA runs with the spacing baked in,
+      // so a space would corrupt them; U+200B is a break opportunity Unicode
+      // classes as transparent (`T` in ArabicShaping.txt), so it neither joins
+      // nor separates the letters either side of it. Merging the printed lines
+      // is what makes those boundaries matter here — the wrap can now land
+      // anywhere in the run, not just inside one printed line — and the joiner
+      // carries the word gap the discarded printed spacing used to provide.
+      for (var i = 0; i < group.segments.length; i++) {
+        final word = group.segments[i].glyphs;
+        children.add(
+          TextSpan(text: word, style: glyphStyle, recognizer: recognizer),
+        );
+        len += word.length;
+        if (i < group.segments.length - 1) {
+          children.add(
+            TextSpan(
+              text: _kReflowWordSpace,
+              style: spacerStyle,
+              recognizer: recognizer,
+            ),
+          );
+          len += _kReflowWordSpace.length;
+        }
+      }
+
       if (endSeg != null) {
+        // The rosette gets the same gap in front of it as any other word.
+        children.add(
+          TextSpan(
+            text: _kReflowWordSpace,
+            style: spacerStyle,
+            recognizer: recognizer,
+          ),
+        );
+        len += _kReflowWordSpace.length;
         final markerText = '${arabicAyahDigits(endSeg.ayah)}\u202F\u202F';
         children.add(
           TextSpan(text: markerText, style: markerStyle, recognizer: recognizer),
@@ -203,8 +300,8 @@ class _WMushafPageReflowState extends State<WMushafPageReflow> {
 
       // A break opportunity at the seam between two verses too.
       if (group != groups.last) {
-        children.add(TextSpan(text: kQpcWordBreak, style: glyphStyle));
-        len += kQpcWordBreak.length;
+        children.add(TextSpan(text: _kReflowWordSpace, style: spacerStyle));
+        len += _kReflowWordSpace.length;
       }
 
       spans.add(TextSpan(children: children));
@@ -229,7 +326,9 @@ class _WMushafPageReflowState extends State<WMushafPageReflow> {
       textAlign: _align,
       textDirection: TextDirection.rtl,
       textScaler: TextScaler.noScaling,
-    )..layout(maxWidth: _paintedWidth);
+      // Matches the rendered width, not the text's own — see the same layout
+      // call in [WMushafLine].
+    )..layout(minWidth: _paintedWidth, maxWidth: _paintedWidth);
     final offset = painter.getPositionForOffset(local).offset;
     for (final range in _ranges) {
       if (offset >= range.start && offset < range.end) {
@@ -246,10 +345,11 @@ class _WMushafPageReflowState extends State<WMushafPageReflow> {
     final groups = _groups();
     if (groups.isEmpty) return const SizedBox.shrink();
 
-    // No per-line fit here — that is the whole point. The size follows the
-    // reader's scale against the same reference the printed layout measures
-    // against, so the text is free to outgrow a printed line and wrap.
-    final size = WMushafLine.referenceSize * widget.fontScale;
+    // No per-line fit here — that is the whole point. The size is the page's
+    // printed size scaled by the reader, so the text picks up exactly where the
+    // printed layout left off at 100% and is then free to outgrow a printed
+    // line and wrap.
+    final size = widget.baseSize * widget.fontScale;
 
     return LayoutBuilder(
       builder: (context, constraints) {
@@ -263,7 +363,17 @@ class _WMushafPageReflowState extends State<WMushafPageReflow> {
         // height, so cancel that out of the pill padding — otherwise the tint
         // would balloon past the glyphs as the text size goes up.
         final leading = size * (_reflowLineHeight - 1) / 2;
-        final pillPad = (size * 0.36 - leading).clamp(0.0, size * 0.36);
+        // Lopsided for the same reason as the printed layout — see
+        // [kPillPadTop] / [kPillPadBottom]. The generous leading here eats most
+        // of it, which is why a reflowed page needs so little extra.
+        final padTop = (size * kPillPadTop - leading).clamp(
+          0.0,
+          size * kPillPadTop,
+        );
+        final padBottom = (size * kPillPadBottom - leading).clamp(
+          0.0,
+          size * kPillPadBottom,
+        );
 
         return GestureDetector(
           behavior: HitTestBehavior.deferToChild,
@@ -272,7 +382,8 @@ class _WMushafPageReflowState extends State<WMushafPageReflow> {
             text: built.span,
             ranges: built.highlights,
             maxWidth: maxWidth,
-            pad: pillPad,
+            padTop: padTop,
+            padBottom: padBottom,
             textAlign: _align,
           ),
         );

@@ -4,6 +4,7 @@ import 'package:flutter_modular/flutter_modular.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:localize_and_translate/localize_and_translate.dart';
 import 'package:quran/core/theme/app_text_styles.dart';
+import 'package:quran/core/utils/helper/app_alert.dart';
 import 'package:quran/core/widgets/w_gradient_app_bar.dart';
 import 'package:quran/core/widgets/w_shared_scaffold.dart';
 import 'package:quran/modules/quran/domain/entities/e_tafsir_book.dart';
@@ -42,9 +43,7 @@ class _SNTafsirLibraryState extends State<SNTafsirLibrary> {
               child: BlocConsumer<CBTafsirLibrary, STafsirLibrary>(
                 listenWhen: (prev, curr) => curr.error != null && prev.error != curr.error,
                 listener: (context, state) {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(content: Text('${'common_error'.tr()}: ${state.error}')),
-                  );
+                  AppAlert.error('${'common_error'.tr()}: ${state.error}');
                 },
                 builder: (context, state) {
                   if (state.status == LoadStatus.loading && state.books.isEmpty) {

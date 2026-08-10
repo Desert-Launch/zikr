@@ -28,6 +28,8 @@ class CBMushafReader extends Cubit<SMushafReader> {
           fontMode: _settings.state.fontMode,
           theme: _settings.state.theme,
           fontScale: _settings.state.fontScale,
+          bold: _settings.state.bold,
+          scrollMode: _settings.state.scrollMode,
         ),
       ) {
     _watchBookmarks();
@@ -48,12 +50,24 @@ class CBMushafReader extends Cubit<SMushafReader> {
   /// Mirrors the shared [CBReaderSettings] into the reader state so changes made
   /// on the settings screen apply to an open reader instantly. Theme and text
   /// size just re-style the current page; a font-mode change reloads the page
-  /// because the V4 glyphs/layout differ from V1/V2.
+  /// because the V4 glyphs/layout differ from V1/V2. A scroll-mode change swaps
+  /// the reader's whole scroll view, which is why the screen — not this cubit —
+  /// re-seats it on [SMushafReader.currentPage] afterwards.
   void _watchSettings() {
     _settingsSub = _settings.stream.listen((s) {
       if (isClosed) return;
-      if (s.theme != state.theme || s.fontScale != state.fontScale) {
-        emit(state.copyWith(theme: s.theme, fontScale: s.fontScale));
+      if (s.theme != state.theme ||
+          s.fontScale != state.fontScale ||
+          s.bold != state.bold ||
+          s.scrollMode != state.scrollMode) {
+        emit(
+          state.copyWith(
+            theme: s.theme,
+            fontScale: s.fontScale,
+            bold: s.bold,
+            scrollMode: s.scrollMode,
+          ),
+        );
       }
       // Colored (tajweedV4) and plain (plainV2) share the same page data and both
       // font variants are already registered, so a mode change just re-styles.
@@ -213,6 +227,20 @@ class CBMushafReader extends Cubit<SMushafReader> {
   Future<void> removeBookmark(ParamAyahRef ref) => _bookmarks.deleteByAyah(ref);
 
   bool isBookmarked(ParamAyahRef ref) => state.bookmarks.containsKey(ref.key);
+
+  /// Asks the open reader to navigate to [ref]. Widgets nested under the reader
+  /// (the bookmarks sheet, the colour picker) can't reach the `PageController`,
+  /// so they raise the request here and the screen performs the jump.
+  void requestJumpToAyah(ParamAyahRef ref) {
+    emit(state.copyWith(jumpRequest: ref, clearSelected: true));
+  }
+
+  /// Clears a handled [SMushafReader.jumpRequest] so the same verse can be
+  /// requested again later.
+  void consumeJumpRequest() {
+    if (state.jumpRequest == null) return;
+    emit(state.copyWith(clearJumpRequest: true));
+  }
 
   /// The colour [ref] is bookmarked with, or `null` (not bookmarked, or a
   /// legacy colourless bookmark).

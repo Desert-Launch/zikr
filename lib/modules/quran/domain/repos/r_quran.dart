@@ -48,11 +48,13 @@ abstract class RQuran {
 
   /// Deterministic "verse of the day" for the given calendar [day], constrained
   /// to verses longer than [minChars] and no longer than [maxChars] so it fits
-  /// the home card and isn't trivially short.
+  /// the home card and isn't trivially short. A non-zero [seed] returns a
+  /// different verse for the same day (manual refresh).
   Future<Either<Failure, EDailyVerse>> getDailyVerse(
     DateTime day, {
     int maxChars,
     int minChars,
+    int seed,
   });
 
   /// Diacritics-tolerant Uthmani text search across all 6236 ayat.

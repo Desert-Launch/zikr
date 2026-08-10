@@ -3,6 +3,7 @@ import 'package:quran/core/errors/failure.dart';
 import 'package:quran/core/utils/helper/error_helper.dart';
 import 'package:quran/modules/quran/data/datasources/local/ds_local_reader_settings.dart';
 import 'package:quran/modules/quran/domain/entities/e_quran_font_mode.dart';
+import 'package:quran/modules/quran/domain/entities/e_reader_scroll_mode.dart';
 import 'package:quran/modules/quran/domain/entities/e_reader_theme.dart';
 import 'package:quran/modules/quran/domain/repos/r_reader_settings.dart';
 
@@ -90,6 +91,64 @@ class RImplReaderSettings implements RReaderSettings {
     } catch (e, st) {
       ErrorHelper.printDebugError(
         name: 'RImplReaderSettings.setFontScale',
+        error: e,
+        stackTrace: st,
+      );
+      return Left(Failure.cacheFailure(message: e.toString()));
+    }
+  }
+
+  @override
+  Future<Either<Failure, bool>> getFontBold() async {
+    try {
+      return Right(_local.getFontBold());
+    } catch (e, st) {
+      ErrorHelper.printDebugError(
+        name: 'RImplReaderSettings.getFontBold',
+        error: e,
+        stackTrace: st,
+      );
+      return Left(Failure.cacheFailure(message: e.toString()));
+    }
+  }
+
+  @override
+  Future<Either<Failure, void>> setFontBold(bool bold) async {
+    try {
+      await _local.setFontBold(bold);
+      return const Right(null);
+    } catch (e, st) {
+      ErrorHelper.printDebugError(
+        name: 'RImplReaderSettings.setFontBold',
+        error: e,
+        stackTrace: st,
+      );
+      return Left(Failure.cacheFailure(message: e.toString()));
+    }
+  }
+
+  @override
+  Future<Either<Failure, EReaderScrollMode>> getScrollMode() async {
+    try {
+      return Right(_local.getScrollMode());
+    } catch (e, st) {
+      ErrorHelper.printDebugError(
+        name: 'RImplReaderSettings.getScrollMode',
+        error: e,
+        stackTrace: st,
+      );
+      return Left(Failure.cacheFailure(message: e.toString()));
+    }
+  }
+
+  @override
+  Future<Either<Failure, void>> setScrollMode(EReaderScrollMode mode) async {
+    try {
+      await _local.setScrollMode(mode);
+      return const Right(null);
+    } catch (e, st) {
+      ErrorHelper.printDebugError(
+        name: 'RImplReaderSettings.setScrollMode',
         error: e,
         stackTrace: st,
       );

@@ -1,3 +1,4 @@
+import 'dart:math' as math;
 import 'dart:ui' as ui;
 
 import 'package:flutter/foundation.dart';
@@ -30,7 +31,7 @@ class AyahHighlight {
 }
 
 /// Renders [text] as an RTL [RichText] and paints a rounded highlight pill
-/// BEHIND the given [ranges], grown vertically by [pad] on each side.
+/// BEHIND the given [ranges], grown by [padTop] above and [padBottom] below.
 ///
 /// The whole point: the highlight can read taller than the glyphs without
 /// touching the text's line-height, so line spacing stays tight. The pill is
@@ -38,11 +39,18 @@ class AyahHighlight {
 /// constraints as the child, so its boxes line up exactly with the rendered
 /// text. Taps still land on the child's span recognizers (the painter draws
 /// behind and never intercepts hits).
+///
+/// The two pads are separate because the measured box is not centred on the
+/// glyphs: it runs from the font's ascent to its descent, and Arabic tashkeel
+/// sit *above* that ascent while the descent already clears the tails. Padding
+/// both edges equally therefore leaves the marks barely covered and spills a
+/// tall skirt of tint onto the next printed line.
 class WAyahHighlightText extends StatelessWidget {
   const WAyahHighlightText({
     required this.text,
     required this.ranges,
-    required this.pad,
+    required this.padTop,
+    required this.padBottom,
     this.textAlign = TextAlign.start,
     this.maxWidth,
     this.radius = 8,
@@ -52,8 +60,11 @@ class WAyahHighlightText extends StatelessWidget {
   final TextSpan text;
   final List<AyahHighlight> ranges;
 
-  /// Vertical inflation (logical px) added above AND below each highlight box.
-  final double pad;
+  /// Vertical inflation (logical px) added above each highlight box.
+  final double padTop;
+
+  /// Vertical inflation (logical px) added below each highlight box.
+  final double padBottom;
   final TextAlign textAlign;
 
   /// Width bound fed to the measuring painter — pass the same bound the child
@@ -76,7 +87,8 @@ class WAyahHighlightText extends StatelessWidget {
       painter: _HighlightPainter(
         text: text,
         ranges: ranges,
-        pad: pad,
+        padTop: padTop,
+        padBottom: padBottom,
         radius: radius,
         textAlign: textAlign,
         maxWidth: maxWidth,
@@ -90,7 +102,8 @@ class _HighlightPainter extends CustomPainter {
   _HighlightPainter({
     required this.text,
     required this.ranges,
-    required this.pad,
+    required this.padTop,
+    required this.padBottom,
     required this.radius,
     required this.textAlign,
     required this.maxWidth,
@@ -98,7 +111,8 @@ class _HighlightPainter extends CustomPainter {
 
   final TextSpan text;
   final List<AyahHighlight> ranges;
-  final double pad;
+  final double padTop;
+  final double padBottom;
   final double radius;
   final TextAlign textAlign;
   final double? maxWidth;
@@ -107,12 +121,28 @@ class _HighlightPainter extends CustomPainter {
   void paint(Canvas canvas, Size size) {
     // Mirror the child RichText exactly: same spans, direction, align, and the
     // RichText default (no text scaling), so measured boxes match the glyphs.
+    //
+    // `minWidth` is the part that is easy to miss. A TextPainter given only a
+    // maxWidth shrinks to the text's intrinsic width, and `textAlign` then
+    // centres the glyphs inside *that* — which is a no-op, so every box comes
+    // back anchored at x=0. The child is laid out under a tight width instead
+    // (the page stretches each line), so it centres the glyphs across the full
+    // page. On a line that fills the page the two agree and nothing looks
+    // wrong; on a short one — a surah's last line — the boxes sit up to half
+    // the slack too far towards the start and the tint slides off the words.
+    //
+    // `size` is the child's own laid-out size, so pinning minWidth to it
+    // reproduces the child's alignment whatever the parent decided, while
+    // maxWidth still governs line breaking.
+    // `math.max` only guards the layout contract (minWidth must not exceed
+    // maxWidth); the child can never be wider than the bound it was given.
+    final bound = math.max(maxWidth ?? double.infinity, size.width);
     final tp = TextPainter(
       text: text,
       textAlign: textAlign,
       textDirection: TextDirection.rtl,
       textScaler: TextScaler.noScaling,
-    )..layout(maxWidth: maxWidth ?? double.infinity);
+    )..layout(minWidth: size.width, maxWidth: bound);
 
     for (final hl in ranges) {
       if (hl.end <= hl.start) continue;
@@ -124,22 +154,42 @@ class _HighlightPainter extends CustomPainter {
       // Union the range's boxes into ONE pill per visual row: a single fill per
       // row avoids the seams translucent overlapping boxes would leave.
       //
-      // Rows are grouped by VERTICAL OVERLAP, not by an equal `top`. Spans on
-      // one row can report different tops when they use different fonts — the
-      // ayah-number glyphs are a separate family from the word glyphs — and
-      // keying on `top` split a single highlight into two rects of different
-      // heights. Genuinely wrapped rows don't overlap, so they still get their
-      // own pill instead of one block bridging the gap between them.
+      // Rows are grouped by the CENTRE of each box, not by its edges. Spans on
+      // one row report different tops and bottoms when they use different fonts
+      // — the ayah-number rosette is a separate family from the word glyphs, and
+      // `BoxHeightStyle.max` sizes each run to its own metrics — so neither an
+      // equal `top` nor plain vertical overlap identifies a row.
+      //
+      // Overlap in particular is actively wrong, and it is what this replaced: a
+      // row carrying a rosette reports a box tall enough to reach into the row
+      // below, so a partial first row would merge with the full row under it and
+      // `expandToInclude` would stretch the pill across the whole width —
+      // painting the tail of the *previous* verse as part of this one.
+      //
+      // Two boxes on one line share a baseline, so their centres sit within a
+      // fraction of a line of each other, while consecutive lines are a whole
+      // line apart. Half the shorter box is comfortably inside that gap.
       final ordered = boxes
           .map((b) => Rect.fromLTRB(b.left, b.top, b.right, b.bottom))
           .toList()
         ..sort((a, b) => a.top.compareTo(b.top));
       final rows = <Rect>[];
+      // Each row's anchor stays the centre of the FIRST box that opened it, so a
+      // taller box joining later cannot drag the row towards its neighbour.
+      final rowCentres = <double>[];
       for (final rect in ordered) {
-        if (rows.isNotEmpty && rect.top < rows.last.bottom) {
-          rows[rows.length - 1] = rows.last.expandToInclude(rect);
-        } else {
+        var merged = false;
+        for (var i = 0; i < rows.length; i++) {
+          final tolerance = math.min(rect.height, rows[i].height) / 2;
+          if ((rect.center.dy - rowCentres[i]).abs() < tolerance) {
+            rows[i] = rows[i].expandToInclude(rect);
+            merged = true;
+            break;
+          }
+        }
+        if (!merged) {
           rows.add(rect);
+          rowCentres.add(rect.center.dy);
         }
       }
 
@@ -147,9 +197,9 @@ class _HighlightPainter extends CustomPainter {
       for (final row in rows) {
         final rect = Rect.fromLTRB(
           row.left,
-          row.top - pad,
+          row.top - padTop,
           row.right,
-          row.bottom + pad,
+          row.bottom + padBottom,
         );
         canvas.drawRRect(
           RRect.fromRectAndRadius(rect, Radius.circular(radius)),
@@ -162,7 +212,8 @@ class _HighlightPainter extends CustomPainter {
   @override
   bool shouldRepaint(_HighlightPainter old) =>
       old.text != text ||
-      old.pad != pad ||
+      old.padTop != padTop ||
+      old.padBottom != padBottom ||
       old.radius != radius ||
       old.textAlign != textAlign ||
       old.maxWidth != maxWidth ||

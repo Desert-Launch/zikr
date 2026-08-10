@@ -3,6 +3,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_modular/flutter_modular.dart';
 import 'package:quran/core/widgets/w_shared_scaffold.dart';
 import 'package:quran/modules/quran/data/datasources/local/ds_local_quran.dart';
+import 'package:quran/modules/quran/domain/entities/e_reader_scroll_mode.dart';
 import 'package:quran/modules/quran/domain/entities/param_ayah_ref.dart';
 import 'package:quran/modules/quran/presentation/cubits/cb_audio_player.dart';
 import 'package:quran/modules/quran/presentation/cubits/cb_mushaf_reader.dart';
@@ -12,7 +13,6 @@ import 'package:quran/modules/quran/presentation/cubits/s_surah_list.dart' show 
 import 'package:quran/modules/quran/presentation/widgets/w_ayah_action_sheet.dart';
 import 'package:quran/modules/quran/presentation/widgets/w_mini_player.dart';
 import 'package:quran/modules/quran/presentation/widgets/w_mushaf_v4_page.dart';
-import 'package:quran/modules/quran/presentation/widgets/w_reader_bottom_bar.dart';
 import 'package:quran/modules/quran/presentation/widgets/w_reader_search_panel.dart';
 import 'package:quran/modules/quran/presentation/widgets/w_reader_top_bar.dart';
 
@@ -26,9 +26,47 @@ class SNMushafReader extends StatefulWidget {
   State<SNMushafReader> createState() => _SNMushafReaderState();
 }
 
+/// Pages in the Madani Mushaf — the item count of both scroll views.
+const int _kPageCount = 604;
+
 class _SNMushafReaderState extends State<SNMushafReader> {
   late final CBMushafReader _cubit = Modular.get<CBMushafReader>();
+
+  /// Horizontal mode: one page per viewport, snapped.
   late final PageController _pageController;
+
+  /// Vertical mode: a free ScrollController over the same 604 pages, laid out
+  /// at their natural heights so nothing snaps and nothing stops at a page
+  /// boundary.
+  final ScrollController _scrollController = ScrollController();
+
+  /// Page pinned to scroll offset 0 in vertical mode.
+  ///
+  /// Natural-height pages have no offset arithmetic to jump by, so the list is
+  /// split into two slivers around [_verticalCenterKey]: pages after the anchor
+  /// grow forward from offset 0, pages before it grow backward into negative
+  /// offsets. Jumping to a page is therefore "re-anchor, then `jumpTo(0)`" —
+  /// exact at any text size, and it needs no index-aware list package.
+  int _anchorPage = 1;
+  final Key _verticalCenterKey = const ValueKey('mushaf-vertical-center');
+
+  /// The vertical viewport, for resolving which page sits under the reader's
+  /// eye (see [_probes]).
+  final GlobalKey _verticalViewportKey = GlobalKey();
+
+  /// Contexts of the pages currently mounted in the vertical list — a handful
+  /// at most. Their render boxes are what turn a scroll offset back into a page
+  /// number now that pages are no longer a uniform height.
+  final Map<int, BuildContext> _probes = <int, BuildContext>{};
+
+  /// Height of one screen in the vertical list — the floor every page is laid
+  /// out against. 0 until the list has been laid out once.
+  double _pageExtent = 0;
+
+  /// The scroll mode the live scroll view was built for, so a change can be
+  /// detected in `build` and answered with a re-seat on the current page.
+  EReaderScrollMode? _builtMode;
+
   int _resolvedStart = 1;
 
   @override
@@ -36,6 +74,8 @@ class _SNMushafReaderState extends State<SNMushafReader> {
     super.initState();
     _resolvedStart = widget.initialPage ?? 1;
     _pageController = PageController(initialPage: _resolvedStart - 1, viewportFraction: 1);
+    _anchorPage = _resolvedStart;
+    _scrollController.addListener(_onVerticalScroll);
     _resolveInitial();
   }
 
@@ -45,7 +85,7 @@ class _SNMushafReaderState extends State<SNMushafReader> {
     if (initialAyah != null) {
       target = await Modular.get<DSLocalQuran>().pageOfAyah(initialAyah.surah, initialAyah.ayah);
       if (mounted) {
-        _pageController.jumpToPage(target - 1);
+        _seekToPage(target);
       }
     }
     _cubit.openPage(target);
@@ -56,17 +96,81 @@ class _SNMushafReaderState extends State<SNMushafReader> {
 
   @override
   void dispose() {
+    _scrollController.removeListener(_onVerticalScroll);
+    _scrollController.dispose();
     _pageController.dispose();
     super.dispose();
+  }
+
+  bool get _isVertical => _cubit.state.scrollMode.isVertical;
+
+  /// Moves whichever scroll view is live onto [page], without touching the
+  /// cubit — callers that also need the page *loaded* go through [_jumpToPage].
+  void _seekToPage(int page) {
+    if (!_isVertical) {
+      if (_pageController.hasClients) _pageController.jumpToPage(page - 1);
+      return;
+    }
+    // Offset 0 is the top of the anchor page both before and after a re-anchor,
+    // so resetting first means the list never renders a frame at a stale offset
+    // against freshly re-numbered slivers.
+    if (_scrollController.hasClients) _scrollController.jumpTo(0);
+    if (_anchorPage == page) return;
+    setState(() => _anchorPage = page);
+    // Belt and braces for the case where the controller had no clients above —
+    // the slivers exist by the end of this frame.
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted && _scrollController.hasClients) _scrollController.jumpTo(0);
+    });
+  }
+
+  /// The render box of a mounted page, or null if it is off-layout — a page the
+  /// sliver is keeping alive off-screen is detached from the render tree, and
+  /// asking a detached box where it is throws.
+  RenderBox? _probeBox(int page) {
+    final box = _probes[page]?.findRenderObject();
+    if (box is! RenderBox || !box.attached || !box.hasSize) return null;
+    return box;
+  }
+
+  void _registerProbe(int page, BuildContext context) => _probes[page] = context;
+  void _unregisterProbe(int page) => _probes.remove(page);
+
+  /// Global y of the point in the viewport that decides "the page I am reading"
+  /// — a third of the way down, so a page counts as current once its top third
+  /// is on screen rather than only at the halfway mark.
+  double? _readingLineY() {
+    final box = _verticalViewportKey.currentContext?.findRenderObject();
+    if (box is! RenderBox || !box.hasSize) return null;
+    return box.localToGlobal(Offset(0, box.size.height / 3)).dy;
+  }
+
+  /// Tracks the page under the reading line as the continuous list scrolls —
+  /// the vertical counterpart of `PageView.onPageChanged`.
+  ///
+  /// Pages are natural-height now, so there is no offset arithmetic to do this
+  /// with; instead the mounted pages are asked where they are. That is only ever
+  /// a handful of render boxes, so it is cheap enough to run per scroll frame.
+  void _onVerticalScroll() {
+    if (!_isVertical) return;
+    final lineY = _readingLineY();
+    if (lineY == null) return;
+    for (final page in _probes.keys) {
+      final box = _probeBox(page);
+      if (box == null) continue;
+      final top = box.localToGlobal(Offset.zero).dy;
+      if (lineY >= top && lineY < top + box.size.height) {
+        if (page != _cubit.state.currentPage) _cubit.openPage(page);
+        return;
+      }
+    }
   }
 
   /// Jumps the open reader to a search hit instead of pushing a new screen:
   /// closes the panel, lands on the hit's page and highlights the verse.
   void _openSearchHit(ParamAyahRef ref, int page) {
     _cubit.closeSearch();
-    if (_pageController.hasClients) {
-      _pageController.jumpToPage(page - 1);
-    }
+    _seekToPage(page);
     _cubit.openPage(page);
     _cubit.highlightAyah(ref);
   }
@@ -74,8 +178,8 @@ class _SNMushafReaderState extends State<SNMushafReader> {
   /// Jumps the open reader to [page] — used by the index popup and the
   /// bookmarks sheet, neither of which pushes a new reader route.
   void _jumpToPage(int page) {
-    if (page < 1 || page > 604) return;
-    if (_pageController.hasClients) _pageController.jumpToPage(page - 1);
+    if (page < 1 || page > _kPageCount) return;
+    _seekToPage(page);
     _cubit.openPage(page);
   }
 
@@ -90,10 +194,113 @@ class _SNMushafReaderState extends State<SNMushafReader> {
   Future<void> _scrollToPlayingPage(ParamAyahRef ref) async {
     final page = await Modular.get<DSLocalQuran>().pageOfAyah(ref.surah, ref.ayah);
     if (!mounted) return;
+    const duration = Duration(milliseconds: 300);
+    if (_isVertical) {
+      // Already the page being read — don't fight a reader who has scrolled a
+      // little way into it while the recitation runs.
+      if (_cubit.state.currentPage == page) return;
+      // Still mounted just off-screen: glide to it rather than re-anchoring,
+      // which would be a hard cut for what is usually a one-page advance.
+      final probe = _probeBox(page);
+      final viewport = _verticalViewportKey.currentContext?.findRenderObject();
+      if (probe != null && viewport is RenderBox && _scrollController.hasClients) {
+        final position = _scrollController.position;
+        final target = (position.pixels + probe.localToGlobal(Offset.zero, ancestor: viewport).dy)
+            .clamp(position.minScrollExtent, position.maxScrollExtent);
+        _scrollController.animateTo(target, duration: duration, curve: Curves.easeOut);
+        return;
+      }
+      _seekToPage(page);
+      return;
+    }
     if (_pageController.hasClients && _pageController.page?.round() != page - 1) {
-      _pageController.animateToPage(page - 1, duration: const Duration(milliseconds: 300), curve: Curves.easeOut);
+      _pageController.animateToPage(page - 1, duration: duration, curve: Curves.easeOut);
     }
   }
+
+  /// The reader's scroll view for [mode].
+  ///
+  /// Switching mode swaps the whole widget, so the new one starts at its own
+  /// zero — the post-frame re-seat puts it back on the page the reader was
+  /// already on.
+  Widget _pagesView(EReaderScrollMode mode) {
+    if (mode != _builtMode) {
+      _builtMode = mode;
+      final page = _cubit.state.currentPage;
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (mounted) _seekToPage(page);
+      });
+    }
+
+    if (!mode.isVertical) {
+      return PageView.builder(
+        controller: _pageController,
+        // NO `reverse`: a horizontal PageView already follows the ambient
+        // direction, so under RTL page 1 sits on the right and swiping left
+        // advances. `reverse: true` was needed only while the app was pinned
+        // LTR — keeping it now double-flips the paging.
+        itemCount: _kPageCount,
+        // Builds the immediate neighbours ahead of the swipe; the pages further
+        // out in the ±3 window are already parsed in the cubit, so they mount
+        // instantly when reached.
+        allowImplicitScrolling: true,
+        onPageChanged: (i) => _cubit.openPage(i + 1),
+        itemBuilder: (context, i) => _PageLoader(pageNumber: i + 1),
+      );
+    }
+
+    // Continuous mode. Each page is laid out at its natural height — floored at
+    // one screen — and carries no scroll view of its own, so a drag runs from
+    // the first line of the Mushaf to the last without ever meeting an edge.
+    //
+    // The price is that page N no longer sits at a computable offset, which is
+    // what [_anchorPage] and the two slivers below buy back.
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final extent = constraints.maxHeight;
+        if (extent > 0 && extent != _pageExtent) {
+          final page = _cubit.state.currentPage;
+          _pageExtent = extent;
+          // First layout, or a resize/rotation: land back on the current page
+          // rather than wherever the old offset now points.
+          WidgetsBinding.instance.addPostFrameCallback((_) {
+            if (mounted) _seekToPage(page);
+          });
+        }
+        return CustomScrollView(
+          key: _verticalViewportKey,
+          controller: _scrollController,
+          physics: const ClampingScrollPhysics(),
+          center: _verticalCenterKey,
+          slivers: [
+            // Everything before the anchor, growing backwards: index 0 is the
+            // page immediately above it.
+            SliverList(
+              delegate: SliverChildBuilderDelegate(
+                (context, i) => _verticalPage(_anchorPage - 1 - i, extent),
+                childCount: _anchorPage - 1,
+              ),
+            ),
+            SliverList(
+              key: _verticalCenterKey,
+              delegate: SliverChildBuilderDelegate(
+                (context, i) => _verticalPage(_anchorPage + i, extent),
+                childCount: _kPageCount - _anchorPage + 1,
+              ),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  Widget _verticalPage(int page, double extent) => _PageProbe(
+    key: ValueKey('mushaf-page-$page'),
+    pageNumber: page,
+    onMount: _registerProbe,
+    onUnmount: _unregisterProbe,
+    child: _PageLoader(pageNumber: page, continuousHeight: extent),
+  );
 
   @override
   Widget build(BuildContext context) {
@@ -103,13 +310,29 @@ class _SNMushafReaderState extends State<SNMushafReader> {
         backgroundColor: readerBackground(_cubit.state.theme),
         padding: EdgeInsets.zero,
         withSafeArea: false,
-        body: BlocListener<CBAudioPlayer, SAudioPlayer>(
-          bloc: Modular.get<CBAudioPlayer>(),
-          listenWhen: (a, b) => a.currentAyah?.key != b.currentAyah?.key,
-          listener: (context, audio) {
-            final ayah = audio.currentAyah;
-            if (ayah != null) _scrollToPlayingPage(ayah);
-          },
+        body: MultiBlocListener(
+          listeners: [
+            BlocListener<CBAudioPlayer, SAudioPlayer>(
+              bloc: Modular.get<CBAudioPlayer>(),
+              listenWhen: (a, b) => a.currentAyah?.key != b.currentAyah?.key,
+              listener: (context, audio) {
+                final ayah = audio.currentAyah;
+                if (ayah != null) _scrollToPlayingPage(ayah);
+              },
+            ),
+            // Verses picked in the bookmarks sheet / colour picker land here —
+            // those widgets can't reach the PageController, so they raise a
+            // request on the cubit and this screen performs the jump.
+            BlocListener<CBMushafReader, SMushafReader>(
+              listenWhen: (a, b) => a.jumpRequest != b.jumpRequest,
+              listener: (context, state) {
+                final ref = state.jumpRequest;
+                if (ref == null) return;
+                _cubit.consumeJumpRequest();
+                _jumpToAyah(ref);
+              },
+            ),
+          ],
           child: Stack(
             children: [
               // Themed backdrop behind everything (incl. the status-bar and
@@ -128,23 +351,9 @@ class _SNMushafReaderState extends State<SNMushafReader> {
                 behavior: HitTestBehavior.translucent,
                 onTap: _cubit.toggleChrome,
                 child: SafeArea(
-                  child: PageView.builder(
-                    controller: _pageController,
-                    // NO `reverse`: a horizontal PageView already follows the
-                    // ambient direction, so under RTL page 1 sits on the right
-                    // and swiping left advances. `reverse: true` was needed
-                    // only while the app was pinned LTR — keeping it now
-                    // double-flips the paging.
-                    itemCount: 604,
-                    // Builds the immediate neighbours ahead of the swipe; the
-                    // pages further out in the ±3 window are already parsed in
-                    // the cubit, so they mount instantly when reached.
-                    allowImplicitScrolling: true,
-                    onPageChanged: (i) => _cubit.openPage(i + 1),
-                    itemBuilder: (context, i) {
-                      final pageNumber = i + 1;
-                      return _PageLoader(pageNumber: pageNumber);
-                    },
+                  child: BlocSelector<CBMushafReader, SMushafReader, EReaderScrollMode>(
+                    selector: (s) => s.scrollMode,
+                    builder: (_, mode) => _pagesView(mode),
                   ),
                 ),
               ),
@@ -176,9 +385,6 @@ class _SNMushafReaderState extends State<SNMushafReader> {
                         return showMini ? const WMiniPlayer() : const SizedBox.shrink();
                       },
                     ),
-                    // Bottom chrome — rides the same show/hide tap as the top
-                    // bar and carries the in-reader bookmarks shortcut.
-                    WReaderBottomBar(onOpenAyah: _jumpToAyah),
                   ],
                 ),
               ),
@@ -190,7 +396,48 @@ class _SNMushafReaderState extends State<SNMushafReader> {
   }
 }
 
-/// One slot in the reader's [PageView].
+/// Registers its element with the reader for as long as its page is mounted,
+/// so the reader can ask a live page where it is on screen.
+///
+/// Natural-height pages killed the offset arithmetic that used to answer "which
+/// page am I on"; this answers it from the render tree instead, and only for the
+/// two or three pages actually built at any moment.
+class _PageProbe extends StatefulWidget {
+  const _PageProbe({
+    super.key,
+    required this.pageNumber,
+    required this.onMount,
+    required this.onUnmount,
+    required this.child,
+  });
+
+  final int pageNumber;
+  final void Function(int page, BuildContext context) onMount;
+  final ValueChanged<int> onUnmount;
+  final Widget child;
+
+  @override
+  State<_PageProbe> createState() => _PageProbeState();
+}
+
+class _PageProbeState extends State<_PageProbe> {
+  @override
+  void initState() {
+    super.initState();
+    widget.onMount(widget.pageNumber, context);
+  }
+
+  @override
+  void dispose() {
+    widget.onUnmount(widget.pageNumber);
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) => widget.child;
+}
+
+/// One slot in the reader's scroll view, in either mode.
 ///
 /// Renders straight from [SMushafReader.pages] — the cubit keeps a 7-page
 /// window (current ±3) warm, so a page swiped into view is already parsed and
@@ -201,8 +448,15 @@ class _SNMushafReaderState extends State<SNMushafReader> {
 /// ±[CBMushafReader.preloadRadius], which is what bounds memory — the built
 /// subtree is torn down in step with the cubit evicting the layout.
 class _PageLoader extends StatefulWidget {
-  const _PageLoader({required this.pageNumber});
+  const _PageLoader({required this.pageNumber, this.continuousHeight});
   final int pageNumber;
+
+  /// One screen's height, in continuous mode only — see
+  /// [WMushafV4Page.continuousHeight]. Also the height every not-yet-painted
+  /// slot reserves: a placeholder that collapsed to nothing would drag the rest
+  /// of the Mushaf up under the reader's finger and shove it back down a frame
+  /// later, which in a list of natural-height pages reads as the text jumping.
+  final double? continuousHeight;
 
   @override
   State<_PageLoader> createState() => _PageLoaderState();
@@ -237,13 +491,22 @@ class _PageLoaderState extends State<_PageLoader> with AutomaticKeepAliveClientM
       builder: (context, state) {
         _syncKeepAlive(state.currentPage);
         final layout = state.pages[widget.pageNumber];
-        if (layout != null) return WMushafV4Page(layout: layout);
+        if (layout != null) {
+          return WMushafV4Page(
+            layout: layout,
+            continuousHeight: widget.continuousHeight,
+          );
+        }
         final isCurrent = state.currentPage == widget.pageNumber;
         if (isCurrent && state.status == LoadStatus.loading) {
-          return const Center(child: CircularProgressIndicator());
+          return SizedBox(
+            height: widget.continuousHeight,
+            child: const Center(child: CircularProgressIndicator()),
+          );
         }
-        // Outside the warm window (or still resolving) — nothing to paint yet.
-        return const SizedBox.shrink();
+        // Outside the warm window (or still resolving) — nothing to paint yet,
+        // but in continuous mode the slot must still hold its space.
+        return SizedBox(height: widget.continuousHeight ?? 0);
       },
     );
   }

@@ -3,6 +3,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_modular/flutter_modular.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:localize_and_translate/localize_and_translate.dart';
 import 'package:quran/core/theme/app_text_styles.dart';
 import 'package:quran/core/theme/brand_colors.dart';
 import 'package:quran/modules/quran/presentation/cubits/cb_reader_settings.dart';
@@ -52,12 +53,46 @@ class WTextSizeSlider extends StatelessWidget {
                         style: GoogleFonts.amiri(
                           fontSize: 22.sp * scale,
                           color: brand.onSurface,
-                          fontWeight: FontWeight.w500,
+                          fontWeight: state.bold
+                              ? FontWeight.w700
+                              : FontWeight.w500,
                           height: 1.4,
                         ),
                       ),
                     ),
                   ),
+                ),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    // The exact percentage, always on screen. A continuous
+                    // slider has no notches to read a value off, and Flutter
+                    // only pops the drag bubble for a divided one — without
+                    // this the size is guesswork.
+                    Text(
+                      '${(scale * 100).round()}%',
+                      textDirection: TextDirection.ltr,
+                      style: AppTextStyles.grey12W400,
+                    ),
+                    SizedBox(width: 8.w),
+                    // Disabled at the printed size: with nothing to undo, a
+                    // live button would just look broken when tapping it did
+                    // nothing.
+                    TextButton.icon(
+                      onPressed: scale == CBReaderSettings.defaultScale
+                          ? null
+                          : cubit.resetFontScale,
+                      icon: Icon(Icons.refresh_rounded, size: 16.r),
+                      label: Text('quran_settings_reset_size'.tr()),
+                      style: TextButton.styleFrom(
+                        foregroundColor: brand.primary,
+                        padding: EdgeInsets.symmetric(horizontal: 8.w),
+                        minimumSize: Size.zero,
+                        tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                        textStyle: AppTextStyles.grey12W400,
+                      ),
+                    ),
+                  ],
                 ),
                 Row(
                   children: [
@@ -69,6 +104,8 @@ class WTextSizeSlider extends StatelessWidget {
                           thumbColor: brand.primary,
                           inactiveTrackColor: brand.border,
                           overlayColor: brand.primary.withValues(alpha: 0.12),
+                          // Continuous sliders suppress the bubble by default.
+                          showValueIndicator: ShowValueIndicator.onDrag,
                         ),
                         child: Slider(
                           value: scale.clamp(
@@ -77,7 +114,9 @@ class WTextSizeSlider extends StatelessWidget {
                           ),
                           min: CBReaderSettings.minScale,
                           max: CBReaderSettings.maxScale,
-                          divisions: CBReaderSettings.scaleDivisions,
+                          // No `divisions`: the scale is continuous, so the
+                          // drag settles wherever the finger lands (124%) and
+                          // is not snapped to a handful of stops.
                           label: '${(scale * 100).round()}%',
                           onChanged: cubit.setFontScale,
                         ),
@@ -88,6 +127,20 @@ class WTextSizeSlider extends StatelessWidget {
                       style: AppTextStyles.ink16W500.copyWith(fontSize: 20.sp),
                     ),
                   ],
+                ),
+                // Bold sits with the size control because it is the same
+                // decision — how strongly the page reads — and the preview
+                // above answers both at once.
+                SwitchListTile.adaptive(
+                  value: state.bold,
+                  onChanged: cubit.setBold,
+                  contentPadding: EdgeInsets.zero,
+                  dense: true,
+                  activeThumbColor: brand.primary,
+                  title: Text(
+                    'quran_settings_bold'.tr(),
+                    style: AppTextStyles.ink16W500,
+                  ),
                 ),
               ],
             ),
