@@ -127,7 +127,7 @@ class SNRadio extends StatelessWidget {
       if (national.isNotEmpty) ...[
         _SectionHeader(label: 'radio_national_section'.tr()),
         SizedBox(height: 12.h),
-        ..._tiles(national),
+        ..._tiles(context, national),
       ],
       if (live.isNotEmpty || state.liveLoading) ...[
         SizedBox(height: 14.h),
@@ -148,12 +148,20 @@ class SNRadio extends StatelessWidget {
             ),
           )
         else
-          ..._tiles(live),
+          ..._tiles(context, live, favoriteIds: state.favoriteIds),
       ],
     ];
   }
 
-  List<Widget> _tiles(List<MRadioStation> stations) {
+  /// Builds the station rows. Passing [favoriteIds] turns on the heart toggle —
+  /// only the "more stations" section is favoritable.
+  List<Widget> _tiles(
+    BuildContext context,
+    List<MRadioStation> stations, {
+    Set<String>? favoriteIds,
+  }) {
+    // Resolved here because the inner builder shadows [context].
+    final radio = BlocProvider.of<CBRadio>(context);
     return [
       for (final station in stations)
         BlocBuilder<CBRadioPlayer, SRadioPlayer>(
@@ -167,6 +175,10 @@ class SNRadio extends StatelessWidget {
               isActive: active,
               isPlaying: active && ps.isPlaying,
               isLoading: active && ps.isBusy,
+              isFavorite: favoriteIds?.contains(station.id) ?? false,
+              onFavorite: favoriteIds == null
+                  ? null
+                  : () => radio.toggleFavorite(station),
               onTap: () => Modular.get<CBRadioPlayer>().toggle(station),
             );
           },

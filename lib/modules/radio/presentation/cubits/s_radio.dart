@@ -10,6 +10,7 @@ class SRadio extends Equatable {
     this.live = const [],
     this.liveLoading = false,
     this.query = '',
+    this.favoriteIds = const {},
     this.error,
   });
 
@@ -23,13 +24,27 @@ class SRadio extends Equatable {
 
   /// Live station-name filter typed into the search bar.
   final String query;
+
+  /// Ids of the stations the user favorited in the "more stations" section.
+  final Set<String> favoriteIds;
+
   final String? error;
 
   /// National stations matching [query].
   List<MRadioStation> get visibleNational => _filter(national);
 
-  /// Live stations matching [query].
-  List<MRadioStation> get visibleLive => _filter(live);
+  /// Live stations matching [query], favorites pinned to the top of the
+  /// section in their original relative order.
+  List<MRadioStation> get visibleLive {
+    final matches = _filter(live);
+    if (favoriteIds.isEmpty) return matches;
+    return [
+      ...matches.where((s) => favoriteIds.contains(s.id)),
+      ...matches.where((s) => !favoriteIds.contains(s.id)),
+    ];
+  }
+
+  bool isFavorite(String stationId) => favoriteIds.contains(stationId);
 
   /// Whether a query is active but nothing in either list matches.
   bool get noMatches =>
@@ -59,6 +74,7 @@ class SRadio extends Equatable {
     List<MRadioStation>? live,
     bool? liveLoading,
     String? query,
+    Set<String>? favoriteIds,
     String? error,
     bool clearError = false,
   }) {
@@ -68,6 +84,7 @@ class SRadio extends Equatable {
       live: live ?? this.live,
       liveLoading: liveLoading ?? this.liveLoading,
       query: query ?? this.query,
+      favoriteIds: favoriteIds ?? this.favoriteIds,
       error: clearError ? null : (error ?? this.error),
     );
   }
@@ -79,6 +96,7 @@ class SRadio extends Equatable {
     live,
     liveLoading,
     query,
+    favoriteIds,
     error,
   ];
 }

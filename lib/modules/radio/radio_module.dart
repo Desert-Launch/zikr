@@ -3,6 +3,7 @@ import 'package:quran/core/services/routes/routes_names.dart';
 import 'package:quran/modules/radio/data/datasources/local/ds_local_radio.dart';
 import 'package:quran/modules/radio/data/datasources/remote/ds_remote_radio.dart';
 import 'package:quran/modules/radio/data/repos/r_impl_radio.dart';
+import 'package:quran/modules/radio/data/sources/local/box_radio_favorite.dart';
 import 'package:quran/modules/radio/domain/repos/r_radio.dart';
 import 'package:quran/modules/radio/domain/usecases/uc_get_live_stations.dart';
 import 'package:quran/modules/radio/domain/usecases/uc_get_national_stations.dart';
@@ -19,6 +20,9 @@ class RadioModule extends Module {
     i.add<DSLocalRadio>(DSLocalRadio.new);
     i.add<DSRemoteRadio>(DSRemoteRadio.new);
 
+    // Favorited stations (box opened in main()).
+    i.addSingleton<BoxRadioFavorite>(BoxRadioFavorite.new);
+
     // Repo (interface → impl).
     i.add<RRadio>(
       () => RImplRadio(local: i.get<DSLocalRadio>(), remote: i.get<DSRemoteRadio>()),
@@ -33,6 +37,7 @@ class RadioModule extends Module {
       () => CBRadio(
         getNational: i.get<UCGetNationalStations>(),
         getLive: i.get<UCGetLiveStations>(),
+        favorites: i.get<BoxRadioFavorite>(),
       ),
     );
   }
