@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:quran/core/extension/build_context.dart';
 import 'package:quran/core/widgets/w_localize_rotation.dart';
 
 class WSettingsRowValue extends StatelessWidget {
@@ -12,13 +13,14 @@ class WSettingsRowValue extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final text = value;
+    final isTab = context.isTablet;
     if (text != null && !showChevron) {
       return Container(
         padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 4.h),
         decoration: BoxDecoration(color: const Color(0xFFE9E8E5), borderRadius: BorderRadius.circular(20.r)),
         child: Text(
           text.isEmpty ? '1.0.0' : text,
-          style: GoogleFonts.cairo(fontSize: 9.sp, color: const Color(0xFF777777)),
+          style: GoogleFonts.cairo(fontSize: isTab ? 11.5 : 9.sp, color: const Color(0xFF777777)),
         ),
       );
     }
@@ -30,12 +32,12 @@ class WSettingsRowValue extends StatelessWidget {
           SizedBox(width: 7.w),
           Text(
             text,
-            style: GoogleFonts.cairo(fontSize: 10.sp, color: const Color(0xFF717171)),
+            style: GoogleFonts.cairo(fontSize: isTab ? 12.5 : 10.sp, color: const Color(0xFF717171)),
           ),
         ],
         if (showChevron)
           WLocalizeRotation(
-            child: Icon(Icons.chevron_left_rounded, color: const Color(0xFF6F6F6F), size: 21.r),
+            child: Icon(Icons.chevron_left_rounded, color: const Color(0xFF6F6F6F), size: isTab ? 25 : 21.r),
           ),
       ],
     );

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_modular/flutter_modular.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:localize_and_translate/localize_and_translate.dart';
+import 'package:quran/core/extension/build_context.dart';
 import 'package:quran/core/services/routes/routes_names.dart';
 import 'package:quran/core/widgets/w_shared_scaffold.dart';
 import 'package:quran/modules/azkar/data/datasources/local/ds_local_azkar.dart';
@@ -76,7 +77,7 @@ class _SNAzkarHomeState extends State<SNAzkarHome> {
                 padding: EdgeInsets.fromLTRB(18.w, 10.h, 18.w, 28.h),
                 sliver: SliverGrid(
                   gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-                    crossAxisCount: 2,
+                    crossAxisCount: context.isTablet ? 3 : 2,
                     mainAxisSpacing: 10.h,
                     crossAxisSpacing: 10.w,
                     childAspectRatio: 1.23,

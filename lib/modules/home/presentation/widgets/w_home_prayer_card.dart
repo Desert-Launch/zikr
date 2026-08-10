@@ -44,9 +44,7 @@ class _PrayerCardPlaceholder extends StatelessWidget {
   /// Spin unless the cubit has positively reported a failure. `idle` counts as
   /// loading — the cubit sits there between construction and the first refresh,
   /// and that gap is still "we don't have times yet" from the user's side.
-  bool get _loading =>
-      status != PrayerLoadStatus.error &&
-      status != PrayerLoadStatus.permissionDenied;
+  bool get _loading => status != PrayerLoadStatus.error && status != PrayerLoadStatus.permissionDenied;
 
   @override
   Widget build(BuildContext context) {
@@ -58,9 +56,7 @@ class _PrayerCardPlaceholder extends StatelessWidget {
         decoration: BoxDecoration(
           color: Colors.white,
           borderRadius: BorderRadius.circular(18.r),
-          boxShadow: const [
-            BoxShadow(color: Color(0x12000000), blurRadius: 16, offset: Offset(0, 6)),
-          ],
+          boxShadow: const [BoxShadow(color: Color(0x12000000), blurRadius: 16, offset: Offset(0, 6))],
         ),
         child: Column(
           children: [
@@ -73,16 +69,9 @@ class _PrayerCardPlaceholder extends StatelessWidget {
                       ? SizedBox(
                           width: 20.r,
                           height: 20.r,
-                          child: CircularProgressIndicator(
-                            strokeWidth: 2.5.r,
-                            color: Colors.white,
-                          ),
+                          child: CircularProgressIndicator(strokeWidth: 2.5.r, color: Colors.white),
                         )
-                      : Icon(
-                          Icons.location_off_rounded,
-                          color: Colors.white,
-                          size: 24.r,
-                        ),
+                      : Icon(Icons.location_off_rounded, color: Colors.white, size: 24.r),
                 ),
                 SizedBox(width: 12.w),
                 Expanded(
@@ -95,9 +84,7 @@ class _PrayerCardPlaceholder extends StatelessWidget {
                       ),
                       SizedBox(height: 4.h),
                       Text(
-                        _loading
-                            ? 'home_prayer_loading'.tr()
-                            : 'home_prayer_unavailable'.tr(),
+                        _loading ? 'home_prayer_loading'.tr() : 'home_prayer_unavailable'.tr(),
                         maxLines: 2,
                         overflow: TextOverflow.ellipsis,
                         style: TextStyle(
@@ -128,11 +115,7 @@ class _PrayerCardPlaceholder extends StatelessWidget {
               children: EPrayer.values
                   .map(
                     (p) => Expanded(
-                      child: WHomePrayerChip(
-                        label: _prayerLabel(p),
-                        time: '--:--',
-                        style: _prayerStyle(p),
-                      ),
+                      child: WHomePrayerChip(label: _prayerLabel(p), time: '--:--', style: _prayerStyle(p)),
                     ),
                   )
                   .toList(),
@@ -163,25 +146,22 @@ class WHomePrayerCard extends StatelessWidget {
     }
 
     final next = state.nextPrayer;
-    final allSlots = state.slots.isNotEmpty
-        ? state.slots
-        : [
-            EPrayer.fajr,
-            EPrayer.sunrise,
-            EPrayer.dhuhr,
-            EPrayer.asr,
-            EPrayer.maghrib,
-            EPrayer.isha,
-          ].map((p) => PrayerSlot(prayer: p, time: DateTime.now())).toList();
-    // Show the five prayers that are not the highlighted "next" one.
-    // final excluded = next?.prayer ?? EPrayer.isha;
-    final slots = allSlots.toList();
+    // Today's timings until the last salah has gone, then tomorrow's — a spent
+    // day is not useful to look at. (The empty case returned above.)
+    final slots = state.displaySlots;
 
     final caption = StringBuffer('prayer_next_label'.tr());
     if (state.cityName.isNotEmpty) {
       caption
         ..write(' ')
         ..write('home_timing'.tr().replaceFirst('{{city}}', state.cityName));
+    }
+    // Say so when the row has rolled over, otherwise tomorrow's times read as
+    // today's and the card looks simply wrong.
+    if (state.isShowingNextDay) {
+      caption
+        ..write(' · ')
+        ..write('home_prayer_tomorrow'.tr());
     }
 
     return InkWell(
@@ -216,13 +196,20 @@ class WHomePrayerCard extends StatelessWidget {
                         style: TextStyle(color: Colors.grey[600], fontSize: 10.sp),
                       ),
                       SizedBox(height: 4.h),
-                      Text(
-                        next == null
-                            ? 'prayer_title'.tr()
-                            : 'home_next_prayer'.tr().replaceFirst('{{name}}', _prayerLabel(next.prayer)),
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                        style: TextStyle(color: const Color(0xFF252525), fontSize: 20.sp, fontWeight: FontWeight.w800),
+                      FittedBox(
+                        fit: BoxFit.scaleDown,
+                        child: Text(
+                          next == null
+                              ? 'prayer_title'.tr()
+                              : 'home_next_prayer'.tr().replaceFirst('{{name}}', _prayerLabel(next.prayer)),
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          style: TextStyle(
+                            color: const Color(0xFF252525),
+                            fontSize: 20.sp,
+                            fontWeight: FontWeight.w800,
+                          ),
+                        ),
                       ),
                     ],
                   ),
@@ -231,8 +218,11 @@ class WHomePrayerCard extends StatelessWidget {
                 Column(
                   crossAxisAlignment: CrossAxisAlignment.end,
                   children: [
+                    // The NEXT prayer's time — never the clock. Falling back to
+                    // `now` put the current time here in the same green as a
+                    // real timing, which read as "the next prayer is now".
                     Text(
-                      next == null ? TimeFormat.h12Plain(DateTime.now()) : TimeFormat.h12Plain(next.time),
+                      next == null ? '--:--' : TimeFormat.h12Plain(next.time),
                       style: TextStyle(color: green, fontSize: 28.sp, fontWeight: FontWeight.w800, height: 1.0),
                     ),
                     if (_remaining(next).isNotEmpty) ...[
@@ -268,7 +258,7 @@ class WHomePrayerCard extends StatelessWidget {
                     (slot) => Expanded(
                       child: WHomePrayerChip(
                         label: _prayerLabel(slot.prayer),
-                        time: state.slots.isEmpty ? '--:--' : TimeFormat.h12Plain(slot.time),
+                        time: TimeFormat.h12Plain(slot.time),
                         style: _prayerStyle(slot.prayer),
                       ),
                     ),

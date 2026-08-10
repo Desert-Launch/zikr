@@ -5,6 +5,7 @@ import 'package:flutter_modular/flutter_modular.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:localize_and_translate/localize_and_translate.dart';
+import 'package:quran/core/utils/helper/app_alert.dart';
 import 'package:quran/core/widgets/w_gradient_app_bar.dart';
 import 'package:quran/core/widgets/w_shared_scaffold.dart';
 import 'package:quran/modules/adhan/presentation/cubits/cb_adhan_settings.dart';
@@ -277,22 +278,15 @@ class _TestAdhanButtonState extends State<_TestAdhanButton> {
     final when = await widget.cubit.scheduleTestAdhan();
     if (!mounted) return;
     setState(() => _busy = false);
-    final messenger = ScaffoldMessenger.of(context);
-    final text = when == null
-        ? 'adhan_test_no_permission'.tr()
-        : 'adhan_test_scheduled'.tr().replaceFirst(
-            '{{time}}',
-            '${when.hour.toString().padLeft(2, '0')}:'
-                '${when.minute.toString().padLeft(2, '0')}',
-          );
-    messenger.showSnackBar(
-      SnackBar(
-        content: Text(
-          text,
-          style: GoogleFonts.cairo(fontSize: 12.sp, color: Colors.white),
-        ),
-        backgroundColor: when == null ? const Color(0xFFC0473F) : const Color(0xFF2F7E63),
-        behavior: SnackBarBehavior.floating,
+    if (when == null) {
+      AppAlert.error('adhan_test_no_permission'.tr());
+      return;
+    }
+    AppAlert.success(
+      'adhan_test_scheduled'.tr().replaceFirst(
+        '{{time}}',
+        '${when.hour.toString().padLeft(2, '0')}:'
+            '${when.minute.toString().padLeft(2, '0')}',
       ),
     );
   }

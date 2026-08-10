@@ -5,6 +5,7 @@ import 'package:flutter_modular/flutter_modular.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:localize_and_translate/localize_and_translate.dart';
+import 'package:quran/core/utils/helper/app_alert.dart';
 import 'package:quran/core/widgets/w_gradient_app_bar.dart';
 import 'package:quran/core/widgets/w_shared_scaffold.dart';
 import 'package:quran/modules/adhan/presentation/cubits/cb_adhan_download.dart';
@@ -77,9 +78,7 @@ class SNAdhanPicker extends StatelessWidget {
                               BlocConsumer<CBAdhanDownload, SAdhanDownload>(
                                 listener: (context, dl) {
                                   if (dl.status == AdhanDownloadStatus.failure) {
-                                    ScaffoldMessenger.of(
-                                      context,
-                                    ).showSnackBar(SnackBar(content: Text('adhan_download_failed'.tr())));
+                                    AppAlert.error('adhan_download_failed'.tr());
                                   }
                                 },
                                 builder: (context, dl) {

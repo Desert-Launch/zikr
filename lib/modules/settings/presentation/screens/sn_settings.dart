@@ -4,6 +4,7 @@ import 'package:flutter_modular/flutter_modular.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:localize_and_translate/localize_and_translate.dart';
 import 'package:package_info_plus/package_info_plus.dart';
+import 'package:quran/core/extension/build_context.dart';
 import 'package:quran/core/services/routes/routes_names.dart';
 import 'package:quran/core/widgets/w_gradient_app_bar.dart';
 import 'package:quran/core/widgets/w_shared_scaffold.dart';
@@ -38,23 +39,26 @@ class _SNSettingsState extends State<SNSettings> {
 
   @override
   Widget build(BuildContext context) {
+    final isTab = context.isTablet;
     return WSharedScaffold(
       backgroundColor: _canvas,
       withSafeArea: false,
       padding: EdgeInsets.zero,
       body: Directionality(
-        textDirection: context.isRTL ? TextDirection.rtl : TextDirection.ltr,
+        // Explicit extension — `localize_and_translate` also defines `isRTL`
+        // on BuildContext, and importing the app extension makes it ambiguous.
+        textDirection: ContextExtensions(context).isRTL ? TextDirection.rtl : TextDirection.ltr,
         child: CustomScrollView(
           slivers: [
             SliverToBoxAdapter(
               child: WGradientAppBar(title: 'settings_title'.tr(), subtitle: 'settings_subtitle'.tr()),
             ),
             SliverPadding(
-              padding: EdgeInsets.fromLTRB(19.w, 18.h, 19.w, 24.h),
+              padding: EdgeInsets.fromLTRB(19.w, isTab ? 14 : 18.h, 19.w, isTab ? 20 : 24.h),
               sliver: SliverList.list(
                 children: [
                   const WProfileCard(),
-                  SizedBox(height: 15.h),
+                  SizedBox(height: isTab ? 12 : 15.h),
                   WSettingsSectionLabel('settings_general'.tr()),
                   WSettingsGroup(
                     children: [
@@ -80,7 +84,7 @@ class _SNSettingsState extends State<SNSettings> {
                     ],
                   ),
                   const _AlarmPermissionsSection(),
-                  SizedBox(height: 15.h),
+                  SizedBox(height: isTab ? 12 : 15.h),
                   WSettingsSectionLabel('settings_about_app'.tr()),
                   WSettingsGroup(
                     children: [
@@ -99,7 +103,7 @@ class _SNSettingsState extends State<SNSettings> {
                       ),
                     ],
                   ),
-                  SizedBox(height: 19.h),
+                  SizedBox(height: isTab ? 16 : 19.h),
                   const WAppFooter(),
                 ],
               ),
@@ -159,7 +163,7 @@ class _AlarmPermissionsSection extends StatelessWidget {
           final cubit = Modular.get<CBAdhanSettings>();
           return Column(
             children: [
-              SizedBox(height: 15.h),
+              SizedBox(height: context.isTablet ? 12 : 15.h),
               WSettingsSectionLabel('alarm_perm_section'.tr()),
               WSettingsGroup(
                 children: [

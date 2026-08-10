@@ -9,6 +9,7 @@ import 'package:quran/core/theme/app_text_styles.dart';
 import 'package:quran/modules/quran/domain/entities/e_daily_verse.dart';
 import 'package:quran/modules/quran/presentation/cubits/cb_daily_verse.dart';
 import 'package:quran/modules/quran/presentation/cubits/s_daily_verse.dart';
+import 'package:quran/modules/quran/presentation/cubits/s_surah_list.dart' show LoadStatus;
 
 /// Converts Western digits in [value] to Arabic-Indic glyphs (٠..٩).
 String _toArabicDigits(int value) {
@@ -44,18 +45,27 @@ class WHomeVerseCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    if (_static) return _card(context, verse);
+    if (_static) return _card(context, verse, loading: false);
     return BlocBuilder<CBDailyVerse, SDailyVerse>(
       bloc: Modular.get<CBDailyVerse>(),
-      builder: (_, state) => _card(context, state.verse),
+      builder: (_, state) => _card(context, state.verse, loading: state.status == LoadStatus.loading),
     );
   }
 
-  Widget _card(BuildContext context, EDailyVerse? verse) {
+  /// Floor for the daily card so a one-line ayah still reads as a card rather
+  /// than a strip. It is a MINIMUM, never a fixed height: the card was pinned
+  /// to this and a two-line verse needs about 169.h, so the second line was
+  /// laid out and then sliced through the middle of its glyphs.
+  static double get _minHeight => 154;
+
+  Widget _card(BuildContext context, EDailyVerse? verse, {required bool loading}) {
     final body = Padding(
-      padding: EdgeInsets.symmetric(horizontal: 18.w, vertical: 10.h),
+      padding: EdgeInsets.symmetric(horizontal: 18.w, vertical: 12.h),
       child: Column(
-        mainAxisSize: _static ? MainAxisSize.min : MainAxisSize.max,
+        // Always min: the column asks for the height its text actually needs
+        // and the card grows to it, instead of the text being squeezed into
+        // whatever the card had left over.
+        mainAxisSize: MainAxisSize.min,
         children: [
           CircleAvatar(
             radius: 20.r,
@@ -64,47 +74,69 @@ class WHomeVerseCard extends StatelessWidget {
           ),
           SizedBox(height: 2.h),
           Text(label ?? 'home_verse_label'.tr(), style: AppTextStyles.grey12W400),
-          if (_static) ...[
-            SizedBox(height: 8.h),
-            _verseText(verse, maxLines: null),
-            SizedBox(height: 6.h),
-          ] else
-            Expanded(child: Center(child: _verseText(verse, maxLines: 2))),
+          SizedBox(height: 8.h),
+          _verseText(verse, maxLines: _static ? null : 2),
+          SizedBox(height: 8.h),
           Text(_sourceLabel(verse), maxLines: 1, overflow: TextOverflow.ellipsis, style: AppTextStyles.grey14W400),
         ],
       ),
     );
 
-    final decorated = Stack(
-      children: [
-        Positioned.fill(
-          child: Container(
-            decoration: BoxDecoration(
-              border: Border.all(color: gold, width: 1.2),
-              borderRadius: BorderRadius.circular(12.r),
-              gradient: const LinearGradient(
-                begin: Alignment.topLeft,
-                end: Alignment.bottomRight,
-                colors: [Color(0xFFFFF6DE), Color(0xFFF4DDA8)],
+    // The daily card keeps a floor and centres inside it; the static one is
+    // free to be exactly as tall as its (uncapped) ayah.
+    final content = _static
+        ? body
+        : ConstrainedBox(
+            constraints: BoxConstraints(minHeight: _minHeight.h),
+            child: Center(child: body),
+          );
+
+    final decorated = DecoratedBox(
+      // The shadow lives out here, outside the clip — inside it the ClipRRect
+      // would cut it off at the card's own edge and erase it.
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(12.r),
+        boxShadow: const [BoxShadow(color: Color(0x18000000), blurRadius: 12, offset: Offset(0, 5))],
+      ),
+      child: ClipRRect(
+        // Keeps the decorative ring inside the rounded corner instead of
+        // letting it paint across the gold border.
+        borderRadius: BorderRadius.circular(12.r),
+        child: Stack(
+          children: [
+            Positioned.fill(
+              child: DecoratedBox(
+                decoration: BoxDecoration(
+                  border: Border.all(color: gold, width: 1.2),
+                  borderRadius: BorderRadius.circular(12.r),
+                  gradient: const LinearGradient(
+                    begin: Alignment.topLeft,
+                    end: Alignment.bottomRight,
+                    colors: [Color(0xFFFFF6DE), Color(0xFFF4DDA8)],
+                  ),
+                ),
               ),
-              boxShadow: const [BoxShadow(color: Color(0x18000000), blurRadius: 12, offset: Offset(0, 5))],
             ),
-          ),
-        ),
-        Positioned(
-          top: 4.h,
-          right: 5.w,
-          child: Container(
-            width: 86.r,
-            height: 86.r,
-            decoration: BoxDecoration(
-              shape: BoxShape.circle,
-              border: Border.all(color: gold.withValues(alpha: 0.13), width: 6.r),
+            Positioned(
+              top: 4.h,
+              right: 5.w,
+              child: Container(
+                width: 86.r,
+                height: 86.r,
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  border: Border.all(color: gold.withValues(alpha: 0.13), width: 6.r),
+                ),
+              ),
             ),
-          ),
+            // Sizes the Stack — everything else is positioned around it.
+            content,
+            // Manual "another verse" control — always on the side opposite the
+            // decorative circle, so it never sits on top of it in either direction.
+            if (!_static) Positioned(top: 4.h, left: 4.w, child: _refreshButton(loading)),
+          ],
         ),
-        if (_static) body else Positioned.fill(child: body),
-      ],
+      ),
     );
 
     if (_static) return decorated;
@@ -114,30 +146,56 @@ class WHomeVerseCard extends StatelessWidget {
       onTap: verse == null
           ? null
           : () => Modular.to.pushNamed(QuranRoutes.readerFromAyah(verse.surahNumber, verse.ayah)),
-      child: SizedBox(height: 154.h, child: decorated),
+      child: decorated,
+    );
+  }
+
+  /// Small circular button that swaps the card for another ayah. Shows a
+  /// spinner instead of the icon while the next verse is being resolved.
+  Widget _refreshButton(bool loading) {
+    return Tooltip(
+      message: 'home_verse_refresh'.tr(),
+      child: InkResponse(
+        radius: 20.r,
+        onTap: loading ? null : Modular.get<CBDailyVerse>().next,
+        child: Padding(
+          padding: EdgeInsets.all(6.r),
+          child: SizedBox(
+            width: 20.r,
+            height: 20.r,
+            child: loading
+                ? CircularProgressIndicator(strokeWidth: 2, color: gold)
+                : Icon(Icons.refresh_rounded, size: 20.r, color: gold),
+          ),
+        ),
+      ),
     );
   }
 
   /// The verse text wrapped with the start/end ornaments. Falls back to the
   /// bundled sample verse while the daily verse is still loading. A `null`
   /// [maxLines] lets the full ayah wrap (used by the static variant).
+  ///
+  /// The ornaments are U+FD3E/U+FD3F ORNATE PARENTHESIS — the characters Arabic
+  /// typography uses to frame a quoted ayah — rather than images. The PNGs that
+  /// were here had been flattened onto an opaque beige, so each one painted a
+  /// small dull rectangle over the card's gradient. Glyphs also scale with the
+  /// text and take the card's gold, which a fixed-height bitmap cannot.
   Widget _verseText(EDailyVerse? verse, {required int? maxLines}) {
     final text = verse?.text ?? 'home_verse'.tr();
-    WidgetSpan ornament(String asset) => WidgetSpan(
-      alignment: PlaceholderAlignment.middle,
-      child: Padding(
-        padding: EdgeInsets.symmetric(horizontal: 4.w),
-        child: Image.asset(asset, height: 15.sp),
-      ),
-    );
+    final ornamentStyle = TextStyle(color: gold, fontSize: 20.sp);
 
     return Text.rich(
       TextSpan(
         style: GoogleFonts.amiri(textStyle: AppTextStyles.ink18W400, height: 1.6),
         children: [
-          if (maxLines != null) ornament('assets/images/verse_ornament_start.png'),
+          // Neither character is bidi-mirrored, so each renders exactly as its
+          // name says. In RTL the logically-first span sits on the RIGHT, which
+          // is where U+FD3F ORNATE RIGHT PARENTHESIS belongs; U+FD3E closes on
+          // the left. Swapping them turns both brackets the wrong way round.
+          if (maxLines != null) TextSpan(text: '﴿ ', style: ornamentStyle),
           TextSpan(text: text),
-          if (maxLines != null) ornament('assets/images/verse_ornament_end.png'),
+          if (maxLines != null) TextSpan(text: ' ﴾', style: ornamentStyle),
         ],
       ),
       textAlign: TextAlign.center,

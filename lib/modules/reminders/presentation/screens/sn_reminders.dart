@@ -7,6 +7,7 @@ import 'package:permission_handler/permission_handler.dart';
 import 'package:quran/core/services/routes/routes_names.dart';
 import 'package:quran/core/theme/app_colors.dart';
 import 'package:quran/core/theme/brand_colors.dart';
+import 'package:quran/core/utils/helper/app_alert.dart';
 import 'package:quran/core/widgets/w_shared_scaffold.dart';
 import 'package:quran/modules/reminders/presentation/cubits/cb_reminders.dart';
 import 'package:quran/modules/reminders/presentation/cubits/s_reminders.dart';
@@ -102,9 +103,7 @@ class SNReminders extends StatelessWidget {
 
   void _openForm(BuildContext context, SReminders state, {String? id}) {
     if (id == null && state.isAtCap) {
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(SnackBar(content: Text('reminders_max_reached'.tr())));
+      AppAlert.error('reminders_max_reached'.tr());
       return;
     }
     Modular.to.pushNamed(RemindersRoutes.fullForm(id: id));

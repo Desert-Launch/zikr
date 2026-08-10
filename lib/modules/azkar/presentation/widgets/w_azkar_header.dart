@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:localize_and_translate/localize_and_translate.dart';
+import 'package:quran/core/extension/build_context.dart';
 import 'package:quran/core/widgets/w_localize_rotation.dart';
 import 'package:quran/modules/azkar/presentation/widgets/w_azkar_outline_circle.dart';
 import 'package:quran/modules/azkar/presentation/widgets/w_azkar_stat_card.dart';
@@ -32,7 +33,7 @@ class WAzkarHeader extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      height: 228.h,
+      height: context.isTablet ? 160.h : 228.h,
       padding: EdgeInsets.fromLTRB(0.w, 8.h, 0.w, 0.h),
       decoration: BoxDecoration(
         color: green,
@@ -67,10 +68,7 @@ class WAzkarHeader extends StatelessWidget {
                         onPressed: onBack,
                         icon: const WLocalizeRotation(
                           reverse: true,
-                          child: Icon(
-                            Icons.arrow_back_rounded,
-                            color: Colors.white,
-                          ),
+                          child: Icon(Icons.arrow_back_rounded, color: Colors.white),
                         ),
                       ),
                       SizedBox(width: 8.w),
@@ -94,10 +92,7 @@ class WAzkarHeader extends StatelessWidget {
                             SizedBox(height: 5.h),
                             Text(
                               'azkar_header_subtitle'.tr(),
-                              style: TextStyle(
-                                color: Colors.white.withValues(alpha: 0.72),
-                                fontSize: 10.sp,
-                              ),
+                              style: TextStyle(color: Colors.white.withValues(alpha: 0.72), fontSize: 10.sp),
                             ),
                           ],
                         ),
@@ -113,31 +108,19 @@ class WAzkarHeader extends StatelessWidget {
                 ),
                 const Spacer(),
                 Padding(
-                  padding: EdgeInsets.symmetric(
-                    horizontal: 20.w,
-                    vertical: 20.h,
-                  ),
+                  padding: EdgeInsets.symmetric(horizontal: 20.w, vertical: 20.h),
                   child: Row(
                     children: [
                       Expanded(
-                        child: WAzkarStatCard(
-                          value: favorites,
-                          label: 'azkar_favorites'.tr(),
-                        ),
+                        child: WAzkarStatCard(value: favorites, label: 'azkar_favorites'.tr()),
                       ),
                       SizedBox(width: 10.w),
                       Expanded(
-                        child: WAzkarStatCard(
-                          value: completedToday,
-                          label: 'azkar_completed_today'.tr(),
-                        ),
+                        child: WAzkarStatCard(value: completedToday, label: 'azkar_completed_today'.tr()),
                       ),
                       SizedBox(width: 10.w),
                       Expanded(
-                        child: WAzkarStatCard(
-                          value: categoryCount,
-                          label: 'azkar_categories'.tr(),
-                        ),
+                        child: WAzkarStatCard(value: categoryCount, label: 'azkar_categories'.tr()),
                       ),
                     ],
                   ),
