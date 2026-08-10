@@ -9,6 +9,7 @@ import 'package:quran/core/widgets/w_shared_scaffold.dart';
 import 'package:quran/modules/adhan/services/adhan_scheduler.dart';
 import 'package:quran/modules/prayer/data/models/m_prayer_settings.dart';
 import 'package:quran/modules/prayer/data/sources/local/box_prayer_settings.dart';
+import 'package:quran/modules/prayer/domain/entities/e_location_failure.dart';
 import 'package:quran/modules/prayer/domain/entities/e_prayer.dart';
 import 'package:quran/modules/prayer/presentation/cubits/cb_prayer_times.dart';
 import 'package:quran/modules/prayer/presentation/cubits/s_prayer_times.dart';
@@ -23,7 +24,8 @@ class SNPrayerTimes extends StatefulWidget {
   State<SNPrayerTimes> createState() => _SNPrayerTimesState();
 }
 
-class _SNPrayerTimesState extends State<SNPrayerTimes> {
+class _SNPrayerTimesState extends State<SNPrayerTimes>
+    with WidgetsBindingObserver {
   static const _green = Color(0xFF007A58);
   static const _gold = Color(0xFFD6A72C);
   static const _canvas = Color(0xFFF8F7F4);
@@ -36,6 +38,7 @@ class _SNPrayerTimesState extends State<SNPrayerTimes> {
   @override
   void initState() {
     super.initState();
+    WidgetsBinding.instance.addObserver(this);
     _ticker = Timer.periodic(const Duration(seconds: 1), (_) {
       if (mounted) setState(() {});
     });
@@ -44,8 +47,23 @@ class _SNPrayerTimesState extends State<SNPrayerTimes> {
 
   @override
   void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
     _ticker?.cancel();
     super.dispose();
+  }
+
+  /// Picks the times up again when the user comes back from the system settings
+  /// [CBPrayerTimes.retry] sent them to.
+  ///
+  /// Without this the screen would still be showing "location is off" after
+  /// they had just switched it on, and the retry button would read as broken
+  /// for a second time. Guarded on there being nothing to show, so returning to
+  /// a screen that already has times never triggers a fetch.
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    if (state != AppLifecycleState.resumed) return;
+    if (_cubit.state.slots.isNotEmpty) return;
+    _cubit.refresh();
   }
 
   @override
@@ -81,8 +99,15 @@ class _SNPrayerTimesState extends State<SNPrayerTimes> {
                     child: WPrayerMessageView(
                       icon: Icons.location_off_rounded,
                       title: 'prayer_permission_title'.tr(),
-                      message: state.error ?? 'prayer_permission_body'.tr(),
-                      onRetry: _cubit.refresh,
+                      // The reason, translated. `state.error` is the raw
+                      // English detail the failing layer produced and belongs
+                      // in the log, not on screen — rendering it here is what
+                      // put "Location services are disabled" under an Arabic
+                      // heading.
+                      message: (state.locationFailure?.messageKey ??
+                              'prayer_permission_body')
+                          .tr(),
+                      onRetry: _cubit.retry,
                     ),
                   )
                 else if (state.slots.isEmpty &&
@@ -91,7 +116,7 @@ class _SNPrayerTimesState extends State<SNPrayerTimes> {
                     child: WPrayerMessageView(
                       icon: Icons.error_outline_rounded,
                       title: 'common_error'.tr(),
-                      message: state.error ?? 'common_error'.tr(),
+                      message: 'prayer_times_error_body'.tr(),
                       onRetry: _cubit.refresh,
                     ),
                   )

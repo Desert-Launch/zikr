@@ -8,6 +8,7 @@ import 'package:quran/modules/prayer/data/models/m_prayer_cache.dart';
 import 'package:quran/modules/prayer/data/models/m_prayer_timings.dart';
 import 'package:quran/modules/prayer/data/sources/local/box_prayer_cache.dart';
 import 'package:quran/modules/prayer/data/sources/local/box_prayer_settings.dart';
+import 'package:quran/modules/prayer/domain/entities/e_location_failure.dart';
 import 'package:quran/modules/prayer/domain/entities/e_prayer.dart';
 import 'package:quran/modules/prayer/domain/entities/param_prayer_times.dart';
 import 'package:quran/modules/prayer/domain/usecases/uc_get_prayer_times.dart';
@@ -69,6 +70,31 @@ class CBPrayerTimes extends Cubit<SPrayerTimes> {
         PrayerSlot(prayer: EPrayer.isha, time: c.isha),
       ];
 
+  /// The action behind the prayer screen's retry button.
+  ///
+  /// [refresh] already re-asks for the permission — `DSLocation` requests it on
+  /// every attempt — so for an ordinary refusal a plain retry is the whole fix,
+  /// and the OS dialog comes back up.
+  ///
+  /// It is the other two cases that need this method. With device location
+  /// switched off no dialog can appear at all, and after a permanent refusal
+  /// the OS declines every request without showing one — so retrying would
+  /// re-run the same failure and the button would look broken. There the only
+  /// thing that moves the user forward is the settings page that owns the
+  /// decision; [SNPrayerTimes] refreshes when they come back from it.
+  Future<void> retry() async {
+    final failure = state.locationFailure;
+    if (failure == null || !failure.needsSystemSettings) {
+      await refresh();
+      return;
+    }
+    if (failure == ELocationFailure.serviceDisabled) {
+      await _location.openLocationSettings();
+    } else {
+      await _location.openAppSettings();
+    }
+  }
+
   /// Re-fetches GPS, pulls today's timings from Aladhan, persists to cache,
   /// and reschedules today's notifications.
   Future<void> refresh() async {
@@ -77,12 +103,13 @@ class CBPrayerTimes extends Cubit<SPrayerTimes> {
     try {
       loc = await _location.currentPosition();
     } on LocationException catch (e) {
-      AppLogger.warning('Location failed: ${e.message}', tag: 'CBPrayerTimes');
+      AppLogger.warning('Location failed: $e', tag: 'CBPrayerTimes');
       // Fall back to cache if we have one, else surface a permission error.
       if (state.slots.isEmpty) {
         emit(state.copyWith(
           status: PrayerLoadStatus.permissionDenied,
           error: e.message,
+          locationFailure: e.reason,
         ));
       } else {
         emit(state.copyWith(status: PrayerLoadStatus.success));
@@ -142,7 +169,40 @@ class CBPrayerTimes extends Cubit<SPrayerTimes> {
         // Rebuild the rolling adhan window in the background — don't block the
         // UI on 7 days of timing fetches.
         unawaited(_scheduler.reschedule());
+        unawaited(_loadTomorrow(loc));
       },
+    );
+  }
+
+  /// Resolves tomorrow's timings so the card can roll over the moment today's
+  /// isha passes, instead of sitting on a spent day until midnight.
+  ///
+  /// Usually free: [AdhanScheduler] pre-fetches a two-week window into the same
+  /// per-date cache [UCGetPrayerTimes] reads through, so this normally returns
+  /// without touching the network. Failure is not surfaced — the card falls
+  /// back to [SPrayerTimes.nextDaySlots].
+  Future<void> _loadTomorrow(LocationResult loc) async {
+    final now = DateTime.now();
+    final result = await _getTimes(
+      ParamPrayerTimes(
+        latitude: loc.latitude,
+        longitude: loc.longitude,
+        method: PrayerMethodMapper.methodForCountry(loc.countryCode),
+        school: _settingsBox.current().madhabIndex.clamp(0, 1),
+        // Day arithmetic, not a 24h add — DateTime normalises the overflow, so
+        // this stays right across month ends and DST.
+        date: DateTime(now.year, now.month, now.day + 1),
+        countryCode: loc.countryCode,
+        cityLabel: loc.label,
+      ),
+    );
+    if (isClosed) return;
+    result.fold(
+      (failure) => AppLogger.warning(
+        "Tomorrow's timings failed: ${failure.message}",
+        tag: 'CBPrayerTimes',
+      ),
+      (timings) => emit(state.copyWith(tomorrowSlots: _slotsFromTimings(timings))),
     );
   }
 

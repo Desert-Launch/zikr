@@ -7,10 +7,12 @@ import 'package:flutter_compass/flutter_compass.dart';
 import 'package:flutter_modular/flutter_modular.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:localize_and_translate/localize_and_translate.dart';
+import 'package:quran/core/services/logging/app_logger.dart';
 import 'package:quran/core/widgets/w_gradient_app_bar.dart';
 import 'package:quran/core/widgets/w_shared_scaffold.dart';
 import 'package:quran/modules/prayer/data/datasources/local/ds_location.dart';
 import 'package:quran/modules/prayer/data/sources/local/box_prayer_cache.dart';
+import 'package:quran/modules/prayer/domain/entities/e_location_failure.dart';
 import 'package:quran/modules/qibla/presentation/widgets/w_compass_dial.dart';
 import 'package:quran/modules/qibla/presentation/widgets/w_qibla_error_state.dart';
 import 'package:quran/modules/qibla/presentation/widgets/w_qibla_info_card.dart';
@@ -23,7 +25,7 @@ class SNQibla extends StatefulWidget {
   State<SNQibla> createState() => _SNQiblaState();
 }
 
-class _SNQiblaState extends State<SNQibla> {
+class _SNQiblaState extends State<SNQibla> with WidgetsBindingObserver {
   // Brand palette for this screen.
   static const _green = Color(0xFF0E6B47);
   static const _gold = Color(0xFFC9A227);
@@ -40,7 +42,16 @@ class _SNQiblaState extends State<SNQibla> {
   double? _qiblaBearing;
   double? _distanceKm;
   String? _city;
-  String? _error;
+
+  /// Why the location lookup failed, when it was a location problem — held as a
+  /// reason rather than a message so the body can be translated and the retry
+  /// can pick the recovery that actually works. See [ELocationFailure].
+  ELocationFailure? _locationFailure;
+
+  /// i18n key for anything else that went wrong.
+  String? _errorKey;
+
+  bool get _hasError => _locationFailure != null || _errorKey != null;
   StreamSubscription<CompassEvent>? _compassSub;
   double _heading = 0;
   bool _hasMagnetometer = true;
@@ -50,14 +61,42 @@ class _SNQiblaState extends State<SNQibla> {
   @override
   void initState() {
     super.initState();
+    WidgetsBinding.instance.addObserver(this);
     _loadLocation();
     _wireCompass();
   }
 
   @override
   void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
     _compassSub?.cancel();
     super.dispose();
+  }
+
+  /// Picks the location up again when the user returns from the settings page
+  /// [_retryLocation] sent them to — otherwise the screen would still be
+  /// showing the same error they had just gone and fixed.
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    if (state == AppLifecycleState.resumed && _hasError) _loadLocation();
+  }
+
+  /// Retry behind the error state's button — the same reasoning as
+  /// [CBPrayerTimes.retry]: re-asking only helps while the OS will still show
+  /// its dialog, so a switched-off service or a permanent refusal has to be
+  /// sent to the settings page that owns it instead.
+  Future<void> _retryLocation() async {
+    final failure = _locationFailure;
+    if (failure == null || !failure.needsSystemSettings) {
+      await _loadLocation();
+      return;
+    }
+    final location = Modular.get<DSLocation>();
+    if (failure == ELocationFailure.serviceDisabled) {
+      await location.openLocationSettings();
+    } else {
+      await location.openAppSettings();
+    }
   }
 
   Future<void> _loadLocation() async {
@@ -76,16 +115,25 @@ class _SNQiblaState extends State<SNQibla> {
           lng = loc.longitude;
         }
       } on LocationException catch (e) {
-        setState(() => _error = e.message);
+        AppLogger.warning('Qibla location failed: $e', tag: 'SNQibla');
+        setState(() {
+          _locationFailure = e.reason;
+          _errorKey = null;
+        });
         return;
-      } catch (e) {
-        setState(() => _error = e.toString());
+      } catch (e, st) {
+        AppLogger.error('Qibla location', error: e, stackTrace: st, tag: 'SNQibla');
+        setState(() {
+          _locationFailure = null;
+          _errorKey = 'qibla_no_location_body';
+        });
         return;
       }
     }
     if (lat == null || lng == null) return;
     setState(() {
-      _error = null;
+      _locationFailure = null;
+      _errorKey = null;
       _qiblaBearing = _bearingTo(lat!, lng!, _kaabaLat, _kaabaLng);
       _distanceKm = _haversineKm(lat, lng, _kaabaLat, _kaabaLng);
     });
@@ -172,14 +220,17 @@ class _SNQiblaState extends State<SNQibla> {
         ),
       );
     }
-    if (_error != null) {
+    if (_hasError) {
       return Padding(
         padding: EdgeInsets.only(top: 60.h),
         child: WQiblaErrorState(
           icon: Icons.location_off_rounded,
           title: 'qibla_no_location_title'.tr(),
-          body: _error ?? '',
-          onRetry: _loadLocation,
+          body: (_locationFailure?.messageKey ??
+                  _errorKey ??
+                  'qibla_no_location_body')
+              .tr(),
+          onRetry: _retryLocation,
         ),
       );
     }

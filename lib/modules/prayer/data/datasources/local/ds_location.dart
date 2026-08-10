@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:geocoding/geocoding.dart';
 import 'package:geolocator/geolocator.dart';
+import 'package:quran/modules/prayer/domain/entities/e_location_failure.dart';
 
 class LocationResult {
   const LocationResult({
@@ -30,18 +31,30 @@ class DSLocation {
   }) async {
     final serviceOn = await Geolocator.isLocationServiceEnabled();
     if (!serviceOn) {
-      throw const LocationException('Location services are disabled');
+      throw const LocationException(
+        ELocationFailure.serviceDisabled,
+        'Location services are disabled',
+      );
     }
 
+    // Asking every time is the point: this is what a retry after a declined
+    // prompt re-runs, and the OS shows the dialog again as long as the refusal
+    // was not permanent.
     var permission = await Geolocator.checkPermission();
     if (permission == LocationPermission.denied) {
       permission = await Geolocator.requestPermission();
     }
     if (permission == LocationPermission.deniedForever) {
-      throw const LocationException('Location permission permanently denied');
+      throw const LocationException(
+        ELocationFailure.deniedForever,
+        'Location permission permanently denied',
+      );
     }
     if (permission == LocationPermission.denied) {
-      throw const LocationException('Location permission not granted');
+      throw const LocationException(
+        ELocationFailure.denied,
+        'Location permission not granted',
+      );
     }
 
     // Try a fresh fix first. A cold GPS start — e.g. right after the user
@@ -73,6 +86,14 @@ class DSLocation {
     );
   }
 
+  /// Opens the system location settings, where device location can be switched
+  /// back on. Returns whether the screen was opened.
+  Future<bool> openLocationSettings() => Geolocator.openLocationSettings();
+
+  /// Opens this app's own settings page — the only place a permanently denied
+  /// permission can be granted again.
+  Future<bool> openAppSettings() => Geolocator.openAppSettings();
+
   /// Best-effort reverse geocode → (city label, ISO-2 country code). Never
   /// throws: on any platform/network error returns ('', null) so prayer-time
   /// fetching still proceeds with the default calculation method.
@@ -94,8 +115,14 @@ class DSLocation {
 }
 
 class LocationException implements Exception {
-  const LocationException(this.message);
+  const LocationException(this.reason, this.message);
+
+  /// What went wrong, in a form the UI can translate and act on.
+  final ELocationFailure reason;
+
+  /// Untranslated detail, for logs only — never put this on screen.
   final String message;
+
   @override
-  String toString() => 'LocationException: $message';
+  String toString() => 'LocationException(${reason.name}): $message';
 }
