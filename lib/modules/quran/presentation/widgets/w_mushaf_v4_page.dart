@@ -3,6 +3,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_modular/flutter_modular.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:quran/core/extension/build_context.dart';
 import 'package:quran/core/theme/app_colors.dart';
 import 'package:quran/core/theme/brand_colors.dart';
 import 'package:quran/modules/quran/data/datasources/local/ds_local_quran.dart';
@@ -81,9 +82,7 @@ class _WMushafV4PageState extends State<WMushafV4Page> {
   /// back to its widest line.
   double _printSize(double width, String fontFamily) {
     final cached = _printSizeCache;
-    if (cached != null &&
-        _printSizeWidth == width &&
-        _printSizeFamily == fontFamily) {
+    if (cached != null && _printSizeWidth == width && _printSizeFamily == fontFamily) {
       return cached;
     }
 
@@ -92,11 +91,7 @@ class _WMushafV4PageState extends State<WMushafV4Page> {
     var widestJustified = 0.0;
     for (final block in widget.layout.blocks) {
       if (block is! MQpcV4LineBlock) continue;
-      final natural = mushafLineNaturalWidth(
-        block,
-        fontFamily: fontFamily,
-        size: measure,
-      );
+      final natural = mushafLineNaturalWidth(block, fontFamily: fontFamily, size: measure);
       if (natural > widest) widest = natural;
       if (!block.isCentered && natural > widestJustified) {
         widestJustified = natural;
@@ -142,8 +137,14 @@ class _WMushafV4PageState extends State<WMushafV4Page> {
         Map<String, String?> bookmarks,
       })
     >(
-      selector: (s) =>
-          (selected: s.selectedAyah, theme: s.theme, mode: s.fontMode, fontScale: s.fontScale, bold: s.bold, bookmarks: s.bookmarks),
+      selector: (s) => (
+        selected: s.selectedAyah,
+        theme: s.theme,
+        mode: s.fontMode,
+        fontScale: s.fontScale,
+        bold: s.bold,
+        bookmarks: s.bookmarks,
+      ),
       builder: (context, view) {
         final isDark = view.theme == ReaderTheme.dark;
         final tajweed = view.mode == EQuranFontMode.tajweedV4;
@@ -179,10 +180,7 @@ class _WMushafV4PageState extends State<WMushafV4Page> {
             // before a single line is built — hence the outer LayoutBuilder.
             return LayoutBuilder(
               builder: (context, pageConstraints) {
-                final baseSize = _printSize(
-                  pageConstraints.maxWidth - hPad * 2,
-                  fontFamily,
-                );
+                final baseSize = _printSize(pageConstraints.maxWidth - hPad * 2, fontFamily);
                 final lineWidgets = _blockWidgets(
                   context: context,
                   cubit: cubit,
@@ -260,7 +258,7 @@ class _WMushafV4PageState extends State<WMushafV4Page> {
                           Center(
                             child: Text(
                               '$page',
-                              style: TextStyle(fontSize: 11.sp, color: muted),
+                              style: TextStyle(fontSize: context.isTablet ? 18.sp : 11.sp, color: muted),
                             ),
                           ),
                         ],
@@ -274,10 +272,7 @@ class _WMushafV4PageState extends State<WMushafV4Page> {
                 // must NOT have one — a second scrollable inside the list is
                 // exactly what makes a drag stop dead at a page boundary.
                 if (widget.continuousHeight != null) return body;
-                return SingleChildScrollView(
-                  physics: const ClampingScrollPhysics(),
-                  child: body,
-                );
+                return SingleChildScrollView(physics: const ClampingScrollPhysics(), child: body);
               },
             );
           },

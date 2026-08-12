@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:quran/core/extension/build_context.dart';
 import 'package:quran/modules/quran/presentation/cubits/cb_mushaf_reader.dart';
 
 /// Printed-Mushaf style page chrome at the top of each page: the surah name on
@@ -9,12 +10,7 @@ import 'package:quran/modules/quran/presentation/cubits/cb_mushaf_reader.dart';
 /// Kept deliberately plain — no borders or medallions — so it reads as page
 /// running-head, not a surah banner. Shared by the QPC and tajweed renderers.
 class WMushafPageHeader extends StatelessWidget {
-  const WMushafPageHeader({
-    required this.surahName,
-    required this.page,
-    required this.color,
-    super.key,
-  });
+  const WMushafPageHeader({required this.surahName, required this.page, required this.color, super.key});
 
   /// Arabic name of the surah at the top of the page.
   final String surahName;
@@ -41,7 +37,7 @@ class WMushafPageHeader extends StatelessWidget {
                 maxLines: 1,
                 overflow: TextOverflow.ellipsis,
                 style: GoogleFonts.amiri(
-                  fontSize: 13.sp,
+                  fontSize: context.isTablet ? 20.sp : 13.sp,
                   fontWeight: FontWeight.w700,
                   color: color,
                   height: 1.1,
@@ -52,11 +48,7 @@ class WMushafPageHeader extends StatelessWidget {
             // End (left in RTL) → juz' number.
             Text(
               'الجزء ${CBMushafReader.juzForPage(page)}',
-              style: TextStyle(
-                fontSize: 11.sp,
-                fontWeight: FontWeight.w500,
-                color: color,
-              ),
+              style: TextStyle(fontSize: context.isTablet ? 20.sp : 11.sp, fontWeight: FontWeight.w500, color: color),
             ),
           ],
         ),
