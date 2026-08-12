@@ -12,11 +12,7 @@ import 'package:quran/modules/azkar/presentation/widgets/w_azkar_counter_card.da
 import 'package:quran/modules/azkar/presentation/widgets/w_azkar_virtue_card.dart';
 
 class SNAzkarPlayer extends StatefulWidget {
-  const SNAzkarPlayer({
-    super.key,
-    required this.categoryId,
-    this.itemIndex = 0,
-  });
+  const SNAzkarPlayer({super.key, required this.categoryId, this.itemIndex = 0});
 
   final String categoryId;
   final int itemIndex;
@@ -32,9 +28,7 @@ class _SNAzkarPlayerState extends State<SNAzkarPlayer> {
 
   late final CBAzkarSession _cubit = Modular.get<CBAzkarSession>();
   late final BoxAzkarFavorite _favorites = Modular.get<BoxAzkarFavorite>();
-  late final PageController _pageController = PageController(
-    initialPage: widget.itemIndex,
-  );
+  late final PageController _pageController = PageController(initialPage: widget.itemIndex);
 
   @override
   void initState() {
@@ -67,8 +61,7 @@ class _SNAzkarPlayerState extends State<SNAzkarPlayer> {
           listenWhen: (prev, curr) => prev.itemIndex != curr.itemIndex,
           listener: (_, state) {
             if (!_pageController.hasClients) return;
-            final current =
-                _pageController.page?.round() ?? _pageController.initialPage;
+            final current = _pageController.page?.round() ?? _pageController.initialPage;
             if (current != state.itemIndex) {
               _pageController.animateToPage(
                 state.itemIndex,
@@ -86,20 +79,15 @@ class _SNAzkarPlayerState extends State<SNAzkarPlayer> {
               children: [
                 WAzkarHeader(
                   green: _green,
-                  title: LocalizeAndTranslate.getLanguageCode() == 'ar'
-                      ? category.nameAr
-                      : category.nameEn,
+                  title: LocalizeAndTranslate.getLanguageCode() == 'ar' ? category.nameAr : category.nameEn,
                   categoryCount: category.items.length,
-                  completedToday: category.items
-                      .where((item) => state.isComplete(item))
-                      .length,
+                  completedToday: category.items.where((item) => state.isComplete(item)).length,
                   favorites: _favorites.all().length,
                   onBack: Modular.to.pop,
                 ),
                 Expanded(
                   child: PageView.builder(
                     controller: _pageController,
-                    reverse: true,
                     itemCount: category.items.length,
                     onPageChanged: _cubit.jumpTo,
                     itemBuilder: (_, index) {
