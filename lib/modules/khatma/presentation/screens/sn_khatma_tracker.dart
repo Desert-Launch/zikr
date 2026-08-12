@@ -44,14 +44,14 @@ class SNKhatmaTracker extends StatelessWidget {
             });
             return const Scaffold(body: SizedBox.shrink());
           }
-          return WSharedScaffold(
+          final tracker = WSharedScaffold(
             backgroundColor: _canvas,
             withSafeArea: false,
             padding: EdgeInsets.zero,
             body: ListView(
               padding: EdgeInsets.zero,
               children: [
-                WGradientAppBar(title: 'khatma_wird_title'.tr()),
+                WGradientAppBar(title: 'khatma_wird_title'.tr(), onBack: _goHome),
                 Padding(
                   padding: EdgeInsets.fromLTRB(20.w, 30.h, 20.w, 28.h),
                   child: Column(
@@ -118,10 +118,22 @@ class SNKhatmaTracker extends StatelessWidget {
               ],
             ),
           );
+          // Once a plan is running the tracker is the khatma landing screen, so
+          // backing out of it goes straight home instead of unwinding through
+          // the plan/wird pickers that were used to start the khatma.
+          return PopScope(
+            canPop: false,
+            onPopInvokedWithResult: (didPop, _) {
+              if (!didPop) _goHome();
+            },
+            child: tracker,
+          );
         },
       ),
     );
   }
+
+  void _goHome() => Modular.to.navigate(RoutesNames.homeBase);
 
   Future<void> _complete(BuildContext context, CBKhatma cubit, SKhatma state) async {
     if (state.completedToday > 0) {
