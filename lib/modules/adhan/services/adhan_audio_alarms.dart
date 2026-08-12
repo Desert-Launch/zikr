@@ -180,9 +180,7 @@ class AdhanAudioAlarms {
   /// notification and no full-screen alarm at all.
   Future<void> cancelAll({Set<int> except = const {}}) async {
     try {
-      await _channel.invokeMethod('cancelAll', {
-        'exceptIds': except.toList(),
-      });
+      await _channel.invokeMethod('cancelAll', {'exceptIds': except.toList()});
     } on MissingPluginException {
       // ignore — see [schedule].
     } catch (e) {
@@ -207,8 +205,7 @@ class AdhanAudioAlarms {
         canUseFullScreenIntent: raw['canUseFullScreenIntent'] as bool? ?? true,
         canDrawOverlays: raw['canDrawOverlays'] as bool? ?? true,
         isBatteryOptimized: raw['isBatteryOptimized'] as bool? ?? false,
-        hasOemAutostartManager:
-            raw['hasOemAutostartManager'] as bool? ?? false,
+        hasOemAutostartManager: raw['hasOemAutostartManager'] as bool? ?? false,
       );
     } on MissingPluginException {
       return const AdhanAlarmPermissions();

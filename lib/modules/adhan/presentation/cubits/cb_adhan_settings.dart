@@ -87,7 +87,6 @@ class CBAdhanSettings extends Cubit<SAdhanSettings> {
         fullScreenAlarm: s.fullScreenAlarm,
         alarmPermissions: alarmPerms,
         manufacturer: manufacturer,
-        vibrate: s.vibrate,
         preNotifyMinutesPerPrayer: _readPreNotify(p, s),
         selectedVoiceNameAr: voiceName,
         voiceIdPerPrayer: Map<String, String>.of(
@@ -155,14 +154,10 @@ class CBAdhanSettings extends Cubit<SAdhanSettings> {
     emit(state.copyWith(retryingDownload: true, clearError: true));
     final result = await _downloadVoice(voiceId);
     result.fold(
-      (failure) => emit(
-        state.copyWith(retryingDownload: false, error: failure.message),
-      ),
+      (failure) =>
+          emit(state.copyWith(retryingDownload: false, error: failure.message)),
       (_) => emit(
-        state.copyWith(
-          retryingDownload: false,
-          needsDefaultDownload: false,
-        ),
+        state.copyWith(retryingDownload: false, needsDefaultDownload: false),
       ),
     );
   }
@@ -264,9 +259,7 @@ class CBAdhanSettings extends Cubit<SAdhanSettings> {
       // alerts will deliver anything; Android's equivalent is a settings page,
       // which the readiness card links to instead.
       await _audioAlarms.requestAuthorization();
-      emit(
-        state.copyWith(alarmPermissions: await _audioAlarms.permissions()),
-      );
+      emit(state.copyWith(alarmPermissions: await _audioAlarms.permissions()));
     }
     _scheduleSoon();
   }
@@ -283,13 +276,6 @@ class CBAdhanSettings extends Cubit<SAdhanSettings> {
     final opened = await _audioAlarms.openOsSettings(which);
     await refreshAlarmPermissions();
     return opened;
-  }
-
-  Future<void> setVibrate(bool value) async {
-    final s = _adhanSettings.current()..vibrate = value;
-    await _adhanSettings.save(s);
-    emit(state.copyWith(vibrate: value));
-    _scheduleSoon();
   }
 
   /// Sets the pre-adhan reminder offset for a SINGLE prayer, so e.g. Fajr's
@@ -394,7 +380,9 @@ class CBAdhanSettings extends Cubit<SAdhanSettings> {
 
     const order = ['adhan', 'pre-adhan', 'test', 'other'];
     final b = StringBuffer();
-    b.writeln('\n┌────────────────────────────────────────────────────────────┐');
+    b.writeln(
+      '\n┌────────────────────────────────────────────────────────────┐',
+    );
     b.writeln('│  SCHEDULED NOTIFICATIONS · ${pending.length} total');
     b.writeln('├────────────────────────────────────────────────────────────┤');
     if (pending.isEmpty) {

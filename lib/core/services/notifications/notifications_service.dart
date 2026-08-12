@@ -202,7 +202,6 @@ class NotificationsService {
     required AndroidNotificationChannel channel,
     NotificationPayload? payload,
     String? iosSound,
-    bool? enableVibration,
     bool alarm = false,
   }) async {
     if (when.isBefore(DateTime.now())) return false;
@@ -211,12 +210,7 @@ class NotificationsService {
       title: title,
       body: body,
       when: tz.TZDateTime.from(when, tz.local),
-      details: _details(
-        channel,
-        iosSound: iosSound,
-        enableVibrationOverride: enableVibration,
-        alarm: alarm,
-      ),
+      details: _details(channel, iosSound: iosSound, alarm: alarm),
       payload: payload?.encode(),
     );
   }
@@ -326,6 +320,9 @@ class NotificationsService {
         // Alarm stream, not the notification one — the adhan follows the
         // device's alarm volume like the native full-adhan service does.
         audioAttributesUsage: AudioAttributesUsage.alarm,
+        // No buzz under the call to prayer. Frozen at creation like the sound,
+        // so the caller's id has to change whenever this does.
+        enableVibration: false,
       ),
     );
   }
@@ -473,10 +470,13 @@ class NotificationsService {
   Future<List<PendingNotificationRequest>> pending() async =>
       _plugin.pendingNotificationRequests();
 
+  /// Note there is no per-notification vibration knob here on purpose: from API
+  /// 26 on Android takes vibration from the channel and ignores the flag on the
+  /// notification, so exposing one would promise a control that does nothing.
+  /// Change the channel (and its id — the setting is frozen at creation).
   NotificationDetails _details(
     AndroidNotificationChannel channel, {
     String? iosSound,
-    bool? enableVibrationOverride,
     bool alarm = false,
   }) {
     return NotificationDetails(
@@ -488,7 +488,8 @@ class NotificationsService {
         priority: _priorityFor(channel.importance),
         playSound: channel.playSound,
         sound: channel.sound,
-        enableVibration: enableVibrationOverride ?? channel.enableVibration,
+        // Honoured below API 26 only; from 26 on the channel wins.
+        enableVibration: channel.enableVibration,
         category: alarm ? AndroidNotificationCategory.alarm : null,
         fullScreenIntent: alarm,
       ),

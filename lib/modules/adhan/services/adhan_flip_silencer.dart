@@ -44,10 +44,8 @@ class AdhanFlipSilencer {
   /// call [start] again for the next adhan.
   void start(void Function() onFaceDown) {
     stop();
-    _sub =
-        accelerometerEventStream(
-          samplingPeriod: SensorInterval.uiInterval,
-        ).listen(
+    _sub = accelerometerEventStream(samplingPeriod: SensorInterval.uiInterval)
+        .listen(
           (event) => _onSample(event.z, onFaceDown),
           // A device with no accelerometer (or one that refuses the stream)
           // simply keeps the on-screen Stop button.

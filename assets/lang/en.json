@@ -404,7 +404,6 @@
   "adhan_prenotify_section": "Reminder before adhan",
   "adhan_prenotify_off": "Off",
   "adhan_prenotify_minutes": "{{m}} min",
-  "adhan_vibrate": "Vibration",
   "adhan_permission_denied": "Notifications are turned off.",
   "adhan_permission_fix": "Enable",
   "adhan_notif_title": "It's time for {{prayer}} prayer",

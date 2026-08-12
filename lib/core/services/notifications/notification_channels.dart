@@ -32,14 +32,21 @@ class AppNotificationChannels {
   /// slider rather than the notification one — matching the native full-adhan
   /// service (which uses `USAGE_ALARM`) so the two paths can't end up at
   /// different loudness, and so a silenced notification volume never mutes the
-  /// call to prayer. Audio attributes are frozen when a channel is first
-  /// created, hence the `_v2` id — see [legacyIds].
+  /// call to prayer.
+  ///
+  /// No vibration: the adhan announces itself, and a buzz under it adds
+  /// nothing. Vibration — like sound and audio attributes — is frozen when a
+  /// channel is first created, so silencing it needed a new id (`_v3`) with
+  /// `_v2` retired; see [legacyIds]. Note that `AndroidNotificationDetails`'
+  /// per-notification `enableVibration` cannot substitute for this: from API 26
+  /// on, the channel decides and the per-notification flag is ignored.
   static const adhan = AndroidNotificationChannel(
-    'adhan_channel_v2',
+    'adhan_channel_v3',
     'Adhan',
     description: 'Call-to-prayer (adhan) alerts at each prayer time',
     importance: Importance.max,
     playSound: true,
+    enableVibration: false,
     audioAttributesUsage: AudioAttributesUsage.alarm,
   );
 
@@ -50,7 +57,8 @@ class AppNotificationChannels {
   static const adhanSilent = AndroidNotificationChannel(
     'adhan_silent_channel',
     'Adhan (full audio)',
-    description: 'Adhan alert shown while the full adhan plays in the background',
+    description:
+        'Adhan alert shown while the full adhan plays in the background',
     importance: Importance.max,
     playSound: false,
     enableVibration: false,
@@ -132,12 +140,12 @@ class AppNotificationChannels {
     downloads,
   ];
 
-  /// Channel ids replaced by a re-created version above. A channel's sound and
-  /// audio attributes are immutable once Android has created it, so changing
-  /// either means publishing a new id — and deleting the old one, or it lingers
-  /// forever in the app's notification settings as a dead duplicate.
-  /// [NotificationsService.init] deletes these once at boot.
-  static const List<String> legacyIds = ['adhan_channel'];
+  /// Channel ids replaced by a re-created version above. A channel's sound,
+  /// vibration and audio attributes are immutable once Android has created it,
+  /// so changing any of them means publishing a new id — and deleting the old
+  /// one, or it lingers forever in the app's notification settings as a dead
+  /// duplicate. [NotificationsService.init] deletes these once at boot.
+  static const List<String> legacyIds = ['adhan_channel', 'adhan_channel_v2'];
 
   /// Prefix of the per-voice adhan channels created by
   /// [NotificationsService.createVoiceChannel] before they moved to the alarm

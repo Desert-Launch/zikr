@@ -241,7 +241,8 @@ class AdhanScheduler {
       // to the iOS budget; Android schedules the whole window. Pure integer
       // day-counting keeps the horizon DST-safe.
       final now = DateTime.now();
-      final daysIntoWeek = (now.weekday - DateTime.saturday) % 7; // 0 = Saturday
+      final daysIntoWeek =
+          (now.weekday - DateTime.saturday) % 7; // 0 = Saturday
       final totalDays = 14 - daysIntoWeek; // 8..14
       _remaining = Platform.isIOS ? _iosBudget : 1 << 30;
 
@@ -415,8 +416,7 @@ class AdhanScheduler {
         Platform.isAndroid &&
         settings.androidBackgroundFullAdhan &&
         settings.playbackMode == MAdhanSettings.playbackFull;
-    final useFullAdhan =
-        fullAndroid && voiceId != null && voiceId.isNotEmpty;
+    final useFullAdhan = fullAndroid && voiceId != null && voiceId.isNotEmpty;
     final fullIos = Platform.isIOS && settings.fullScreenAlarm;
 
     final when = DateTime.now().add(after);
@@ -451,7 +451,6 @@ class AdhanScheduler {
         body: 'adhan_test_notif_body'.tr(),
         channel: channel,
         iosSound: iosSound,
-        enableVibration: settings.vibrate,
         alarm: !useFullAdhan,
         payload: const NotificationPayload(
           type: 'adhan',
@@ -501,8 +500,6 @@ class AdhanScheduler {
     required DateTime now,
   }) async {
     final doy = _dayOfYear(date);
-    final vibrate = settings.vibrate as bool;
-
     for (var i = 0; i < _salah.length; i++) {
       if (_remaining <= 0) return;
       if (i >= notify.length || !notify[i]) continue;
@@ -571,7 +568,6 @@ class AdhanScheduler {
           body: 'adhan_notif_body'.tr(),
           channel: channel,
           iosSound: iosSound,
-          enableVibration: vibrate,
           // A silent full-adhan companion shouldn't raise a full-screen alarm
           // intent; the service's own notification carries the Stop control.
           alarm: !useFullAdhan,
@@ -618,7 +614,6 @@ class AdhanScheduler {
               '$preMinutes',
             ),
             channel: AppNotificationChannels.adhanPre,
-            enableVibration: vibrate,
             payload: NotificationPayload(
               type: 'prayer',
               data: {'prayer': prayer.key},
@@ -688,13 +683,14 @@ class AdhanScheduler {
     if (voiceId == null || voiceId.isEmpty) {
       return AppNotificationChannels.adhan;
     }
-    // `_alarm` suffix: the pre-alarm-stream channels were created as
-    // `adhan_<voiceId>` with notification audio attributes, which Android
-    // freezes at creation — the only way to move the adhan onto the alarm
-    // volume is a new id, retiring the old one so it doesn't linger in the
-    // app's notification settings.
-    final channelId = 'adhan_${voiceId}_alarm';
+    // Suffix history, each step forced by a setting Android freezes at channel
+    // creation: `adhan_<voiceId>` (notification audio attributes) → `_alarm`
+    // (moved onto the alarm volume) → `_alarm2` (stopped vibrating). Each old
+    // id is deleted so it doesn't linger in the app's notification settings as
+    // a dead duplicate.
+    final channelId = 'adhan_${voiceId}_alarm2';
     await _notifications.deleteChannel('adhan_$voiceId');
+    await _notifications.deleteChannel('adhan_${voiceId}_alarm');
     await _notifications.createVoiceChannel(
       id: channelId,
       name: 'Adhan',
@@ -705,6 +701,7 @@ class AdhanScheduler {
       'Adhan',
       importance: Importance.max,
       playSound: true,
+      enableVibration: false,
     );
   }
 

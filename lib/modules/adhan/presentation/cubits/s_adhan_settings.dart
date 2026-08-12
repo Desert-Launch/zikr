@@ -11,7 +11,6 @@ class SAdhanSettings extends Equatable {
     this.fullScreenAlarm = true,
     this.alarmPermissions = const AdhanAlarmPermissions(),
     this.manufacturer = '',
-    this.vibrate = true,
     this.preNotifyMinutesPerPrayer = const {},
     this.selectedVoiceNameAr = '',
     this.voiceIdPerPrayer = const {},
@@ -43,7 +42,6 @@ class SAdhanSettings extends Equatable {
   /// Lowercase device manufacturer, used to pick the OEM-specific autostart
   /// guidance copy. Empty off Android.
   final String manufacturer;
-  final bool vibrate;
 
   /// Per-prayer pre-notify offset in minutes, keyed by prayer key. Missing
   /// key = off.
@@ -79,7 +77,6 @@ class SAdhanSettings extends Equatable {
     bool? fullScreenAlarm,
     AdhanAlarmPermissions? alarmPermissions,
     String? manufacturer,
-    bool? vibrate,
     Map<String, int>? preNotifyMinutesPerPrayer,
     String? selectedVoiceNameAr,
     Map<String, String>? voiceIdPerPrayer,
@@ -102,15 +99,13 @@ class SAdhanSettings extends Equatable {
       fullScreenAlarm: fullScreenAlarm ?? this.fullScreenAlarm,
       alarmPermissions: alarmPermissions ?? this.alarmPermissions,
       manufacturer: manufacturer ?? this.manufacturer,
-      vibrate: vibrate ?? this.vibrate,
       preNotifyMinutesPerPrayer:
           preNotifyMinutesPerPrayer ?? this.preNotifyMinutesPerPrayer,
       selectedVoiceNameAr: selectedVoiceNameAr ?? this.selectedVoiceNameAr,
       voiceIdPerPrayer: voiceIdPerPrayer ?? this.voiceIdPerPrayer,
       voiceNamePerPrayer: voiceNamePerPrayer ?? this.voiceNamePerPrayer,
       hasPermission: hasPermission ?? this.hasPermission,
-      needsDefaultDownload:
-          needsDefaultDownload ?? this.needsDefaultDownload,
+      needsDefaultDownload: needsDefaultDownload ?? this.needsDefaultDownload,
       pendingDownloadVoiceId:
           pendingDownloadVoiceId ?? this.pendingDownloadVoiceId,
       retryingDownload: retryingDownload ?? this.retryingDownload,
@@ -129,7 +124,6 @@ class SAdhanSettings extends Equatable {
     fullScreenAlarm,
     alarmPermissions,
     manufacturer,
-    vibrate,
     preNotifyMinutesPerPrayer,
     selectedVoiceNameAr,
     voiceIdPerPrayer,

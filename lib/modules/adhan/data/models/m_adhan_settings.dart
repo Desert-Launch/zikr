@@ -14,7 +14,6 @@ class MAdhanSettings extends HiveObject {
     this.playbackMode = 'full', // == playbackFull; literal so the Hive
     // adapter generator can inline it as a field default.
     this.androidBackgroundFullAdhan = true,
-    this.vibrate = true,
     this.preNotifyMinutes = 0,
     this.bootstrapped = false,
     this.fullScreenAlarm = true,
@@ -40,8 +39,10 @@ class MAdhanSettings extends HiveObject {
   @HiveField(2)
   bool androidBackgroundFullAdhan;
 
-  @HiveField(3)
-  bool vibrate;
+  // Field 3 was `vibrate`. Retired: Android takes vibration from the channel
+  // from API 26 on, so the flag never reached a modern device, and the adhan
+  // channels are now created non-vibrating. Never reuse the index — records
+  // written before this still carry a value at 3.
 
   /// Optional "remind me X minutes before" silent reminder. 0 = off.
   @HiveField(4)

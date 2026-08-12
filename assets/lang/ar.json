@@ -404,7 +404,6 @@
   "adhan_prenotify_section": "تذكير قبل الأذان",
   "adhan_prenotify_off": "بدون",
   "adhan_prenotify_minutes": "{{m}} دقيقة",
-  "adhan_vibrate": "الاهتزاز",
   "adhan_permission_denied": "تنبيهات الإشعارات غير مفعّلة.",
   "adhan_permission_fix": "تفعيل",
   "adhan_notif_title": "حان الآن موعد صلاة {{prayer}}",
