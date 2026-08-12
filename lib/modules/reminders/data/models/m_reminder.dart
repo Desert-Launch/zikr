@@ -53,14 +53,25 @@ class MReminder extends HiveObject {
   @HiveField(9)
   int colorId;
 
-  /// Stable notification id for the daily-repeat case. We reserve 7000..7999
-  /// for reminders so they don't clash with prayer (1000+) or hourly (5000+).
-  int get notifId => 7000 + (id.hashCode.abs() % 1000);
+  /// Stable notification id for the daily-repeat case, derived from [id].
+  ///
+  /// The band is 7_000_000..7_999_999 — clear of prayer (1000+), hourly (5000+)
+  /// and the adhan window (200000..399999). It used to be only 1000 wide
+  /// (`7000 + hash % 1000`), which with the 30-reminder cap gave roughly a 1-in-3
+  /// chance that two reminders hashed to the same id: they then shared one
+  /// alarm, so saving or deleting either silently cancelled the other's
+  /// notification. A million buckets makes that collision negligible.
+  int get notifId => 7000000 + (id.hashCode.abs() % 1000000);
 
   /// Distinct id for a single weekday's repeat (DateTime.monday..sunday → 1..7),
   /// so a "Mon + Wed" reminder schedules two independent alarms. Lives in the
-  /// 70000..79997 band, away from the daily-repeat ids.
+  /// 70_000_001..79_999_997 band, away from the daily-repeat ids.
   int weeklyNotifId(int weekday) => notifId * 10 + weekday;
+
+  /// The pre-widening ids this reminder may still own on an existing install.
+  /// Only ever cancelled — alarms registered under the old scheme would
+  /// otherwise fire forever with no way to reach them.
+  int get _legacyNotifId => 7000 + (id.hashCode.abs() % 1000);
 
   bool get isDaily => daysOfWeek.every((d) => d);
 
@@ -74,8 +85,14 @@ class MReminder extends HiveObject {
     return out;
   }
 
-  /// Every notification id this reminder could own (daily + each weekday).
-  /// Used when cancelling so no stale alarm survives a day-mask change.
-  List<int> get allNotifIds =>
-      [notifId, for (var w = DateTime.monday; w <= DateTime.sunday; w++) weeklyNotifId(w)];
+  /// Every notification id this reminder could own (daily + each weekday, under
+  /// both the current and the legacy id scheme). Used when cancelling so no
+  /// stale alarm survives a day-mask change, a time change, or the id widening.
+  List<int> get allNotifIds => [
+    notifId,
+    for (var w = DateTime.monday; w <= DateTime.sunday; w++) weeklyNotifId(w),
+    _legacyNotifId,
+    for (var w = DateTime.monday; w <= DateTime.sunday; w++)
+      _legacyNotifId * 10 + w,
+  ];
 }

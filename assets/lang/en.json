@@ -567,6 +567,7 @@
   "reminders_dow_fri": "Fri",
   "reminders_dow_sat": "Sat",
   "reminders_permission_denied": "Notifications are off. Enable them in Settings to receive reminders.",
+  "reminders_schedule_failed": "Couldn't schedule this reminder. Allow \"Alarms & reminders\" for the app and try again.",
   "reminders_permission_title": "Notifications are off",
   "reminders_open_settings": "Open Settings",
   "qibla_title": "Qibla",

@@ -5,7 +5,9 @@
 ///   * 5008–5022 → hourly tasbih / zekr (`DSHourlyTasbih`, `5000 + hour`)
 ///   * 5099 → salawat specific-time reminder (`DSSalawatReminder`)
 ///   * 5108–5122 → salawat interval reminders (`5100 + hour`)
-///   * 7000–7999 → user reminders (`MReminder.notifId`)
+///   * 7000000–7999999 → user reminders (`MReminder.notifId`), and
+///     70000001–79999997 for their per-weekday repeats
+///     (7000–79997 is the retired band, still cancelled on old installs)
 ///   * 200000–399999 → adhan window (`AdhanScheduler`)
 ///   * 999999 → adhan test
 class NotificationIds {

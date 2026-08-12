@@ -15,7 +15,7 @@ class CBReminders extends Cubit<SReminders> {
     required NotificationsService notifications,
   })  : _box = box,
         _notifications = notifications,
-        super(const SReminders()) {
+        super(SReminders()) {
     refresh();
   }
 
@@ -25,8 +25,22 @@ class CBReminders extends Cubit<SReminders> {
   final NotificationsService _notifications;
   final _uuid = const Uuid();
 
-  void refresh() {
-    emit(state.copyWith(items: _box.all(), clearError: true));
+  void refresh() => _refreshWith(null);
+
+  /// Re-reads the box and republishes [error] (null clears it).
+  ///
+  /// [refresh] on its own always clears the error, which used to wipe the
+  /// failure [_schedule] had *just* emitted — so a reminder that could not be
+  /// scheduled (permission revoked, alarm rejected) was persisted, listed, and
+  /// reported as a success while never being able to fire.
+  void _refreshWith(String? error) {
+    emit(
+      state.copyWith(
+        items: _box.all(),
+        error: error,
+        clearError: error == null,
+      ),
+    );
   }
 
   void clearError() => emit(state.copyWith(clearError: true));
@@ -68,16 +82,16 @@ class CBReminders extends Cubit<SReminders> {
       colorId: colorId,
     );
     await _box.upsert(reminder);
-    await _schedule(reminder);
-    refresh();
-    return null;
+    final error = await _schedule(reminder);
+    _refreshWith(error);
+    return error;
   }
 
   Future<void> update(MReminder reminder) async {
     await _box.upsert(reminder);
     await _cancel(reminder);
-    if (reminder.enabled) await _schedule(reminder);
-    refresh();
+    final error = reminder.enabled ? await _schedule(reminder) : null;
+    _refreshWith(error);
   }
 
   Future<void> delete(String id) async {
@@ -92,12 +106,13 @@ class CBReminders extends Cubit<SReminders> {
     if (r == null) return;
     r.enabled = enabled;
     await _box.upsert(r);
+    String? error;
     if (enabled) {
-      await _schedule(r);
+      error = await _schedule(r);
     } else {
       await _cancel(r);
     }
-    refresh();
+    _refreshWith(error);
   }
 
   /// Cancels every notification id the reminder could own (daily + each
@@ -108,15 +123,16 @@ class CBReminders extends Cubit<SReminders> {
     }
   }
 
-  Future<void> _schedule(MReminder r) async {
-    if (!await _ensurePermission()) {
-      emit(state.copyWith(error: 'reminders_permission_denied'));
-      return;
-    }
+  /// Registers [r]'s notifications. Returns null on success, or the i18n key of
+  /// the reason it could not be scheduled — the caller surfaces it instead of
+  /// leaving the user with a reminder that looks saved but can never fire.
+  Future<String?> _schedule(MReminder r) async {
+    if (!await _ensurePermission()) return 'reminders_permission_denied';
+
     final payload = NotificationPayload(type: 'reminder', data: {'id': r.id});
     if (r.isDaily) {
       // All seven days selected → a single daily repeat (fires every day).
-      await _notifications.scheduleDaily(
+      final ok = await _notifications.scheduleDaily(
         id: r.notifId,
         hour: r.hour,
         minute: r.minute,
@@ -125,21 +141,24 @@ class CBReminders extends Cubit<SReminders> {
         channel: AppNotificationChannels.reminders,
         payload: payload,
       );
-    } else {
-      // Otherwise one weekly-repeating alarm per selected weekday.
-      for (final weekday in r.scheduledWeekdays) {
-        await _notifications.scheduleWeekly(
-          id: r.weeklyNotifId(weekday),
-          weekday: weekday,
-          hour: r.hour,
-          minute: r.minute,
-          title: r.title,
-          body: r.body,
-          channel: AppNotificationChannels.reminders,
-          payload: payload,
-        );
-      }
+      return ok ? null : 'reminders_schedule_failed';
     }
+    // Otherwise one weekly-repeating alarm per selected weekday.
+    var allOk = true;
+    for (final weekday in r.scheduledWeekdays) {
+      final ok = await _notifications.scheduleWeekly(
+        id: r.weeklyNotifId(weekday),
+        weekday: weekday,
+        hour: r.hour,
+        minute: r.minute,
+        title: r.title,
+        body: r.body,
+        channel: AppNotificationChannels.reminders,
+        payload: payload,
+      );
+      allOk = allOk && ok;
+    }
+    return allOk ? null : 'reminders_schedule_failed';
   }
 
   Future<bool> _ensurePermission() async {

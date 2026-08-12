@@ -120,12 +120,22 @@ class SNReminders extends StatelessWidget {
         padding: EdgeInsets.zero,
         body: BlocConsumer<CBReminders, SReminders>(
           listenWhen: (prev, curr) =>
-              curr.error == 'reminders_permission_denied' &&
-              prev.error != curr.error,
+              curr.error != null && prev.error != curr.error,
           listener: (context, state) {
+            // Toggling a reminder on can fail for two reasons — the permission
+            // was revoked, or the OS refused the alarm. Neither used to reach
+            // the user: the switch stayed on while nothing was scheduled.
+            final permissionDenied =
+                state.error == 'reminders_permission_denied';
+            final message = state.error ?? '';
             cb.clearError();
             WidgetsBinding.instance.addPostFrameCallback((_) {
-              if (context.mounted) _showPermissionDialog(context);
+              if (!context.mounted) return;
+              if (permissionDenied) {
+                _showPermissionDialog(context);
+              } else {
+                AppAlert.error(message.tr());
+              }
             });
           },
           builder: (context, state) {

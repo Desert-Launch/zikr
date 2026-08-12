@@ -3,6 +3,7 @@ import 'package:flutter_modular/flutter_modular.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:localize_and_translate/localize_and_translate.dart';
+import 'package:quran/core/services/logging/app_logger.dart';
 import 'package:quran/core/theme/app_colors.dart';
 import 'package:quran/core/theme/brand_colors.dart';
 import 'package:quran/core/widgets/w_app_button.dart';
@@ -90,37 +91,55 @@ class _SNReminderFormState extends State<SNReminderForm> {
       _error = null;
     });
     final cb = Modular.get<CBReminders>();
-    if (_isEdit) {
-      final r = Modular.get<BoxReminders>().byId(widget.reminderId ?? '');
-      if (r != null) {
-        r
-          ..title = title
-          ..hour = _time.hour
-          ..minute = _time.minute
-          ..daysOfWeek = _buildDays()
-          ..iconId = _iconId
-          ..colorId = _colorId;
-        await cb.update(r);
+    String? err;
+    try {
+      if (_isEdit) {
+        final r = Modular.get<BoxReminders>().byId(widget.reminderId ?? '');
+        if (r != null) {
+          r
+            ..title = title
+            ..hour = _time.hour
+            ..minute = _time.minute
+            ..daysOfWeek = _buildDays()
+            ..iconId = _iconId
+            ..colorId = _colorId;
+          await cb.update(r);
+          err = cb.state.error;
+        }
+      } else {
+        err = await cb.create(
+          title: title,
+          body: _existingBody,
+          hour: _time.hour,
+          minute: _time.minute,
+          daysOfWeek: _buildDays(),
+          iconId: _iconId,
+          colorId: _colorId,
+        );
       }
-    } else {
-      final err = await cb.create(
-        title: title,
-        body: _existingBody,
-        hour: _time.hour,
-        minute: _time.minute,
-        daysOfWeek: _buildDays(),
-        iconId: _iconId,
-        colorId: _colorId,
+    } catch (e, st) {
+      // Without this the save button stayed stuck on its spinner forever and
+      // the screen could never be submitted again — the "I can't set any
+      // reminders" symptom. Surface it instead.
+      AppLogger.error(
+        'Saving reminder failed',
+        tag: 'SNReminderForm',
+        error: e,
+        stackTrace: st,
       );
-      if (err != null) {
-        setState(() {
-          _isSubmitting = false;
-          _error = 'reminders_max_reached'.tr();
-        });
-        return;
-      }
+      err = 'reminders_schedule_failed';
     }
+
     if (!mounted) return;
+    // `err` is an i18n key (at-cap, permission denied, or the OS refusing the
+    // alarm) — show the matching message rather than always blaming the cap.
+    if (err != null) {
+      setState(() {
+        _isSubmitting = false;
+        _error = err?.tr();
+      });
+      return;
+    }
     Modular.to.pop();
   }
 

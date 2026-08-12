@@ -567,6 +567,7 @@
   "reminders_dow_fri": "ج",
   "reminders_dow_sat": "س",
   "reminders_permission_denied": "الإشعارات معطّلة. فعّلها من الإعدادات لاستلام التذكيرات.",
+  "reminders_schedule_failed": "تعذّر ضبط هذا التذكير. اسمح بـ«التنبيهات والتذكيرات» للتطبيق ثم أعد المحاولة.",
   "reminders_permission_title": "الإشعارات معطّلة",
   "reminders_open_settings": "فتح الإعدادات",
   "qibla_title": "القبلة",
