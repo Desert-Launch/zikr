@@ -5,6 +5,7 @@ import 'package:flutter_modular/flutter_modular.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:localize_and_translate/localize_and_translate.dart';
+import 'package:quran/core/extension/build_context.dart';
 import 'package:quran/core/utils/helper/app_alert.dart';
 import 'package:quran/core/widgets/w_gradient_app_bar.dart';
 import 'package:quran/core/widgets/w_shared_scaffold.dart';
@@ -36,6 +37,10 @@ class SNAdhanSettings extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final cubit = Modular.get<CBAdhanSettings>();
+    final isTab = context.isTablet;
+    // On tablets `.h`/`.w` over-scale, so the spacing below falls back to the
+    // same raw values SNSettings uses there. Phones keep the ScreenUtil sizes.
+    final gap = SizedBox(height: isTab ? 12 : 18.h);
     // Provides the same cubit a plain BlocProvider.value would, and additionally
     // re-reads the OS grants on resume so the permission switches below are
     // correct after a trip to system settings.
@@ -45,7 +50,9 @@ class SNAdhanSettings extends StatelessWidget {
         withSafeArea: false,
         padding: EdgeInsets.zero,
         body: Directionality(
-          textDirection: context.isRTL ? TextDirection.rtl : TextDirection.ltr,
+          // Explicit extension — `localize_and_translate` also defines `isRTL`
+          // on BuildContext, and importing the app extension makes it ambiguous.
+          textDirection: ContextExtensions(context).isRTL ? TextDirection.rtl : TextDirection.ltr,
           child: Column(
             children: [
               WGradientAppBar(title: 'adhan_alerts_title'.tr()),
@@ -56,15 +63,17 @@ class SNAdhanSettings extends StatelessWidget {
                       return const Center(child: CircularProgressIndicator());
                     }
                     return ListView(
-                      padding: EdgeInsets.fromLTRB(27.w, 24.h, 27.w, 28.h),
+                      padding: isTab
+                          ? EdgeInsets.fromLTRB(19.w, 14, 19.w, 20)
+                          : EdgeInsets.fromLTRB(27.w, 24.h, 27.w, 28.h),
                       children: [
                         if (!state.hasPermission) ...[
                           _PermissionWarning(onFix: cubit.requestPermission),
-                          SizedBox(height: 18.h),
+                          gap,
                         ],
                         if (state.needsDefaultDownload) ...[
                           _DefaultDownloadPrompt(busy: state.retryingDownload, onRetry: cubit.retryDefaultDownload),
-                          SizedBox(height: 18.h),
+                          gap,
                         ],
                         WAdhanSectionLabel('adhan_prayer_alerts_section'.tr()),
                         WAdhanGroup(
@@ -79,7 +88,7 @@ class SNAdhanSettings extends StatelessWidget {
                           ],
                         ),
 
-                        SizedBox(height: 18.h),
+                        gap,
                         WAdhanSectionLabel('adhan_alarm_section'.tr()),
                         WAdhanGroup(
                           children: [
@@ -119,11 +128,11 @@ class SNAdhanSettings extends StatelessWidget {
                         // Only meaningful once the alarm is on — these are the
                         // OS grants that decide whether it actually fires.
                         if (state.fullScreenAlarm) const WAdhanAlarmReadiness(),
-                        SizedBox(height: 12.h),
+                        SizedBox(height: isTab ? 10 : 12.h),
                         _TestAdhanButton(cubit: cubit),
 
                         if (defaultTargetPlatform == TargetPlatform.android) ...[
-                          SizedBox(height: 18.h),
+                          gap,
                           WAdhanSectionLabel('adhan_playback_section'.tr()),
                           WAdhanGroup(
                             children: [
@@ -149,11 +158,11 @@ class SNAdhanSettings extends StatelessWidget {
                           // exact alarm that fires the full adhan — surface the
                           // exemption prompt only once the feature is on.
                           if (state.androidBackgroundFullAdhan && state.showBatteryNote) ...[
-                            SizedBox(height: 12.h),
+                            SizedBox(height: isTab ? 10 : 12.h),
                             _BatteryGuidanceNote(onAllow: cubit.requestBatteryExemption),
                           ],
                         ] else if (defaultTargetPlatform == TargetPlatform.iOS) ...[
-                          SizedBox(height: 18.h),
+                          gap,
                           WAdhanSectionLabel('adhan_playback_section'.tr()),
                           Container(
                             padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 14.h),
@@ -177,7 +186,7 @@ class SNAdhanSettings extends StatelessWidget {
                             ),
                           ),
                         ],
-                        SizedBox(height: 20.h),
+                        SizedBox(height: isTab ? 16 : 20.h),
                         const WAdhanVirtueCard(),
                       ],
                     );

@@ -3,6 +3,7 @@ import 'package:flutter_modular/flutter_modular.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:localize_and_translate/localize_and_translate.dart';
+import 'package:quran/core/extension/build_context.dart';
 import 'package:quran/core/services/routes/routes_names.dart';
 import 'package:quran/core/theme/app_text_styles.dart';
 import 'package:quran/core/widgets/w_localize_rotation.dart';
@@ -48,6 +49,9 @@ class WAdhanPrayerRow extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final voice = state.voiceNamePerPrayer[prayerKey];
+    // See WAdhanSettingRow — fixed logical sizes on tablet, where `.h`/`.w`
+    // over-scale against the 780x844 design size.
+    final isTab = context.isTablet;
     return InkWell(
       onTap: isSunrise
           ? null
@@ -56,9 +60,9 @@ class WAdhanPrayerRow extends StatelessWidget {
               await cubit.refreshVoice();
             },
       child: SizedBox(
-        height: 74.h,
+        height: isTab ? 62 : 74.h,
         child: Padding(
-          padding: EdgeInsets.symmetric(horizontal: 15.w),
+          padding: EdgeInsets.symmetric(horizontal: isTab ? 27.w : 15.w),
           child: Row(
             children: [
               InkWell(
@@ -69,7 +73,7 @@ class WAdhanPrayerRow extends StatelessWidget {
                   color: enabled ? const Color(0xFF2F7E63) : const Color(0xFF8B8B8B),
                 ),
               ),
-              SizedBox(width: 13.w),
+              SizedBox(width: isTab ? 18.w : 13.w),
               Text(title, style: AppTextStyles.ink16W400),
               const Spacer(),
               Text(
