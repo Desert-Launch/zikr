@@ -512,7 +512,7 @@
   "salawat_reminder_specific": "Specific time",
   "salawat_reminder_pick_time": "Pick time",
   "salawat_reminder_window_hint": "Reminders arrive between 8 AM and 10 PM, automatically spaced so they never clash with the adhan or the daily azkar.",
-  "salawat_reminder_specific_hint": "One daily reminder at the time you choose (between 8 AM and 10 PM).",
+  "salawat_reminder_specific_hint": "One daily reminder at the time you choose.",
   "tasbih_history": "History",
   "tasbih_history_empty": "No sessions yet",
   "tasbih_today_total": "Today's total",

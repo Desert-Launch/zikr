@@ -17,8 +17,8 @@ import 'package:quran/modules/tasbih/presentation/cubits/s_tasbih.dart';
 
 /// Bottom sheet that configures the salawat-upon-the-Prophet reminder:
 /// a master toggle plus a frequency choice (every 1/2/3 hours, or a single
-/// specific time). Interval reminders fire 08:30–22:30; the specific time is
-/// clamped to that same window.
+/// specific time). Interval reminders fire within 08:00–22:00; a specific time
+/// is taken exactly as picked, at any hour.
 ///
 /// Built from the shared settings primitives so it matches [SNSettings], which
 /// opens this sheet directly instead of carrying its own copy of the controls.
@@ -151,8 +151,12 @@ class WSalawatReminderSheet extends StatelessWidget {
       initialTime: TimeOfDay(hour: state.reminderHour, minute: state.reminderMinute),
     );
     if (picked == null) return;
-    // Clamp into the 08:00–22:00 window.
-    await cubit.setReminderTime(picked.hour.clamp(8, 22), picked.minute);
+    // Honoured exactly. The 08:00–22:00 window belongs to interval mode, which
+    // spreads reminders through the day on its own; a specific time is a
+    // deliberate choice, so it is not confined to it. Clamping only the hour
+    // here (`picked.hour.clamp(8, 22)`) silently turned 02:49 into 08:49 —
+    // the minute changed, the hour appeared stuck on 8.
+    await cubit.setReminderTime(picked.hour, picked.minute);
   }
 
   String _labelFor(int value) {

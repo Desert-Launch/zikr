@@ -84,7 +84,7 @@ class AppNotificationChannels {
   static const salawat = AndroidNotificationChannel(
     'salawat_channel',
     'Salawat Reminder',
-    description: 'Reminders to send salawat upon the Prophet ﷺ (08:30 — 22:30)',
+    description: 'Reminders to send salawat upon the Prophet ﷺ',
     importance: Importance.defaultImportance,
     playSound: true,
     sound: RawResourceAndroidNotificationSound('salah_3la_mohamed'),

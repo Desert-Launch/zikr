@@ -512,7 +512,7 @@
   "salawat_reminder_specific": "وقت محدد",
   "salawat_reminder_pick_time": "اختر الوقت",
   "salawat_reminder_window_hint": "يصلك التذكير ضمن الفترة من 8 صباحاً حتى 10 مساءً، وتُضبط أوقاته تلقائياً حتى لا تتزاحم مع الأذان وأذكار اليوم.",
-  "salawat_reminder_specific_hint": "تذكير واحد يومياً في الوقت الذي تختاره (بين 8 صباحاً و10 مساءً).",
+  "salawat_reminder_specific_hint": "تذكير واحد يومياً في الوقت الذي تختاره.",
   "tasbih_history": "السجل",
   "tasbih_history_empty": "لا توجد جلسات بعد",
   "tasbih_today_total": "الإجمالي اليوم",
