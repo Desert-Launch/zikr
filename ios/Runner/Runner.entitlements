@@ -12,11 +12,20 @@
 	  com.apple.developer.usernotifications.critical-alerts entitlement".
 
 	  The justification text to submit, and what to do while waiting, are in
-	  docs/ios_critical_alerts_justification.md. If you need to ship before
-	  approval, comment out the two lines below — the app still builds and the
-	  adhan is delivered as a normal (Silent-mode-respecting) notification.
+	  docs/ios_critical_alerts_justification.md.
+
+	  CURRENTLY DISABLED — the request is still pending with Apple, so the key
+	  is commented out to let device/App Store builds sign. The app still
+	  builds and the adhan is delivered as a normal (Silent-mode-respecting)
+	  notification; AdhanCriticalFallback detects the missing entitlement at
+	  runtime via `criticalAlertSetting` and degrades on its own.
+
+	  ⚠️ ON APPROVAL: uncomment the two lines below, regenerate the
+	  provisioning profile, and re-verify the Silent-mode adhan.
 	-->
+	<!--
 	<key>com.apple.developer.usernotifications.critical-alerts</key>
 	<true/>
+	-->
 </dict>
 </plist>

@@ -2,7 +2,7 @@ name: quran
 description: "قرآن — Quran companion mobile app (Mushaf reader + per-ayah audio + downloads + azkar)."
 publish_to: 'none'
 
-version: 0.0.2+10
+version: 0.0.2+12
 
 environment:
   sdk: ^3.9.2
