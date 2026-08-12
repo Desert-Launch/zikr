@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:quran/core/extension/build_context.dart';
 import 'package:quran/core/theme/app_text_styles.dart';
 
 /// Shared section label used across the khatma screens (plans, tracker, wirds).
@@ -18,7 +19,13 @@ class WKhatmaSectionLabel extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final effectivePadding = padding ?? EdgeInsetsDirectional.only(end: 5.w, bottom: 6.h);
-    final label = Text(text, textAlign: aligned ? null : TextAlign.end, style: AppTextStyles.grey14W500);
+    // Fixed size on tablet (14 + 4), in step with the other settings section
+    // labels — `.sp` would inflate this to ~22 instead.
+    final label = Text(
+      text,
+      textAlign: aligned ? null : TextAlign.end,
+      style: AppTextStyles.grey14W500.copyWith(fontSize: context.isTablet ? 18 : null),
+    );
     final padded = Padding(padding: effectivePadding, child: label);
     if (!aligned) return padded;
     return Align(alignment: AlignmentDirectional.centerEnd, child: padded);

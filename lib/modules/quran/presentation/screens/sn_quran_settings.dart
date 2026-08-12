@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_modular/flutter_modular.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:localize_and_translate/localize_and_translate.dart';
+import 'package:quran/core/extension/build_context.dart';
 import 'package:quran/core/services/routes/routes_names.dart';
 import 'package:quran/core/theme/app_text_styles.dart';
 import 'package:quran/core/theme/brand_colors.dart';
@@ -27,7 +28,9 @@ class SNQuranSettings extends StatelessWidget {
       withSafeArea: false,
       padding: EdgeInsets.zero,
       body: Directionality(
-        textDirection: context.isRTL ? TextDirection.rtl : TextDirection.ltr,
+        // Explicit extension — `localize_and_translate` also defines `isRTL`
+        // on BuildContext, and importing the app extension makes it ambiguous.
+        textDirection: ContextExtensions(context).isRTL ? TextDirection.rtl : TextDirection.ltr,
         child: Column(
           children: [
             WGradientAppBar(title: 'quran_settings_title'.tr()),
@@ -95,7 +98,11 @@ class _SectionLabel extends StatelessWidget {
       padding: EdgeInsets.symmetric(horizontal: 4.w),
       child: Align(
         alignment: AlignmentDirectional.centerStart,
-        child: Text(text, style: AppTextStyles.ink12W500),
+        child: Text(
+          text,
+          // Fixed 16 on tablet, matching every other settings section label.
+          style: AppTextStyles.ink12W500.copyWith(fontSize: context.isTablet ? 16 : null),
+        ),
       ),
     );
   }

@@ -15,7 +15,7 @@ class WSettingsSectionLabel extends StatelessWidget {
       child: Text(
         text,
         style: GoogleFonts.cairo(
-          fontSize: context.isTablet ? 12 : 10.sp,
+          fontSize: context.isTablet ? 16 : 10.sp,
           color: const Color(0xFF777777),
           height: 1,
         ),
