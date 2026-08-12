@@ -31,13 +31,7 @@ class WAzkarCategoryCard extends StatelessWidget {
         decoration: BoxDecoration(
           color: color,
           borderRadius: BorderRadius.circular(16.r),
-          boxShadow: [
-            BoxShadow(
-              color: color.withValues(alpha: 0.25),
-              blurRadius: 9,
-              offset: const Offset(0, 5),
-            ),
-          ],
+          boxShadow: [BoxShadow(color: color.withValues(alpha: 0.25), blurRadius: 9, offset: const Offset(0, 5))],
         ),
         child: Stack(
           children: [
@@ -47,20 +41,14 @@ class WAzkarCategoryCard extends StatelessWidget {
               child: Container(
                 width: 70.r,
                 height: 70.r,
-                decoration: BoxDecoration(
-                  shape: BoxShape.circle,
-                  color: Colors.white.withValues(alpha: 0.07),
-                ),
+                decoration: BoxDecoration(shape: BoxShape.circle, color: Colors.white.withValues(alpha: 0.07)),
               ),
             ),
             Padding(
               padding: EdgeInsets.all(15),
               child: Align(
                 alignment: AlignmentDirectional.topStart,
-                child: Text(
-                  emoji,
-                  style: AppTextStyles.white24W400.copyWith(fontSize: 30.sp),
-                ),
+                child: Text(emoji, style: AppTextStyles.white24W400.copyWith(fontSize: 30.sp)),
               ),
             ),
             Padding(
@@ -78,27 +66,21 @@ class WAzkarCategoryCard extends StatelessWidget {
                             title,
                             maxLines: 2,
                             overflow: TextOverflow.ellipsis,
-                            style: AppTextStyles.white14W500,
+                            style: context.isRTL ? AppTextStyles.white18W500 : AppTextStyles.white14W500,
                           ),
                           SizedBox(height: 2.h),
                           Text(
-                            count >= 0
-                                ? '$count ${'azkar_items_suffix'.tr()}'
-                                : 'azkar_browse'.tr(),
+                            count >= 0 ? '$count ${'azkar_items_suffix'.tr()}' : 'azkar_browse'.tr(),
                             maxLines: 1,
                             overflow: TextOverflow.ellipsis,
-                            style: AppTextStyles.white12W400,
+                            style: context.isRTL ? AppTextStyles.white14W500 : AppTextStyles.white12W400,
                           ),
                         ],
                       ),
                     ),
                     SizedBox(width: 4.w),
                     WLocalizeRotation(
-                      child: Icon(
-                        Icons.chevron_left_rounded,
-                        color: Colors.white.withValues(alpha: 0.72),
-                        size: 18.r,
-                      ),
+                      child: Icon(Icons.chevron_left_rounded, color: Colors.white.withValues(alpha: 0.72), size: 18.r),
                     ),
                   ],
                 ),
