@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:localize_and_translate/localize_and_translate.dart';
+import 'package:quran/core/extension/build_context.dart';
 import 'package:quran/core/theme/app_text_styles.dart';
 import 'package:quran/core/widgets/w_localize_rotation.dart';
 
@@ -66,14 +67,16 @@ class WAzkarCategoryCard extends StatelessWidget {
                             title,
                             maxLines: 2,
                             overflow: TextOverflow.ellipsis,
-                            style: context.isRTL ? AppTextStyles.white18W500 : AppTextStyles.white14W500,
+                            style: context.isTablet ? AppTextStyles.white18W500 : AppTextStyles.white12W500,
                           ),
                           SizedBox(height: 2.h),
                           Text(
                             count >= 0 ? '$count ${'azkar_items_suffix'.tr()}' : 'azkar_browse'.tr(),
                             maxLines: 1,
                             overflow: TextOverflow.ellipsis,
-                            style: context.isRTL ? AppTextStyles.white14W500 : AppTextStyles.white12W400,
+                            style: context.isTablet
+                                ? AppTextStyles.white14W500
+                                : AppTextStyles.white12W400.copyWith(fontSize: 10.sp),
                           ),
                         ],
                       ),
