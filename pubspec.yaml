@@ -101,6 +101,7 @@ dependencies:
   android_alarm_manager_plus: ^5.0.0
   workmanager: ^0.9.0+3
   adhan: ^2.0.0+1
+  sensors_plus: ^7.1.0
 
 dev_dependencies:
   flutter_test:

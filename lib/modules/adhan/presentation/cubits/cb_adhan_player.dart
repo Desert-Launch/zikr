@@ -11,6 +11,7 @@ import 'package:quran/modules/adhan/data/models/m_adhan.dart';
 import 'package:quran/modules/adhan/data/sources/local/box_adhan_download.dart';
 import 'package:quran/modules/adhan/data/sources/local/box_adhan_preference.dart';
 import 'package:quran/modules/adhan/presentation/cubits/s_adhan_player.dart';
+import 'package:quran/modules/adhan/services/adhan_flip_silencer.dart';
 import 'package:quran/modules/prayer/data/sources/local/box_prayer_settings.dart';
 
 /// App-wide adhan playback singleton. Owns a single [AudioPlayer] for both
@@ -45,6 +46,12 @@ class CBAdhanPlayer extends Cubit<SAdhanPlayer> {
   final BoxAdhanDownload _downloads;
   final String _localeTag;
   final AudioPlayer _player;
+
+  /// Turning the phone face-down silences a *prayer-time* adhan, matching the
+  /// native service's behaviour when the adhan plays with the app closed. Not
+  /// armed for the picker's preview — there the user is holding the phone and
+  /// deciding, and a stop on movement would read as a bug.
+  final AdhanFlipSilencer _flip = AdhanFlipSilencer();
 
   StreamSubscription<PlayerState>? _stateSub;
 
@@ -95,6 +102,12 @@ class CBAdhanPlayer extends Cubit<SAdhanPlayer> {
               : AdhanPlayerStatus.paused;
         case ProcessingState.completed:
           next = AdhanPlayerStatus.completed;
+      }
+      // Nothing left to silence once the adhan ends on its own — drop the
+      // sensor stream rather than leave it running behind a finished adhan.
+      if (next == AdhanPlayerStatus.completed ||
+          next == AdhanPlayerStatus.idle) {
+        _flip.stop();
       }
       emit(
         state.copyWith(
@@ -173,6 +186,8 @@ class CBAdhanPlayer extends Cubit<SAdhanPlayer> {
     final adhan = override ?? adhanForPrayer(prayerKey);
     if (adhan == null) return;
     await play(adhan);
+    if (state.status == AdhanPlayerStatus.error) return;
+    _flip.start(() => unawaited(stop()));
   }
 
   MAdhan? adhanForPrayer(String prayerKey) {
@@ -185,6 +200,7 @@ class CBAdhanPlayer extends Cubit<SAdhanPlayer> {
   }
 
   Future<void> stop() async {
+    _flip.stop();
     await _player.stop();
     AudioFocus.instance.release(this);
     emit(state.copyWith(status: AdhanPlayerStatus.idle, clearPreview: true));
@@ -215,6 +231,7 @@ class CBAdhanPlayer extends Cubit<SAdhanPlayer> {
 
   @override
   Future<void> close() async {
+    _flip.stop();
     await _stateSub?.cancel();
     AudioFocus.instance.unregister(this);
     await _player.dispose();

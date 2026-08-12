@@ -8,12 +8,17 @@ import android.app.Service
 import android.content.Context
 import android.content.Intent
 import android.content.pm.ServiceInfo
+import android.hardware.Sensor
+import android.hardware.SensorEvent
+import android.hardware.SensorEventListener
+import android.hardware.SensorManager
 import android.media.AudioAttributes
 import android.media.AudioManager
 import android.media.MediaPlayer
 import android.os.Build
 import android.os.IBinder
 import android.os.PowerManager
+import android.os.SystemClock
 import android.provider.Settings
 import androidx.core.app.NotificationCompat
 
@@ -23,9 +28,24 @@ import androidx.core.app.NotificationCompat
  * notification with a Stop action and tears itself down when playback finishes
  * or the user stops it. Declared with `mediaPlayback` foreground type.
  */
-class AdhanPlaybackService : Service() {
+class AdhanPlaybackService : Service(), SensorEventListener {
 
     private var player: MediaPlayer? = null
+
+    private var sensors: SensorManager? = null
+
+    /**
+     * True once the device has been seen NOT face-down since this adhan began.
+     *
+     * Turning the phone over is the gesture; *already lying* face-down is not.
+     * Without this, a phone left screen-down on a desk — the normal way plenty
+     * of people leave it — would silence every adhan the moment it started, and
+     * the user would never hear one again without knowing why.
+     */
+    private var flipArmed = false
+
+    /** Uptime millis since the device went face-down, or 0 when it isn't. */
+    private var faceDownSince = 0L
 
     /**
      * The alarm id this run was started with. It doubles as the id of the Dart
@@ -181,6 +201,76 @@ class AdhanPlaybackService : Service() {
         mp.setOnPreparedListener { it.start() }
         mp.prepareAsync()
         player = mp
+        startFlipToSilence()
+    }
+
+    /**
+     * Starts watching the accelerometer so turning the phone face-down silences
+     * the adhan, the same way the Stop action does.
+     *
+     * Cheap to run: it only lives for the length of one adhan, and the service
+     * already holds a partial wake lock through [MediaPlayer.setWakeMode], so
+     * events keep arriving with the screen off. A device with no accelerometer
+     * simply keeps the notification and full-screen Stop buttons.
+     */
+    private fun startFlipToSilence() {
+        val sm = getSystemService(Context.SENSOR_SERVICE) as? SensorManager ?: return
+        val accelerometer = sm.getDefaultSensor(Sensor.TYPE_ACCELEROMETER) ?: return
+        flipArmed = false
+        faceDownSince = 0L
+        sensors = sm
+        // SENSOR_DELAY_UI (~60ms) is far finer than this needs, but it is the
+        // slowest rate the platform guarantees to keep delivering promptly; the
+        // hold below — not the sample rate — is what debounces the gesture.
+        try {
+            sm.registerListener(this, accelerometer, SensorManager.SENSOR_DELAY_UI)
+        } catch (e: Exception) {
+            sensors = null
+        }
+    }
+
+    private fun stopFlipToSilence() {
+        try {
+            sensors?.unregisterListener(this)
+        } catch (e: Exception) {
+            // Nothing to do — the service is going away regardless.
+        }
+        sensors = null
+        flipArmed = false
+        faceDownSince = 0L
+    }
+
+    override fun onAccuracyChanged(sensor: Sensor?, accuracy: Int) = Unit
+
+    /**
+     * Face-down detection off the Z axis, which reads about +9.8 with the screen
+     * up, 0 on edge, and about -9.8 with the screen down.
+     *
+     * The two thresholds are deliberately far apart: anything above [FACE_UP_Z]
+     * re-arms the gesture, anything below [FACE_DOWN_Z] counts as face-down, and
+     * the band between them changes nothing. That hysteresis keeps a phone
+     * resting near the boundary — or wobbling as it is set down — from flickering
+     * between the two states. The adhan is only cut once the device has *stayed*
+     * face-down for [FACE_DOWN_HOLD_MS], so brushing past that angle while
+     * picking the phone up cannot stop the call to prayer by accident.
+     */
+    override fun onSensorChanged(event: SensorEvent?) {
+        val z = event?.values?.getOrNull(2) ?: return
+
+        if (z >= FACE_UP_Z) {
+            flipArmed = true
+            faceDownSince = 0L
+            return
+        }
+        if (z > FACE_DOWN_Z) return
+
+        if (!flipArmed) return
+        val now = SystemClock.elapsedRealtime()
+        if (faceDownSince == 0L) {
+            faceDownSince = now
+            return
+        }
+        if (now - faceDownSince >= FACE_DOWN_HOLD_MS) stopEverything()
     }
 
     private fun releasePlayer() {
@@ -196,6 +286,7 @@ class AdhanPlaybackService : Service() {
     }
 
     private fun stopEverything() {
+        stopFlipToSilence()
         releasePlayer()
         // Tells a visible AdhanAlarmActivity to dismiss itself, whether the
         // adhan finished on its own or was stopped from the notification.
@@ -231,6 +322,7 @@ class AdhanPlaybackService : Service() {
     }
 
     override fun onDestroy() {
+        stopFlipToSilence()
         releasePlayer()
         super.onDestroy()
     }
@@ -333,5 +425,14 @@ class AdhanPlaybackService : Service() {
         const val ACTION_FINISHED = "com.zikr.mapp.adhan.FINISHED"
         private const val CHANNEL_ID = "adhan_playback_channel"
         private const val NOTIF_ID = 920100
+
+        /** Z (m/s²) at or below which the device counts as screen-down. */
+        private const val FACE_DOWN_Z = -8.0f
+
+        /** Z at or above which the gesture re-arms — roughly on edge or higher. */
+        private const val FACE_UP_Z = -4.0f
+
+        /** How long the device must stay face-down before the adhan is cut. */
+        private const val FACE_DOWN_HOLD_MS = 700L
     }
 }
