@@ -84,18 +84,20 @@ final class AdhanCriticalFallback {
     }
 
     func cancel(id: Int) {
-        let identifier = "adhan_alarm_\(id)"
+        let identifier = AdhanAlarmRequest.requestIdentifier(for: id)
         center.removePendingNotificationRequests(withIdentifiers: [identifier])
         center.removeDeliveredNotifications(withIdentifiers: [identifier])
     }
 
-    /// Removes every pending adhan alarm, leaving other features' notifications
-    /// (reminders, azkar, hourly zekr) untouched.
-    func cancelAll() {
+    /// Removes every pending adhan alarm apart from [except], leaving other
+    /// features' notifications (reminders, azkar, hourly zekr) untouched. See
+    /// the Android `AdhanAlarmScheduler.cancelAll` for why the exception exists.
+    func cancelAll(except: Set<Int> = []) {
+        let spared = Set(except.map(AdhanAlarmRequest.requestIdentifier(for:)))
         center.getPendingNotificationRequests { requests in
             let ids = requests
                 .map(\.identifier)
-                .filter { $0.hasPrefix("adhan_alarm_") }
+                .filter { $0.hasPrefix("adhan_alarm_") && !spared.contains($0) }
             guard !ids.isEmpty else { return }
             self.center.removePendingNotificationRequests(withIdentifiers: ids)
         }

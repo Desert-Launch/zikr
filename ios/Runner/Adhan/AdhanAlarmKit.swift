@@ -133,26 +133,19 @@ final class AdhanAlarmKit {
     // MARK: - Cancellation
 
     func cancel(id: Int) {
-        let request = AdhanAlarmRequest(
-            id: id,
-            fireDate: Date(),
-            soundName: "",
-            title: "",
-            body: "",
-            stopLabel: "",
-            openLabel: "",
-            prayerKey: "",
-        )
-        let uuid = request.alarmUUID
+        let uuid = AdhanAlarmRequest.alarmUUID(for: id)
         try? AlarmManager.shared.cancel(id: uuid)
         armed.remove(uuid)
     }
 
-    func cancelAll() {
-        for id in armed {
+    /// Cancels everything armed here except [except] — see the Android
+    /// `AdhanAlarmScheduler.cancelAll` for why the exception exists.
+    func cancelAll(except: Set<Int> = []) {
+        let spared = Set(except.map(AdhanAlarmRequest.alarmUUID(for:)))
+        for id in armed where !spared.contains(id) {
             try? AlarmManager.shared.cancel(id: id)
         }
-        armed.removeAll()
+        armed.formIntersection(spared)
     }
 }
 

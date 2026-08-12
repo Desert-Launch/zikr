@@ -56,7 +56,7 @@ class AdhanAlarmPlugin(private val context: Context) : MethodChannel.MethodCallH
                 result.success(true)
             }
             "cancelAll" -> {
-                AdhanAlarmScheduler.cancelAll(context)
+                AdhanAlarmScheduler.cancelAll(context, intSet(call, "exceptIds"))
                 result.success(true)
             }
             "canScheduleExact" -> result.success(AdhanAlarmScheduler.canScheduleExact(context))
@@ -69,6 +69,18 @@ class AdhanAlarmPlugin(private val context: Context) : MethodChannel.MethodCallH
             else -> result.notImplemented()
         }
     }
+
+    /**
+     * Reads an int list argument. The method channel hands lists over as
+     * `List<Any?>` of boxed numbers, so `argument<List<Int>>` would compile but
+     * blow up on the first element — hence the explicit narrowing. A missing or
+     * malformed argument reads as "no exceptions", which is the old behaviour.
+     */
+    private fun intSet(call: MethodCall, name: String): Set<Int> =
+        call.argument<List<*>>(name)
+            ?.mapNotNull { (it as? Number)?.toInt() }
+            ?.toSet()
+            .orEmpty()
 
     private fun permissions(): Map<String, Any> = mapOf(
         "canScheduleExact" to AdhanAlarmScheduler.canScheduleExact(context),

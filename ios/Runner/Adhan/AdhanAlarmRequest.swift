@@ -16,12 +16,19 @@ struct AdhanAlarmRequest {
 
     /// Notification-request identifier, namespaced so cancelling adhan alarms
     /// never touches `flutter_local_notifications`' own requests.
-    var requestIdentifier: String { "adhan_alarm_\(id)" }
+    var requestIdentifier: String { Self.requestIdentifier(for: id) }
+
+    /// [requestIdentifier] for a bare id — see [alarmUUID(for:)].
+    static func requestIdentifier(for id: Int) -> String { "adhan_alarm_\(id)" }
 
     /// Deterministic UUID for AlarmKit, derived from [id] so a cancel can find
     /// the same alarm without persisting a mapping. The prefix bytes namespace
     /// it to this feature.
-    var alarmUUID: UUID {
+    var alarmUUID: UUID { Self.alarmUUID(for: id) }
+
+    /// [alarmUUID] for a bare id, so cancellation paths don't have to fabricate
+    /// a whole request just to reach the identifier.
+    static func alarmUUID(for id: Int) -> UUID {
         var bytes = [UInt8](repeating: 0, count: 16)
         let prefix: [UInt8] = [0xAD, 0x4A, 0x4E, 0x00, 0x5A, 0x49, 0x4B, 0x52]
         for (i, b) in prefix.enumerated() { bytes[i] = b }

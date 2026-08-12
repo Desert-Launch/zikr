@@ -80,13 +80,34 @@ object AdhanAlarmScheduler {
         remove(context, id)
     }
 
-    fun cancelAll(context: Context) {
+    /**
+     * Cancels every armed alarm whose id is not in [except].
+     *
+     * Dart rebuilds its rolling window by cancelling everything and re-arming
+     * it, so the default really is "clear the lot". [except] is for alarms that
+     * are NOT part of that window and therefore never get re-armed — the
+     * one-shot test alarm. Sweeping one of those away silently kills an alarm
+     * the user armed seconds earlier: the audio, the foreground service and the
+     * full-screen Activity all hang off this alarm, so what's left is the
+     * companion notification alone, which is posted on a deliberately silent
+     * channel precisely because this alarm was meant to carry the sound.
+     *
+     * Excepted ids stay in the mirror too, so a reboot still re-arms them.
+     */
+    fun cancelAll(context: Context, except: Set<Int> = emptySet()) {
         val am = context.getSystemService(Context.ALARM_SERVICE) as AlarmManager
         val all = read(context)
+        val kept = JSONArray()
         for (i in 0 until all.length()) {
-            am.cancel(cancellationPendingIntent(context, all.getJSONObject(i).getInt("id")))
+            val entry = all.getJSONObject(i)
+            val id = entry.getInt("id")
+            if (id in except) {
+                kept.put(entry)
+                continue
+            }
+            am.cancel(cancellationPendingIntent(context, id))
         }
-        context.getSharedPreferences(PREFS, Context.MODE_PRIVATE).edit().remove(KEY).apply()
+        write(context, kept)
     }
 
     /** Re-arms every persisted alarm still in the future. Called after reboot. */

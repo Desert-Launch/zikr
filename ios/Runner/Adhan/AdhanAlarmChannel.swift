@@ -59,7 +59,7 @@ final class AdhanAlarmChannel {
             }
             cancel(id: id, result: result)
         case "cancelAll":
-            cancelAll(result: result)
+            cancelAll(except: Set(args["exceptIds"] as? [Int] ?? []), result: result)
         case "permissions":
             permissions(result: result)
         case "requestAuthorization":
@@ -136,13 +136,13 @@ final class AdhanAlarmChannel {
         result(true)
     }
 
-    private func cancelAll(result: @escaping FlutterResult) {
+    private func cancelAll(except: Set<Int>, result: @escaping FlutterResult) {
         #if canImport(AlarmKit) && !ADHAN_DISABLE_ALARMKIT
         if #available(iOS 26.0, *) {
-            AdhanAlarmKit.shared.cancelAll()
+            AdhanAlarmKit.shared.cancelAll(except: except)
         }
         #endif
-        fallback.cancelAll()
+        fallback.cancelAll(except: except)
         result(true)
     }
 

@@ -168,11 +168,21 @@ class AdhanAudioAlarms {
     }
   }
 
-  /// Cancels every armed adhan alarm. Called before re-arming a fresh window,
-  /// and whenever full-adhan background mode is turned off.
-  Future<void> cancelAll() async {
+  /// Cancels every armed adhan alarm apart from [except]. Called before
+  /// re-arming a fresh window, and whenever full-adhan background mode is
+  /// turned off.
+  ///
+  /// [except] is for alarms that don't belong to the rolling window and so are
+  /// never re-armed by the rebuild that follows — currently just the one-shot
+  /// test alarm. Without it, arming a test and then triggering any window
+  /// rebuild (opening the prayer screen is enough) silently cancels the test
+  /// before it fires, leaving only its deliberately-silent companion
+  /// notification and no full-screen alarm at all.
+  Future<void> cancelAll({Set<int> except = const {}}) async {
     try {
-      await _channel.invokeMethod('cancelAll');
+      await _channel.invokeMethod('cancelAll', {
+        'exceptIds': except.toList(),
+      });
     } on MissingPluginException {
       // ignore — see [schedule].
     } catch (e) {

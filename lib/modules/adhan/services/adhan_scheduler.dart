@@ -151,10 +151,21 @@ class AdhanScheduler {
       // Clear previously-armed native alarms before rebuilding. Also clears them
       // when the master switch / full-adhan mode is off (handled by the early
       // returns / mode check below never re-arming).
-      if (armAudioAlarms) await _audioAlarms.cancelAll();
+      //
+      // [_testId] is spared for the same reason [_cancelWindow] skips it: the
+      // test alarm is not part of the window and is never re-armed below, so a
+      // rebuild would just delete it. Rebuilds run on every prayer refresh, so
+      // that reliably killed any test armed moments earlier — taking the audio,
+      // the playback service and the full-screen alarm with it.
+      if (armAudioAlarms) await _audioAlarms.cancelAll(except: const {_testId});
 
       final settings = _adhanSettings.current();
       if (!settings.enabled) {
+        // The sweep above spared a pending test; nothing may ring once the
+        // master switch is off, so drop it here instead.
+        await _notifications.cancel(_testId);
+        if (armAudioAlarms) await _audioAlarms.cancel(_testId);
+        _scheduledTimes.remove(_testId);
         AppLogger.info(
           'Adhan disabled — window cleared',
           tag: 'AdhanScheduler',
@@ -360,9 +371,19 @@ class AdhanScheduler {
     }
   }
 
-  /// Cancels every adhan notification so a disabled master switch leaves
-  /// nothing pending.
-  Future<void> cancelAll() => _cancelWindow();
+  /// Cancels every adhan notification AND native alarm so a disabled master
+  /// switch leaves nothing pending.
+  Future<void> cancelAll() async {
+    await _cancelWindow();
+    await _notifications.cancel(_testId);
+    // The native audio alarms are a schedule of their own — cancelling the
+    // notifications does not touch them. Without this, switching adhan off
+    // silenced the tray while the full adhan still played, and the full-screen
+    // alarm still took over the phone, at the next prayer. No exception list
+    // here: off means nothing rings, the test alarm included.
+    await _audioAlarms.cancelAll();
+    _scheduledTimes.remove(_testId);
+  }
 
   /// Schedules a single test adhan [after] from now (default 1 minute),
   /// routed through the EXACT same channel/sound/alarm path a real prayer
