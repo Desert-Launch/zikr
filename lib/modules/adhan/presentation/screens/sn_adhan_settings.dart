@@ -67,10 +67,7 @@ class SNAdhanSettings extends StatelessWidget {
                           ? EdgeInsets.fromLTRB(19.w, 14, 19.w, 20)
                           : EdgeInsets.fromLTRB(27.w, 24.h, 27.w, 28.h),
                       children: [
-                        if (!state.hasPermission) ...[
-                          _PermissionWarning(onFix: cubit.requestPermission),
-                          gap,
-                        ],
+                        if (!state.hasPermission) ...[_PermissionWarning(onFix: cubit.requestPermission), gap],
                         if (state.needsDefaultDownload) ...[
                           _DefaultDownloadPrompt(busy: state.retryingDownload, onRetry: cubit.retryDefaultDownload),
                           gap,
@@ -125,67 +122,68 @@ class SNAdhanSettings extends StatelessWidget {
                               ),
                           ],
                         ),
+
                         // Only meaningful once the alarm is on — these are the
                         // OS grants that decide whether it actually fires.
-                        if (state.fullScreenAlarm) const WAdhanAlarmReadiness(),
+                        // if (state.fullScreenAlarm) const WAdhanAlarmReadiness(),
                         SizedBox(height: isTab ? 10 : 12.h),
                         _TestAdhanButton(cubit: cubit),
+                        // if (defaultTargetPlatform == TargetPlatform.android) ...[
+                        //   gap,
+                        //   WAdhanSectionLabel('adhan_playback_section'.tr()),
+                        //   WAdhanGroup(
+                        //     children: [
+                        //       WAdhanSettingRow(
+                        //         icon: Icons.volume_up_outlined,
+                        //         title: 'adhan_background_full'.tr(),
+                        //         subtitle: 'adhan_background_full_hint'.tr(),
+                        //         trailing: Transform.scale(
+                        //           scale: .75,
+                        //           child: Switch(
+                        //             value: state.androidBackgroundFullAdhan,
+                        //             activeTrackColor: _green,
+                        //             thumbColor: WidgetStateProperty.all(
+                        //               state.androidBackgroundFullAdhan ? Colors.white : Colors.grey.shade400,
+                        //             ),
+                        //             onChanged: cubit.setAndroidBackground,
+                        //           ),
+                        //         ),
+                        //       ),
+                        //     ],
+                        //   ),
+                        //   // Aggressive OEM battery managers can delay/kill the
+                        //   // exact alarm that fires the full adhan — surface the
+                        //   // exemption prompt only once the feature is on.
+                        //   if (state.androidBackgroundFullAdhan && state.showBatteryNote) ...[
+                        //     SizedBox(height: isTab ? 10 : 12.h),
+                        //     _BatteryGuidanceNote(onAllow: cubit.requestBatteryExemption),
+                        //   ],
+                        // ] else if (defaultTargetPlatform == TargetPlatform.iOS) ...[
 
-                        if (defaultTargetPlatform == TargetPlatform.android) ...[
-                          gap,
-                          WAdhanSectionLabel('adhan_playback_section'.tr()),
-                          WAdhanGroup(
-                            children: [
-                              WAdhanSettingRow(
-                                icon: Icons.volume_up_outlined,
-                                title: 'adhan_background_full'.tr(),
-                                subtitle: 'adhan_background_full_hint'.tr(),
-                                trailing: Transform.scale(
-                                  scale: .75,
-                                  child: Switch(
-                                    value: state.androidBackgroundFullAdhan,
-                                    activeTrackColor: _green,
-                                    thumbColor: WidgetStateProperty.all(
-                                      state.androidBackgroundFullAdhan ? Colors.white : Colors.grey.shade400,
-                                    ),
-                                    onChanged: cubit.setAndroidBackground,
-                                  ),
-                                ),
-                              ),
-                            ],
-                          ),
-                          // Aggressive OEM battery managers can delay/kill the
-                          // exact alarm that fires the full adhan — surface the
-                          // exemption prompt only once the feature is on.
-                          if (state.androidBackgroundFullAdhan && state.showBatteryNote) ...[
-                            SizedBox(height: isTab ? 10 : 12.h),
-                            _BatteryGuidanceNote(onAllow: cubit.requestBatteryExemption),
-                          ],
-                        ] else if (defaultTargetPlatform == TargetPlatform.iOS) ...[
-                          gap,
-                          WAdhanSectionLabel('adhan_playback_section'.tr()),
-                          Container(
-                            padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 14.h),
-                            decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(14.r)),
-                            child: Row(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Icon(Icons.info_outline_rounded, size: 18.r, color: const Color(0xFF858585)),
-                                SizedBox(width: 10.w),
-                                Expanded(
-                                  child: Text(
-                                    'adhan_ios_full_note'.tr(),
-                                    style: GoogleFonts.cairo(
-                                      fontSize: 11.sp,
-                                      height: 1.5,
-                                      color: const Color(0xFF858585),
-                                    ),
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ),
-                        ],
+                        //   gap,
+                        //   WAdhanSectionLabel('adhan_playback_section'.tr()),
+                        //   Container(
+                        //     padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 14.h),
+                        //     decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(14.r)),
+                        //     child: Row(
+                        //       crossAxisAlignment: CrossAxisAlignment.start,
+                        //       children: [
+                        //         Icon(Icons.info_outline_rounded, size: 18.r, color: const Color(0xFF858585)),
+                        //         SizedBox(width: 10.w),
+                        //         Expanded(
+                        //           child: Text(
+                        //             'adhan_ios_full_note'.tr(),
+                        //             style: GoogleFonts.cairo(
+                        //               fontSize: 11.sp,
+                        //               height: 1.5,
+                        //               color: const Color(0xFF858585),
+                        //             ),
+                        //           ),
+                        //         ),
+                        //       ],
+                        //     ),
+                        //   ),
+                        // ],
                         SizedBox(height: isTab ? 16 : 20.h),
                         const WAdhanVirtueCard(),
                       ],
