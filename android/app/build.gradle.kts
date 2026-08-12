@@ -36,6 +36,22 @@ android {
             // TODO: Add your own signing config for the release build.
             // Signing with the debug keys for now, so `flutter run --release` works.
             signingConfig = signingConfigs.getByName("debug")
+
+            // R8 runs on release builds and strips generic signatures, which
+            // makes Gson blow up inside flutter_local_notifications' alarm
+            // receiver ("Missing type parameter.") — the process dies and the
+            // notification is never posted. proguard-rules.pro keeps what the
+            // notification/alarm plugins reflect over; it is only applied when
+            // minification is declared here, so both are set explicitly.
+            isMinifyEnabled = true
+            // Deliberately OFF: the adhan / salawat clips in res/raw are only
+            // referenced by name from Dart (RawResourceAndroidNotificationSound),
+            // so the resource shrinker cannot see them and would strip them.
+            isShrinkResources = false
+            proguardFiles(
+                getDefaultProguardFile("proguard-android-optimize.txt"),
+                "proguard-rules.pro",
+            )
         }
     }
 }

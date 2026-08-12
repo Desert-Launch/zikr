@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import 'package:flutter/services.dart' show PlatformException;
 import 'package:flutter/widgets.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:flutter_timezone/flutter_timezone.dart';
@@ -191,7 +192,9 @@ class NotificationsService {
   /// (≤30s, e.g. `adhan_egypt.caf`) — per-notification sound works on iOS,
   /// unlike Android where the sound is fixed to the channel. [alarm] raises
   /// the Android category + full-screen intent for adhan-style alerts.
-  Future<void> scheduleAt({
+  ///
+  /// Returns whether the OS accepted the alarm — see [_zonedSchedule].
+  Future<bool> scheduleAt({
     required int id,
     required DateTime when,
     required String title,
@@ -202,23 +205,97 @@ class NotificationsService {
     bool? enableVibration,
     bool alarm = false,
   }) async {
-    if (when.isBefore(DateTime.now())) return;
-    await _plugin.zonedSchedule(
-      id,
-      title,
-      body,
-      tz.TZDateTime.from(when, tz.local),
-      _details(
+    if (when.isBefore(DateTime.now())) return false;
+    return _zonedSchedule(
+      id: id,
+      title: title,
+      body: body,
+      when: tz.TZDateTime.from(when, tz.local),
+      details: _details(
         channel,
         iosSound: iosSound,
         enableVibrationOverride: enableVibration,
         alarm: alarm,
       ),
-      androidScheduleMode: AndroidScheduleMode.exactAllowWhileIdle,
-      uiLocalNotificationDateInterpretation:
-          UILocalNotificationDateInterpretation.absoluteTime,
       payload: payload?.encode(),
     );
+  }
+
+  /// The single `zonedSchedule` chokepoint. Every scheduling path funnels
+  /// through it so one rejected alarm can never abort the loop that was
+  /// registering the rest.
+  ///
+  /// Two failure modes are handled explicitly:
+  ///
+  ///  * **`exact_alarms_not_permitted`** — Android 12/13 let the user revoke
+  ///    "Alarms & reminders". Retried as an inexact alarm so the reminder still
+  ///    arrives (a few minutes late) instead of vanishing.
+  ///  * **anything else** (the per-app 500 alarm cap, an OEM rejection) — logged
+  ///    and swallowed. Previously the exception propagated out of the caller's
+  ///    `for` loop, so a single bad slot silently cost every notification queued
+  ///    after it, and — from `main`'s un-caught boot chain — the adhan window
+  ///    and the whole azkar/salawat/hourly reconciliation too.
+  Future<bool> _zonedSchedule({
+    required int id,
+    required String title,
+    required String body,
+    required tz.TZDateTime when,
+    required NotificationDetails details,
+    DateTimeComponents? matchDateTimeComponents,
+    String? payload,
+  }) async {
+    Future<void> attempt(AndroidScheduleMode mode) => _plugin.zonedSchedule(
+      id,
+      title,
+      body,
+      when,
+      details,
+      androidScheduleMode: mode,
+      uiLocalNotificationDateInterpretation:
+          UILocalNotificationDateInterpretation.absoluteTime,
+      matchDateTimeComponents: matchDateTimeComponents,
+      payload: payload,
+    );
+
+    try {
+      await attempt(AndroidScheduleMode.exactAllowWhileIdle);
+      return true;
+    } on PlatformException catch (e, st) {
+      if (e.code == 'exact_alarms_not_permitted') {
+        try {
+          await attempt(AndroidScheduleMode.inexactAllowWhileIdle);
+          AppLogger.warning(
+            'Exact alarms not permitted — notification $id scheduled inexactly '
+            '(it may arrive a few minutes late)',
+            tag: 'NotificationsService',
+          );
+          return true;
+        } catch (e2, st2) {
+          AppLogger.error(
+            'Inexact fallback failed for notification $id',
+            tag: 'NotificationsService',
+            error: e2,
+            stackTrace: st2,
+          );
+          return false;
+        }
+      }
+      AppLogger.error(
+        'Failed to schedule notification $id (${e.code})',
+        tag: 'NotificationsService',
+        error: e,
+        stackTrace: st,
+      );
+      return false;
+    } catch (e, st) {
+      AppLogger.error(
+        'Failed to schedule notification $id',
+        tag: 'NotificationsService',
+        error: e,
+        stackTrace: st,
+      );
+      return false;
+    }
   }
 
   /// Creates (or updates) an Android channel whose sound is a bundled
@@ -277,7 +354,7 @@ class NotificationsService {
   /// [iosSound] is a per-notification iOS sound file bundled in the app
   /// (≤30s, e.g. `salah_3la_mohamed.caf`); Android sound is fixed to the
   /// [channel] instead.
-  Future<void> scheduleDaily({
+  Future<bool> scheduleDaily({
     required int id,
     required int hour,
     required int minute,
@@ -286,16 +363,13 @@ class NotificationsService {
     required AndroidNotificationChannel channel,
     NotificationPayload? payload,
     String? iosSound,
-  }) async {
-    await _plugin.zonedSchedule(
-      id,
-      title,
-      body,
-      _nextInstanceOfTime(hour, minute),
-      _details(channel, iosSound: iosSound),
-      androidScheduleMode: AndroidScheduleMode.exactAllowWhileIdle,
-      uiLocalNotificationDateInterpretation:
-          UILocalNotificationDateInterpretation.absoluteTime,
+  }) {
+    return _zonedSchedule(
+      id: id,
+      title: title,
+      body: body,
+      when: _nextInstanceOfTime(hour, minute),
+      details: _details(channel, iosSound: iosSound),
       matchDateTimeComponents: DateTimeComponents.time,
       payload: payload?.encode(),
     );
@@ -303,7 +377,7 @@ class NotificationsService {
 
   /// Schedules a weekly-repeating notification on [weekday]
   /// (DateTime.monday..sunday → 1..7) at [hour]:[minute] local time.
-  Future<void> scheduleWeekly({
+  Future<bool> scheduleWeekly({
     required int id,
     required int weekday,
     required int hour,
@@ -312,16 +386,13 @@ class NotificationsService {
     required String body,
     required AndroidNotificationChannel channel,
     NotificationPayload? payload,
-  }) async {
-    await _plugin.zonedSchedule(
-      id,
-      title,
-      body,
-      _nextInstanceOfWeekday(weekday, hour, minute),
-      _details(channel),
-      androidScheduleMode: AndroidScheduleMode.exactAllowWhileIdle,
-      uiLocalNotificationDateInterpretation:
-          UILocalNotificationDateInterpretation.absoluteTime,
+  }) {
+    return _zonedSchedule(
+      id: id,
+      title: title,
+      body: body,
+      when: _nextInstanceOfWeekday(weekday, hour, minute),
+      details: _details(channel),
       matchDateTimeComponents: DateTimeComponents.dayOfWeekAndTime,
       payload: payload?.encode(),
     );

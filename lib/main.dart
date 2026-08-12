@@ -121,6 +121,63 @@ Future<void> _ensureNotificationPermission() async {
   await notifications.requestPermission();
 }
 
+/// Runs one boot step, containing its failure.
+///
+/// The steps below are independent schedulers sharing a single `await` chain,
+/// so an exception in any one of them used to abandon every step after it —
+/// a plugin error while re-registering reminders would silently cost the user
+/// their adhan window, azkar feed, salawat and hourly zekr for that whole
+/// session, with nothing in the log to say why.
+Future<void> _bootStep(String name, Future<void> Function() run) async {
+  try {
+    await run();
+  } catch (e, st) {
+    AppLogger.error(
+      'Boot step "$name" failed — continuing with the rest',
+      tag: 'main',
+      error: e,
+      stackTrace: st,
+    );
+  }
+}
+
+/// Wires notification channels + the tap router, then rebuilds every schedule
+/// so they survive reboots / timezone changes / an OS cleanup.
+Future<void> _bootNotifications() async {
+  await _bootStep('notifications.init', Modular.get<NotificationsService>().init);
+  // Returning users who finished onboarding on an older build (or declined) may
+  // never have granted the notification permission — without it the
+  // adhan/reminder/azkar schedulers silently no-op. Re-ask FIRST so the
+  // reschedules below actually register (new users are prompted during
+  // onboarding, so this is gated on hasSeenOnboarding inside).
+  await _bootStep('notification permission', _ensureNotificationPermission);
+  await _bootStep(
+    'reminders reschedule',
+    Modular.get<CBReminders>().rescheduleAll,
+  );
+  // Re-register the azkar/quran feed, the salawat reminders and the hourly
+  // zekr, spaced apart from one another. Prayer times aren't known yet on a
+  // cold start, so this runs without them and the adhan reschedule below
+  // repeats it with live timings to fine-tune the minutes.
+  await _bootStep(
+    'companion notifications',
+    Modular.get<AdhanScheduler>().reconcileCompanionNotifications,
+  );
+  await _bootStep('adhan bootstrap', Modular.get<AdhanBootstrap>().run);
+  // Rebuild the rolling adhan window on every cold start so scheduling never
+  // depends solely on opening Home or an app-resume event — the resume callback
+  // does NOT fire on the initial launch. Cached location only (no premature GPS
+  // prompt); Home requests a live fix and reschedules again on success.
+  await _bootStep(
+    'adhan window',
+    () => Modular.get<AdhanScheduler>().reschedule(useCachedLocation: true),
+  );
+  // Arm the weekly Saturday background refresh (Android), and the best-effort
+  // iOS background refresh.
+  await _bootStep('android background refresh', initAdhanBackground);
+  await _bootStep('ios background refresh', initIosBackground);
+}
+
 class _Root extends StatefulWidget {
   const _Root();
 
@@ -150,31 +207,7 @@ class _RootState extends State<_Root> with WidgetsBindingObserver {
     // Wire notification channels + tap router (silent if not granted yet), then
     // rebuild every schedule so they survive reboots / timezone changes / an OS
     // cleanup, run the one-time adhan bootstrap, and rebuild the adhan window.
-    Modular.get<NotificationsService>().init().then((_) async {
-      // Returning users who finished onboarding on an older build (or declined)
-      // may never have granted the notification permission — without it the
-      // adhan/reminder/azkar schedulers silently no-op. Re-ask FIRST so the
-      // reschedules below actually register (new users are prompted during
-      // onboarding, so this is gated on hasSeenOnboarding inside).
-      await _ensureNotificationPermission();
-      await Modular.get<CBReminders>().rescheduleAll();
-      // Re-register the azkar/quran feed, the salawat reminders and the hourly
-      // zekr, spaced apart from one another. Prayer times aren't known yet on a
-      // cold start, so this runs without them and the adhan reschedule below
-      // repeats it with live timings to fine-tune the minutes.
-      await Modular.get<AdhanScheduler>().reconcileCompanionNotifications();
-      await Modular.get<AdhanBootstrap>().run();
-      // Rebuild the rolling adhan window on every cold start so scheduling
-      // never depends solely on opening Home or an app-resume event — the
-      // resume callback does NOT fire on the initial launch. Cached location
-      // only (no premature GPS prompt); Home requests a live fix and
-      // reschedules again on success.
-      await Modular.get<AdhanScheduler>().reschedule(useCachedLocation: true);
-      // Arm the weekly Saturday background refresh (Android), and the
-      // best-effort iOS background refresh.
-      await initAdhanBackground();
-      await initIosBackground();
-    });
+    _bootNotifications();
   }
 
   @override
