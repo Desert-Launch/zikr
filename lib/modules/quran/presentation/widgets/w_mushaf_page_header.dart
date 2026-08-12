@@ -3,6 +3,7 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:quran/core/extension/build_context.dart';
 import 'package:quran/modules/quran/presentation/cubits/cb_mushaf_reader.dart';
+import 'package:quran/modules/quran/presentation/widgets/mushaf_labels.dart';
 
 /// Printed-Mushaf style page chrome at the top of each page: the surah name on
 /// the start side (right in RTL) and the juz' number on the end side (left).
@@ -45,10 +46,21 @@ class WMushafPageHeader extends StatelessWidget {
               ),
             ),
             SizedBox(width: 8.w),
-            // End (left in RTL) → juz' number.
-            Text(
-              'الجزء ${CBMushafReader.juzForPage(page)}',
-              style: TextStyle(fontSize: context.isTablet ? 20.sp : 11.sp, fontWeight: FontWeight.w500, color: color),
+            // End (left in RTL) → juz' number, with the hizb under it.
+            Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.end,
+              children: [
+                Text(
+                  'الجزء ${CBMushafReader.juzForPage(page)}',
+                  style: TextStyle(fontSize: context.isTablet ? 20.sp : 11.sp, fontWeight: FontWeight.w500, color: color),
+                ),
+                Text(
+                  mushafHizbLabel(page),
+                  maxLines: 1,
+                  style: TextStyle(fontSize: context.isTablet ? 17.sp : 9.5.sp, color: color),
+                ),
+              ],
             ),
           ],
         ),

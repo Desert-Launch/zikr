@@ -8,11 +8,13 @@ import 'package:quran/core/services/routes/routes_names.dart';
 import 'package:quran/core/theme/app_colors.dart';
 import 'package:quran/modules/quran/presentation/cubits/cb_mushaf_reader.dart';
 import 'package:quran/modules/quran/presentation/cubits/s_mushaf_reader.dart';
+import 'package:quran/modules/quran/presentation/widgets/mushaf_labels.dart';
 import 'package:quran/modules/quran/presentation/widgets/w_quran_index_sheet.dart';
 
 /// Reader chrome: an app bar that slides down from the top of the Mushaf
-/// screen when [SMushafReader.chromeVisible] is on. Carries the back button
-/// plus the current surah name, juz' and page.
+/// screen when [SMushafReader.chromeVisible] is on, and slides away again on
+/// the cubit's auto-hide timer. Carries the back button plus the current surah
+/// name, juz'/page, and the hizb with the rub' of it reached.
 class WReaderTopBar extends StatelessWidget {
   const WReaderTopBar({super.key, required this.onOpenPage});
 
@@ -52,6 +54,7 @@ class _Bar extends StatelessWidget {
   final _TopBarVM vm;
   final ValueChanged<int> onOpenPage;
 
+
   @override
   Widget build(BuildContext context) {
     return Material(
@@ -70,13 +73,16 @@ class _Bar extends StatelessWidget {
         ),
         child: SafeArea(
           bottom: false,
-          child: SizedBox(
-            // Deliberately compact: the bar floats OVER the page, so every
-            // logical pixel here is one the first line of Quran text loses.
-            // 44.h clears the icon buttons and the two-line title without
-            // reaching the top of the text block on the smallest supported
-            // screen (or on a surah's opening page, where line 1 sits highest).
-            height: 44.h,
+          child: Padding(
+            // Still deliberately compact — the bar floats OVER the page, so
+            // every logical pixel here is one the first line of Quran text
+            // loses — but sized by its content rather than pinned to a number.
+            // The three-line title (surah, juz'/page, hizb) already outgrows
+            // the icon buttons' own 40.h, and a fixed height that fits it here
+            // would shave the descenders off the last line at a larger system
+            // text scale. This costs the page a line's height only for the two
+            // seconds the bar is up.
+            padding: EdgeInsets.symmetric(vertical: 6.h),
             child: Row(
               children: [
                 BackButton(
@@ -118,6 +124,18 @@ class _Bar extends StatelessWidget {
                         Text(
                           'الجزء ${vm.juz}  •  صفحة ${vm.page}',
                           textAlign: TextAlign.center,
+                          style: TextStyle(
+                            fontSize: 10.sp,
+                            color: Colors.white.withValues(alpha: 0.75),
+                            fontWeight: FontWeight.w500,
+                            height: 1.2,
+                          ),
+                        ),
+                        Text(
+                          mushafHizbLabel(vm.page),
+                          textAlign: TextAlign.center,
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
                           style: TextStyle(
                             fontSize: 10.sp,
                             color: Colors.white.withValues(alpha: 0.75),

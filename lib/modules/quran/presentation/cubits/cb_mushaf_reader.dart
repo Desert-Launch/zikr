@@ -44,6 +44,7 @@ class CBMushafReader extends Cubit<SMushafReader> {
   final CBReaderSettings _settings;
 
   Timer? _saveDebounce;
+  Timer? _chromeTimer;
   StreamSubscription<List<MBookmark>>? _bookmarkSub;
   StreamSubscription<SReaderSettings>? _settingsSub;
 
@@ -273,6 +274,7 @@ class CBMushafReader extends Cubit<SMushafReader> {
       // Selecting an ayah opens the bottom action sheet and reveals the chrome.
       emit(state.copyWith(selectedAyah: ref, chromeVisible: true));
     }
+    _scheduleChromeHide();
   }
 
   void toggleChrome() {
@@ -282,19 +284,56 @@ class CBMushafReader extends Cubit<SMushafReader> {
     emit(
       state.copyWith(chromeVisible: next, searchOpen: next && state.searchOpen),
     );
+    _scheduleChromeHide();
   }
 
   /// Opens/closes the slide-down search panel. Opening keeps the chrome up so
   /// the panel stays anchored beneath the visible top bar.
-  void toggleSearch() =>
-      emit(state.copyWith(searchOpen: !state.searchOpen, chromeVisible: true));
+  void toggleSearch() {
+    emit(state.copyWith(searchOpen: !state.searchOpen, chromeVisible: true));
+    _scheduleChromeHide();
+  }
 
-  void closeSearch() => emit(state.copyWith(searchOpen: false));
+  void closeSearch() {
+    emit(state.copyWith(searchOpen: false));
+    _scheduleChromeHide();
+  }
 
-  void setChrome(bool visible) => emit(state.copyWith(chromeVisible: visible));
+  void setChrome(bool visible) {
+    emit(state.copyWith(chromeVisible: visible));
+    _scheduleChromeHide();
+  }
 
-  void clearSelection() =>
-      emit(state.copyWith(clearSelected: true, multiSelection: const {}));
+  void clearSelection() {
+    emit(state.copyWith(clearSelected: true, multiSelection: const {}));
+    _scheduleChromeHide();
+  }
+
+  /// How long the chrome stays up before it slides away on its own, so the page
+  /// is left uncovered without the reader having to tap a second time.
+  static const Duration chromeAutoHide = Duration(seconds: 2);
+
+  /// Restarts the auto-hide countdown, and is safe to call after any emit that
+  /// could have moved the chrome — it re-reads the state rather than assuming
+  /// what changed.
+  ///
+  /// The countdown is held off while the reader is mid-interaction: the search
+  /// panel hangs off the bottom of the top bar, and an open ayah action sheet
+  /// means a tap is still in progress. In both cases pulling the bar away on a
+  /// timer would fight the user instead of getting out of the way.
+  void _scheduleChromeHide() {
+    _chromeTimer?.cancel();
+    if (!state.chromeVisible || state.searchOpen || state.selectedAyah != null) {
+      return;
+    }
+    _chromeTimer = Timer(chromeAutoHide, () {
+      if (isClosed) return;
+      if (!state.chromeVisible || state.searchOpen || state.selectedAyah != null) {
+        return;
+      }
+      emit(state.copyWith(chromeVisible: false));
+    });
+  }
 
   void toggleMultiSelect(ParamAyahRef ref) {
     final next = Set<String>.from(state.multiSelection);
@@ -318,6 +357,7 @@ class CBMushafReader extends Cubit<SMushafReader> {
   @override
   Future<void> close() {
     _saveDebounce?.cancel();
+    _chromeTimer?.cancel();
     _bookmarkSub?.cancel();
     _settingsSub?.cancel();
     return super.close();

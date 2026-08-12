@@ -3,7 +3,6 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_modular/flutter_modular.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:quran/core/extension/build_context.dart';
 import 'package:quran/core/theme/app_colors.dart';
 import 'package:quran/core/theme/brand_colors.dart';
 import 'package:quran/modules/quran/data/datasources/local/ds_local_quran.dart';
@@ -20,6 +19,7 @@ import 'package:quran/modules/quran/presentation/cubits/s_mushaf_reader.dart';
 import 'package:quran/modules/quran/presentation/widgets/w_ayah_highlight_text.dart';
 import 'package:quran/modules/quran/presentation/widgets/w_bookmark_color_picker.dart';
 import 'package:quran/modules/quran/presentation/widgets/w_mushaf_line.dart';
+import 'package:quran/modules/quran/presentation/widgets/w_mushaf_page_footer.dart';
 import 'package:quran/modules/quran/presentation/widgets/w_mushaf_page_header.dart';
 import 'package:quran/modules/quran/presentation/widgets/w_mushaf_page_reflow.dart';
 import 'package:quran/modules/quran/presentation/widgets/w_surah_header.dart';
@@ -255,12 +255,7 @@ class _WMushafV4PageState extends State<WMushafV4Page> {
                           WMushafPageHeader(surahName: _pageSurahName, page: page, color: headerColor),
                           ...wrapped,
                           SizedBox(height: 4.h),
-                          Center(
-                            child: Text(
-                              '$page',
-                              style: TextStyle(fontSize: context.isTablet ? 18.sp : 11.sp, color: muted),
-                            ),
-                          ),
+                          WMushafPageFooter(page: page, color: muted),
                         ],
                       ),
                     ),
