@@ -3,7 +3,9 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_modular/flutter_modular.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:localize_and_translate/localize_and_translate.dart';
+import 'package:quran/core/data/sources/local/box_app_settings.dart';
 import 'package:quran/core/extension/build_context.dart';
+import 'package:quran/core/services/notifications/notification_window.dart';
 import 'package:quran/core/services/notifications/notifications_service.dart';
 import 'package:quran/core/widgets/w_gradient_app_bar.dart';
 import 'package:quran/core/widgets/w_shared_scaffold.dart';
@@ -15,8 +17,9 @@ import 'package:quran/modules/settings/presentation/widgets/w_settings_switch.da
 import 'package:quran/modules/tasbih/presentation/cubits/cb_tasbih.dart';
 import 'package:quran/modules/tasbih/presentation/cubits/s_tasbih.dart';
 
-/// Tasbih preferences: the hourly notification (fixed 08:00–22:00 silent
-/// schedule, only the on/off bit is editable) and the counter's haptics.
+/// Tasbih preferences: the hourly notification (on/off here; its hours come
+/// from the shared reminder window, edited in the salawat reminder sheet) and
+/// the counter's haptics.
 ///
 /// Laid out with the shared settings primitives so it reads as one surface
 /// with [SNSettings], which links here rather than repeating the toggles.
@@ -29,6 +32,7 @@ class SNTasbihHourly extends StatelessWidget {
   Widget build(BuildContext context) {
     final cb = Modular.get<CBTasbih>();
     final isTab = context.isTablet;
+    final window = Modular.get<BoxAppSettings>().reminderWindow();
     return BlocProvider.value(
       value: cb,
       child: WSharedScaffold(
@@ -38,7 +42,9 @@ class SNTasbihHourly extends StatelessWidget {
         body: Directionality(
           // Explicit extension — `localize_and_translate` also defines `isRTL`
           // on BuildContext, and importing the app extension makes it ambiguous.
-          textDirection: ContextExtensions(context).isRTL ? TextDirection.rtl : TextDirection.ltr,
+          textDirection: ContextExtensions(context).isRTL
+              ? TextDirection.rtl
+              : TextDirection.ltr,
           child: CustomScrollView(
             slivers: [
               SliverToBoxAdapter(
@@ -48,7 +54,12 @@ class SNTasbihHourly extends StatelessWidget {
                 ),
               ),
               SliverPadding(
-                padding: EdgeInsets.fromLTRB(19.w, isTab ? 14 : 18.h, 19.w, isTab ? 20 : 24.h),
+                padding: EdgeInsets.fromLTRB(
+                  19.w,
+                  isTab ? 14 : 18.h,
+                  19.w,
+                  isTab ? 20 : 24.h,
+                ),
                 sliver: SliverList.list(
                   children: [
                     WSettingsSectionLabel('tasbih_hourly_section'.tr()),
@@ -59,7 +70,10 @@ class SNTasbihHourly extends StatelessWidget {
                           WSettingsRow(
                             icon: Icons.notifications_active_outlined,
                             title: 'tasbih_hourly_enable'.tr(),
-                            subtitle: 'tasbih_hourly_hint'.tr(),
+                            // Reads the live window rather than naming 08–22:
+                            // the hourly zekr shares the salawat reminder's
+                            // window, and this screen doesn't own the pickers.
+                            subtitle: _hourlyHint(context, window),
                             trailing: WSettingsSwitch(
                               value: enabled,
                               onChanged: (value) => _setHourly(cb, value),
@@ -80,7 +94,10 @@ class SNTasbihHourly extends StatelessWidget {
                             icon: Icons.vibration_rounded,
                             title: 'tasbih_vibrate'.tr(),
                             subtitle: 'tasbih_vibrate_hint'.tr(),
-                            trailing: WSettingsSwitch(value: vibrate, onChanged: cb.setVibrate),
+                            trailing: WSettingsSwitch(
+                              value: vibrate,
+                              onChanged: cb.setVibrate,
+                            ),
                             onTap: () => cb.setVibrate(!vibrate),
                           ),
                         ],
@@ -96,12 +113,28 @@ class SNTasbihHourly extends StatelessWidget {
     );
   }
 
+  /// Renders the window bounds through [TimeOfDay.format] so they follow the
+  /// device's 12/24-hour preference and locale, rather than a hard-coded string.
+  String _hourlyHint(BuildContext context, NotificationWindow window) {
+    return 'tasbih_hourly_hint'
+        .tr()
+        .replaceFirst(
+          '{{start}}',
+          TimeOfDay(hour: window.startHour, minute: 0).format(context),
+        )
+        .replaceFirst(
+          '{{end}}',
+          TimeOfDay(hour: window.endHour, minute: 0).format(context),
+        );
+  }
+
   /// Turning the reminder on needs the notification grant first — a silent
   /// channel still counts as a notification, so a denied prompt leaves the
   /// switch off rather than persisting a setting that can never fire.
   Future<void> _setHourly(CBTasbih cb, bool value) async {
     if (value) {
-      final granted = await Modular.get<NotificationsService>().requestPermission();
+      final granted = await Modular.get<NotificationsService>()
+          .requestPermission();
       if (!granted) return;
     }
     await cb.setHourlyEnabled(value);

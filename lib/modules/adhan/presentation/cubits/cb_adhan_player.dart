@@ -10,6 +10,7 @@ import 'package:quran/modules/adhan/data/datasources/local/ds_local_adhan.dart';
 import 'package:quran/modules/adhan/data/models/m_adhan.dart';
 import 'package:quran/modules/adhan/data/sources/local/box_adhan_download.dart';
 import 'package:quran/modules/adhan/data/sources/local/box_adhan_preference.dart';
+import 'package:quran/modules/adhan/data/sources/local/box_adhan_settings.dart';
 import 'package:quran/modules/adhan/presentation/cubits/s_adhan_player.dart';
 import 'package:quran/modules/adhan/services/adhan_flip_silencer.dart';
 import 'package:quran/modules/prayer/data/sources/local/box_prayer_settings.dart';
@@ -27,11 +28,13 @@ class CBAdhanPlayer extends Cubit<SAdhanPlayer> {
     required BoxAdhanPreference prefs,
     required BoxPrayerSettings prayerSettings,
     required BoxAdhanDownload downloads,
+    required BoxAdhanSettings settings,
     required String localeTag,
   }) : _local = local,
        _prefs = prefs,
        _prayerSettings = prayerSettings,
        _downloads = downloads,
+       _settings = settings,
        _localeTag = localeTag,
        _player = AudioPlayer(),
        super(const SAdhanPlayer()) {
@@ -44,6 +47,7 @@ class CBAdhanPlayer extends Cubit<SAdhanPlayer> {
   final BoxAdhanPreference _prefs;
   final BoxPrayerSettings _prayerSettings;
   final BoxAdhanDownload _downloads;
+  final BoxAdhanSettings _settings;
   final String _localeTag;
   final AudioPlayer _player;
 
@@ -156,6 +160,14 @@ class CBAdhanPlayer extends Cubit<SAdhanPlayer> {
       // (Qur'an audio/radio/preview) before claiming it for the adhan.
       await AudioFocus.instance.take(this);
       await _player.setAudioSource(source);
+      // In-app half of the adhan-volume setting, and the ONLY half on iOS —
+      // there the killed-app path is a notification sound Apple caps at system
+      // volume. On Android the native service raises the ALARM stream instead;
+      // this keeps the foreground and background paths at the same relative
+      // loudness. Attenuation only: `setVolume` cannot exceed 1.0.
+      await _player.setVolume(
+        _settings.current().adhanVolume.clamp(0, 100) / 100,
+      );
       await _player.play();
     } catch (e, st) {
       AppLogger.warning(

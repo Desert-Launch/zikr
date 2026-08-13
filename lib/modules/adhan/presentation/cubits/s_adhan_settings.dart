@@ -11,6 +11,8 @@ class SAdhanSettings extends Equatable {
     this.fullScreenAlarm = true,
     this.alarmPermissions = const AdhanAlarmPermissions(),
     this.manufacturer = '',
+    this.vibrate = false,
+    this.adhanVolume = 100,
     this.preNotifyMinutesPerPrayer = const {},
     this.selectedVoiceNameAr = '',
     this.voiceIdPerPrayer = const {},
@@ -42,6 +44,15 @@ class SAdhanSettings extends Equatable {
   /// Lowercase device manufacturer, used to pick the OEM-specific autostart
   /// guidance copy. Empty off Android.
   final String manufacturer;
+
+  /// Vibrate with the adhan. Android routes to a vibrating channel twin from
+  /// the next app start; iOS only uses it for the in-app ringing haptic. See
+  /// [MAdhanSettings.vibrate].
+  final bool vibrate;
+
+  /// Adhan loudness 0–100. See [MAdhanSettings.adhanVolume] — Android boosts
+  /// the system ALARM stream, iOS can only scale in-app playback.
+  final int adhanVolume;
 
   /// Per-prayer pre-notify offset in minutes, keyed by prayer key. Missing
   /// key = off.
@@ -77,6 +88,8 @@ class SAdhanSettings extends Equatable {
     bool? fullScreenAlarm,
     AdhanAlarmPermissions? alarmPermissions,
     String? manufacturer,
+    bool? vibrate,
+    int? adhanVolume,
     Map<String, int>? preNotifyMinutesPerPrayer,
     String? selectedVoiceNameAr,
     Map<String, String>? voiceIdPerPrayer,
@@ -99,6 +112,8 @@ class SAdhanSettings extends Equatable {
       fullScreenAlarm: fullScreenAlarm ?? this.fullScreenAlarm,
       alarmPermissions: alarmPermissions ?? this.alarmPermissions,
       manufacturer: manufacturer ?? this.manufacturer,
+      vibrate: vibrate ?? this.vibrate,
+      adhanVolume: adhanVolume ?? this.adhanVolume,
       preNotifyMinutesPerPrayer:
           preNotifyMinutesPerPrayer ?? this.preNotifyMinutesPerPrayer,
       selectedVoiceNameAr: selectedVoiceNameAr ?? this.selectedVoiceNameAr,
@@ -124,6 +139,8 @@ class SAdhanSettings extends Equatable {
     fullScreenAlarm,
     alarmPermissions,
     manufacturer,
+    vibrate,
+    adhanVolume,
     preNotifyMinutesPerPrayer,
     selectedVoiceNameAr,
     voiceIdPerPrayer,

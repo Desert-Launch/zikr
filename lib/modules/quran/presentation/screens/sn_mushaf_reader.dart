@@ -7,12 +7,15 @@ import 'package:quran/modules/quran/domain/entities/e_reader_scroll_mode.dart';
 import 'package:quran/modules/quran/domain/entities/param_ayah_ref.dart';
 import 'package:quran/modules/quran/presentation/cubits/cb_audio_player.dart';
 import 'package:quran/modules/quran/presentation/cubits/cb_mushaf_reader.dart';
+import 'package:quran/modules/quran/presentation/cubits/cb_reader_settings.dart';
 import 'package:quran/modules/quran/presentation/cubits/s_audio_player.dart';
 import 'package:quran/modules/quran/presentation/cubits/s_mushaf_reader.dart';
-import 'package:quran/modules/quran/presentation/cubits/s_surah_list.dart' show LoadStatus;
+import 'package:quran/modules/quran/presentation/cubits/s_surah_list.dart'
+    show LoadStatus;
 import 'package:quran/modules/quran/presentation/widgets/w_ayah_action_sheet.dart';
 import 'package:quran/modules/quran/presentation/widgets/w_mini_player.dart';
 import 'package:quran/modules/quran/presentation/widgets/w_mushaf_v4_page.dart';
+import 'package:quran/modules/quran/presentation/widgets/w_pinch_font_zoom.dart';
 import 'package:quran/modules/quran/presentation/widgets/w_reader_search_panel.dart';
 import 'package:quran/modules/quran/presentation/widgets/w_reader_top_bar.dart';
 
@@ -73,7 +76,10 @@ class _SNMushafReaderState extends State<SNMushafReader> {
   void initState() {
     super.initState();
     _resolvedStart = widget.initialPage ?? 1;
-    _pageController = PageController(initialPage: _resolvedStart - 1, viewportFraction: 1);
+    _pageController = PageController(
+      initialPage: _resolvedStart - 1,
+      viewportFraction: 1,
+    );
     _anchorPage = _resolvedStart;
     _scrollController.addListener(_onVerticalScroll);
     _resolveInitial();
@@ -83,14 +89,19 @@ class _SNMushafReaderState extends State<SNMushafReader> {
     int target = widget.initialPage ?? 1;
     final initialAyah = widget.initialAyah;
     if (initialAyah != null) {
-      target = await Modular.get<DSLocalQuran>().pageOfAyah(initialAyah.surah, initialAyah.ayah);
+      target = await Modular.get<DSLocalQuran>().pageOfAyah(
+        initialAyah.surah,
+        initialAyah.ayah,
+      );
       if (mounted) {
         _seekToPage(target);
       }
     }
     _cubit.openPage(target);
     if (initialAyah != null) {
-      _cubit.highlightAyah(ParamAyahRef(surah: initialAyah.surah, ayah: initialAyah.ayah));
+      _cubit.highlightAyah(
+        ParamAyahRef(surah: initialAyah.surah, ayah: initialAyah.ayah),
+      );
     }
   }
 
@@ -133,7 +144,8 @@ class _SNMushafReaderState extends State<SNMushafReader> {
     return box;
   }
 
-  void _registerProbe(int page, BuildContext context) => _probes[page] = context;
+  void _registerProbe(int page, BuildContext context) =>
+      _probes[page] = context;
   void _unregisterProbe(int page) => _probes.remove(page);
 
   /// Global y of the point in the viewport that decides "the page I am reading"
@@ -185,14 +197,20 @@ class _SNMushafReaderState extends State<SNMushafReader> {
 
   /// Resolves an ayah to its page, jumps there and highlights the verse.
   Future<void> _jumpToAyah(ParamAyahRef ref) async {
-    final page = await Modular.get<DSLocalQuran>().pageOfAyah(ref.surah, ref.ayah);
+    final page = await Modular.get<DSLocalQuran>().pageOfAyah(
+      ref.surah,
+      ref.ayah,
+    );
     if (!mounted) return;
     _jumpToPage(page);
     _cubit.highlightAyah(ref);
   }
 
   Future<void> _scrollToPlayingPage(ParamAyahRef ref) async {
-    final page = await Modular.get<DSLocalQuran>().pageOfAyah(ref.surah, ref.ayah);
+    final page = await Modular.get<DSLocalQuran>().pageOfAyah(
+      ref.surah,
+      ref.ayah,
+    );
     if (!mounted) return;
     const duration = Duration(milliseconds: 300);
     if (_isVertical) {
@@ -203,18 +221,31 @@ class _SNMushafReaderState extends State<SNMushafReader> {
       // which would be a hard cut for what is usually a one-page advance.
       final probe = _probeBox(page);
       final viewport = _verticalViewportKey.currentContext?.findRenderObject();
-      if (probe != null && viewport is RenderBox && _scrollController.hasClients) {
+      if (probe != null &&
+          viewport is RenderBox &&
+          _scrollController.hasClients) {
         final position = _scrollController.position;
-        final target = (position.pixels + probe.localToGlobal(Offset.zero, ancestor: viewport).dy)
-            .clamp(position.minScrollExtent, position.maxScrollExtent);
-        _scrollController.animateTo(target, duration: duration, curve: Curves.easeOut);
+        final target =
+            (position.pixels +
+                    probe.localToGlobal(Offset.zero, ancestor: viewport).dy)
+                .clamp(position.minScrollExtent, position.maxScrollExtent);
+        _scrollController.animateTo(
+          target,
+          duration: duration,
+          curve: Curves.easeOut,
+        );
         return;
       }
       _seekToPage(page);
       return;
     }
-    if (_pageController.hasClients && _pageController.page?.round() != page - 1) {
-      _pageController.animateToPage(page - 1, duration: duration, curve: Curves.easeOut);
+    if (_pageController.hasClients &&
+        _pageController.page?.round() != page - 1) {
+      _pageController.animateToPage(
+        page - 1,
+        duration: duration,
+        curve: Curves.easeOut,
+      );
     }
   }
 
@@ -350,10 +381,31 @@ class _SNMushafReaderState extends State<SNMushafReader> {
               GestureDetector(
                 behavior: HitTestBehavior.translucent,
                 onTap: _cubit.toggleChrome,
-                child: SafeArea(
-                  child: BlocSelector<CBMushafReader, SMushafReader, EReaderScrollMode>(
-                    selector: (s) => s.scrollMode,
-                    builder: (_, mode) => _pagesView(mode),
+                // Two-finger pinch drives the SAME text-size value the settings
+                // slider writes, committed once on release. It sits outside the
+                // scroll views but only ever claims a two-pointer gesture, so
+                // paging, continuous scroll and word taps are untouched — see
+                // [TwoFingerScaleRecognizer].
+                child: BlocSelector<CBMushafReader, SMushafReader, double>(
+                  selector: (s) => s.fontScale,
+                  builder: (_, fontScale) => WPinchFontZoom(
+                    scale: fontScale,
+                    minScale: CBReaderSettings.minScale,
+                    maxScale: CBReaderSettings.maxScale,
+                    onCommit: Modular.get<CBReaderSettings>().setFontScale,
+                    overlayBuilder: (_, pending) =>
+                        WPinchZoomBadge(scale: pending),
+                    child: SafeArea(
+                      child:
+                          BlocSelector<
+                            CBMushafReader,
+                            SMushafReader,
+                            EReaderScrollMode
+                          >(
+                            selector: (s) => s.scrollMode,
+                            builder: (_, mode) => _pagesView(mode),
+                          ),
+                    ),
                   ),
                 ),
               ),
@@ -379,10 +431,15 @@ class _SNMushafReaderState extends State<SNMushafReader> {
                     // the chrome + sheet) hides the player with it.
                     BlocBuilder<CBMushafReader, SMushafReader>(
                       buildWhen: (a, b) =>
-                          (a.selectedAyah == null) != (b.selectedAyah == null) || a.chromeVisible != b.chromeVisible,
+                          (a.selectedAyah == null) !=
+                              (b.selectedAyah == null) ||
+                          a.chromeVisible != b.chromeVisible,
                       builder: (_, s) {
-                        final showMini = s.chromeVisible && s.selectedAyah == null;
-                        return showMini ? const WMiniPlayer() : const SizedBox.shrink();
+                        final showMini =
+                            s.chromeVisible && s.selectedAyah == null;
+                        return showMini
+                            ? const WMiniPlayer()
+                            : const SizedBox.shrink();
                       },
                     ),
                   ],
@@ -462,14 +519,16 @@ class _PageLoader extends StatefulWidget {
   State<_PageLoader> createState() => _PageLoaderState();
 }
 
-class _PageLoaderState extends State<_PageLoader> with AutomaticKeepAliveClientMixin {
+class _PageLoaderState extends State<_PageLoader>
+    with AutomaticKeepAliveClientMixin {
   bool _keepAlive = false;
 
   @override
   bool get wantKeepAlive => _keepAlive;
 
   void _syncKeepAlive(int currentPage) {
-    final next = (widget.pageNumber - currentPage).abs() <= CBMushafReader.preloadRadius;
+    final next =
+        (widget.pageNumber - currentPage).abs() <= CBMushafReader.preloadRadius;
     if (next == _keepAlive) return;
     _keepAlive = next;
     // `updateKeepAlive` dispatches a KeepAliveNotification, which makes the

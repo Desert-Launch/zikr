@@ -11,6 +11,10 @@ class STasbih extends Equatable {
     this.reminderIntervalHours = 3,
     this.reminderHour = 9,
     this.reminderMinute = 30,
+    this.windowStartHour = 8,
+    this.windowEndHour = 22,
+    this.ignoreSilent = false,
+    this.pauseOnCall = true,
   });
 
   final String zekrAr;
@@ -28,6 +32,18 @@ class STasbih extends Equatable {
   final int reminderHour;
   final int reminderMinute;
 
+  /// Reminder-window bounds (inclusive hours). Governs the salawat interval
+  /// reminders and the hourly zekr — and nothing else. See
+  /// [MAppSettings.reminderWindowStartHour].
+  final int windowStartHour;
+  final int windowEndHour;
+
+  /// Sound the salawat reminder through silent/vibrate (Android-only effect).
+  final bool ignoreSilent;
+
+  /// Hold back app-played salawat feedback while a call/other app owns audio.
+  final bool pauseOnCall;
+
   bool get isComplete => count >= target;
   double get progress => target == 0 ? 0.0 : (count / target).clamp(0.0, 1.0);
 
@@ -44,6 +60,10 @@ class STasbih extends Equatable {
     int? reminderIntervalHours,
     int? reminderHour,
     int? reminderMinute,
+    int? windowStartHour,
+    int? windowEndHour,
+    bool? ignoreSilent,
+    bool? pauseOnCall,
   }) {
     return STasbih(
       zekrAr: zekrAr ?? this.zekrAr,
@@ -56,19 +76,27 @@ class STasbih extends Equatable {
           reminderIntervalHours ?? this.reminderIntervalHours,
       reminderHour: reminderHour ?? this.reminderHour,
       reminderMinute: reminderMinute ?? this.reminderMinute,
+      windowStartHour: windowStartHour ?? this.windowStartHour,
+      windowEndHour: windowEndHour ?? this.windowEndHour,
+      ignoreSilent: ignoreSilent ?? this.ignoreSilent,
+      pauseOnCall: pauseOnCall ?? this.pauseOnCall,
     );
   }
 
   @override
   List<Object?> get props => [
-        zekrAr,
-        target,
-        count,
-        vibrate,
-        hourlyEnabled,
-        reminderEnabled,
-        reminderIntervalHours,
-        reminderHour,
-        reminderMinute,
-      ];
+    zekrAr,
+    target,
+    count,
+    vibrate,
+    hourlyEnabled,
+    reminderEnabled,
+    reminderIntervalHours,
+    reminderHour,
+    reminderMinute,
+    windowStartHour,
+    windowEndHour,
+    ignoreSilent,
+    pauseOnCall,
+  ];
 }

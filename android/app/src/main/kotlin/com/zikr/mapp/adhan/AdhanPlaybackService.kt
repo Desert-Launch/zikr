@@ -72,6 +72,16 @@ class AdhanPlaybackService : Service(), SensorEventListener {
         val openLabel = intent?.getStringExtra(AdhanAlarmScheduler.EXTRA_OPEN) ?: "فتح التطبيق"
         val prayerKey = intent?.getStringExtra(AdhanAlarmScheduler.EXTRA_PRAYER).orEmpty()
         val fullScreen = intent?.getBooleanExtra(AdhanAlarmScheduler.EXTRA_FULLSCREEN, true) ?: true
+        val volume = intent?.getIntExtra(
+            AdhanAlarmScheduler.EXTRA_VOLUME,
+            AdhanAlarmScheduler.DEFAULT_VOLUME,
+        ) ?: AdhanAlarmScheduler.DEFAULT_VOLUME
+
+        // Before anything else: heal a level a previous run never restored (see
+        // [AdhanAlarmVolume]), then raise the ALARM stream for this adhan. Done
+        // here rather than in playAdhan so a raw-resource failure — which exits
+        // through stopEverything — still passes through the restore path.
+        AdhanAlarmVolume.boost(this, volume)
 
         startInForeground(
             buildNotification(title, body, stopLabel, openLabel, prayerKey, fullScreen),
@@ -285,7 +295,14 @@ class AdhanPlaybackService : Service(), SensorEventListener {
         player = null
     }
 
+    /**
+     * The single exit path: normal completion, the Stop action, the swipe-away
+     * delete intent, flip-to-silence, the full-screen alarm's dismiss, and every
+     * playback setup failure all land here. Restoring the ALARM volume first
+     * means it is put back even if the teardown below throws.
+     */
     private fun stopEverything() {
+        AdhanAlarmVolume.restoreIfPending(this)
         stopFlipToSilence()
         releasePlayer()
         // Tells a visible AdhanAlarmActivity to dismiss itself, whether the
@@ -322,6 +339,10 @@ class AdhanPlaybackService : Service(), SensorEventListener {
     }
 
     override fun onDestroy() {
+        // Backstop for the paths stopEverything never sees — the system
+        // reclaiming the service, or a task-swipe that tears it down directly.
+        // A no-op when stopEverything already restored.
+        AdhanAlarmVolume.restoreIfPending(this)
         stopFlipToSilence()
         releasePlayer()
         super.onDestroy()

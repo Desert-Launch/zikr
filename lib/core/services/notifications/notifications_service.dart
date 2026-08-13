@@ -299,10 +299,15 @@ class NotificationsService {
   ///
   /// If the raw resource is missing from the build, Android falls back to the
   /// default sound rather than failing — safe to call before clips ship.
+  ///
+  /// [enableVibration] is likewise frozen at creation, so a voice needs one id
+  /// per vibration state; the caller owns that naming (see
+  /// `AdhanScheduler._resolveChannel`).
   Future<void> createVoiceChannel({
     required String id,
     required String name,
     required String rawResource,
+    bool enableVibration = false,
   }) async {
     final android = _plugin
         .resolvePlatformSpecificImplementation<
@@ -320,9 +325,7 @@ class NotificationsService {
         // Alarm stream, not the notification one — the adhan follows the
         // device's alarm volume like the native full-adhan service does.
         audioAttributesUsage: AudioAttributesUsage.alarm,
-        // No buzz under the call to prayer. Frozen at creation like the sound,
-        // so the caller's id has to change whenever this does.
-        enableVibration: false,
+        enableVibration: enableVibration,
       ),
     );
   }
@@ -473,7 +476,8 @@ class NotificationsService {
   /// Note there is no per-notification vibration knob here on purpose: from API
   /// 26 on Android takes vibration from the channel and ignores the flag on the
   /// notification, so exposing one would promise a control that does nothing.
-  /// Change the channel (and its id — the setting is frozen at creation).
+  /// A caller that needs vibration to be user-switchable passes a different
+  /// [channel] instead — see the vibrating twins in [AppNotificationChannels].
   NotificationDetails _details(
     AndroidNotificationChannel channel, {
     String? iosSound,

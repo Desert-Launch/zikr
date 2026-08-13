@@ -5,6 +5,7 @@ import 'package:quran/modules/quran/data/datasources/local/ds_local_reader_setti
 import 'package:quran/modules/quran/domain/entities/e_quran_font_mode.dart';
 import 'package:quran/modules/quran/domain/entities/e_reader_scroll_mode.dart';
 import 'package:quran/modules/quran/domain/entities/e_reader_theme.dart';
+import 'package:quran/modules/quran/domain/entities/e_reader_theme_mode.dart';
 import 'package:quran/modules/quran/domain/repos/r_reader_settings.dart';
 
 class RImplReaderSettings implements RReaderSettings {
@@ -62,6 +63,35 @@ class RImplReaderSettings implements RReaderSettings {
     } catch (e, st) {
       ErrorHelper.printDebugError(
         name: 'RImplReaderSettings.setTheme',
+        error: e,
+        stackTrace: st,
+      );
+      return Left(Failure.cacheFailure(message: e.toString()));
+    }
+  }
+
+  @override
+  Future<Either<Failure, EReaderThemeMode>> getThemeMode() async {
+    try {
+      return Right(_local.getThemeMode());
+    } catch (e, st) {
+      ErrorHelper.printDebugError(
+        name: 'RImplReaderSettings.getThemeMode',
+        error: e,
+        stackTrace: st,
+      );
+      return Left(Failure.cacheFailure(message: e.toString()));
+    }
+  }
+
+  @override
+  Future<Either<Failure, void>> setThemeMode(EReaderThemeMode mode) async {
+    try {
+      await _local.setThemeMode(mode);
+      return const Right(null);
+    } catch (e, st) {
+      ErrorHelper.printDebugError(
+        name: 'RImplReaderSettings.setThemeMode',
         error: e,
         stackTrace: st,
       );

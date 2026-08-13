@@ -119,7 +119,8 @@ Future<void> armWeeklyAdhanRefresh() async {
 /// The next Saturday at 00:00 strictly in the future (today, if Saturday,
 /// rolls to next week).
 DateTime _nextSaturdayMidnight(DateTime now) {
-  final daysUntilSat = (DateTime.saturday - now.weekday) % 7; // 0 = today is Sat
+  final daysUntilSat =
+      (DateTime.saturday - now.weekday) % 7; // 0 = today is Sat
   final candidate = DateTime(now.year, now.month, now.day + daysUntilSat);
   return candidate.isAfter(now)
       ? candidate
@@ -183,7 +184,11 @@ Future<void> runAdhanBackgroundReschedule() async {
         BoxTasbihCounter(),
         BoxAppSettings(),
       ),
-      salawat: DSSalawatReminder(notifications, BoxTasbihCounter()),
+      salawat: DSSalawatReminder(
+        notifications,
+        BoxTasbihCounter(),
+        BoxAppSettings(),
+      ),
     );
     // Background isolates can't reach the MainActivity method channel, so the
     // native alarms stay as the UI isolate / boot receiver last armed them;

@@ -112,6 +112,13 @@ class AdhanAudioAlarms {
   /// deep-link back into the app. [fullScreen] raises the over-the-lockscreen
   /// alarm; when false the alarm still plays audio but stays a notification.
   ///
+  /// [volume] (0–100) is baked into the alarm rather than read when it fires:
+  /// the alarm wakes a broadcast receiver with no Flutter engine attached, so
+  /// there is no isolate left to ask — the same reason [rawRes] travels this
+  /// way. Android raises the device's ALARM stream to that share for the length
+  /// of the adhan and restores it afterwards; iOS ignores it (Apple caps the
+  /// notification path at system volume).
+  ///
   /// Returns true when the alarm was actually armed natively. A false result
   /// (unreachable channel, missing authorization, unsupported OS) is the
   /// caller's signal to keep its own notification as the audible fallback —
@@ -126,6 +133,7 @@ class AdhanAudioAlarms {
     required String openLabel,
     required String prayerKey,
     bool fullScreen = true,
+    int volume = 100,
   }) async {
     try {
       final armed = await _channel.invokeMethod<bool>('schedule', {
@@ -138,6 +146,7 @@ class AdhanAudioAlarms {
         'openLabel': openLabel,
         'prayerKey': prayerKey,
         'fullScreen': fullScreen,
+        'volume': volume.clamp(0, 100),
       });
       return armed ?? false;
     } on MissingPluginException {

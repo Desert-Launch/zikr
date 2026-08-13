@@ -6,29 +6,46 @@ import 'package:localize_and_translate/localize_and_translate.dart';
 import 'package:quran/core/theme/app_colors.dart';
 import 'package:quran/core/theme/app_text_styles.dart';
 import 'package:quran/core/theme/brand_colors.dart';
-import 'package:quran/modules/quran/domain/entities/e_reader_theme.dart';
+import 'package:quran/modules/quran/domain/entities/e_reader_theme_mode.dart';
 import 'package:quran/modules/quran/presentation/cubits/cb_reader_settings.dart';
 import 'package:quran/modules/quran/presentation/cubits/s_reader_settings.dart';
 
-/// Reading-surface theme picker: Light, Sepia, Dark. Reacts to and writes the
-/// shared [CBReaderSettings] singleton, so changing the theme re-styles an open
-/// Mushaf reader instantly. Each row shows a swatch of the actual page colour.
+/// Reading-surface theme picker: Match device, White, Light, Dark. Reacts to
+/// and writes the shared [CBReaderSettings] singleton, so changing the theme
+/// re-styles an open Mushaf reader instantly. Each row shows a swatch of the
+/// actual page colour.
+///
+/// Selection tracks the user's CHOICE (`themeMode`), not the resolved colour:
+/// while "Match device" is selected it stays selected in dark mode too, instead
+/// of the tick jumping to "Dark".
 class WReaderThemePicker extends StatelessWidget {
   const WReaderThemePicker({super.key});
 
-  // (theme, i18n key, fallback, swatch colour) — swatches mirror
+  // (mode, i18n key, fallback, swatch colour) — swatches mirror
   // `readerBackground` in the Mushaf renderer so the preview matches the real
-  // reading surface. Order matches [ReaderTheme]'s declaration order.
-  static const _options = <(ReaderTheme, String, String, Color)>[
-    (ReaderTheme.white, 'quran_settings_theme_white', 'White', Colors.white),
+  // reading surface. Order matches [EReaderThemeMode]'s declaration order.
+  // `system` has no fixed colour of its own, so it gets an icon instead (null).
+  static const _options = <(EReaderThemeMode, String, String, Color?)>[
     (
-      ReaderTheme.light,
+      EReaderThemeMode.system,
+      'quran_settings_theme_system',
+      'Match device',
+      null,
+    ),
+    (
+      EReaderThemeMode.white,
+      'quran_settings_theme_white',
+      'White',
+      Colors.white,
+    ),
+    (
+      EReaderThemeMode.light,
       'quran_settings_theme_light',
       'Light',
       AppColors.paperWarm,
     ),
     (
-      ReaderTheme.dark,
+      EReaderThemeMode.dark,
       'quran_settings_theme_dark',
       'Dark',
       AppColors.darkBackground,
@@ -52,12 +69,12 @@ class WReaderThemePicker extends StatelessWidget {
             padding: EdgeInsets.symmetric(vertical: 6.h),
             child: Column(
               children: [
-                for (final (theme, key, fallback, swatch) in _options)
+                for (final (mode, key, fallback, swatch) in _options)
                   _ThemeRow(
                     label: _t(key, fallback),
                     swatch: swatch,
-                    selected: state.theme == theme,
-                    onTap: () => cubit.setTheme(theme),
+                    selected: state.themeMode == mode,
+                    onTap: () => cubit.setThemeMode(mode),
                   ),
               ],
             ),
@@ -82,27 +99,39 @@ class _ThemeRow extends StatelessWidget {
   });
 
   final String label;
-  final Color swatch;
+
+  /// The page colour this row selects, or null for "Match device" — which has
+  /// no colour of its own, so it shows an icon in the swatch's place.
+  final Color? swatch;
   final bool selected;
   final VoidCallback onTap;
 
   @override
   Widget build(BuildContext context) {
     final brand = context.brand;
+    final swatch = this.swatch;
     return InkWell(
       onTap: onTap,
       child: Padding(
         padding: EdgeInsets.fromLTRB(16.w, 13.h, 16.w, 13.h),
         child: Row(
           children: [
-            Container(
+            SizedBox(
               width: 24.r,
               height: 24.r,
-              decoration: BoxDecoration(
-                color: swatch,
-                shape: BoxShape.circle,
-                border: Border.all(color: brand.border),
-              ),
+              child: swatch == null
+                  ? Icon(
+                      Icons.brightness_auto_rounded,
+                      size: 22.r,
+                      color: brand.muted,
+                    )
+                  : DecoratedBox(
+                      decoration: BoxDecoration(
+                        color: swatch,
+                        shape: BoxShape.circle,
+                        border: Border.all(color: brand.border),
+                      ),
+                    ),
             ),
             SizedBox(width: 12.w),
             Expanded(child: Text(label, style: AppTextStyles.ink16W500)),

@@ -87,6 +87,8 @@ class CBAdhanSettings extends Cubit<SAdhanSettings> {
         fullScreenAlarm: s.fullScreenAlarm,
         alarmPermissions: alarmPerms,
         manufacturer: manufacturer,
+        vibrate: s.vibrate,
+        adhanVolume: s.adhanVolume,
         preNotifyMinutesPerPrayer: _readPreNotify(p, s),
         selectedVoiceNameAr: voiceName,
         voiceIdPerPrayer: Map<String, String>.of(
@@ -276,6 +278,39 @@ class CBAdhanSettings extends Cubit<SAdhanSettings> {
     final opened = await _audioAlarms.openOsSettings(which);
     await refreshAlarmPermissions();
     return opened;
+  }
+
+  /// Toggles vibration alongside the adhan.
+  ///
+  /// The reschedule below re-points the already-pending window at the other
+  /// channel twin, so prayers queued before the flip honour it too — without
+  /// it, only prayers scheduled after the next rebuild would change.
+  ///
+  /// No restart is needed even though channel vibration is frozen at creation:
+  /// BOTH twins are created up-front by `NotificationsService.init`, so the
+  /// flip is a routing change, not a channel edit. Per-voice twins are created
+  /// on demand in `AdhanScheduler._resolveChannel` for the same reason.
+  Future<void> setVibrate(bool value) async {
+    final s = _adhanSettings.current()..vibrate = value;
+    await _adhanSettings.save(s);
+    emit(state.copyWith(vibrate: value));
+    _scheduleSoon();
+  }
+
+  /// Sets the adhan loudness (0–100).
+  ///
+  /// The reschedule matters more here than for most settings: on Android the
+  /// level is BAKED INTO each armed alarm (the receiver has no Flutter engine
+  /// to ask at fire time), so without rebuilding the window a change would only
+  /// reach prayers armed afterwards. Callers should drive this from a slider's
+  /// commit callback, not its drag, so the debounce isn't fighting every frame.
+  Future<void> setAdhanVolume(int value) async {
+    final clamped = value.clamp(0, 100);
+    if (clamped == state.adhanVolume) return;
+    final s = _adhanSettings.current()..adhanVolume = clamped;
+    await _adhanSettings.save(s);
+    emit(state.copyWith(adhanVolume: clamped));
+    _scheduleSoon();
   }
 
   /// Sets the pre-adhan reminder offset for a SINGLE prayer, so e.g. Fajr's

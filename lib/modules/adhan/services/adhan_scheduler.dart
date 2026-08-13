@@ -273,7 +273,8 @@ class AdhanScheduler {
           date: date,
           timings: timings,
           notify: notify,
-          settings: settings,
+          vibrate: settings.vibrate,
+          volume: settings.adhanVolume,
           voiceIdPerPrayer: prayer.adhanIdPerPrayer ?? const {},
           preNotifyPerPrayer: prayer.preNotifyMinutesPerPrayer ?? const {},
           defaultVoiceId: pref.defaultAdhanId,
@@ -436,12 +437,13 @@ class AdhanScheduler {
           openLabel: 'adhan_alarm_open'.tr(),
           prayerKey: 'dhuhr',
           fullScreen: settings.fullScreenAlarm,
+          volume: settings.adhanVolume,
         );
 
     if (!iosNative) {
       final channel = useFullAdhan
-          ? AppNotificationChannels.adhanSilent
-          : await _resolveChannel(voiceId);
+          ? _silentChannel(vibrate: settings.vibrate)
+          : await _resolveChannel(voiceId, vibrate: settings.vibrate);
       final iosSound = _iosClipFor(voiceId);
 
       await _notifications.scheduleAt(
@@ -469,6 +471,7 @@ class AdhanScheduler {
           openLabel: 'adhan_alarm_open'.tr(),
           prayerKey: 'dhuhr',
           fullScreen: settings.fullScreenAlarm,
+          volume: settings.adhanVolume,
         );
       }
     }
@@ -486,7 +489,10 @@ class AdhanScheduler {
     required DateTime date,
     required MPrayerTimings timings,
     required List<bool> notify,
-    required dynamic settings,
+    // The only `MAdhanSettings` fields this needs; passing the whole (untyped)
+    // record here was how a dead parameter survived a refactor unnoticed.
+    required bool vibrate,
+    required int volume,
     required Map<String, String> voiceIdPerPrayer,
     required Map<String, int> preNotifyPerPrayer,
     required String? defaultVoiceId,
@@ -550,12 +556,13 @@ class AdhanScheduler {
             openLabel: 'adhan_alarm_open'.tr(),
             prayerKey: prayer.key,
             fullScreen: fullScreen,
+            volume: volume,
           );
 
       if (!iosNative) {
         final channel = useFullAdhan
-            ? AppNotificationChannels.adhanSilent
-            : await _resolveChannel(voiceId);
+            ? _silentChannel(vibrate: vibrate)
+            : await _resolveChannel(voiceId, vibrate: vibrate);
         final iosSound = _iosClipFor(voiceId);
 
         await _notifications.scheduleAt(
@@ -591,6 +598,7 @@ class AdhanScheduler {
             openLabel: 'adhan_alarm_open'.tr(),
             prayerKey: prayer.key,
             fullScreen: fullScreen,
+            volume: volume,
           );
         }
       }
@@ -679,31 +687,51 @@ class AdhanScheduler {
   /// handled by the native foreground service instead. If the raw resource is
   /// missing, Android falls back to the default sound — no crash. Null voice →
   /// shared channel.
-  Future<AndroidNotificationChannel> _resolveChannel(String? voiceId) async {
+  ///
+  /// [vibrate] picks between a voice's two channels rather than setting a flag:
+  /// Android freezes vibration at channel creation, so each voice gets a
+  /// non-vibrating id and a `_vib` twin, both created on demand and both kept
+  /// so flipping the setting back is instant.
+  Future<AndroidNotificationChannel> _resolveChannel(
+    String? voiceId, {
+    required bool vibrate,
+  }) async {
     if (voiceId == null || voiceId.isEmpty) {
-      return AppNotificationChannels.adhan;
+      return vibrate
+          ? AppNotificationChannels.adhanVibrate
+          : AppNotificationChannels.adhan;
     }
     // Suffix history, each step forced by a setting Android freezes at channel
     // creation: `adhan_<voiceId>` (notification audio attributes) → `_alarm`
-    // (moved onto the alarm volume) → `_alarm2` (stopped vibrating). Each old
-    // id is deleted so it doesn't linger in the app's notification settings as
-    // a dead duplicate.
-    final channelId = 'adhan_${voiceId}_alarm2';
+    // (moved onto the alarm volume) → `_alarm2` (stopped vibrating). Those two
+    // old ids are dead and deleted, so they don't linger in the app's
+    // notification settings as duplicates. `_alarm2` and `_alarm2_vib` are the
+    // live pair — never delete either, the toggle switches between them.
+    final channelId = vibrate
+        ? 'adhan_${voiceId}_alarm2_vib'
+        : 'adhan_${voiceId}_alarm2';
     await _notifications.deleteChannel('adhan_$voiceId');
     await _notifications.deleteChannel('adhan_${voiceId}_alarm');
     await _notifications.createVoiceChannel(
       id: channelId,
-      name: 'Adhan',
+      name: vibrate ? 'Adhan (vibrate)' : 'Adhan',
       rawResource: voiceId,
+      enableVibration: vibrate,
     );
     return AndroidNotificationChannel(
       channelId,
-      'Adhan',
+      vibrate ? 'Adhan (vibrate)' : 'Adhan',
       importance: Importance.max,
       playSound: true,
-      enableVibration: false,
+      enableVibration: vibrate,
     );
   }
+
+  /// The soundless companion shown while the native service plays the full
+  /// adhan — vibrating twin when the user asked for a buzz.
+  AndroidNotificationChannel _silentChannel({required bool vibrate}) => vibrate
+      ? AppNotificationChannels.adhanSilentVibrate
+      : AppNotificationChannels.adhanSilent;
 
   /// iOS per-notification sound: `<voiceId>.caf` (must be a ≤28s clip bundled
   /// in the Runner). iOS falls back to the default sound when the file isn't

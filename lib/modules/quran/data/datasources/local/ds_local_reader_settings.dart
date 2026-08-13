@@ -2,6 +2,7 @@ import 'package:quran/modules/quran/data/sources/local/box_reader_settings.dart'
 import 'package:quran/modules/quran/domain/entities/e_quran_font_mode.dart';
 import 'package:quran/modules/quran/domain/entities/e_reader_scroll_mode.dart';
 import 'package:quran/modules/quran/domain/entities/e_reader_theme.dart';
+import 'package:quran/modules/quran/domain/entities/e_reader_theme_mode.dart';
 
 /// Reads/writes reader display preferences from the local box.
 class DSLocalReaderSettings {
@@ -29,16 +30,35 @@ class DSLocalReaderSettings {
   Future<void> setTheme(ReaderTheme theme) =>
       _box.box.put(BoxReaderSettings.themeKey, theme.storageKey);
 
+  /// The user's page-theme choice, migrating installs that predate it.
+  ///
+  /// Migration rule: a stored `reader_theme` means the user picked that surface
+  /// deliberately, so it maps to the matching PINNED mode rather than to
+  /// `system` — following the OS would silently override a choice they already
+  /// made. Only an install with no stored theme at all starts on `system`.
+  EReaderThemeMode getThemeMode() {
+    final stored = _box.box.get(BoxReaderSettings.themeModeKey);
+    if (stored != null) return EReaderThemeModeX.fromStorage(stored);
+    final legacy = _box.box.get(BoxReaderSettings.themeKey);
+    if (legacy == null) return EReaderThemeMode.system;
+    return EReaderThemeModeX.pinning(ReaderThemeX.fromStorage(legacy));
+  }
+
+  Future<void> setThemeMode(EReaderThemeMode mode) =>
+      _box.box.put(BoxReaderSettings.themeModeKey, mode.storageKey);
+
   double getFontScale() {
-    final raw = double.tryParse(_box.box.get(BoxReaderSettings.fontScaleKey) ?? '');
+    final raw = double.tryParse(
+      _box.box.get(BoxReaderSettings.fontScaleKey) ?? '',
+    );
     if (raw == null) return 1.0;
     return raw.clamp(minScale, maxScale);
   }
 
   Future<void> setFontScale(double scale) => _box.box.put(
-        BoxReaderSettings.fontScaleKey,
-        scale.clamp(minScale, maxScale).toString(),
-      );
+    BoxReaderSettings.fontScaleKey,
+    scale.clamp(minScale, maxScale).toString(),
+  );
 
   bool getFontBold() => _box.box.get(BoxReaderSettings.fontBoldKey) == 'true';
 
@@ -46,8 +66,8 @@ class DSLocalReaderSettings {
       _box.box.put(BoxReaderSettings.fontBoldKey, bold.toString());
 
   EReaderScrollMode getScrollMode() => EReaderScrollModeX.fromStorage(
-        _box.box.get(BoxReaderSettings.scrollModeKey),
-      );
+    _box.box.get(BoxReaderSettings.scrollModeKey),
+  );
 
   Future<void> setScrollMode(EReaderScrollMode mode) =>
       _box.box.put(BoxReaderSettings.scrollModeKey, mode.storageKey);

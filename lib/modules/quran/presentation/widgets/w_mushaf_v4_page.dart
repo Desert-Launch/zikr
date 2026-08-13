@@ -82,7 +82,9 @@ class _WMushafV4PageState extends State<WMushafV4Page> {
   /// back to its widest line.
   double _printSize(double width, String fontFamily) {
     final cached = _printSizeCache;
-    if (cached != null && _printSizeWidth == width && _printSizeFamily == fontFamily) {
+    if (cached != null &&
+        _printSizeWidth == width &&
+        _printSizeFamily == fontFamily) {
       return cached;
     }
 
@@ -91,7 +93,11 @@ class _WMushafV4PageState extends State<WMushafV4Page> {
     var widestJustified = 0.0;
     for (final block in widget.layout.blocks) {
       if (block is! MQpcV4LineBlock) continue;
-      final natural = mushafLineNaturalWidth(block, fontFamily: fontFamily, size: measure);
+      final natural = mushafLineNaturalWidth(
+        block,
+        fontFamily: fontFamily,
+        size: measure,
+      );
       if (natural > widest) widest = natural;
       if (!block.isCentered && natural > widestJustified) {
         widestJustified = natural;
@@ -162,9 +168,17 @@ class _WMushafV4PageState extends State<WMushafV4Page> {
           );
         }
 
-        final fontFamily = _fonts.familyFor(page, dark: isDark, tajweed: tajweed);
-        final baseColor = isDark ? const Color(0xFFF2E9D8) : const Color(0xFF0A0A0A);
-        final markerColor = isDark ? const Color(0xFFE9C46A) : AppColorsLight.primary;
+        final fontFamily = _fonts.familyFor(
+          page,
+          dark: isDark,
+          tajweed: tajweed,
+        );
+        final baseColor = isDark
+            ? const Color(0xFFF2E9D8)
+            : const Color(0xFF0A0A0A);
+        final markerColor = isDark
+            ? const Color(0xFFE9C46A)
+            : AppColorsLight.primary;
         final muted = context.brand.muted;
         final headerColor = isDark ? Colors.white70 : muted;
         final brightness = isDark ? Brightness.dark : Brightness.light;
@@ -180,7 +194,10 @@ class _WMushafV4PageState extends State<WMushafV4Page> {
             // before a single line is built — hence the outer LayoutBuilder.
             return LayoutBuilder(
               builder: (context, pageConstraints) {
-                final baseSize = _printSize(pageConstraints.maxWidth - hPad * 2, fontFamily);
+                final baseSize = _printSize(
+                  pageConstraints.maxWidth - hPad * 2,
+                  fontFamily,
+                );
                 final lineWidgets = _blockWidgets(
                   context: context,
                   cubit: cubit,
@@ -216,12 +233,15 @@ class _WMushafV4PageState extends State<WMushafV4Page> {
                 // QPC tashkeel reach well above the font's ascent — without this
                 // the first row's marks are shaved off by the scroll view's clip.
                 // The printed layout distributes its lines and never needs it.
-                final topPad = bigText ? baseSize * view.fontScale * kPillPadTop : 0.0;
+                final topPad = bigText
+                    ? baseSize * view.fontScale * kPillPadTop
+                    : 0.0;
 
                 // One screen's worth of height. In paged mode that is the slot
                 // the PageView handed down; in continuous mode the slot is
                 // unbounded, so the reader passes the viewport height in.
-                final screenHeight = widget.continuousHeight ?? pageConstraints.maxHeight;
+                final screenHeight =
+                    widget.continuousHeight ?? pageConstraints.maxHeight;
 
                 // The page is exactly as tall as its content needs, floored at
                 // one screen.
@@ -239,7 +259,10 @@ class _WMushafV4PageState extends State<WMushafV4Page> {
                   constraints: BoxConstraints(minHeight: screenHeight),
                   child: Container(
                     color: readerBackground(view.theme),
-                    padding: EdgeInsets.symmetric(horizontal: hPad, vertical: 8.h),
+                    padding: EdgeInsets.symmetric(
+                      horizontal: hPad,
+                      vertical: 8.h,
+                    ),
                     child: Padding(
                       padding: EdgeInsets.only(top: topPad),
                       child: Column(
@@ -249,10 +272,16 @@ class _WMushafV4PageState extends State<WMushafV4Page> {
                         // big text stacks from the top.
                         mainAxisAlignment: bigText
                             ? MainAxisAlignment.start
-                            : (isFullPage ? MainAxisAlignment.spaceEvenly : MainAxisAlignment.center),
+                            : (isFullPage
+                                  ? MainAxisAlignment.spaceEvenly
+                                  : MainAxisAlignment.center),
                         crossAxisAlignment: CrossAxisAlignment.stretch,
                         children: [
-                          WMushafPageHeader(surahName: _pageSurahName, page: page, color: headerColor),
+                          WMushafPageHeader(
+                            surahName: _pageSurahName,
+                            page: page,
+                            color: headerColor,
+                          ),
                           ...wrapped,
                           SizedBox(height: 4.h),
                           WMushafPageFooter(page: page, color: muted),
@@ -267,7 +296,10 @@ class _WMushafV4PageState extends State<WMushafV4Page> {
                 // must NOT have one — a second scrollable inside the list is
                 // exactly what makes a drag stop dead at a page boundary.
                 if (widget.continuousHeight != null) return body;
-                return SingleChildScrollView(physics: const ClampingScrollPhysics(), child: body);
+                return SingleChildScrollView(
+                  physics: const ClampingScrollPhysics(),
+                  child: body,
+                );
               },
             );
           },
@@ -373,15 +405,39 @@ class _WMushafV4PageState extends State<WMushafV4Page> {
   Widget _surahHeader(int surahNumber, {required bool dark}) {
     final surah = _surahs[surahNumber];
     return WSurahHeader(
-      title: surah == null ? '' : (surah.arabicLong.isNotEmpty ? surah.arabicLong : surah.arabic),
+      title: surah == null
+          ? ''
+          : (surah.arabicLong.isNotEmpty ? surah.arabicLong : surah.arabic),
       surahNumber: surah?.number ?? surahNumber,
       ayahCount: surah?.totalAyah,
       dark: dark,
     );
   }
 
+  /// Amiri's size as a fraction of the page's QPC glyph size, so the basmala
+  /// reads at the same visual weight as the verses around it.
+  ///
+  /// A correction is unavoidable because the two fonts are not interchangeable
+  /// at equal point size: a QPC line spends most of its em box on tashkeel
+  /// while Amiri spends it on the letters, so the same nominal size renders
+  /// Amiri roughly 1.4–1.7x larger (measured on device by comparing ascender
+  /// strokes). The ratio is the reciprocal of that factor.
+  ///
+  /// It cannot be avoided by using the page's own glyphs: QPC-V4 marks its
+  /// basmala lines with `line_type: basmallah` and EMPTY `first_word_id` /
+  /// `last_word_id` — all 112 of them — so the dataset carries no basmala
+  /// glyphs to render (see `DSQpcV4Data._buildBlocks`). A separate Amiri text
+  /// is the only option, and this constant is the whole of its relationship to
+  /// the page.
+  ///
+  /// 0.7 is the 1.4x (least-aggressive) end of that measured range. It was 0.6
+  /// — the 1.7x end — which is what made the basmala read visibly smaller than
+  /// its surroundings.
+  static const double _basmalaSizeRatio = 0.7;
+
   /// [textSize] is the page's rendered glyph size — the basmala is set as a
-  /// fraction of it so it grows with the page instead of with the screen.
+  /// fraction of it ([_basmalaSizeRatio]) so it grows with the page rather than
+  /// with the screen, and stays matched at every text size and zoom level.
   Widget _basmala(Color color, double textSize, {required bool bold}) {
     return Padding(
       padding: EdgeInsets.symmetric(vertical: 6.h),
@@ -393,18 +449,8 @@ class _WMushafV4PageState extends State<WMushafV4Page> {
           'بِسْمِ ٱللَّهِ ٱلرَّحْمَٰنِ ٱلرَّحِيمِ',
           textAlign: TextAlign.center,
           textDirection: TextDirection.rtl,
-          // Amiri, not the page's QPC font, so it cannot simply borrow the page
-          // size: the same point size reads much larger here, because a QPC line
-          // spends most of its height on tashkeel while Amiri spends it on the
-          // letters. Measured on device by comparing ascender strokes, an equal
-          // size ran 1.4–1.7x the surrounding text.
-          //
-          // 0.6 is that correction. It used to be a flat 17.sp against a 28.sp
-          // page reference — the same ratio, but pinned to the screen rather
-          // than to the page, so it stayed phone-sized on a tablet while the
-          // Quran text around it grew.
           style: GoogleFonts.amiri(
-            fontSize: textSize * 0.6,
+            fontSize: textSize * _basmalaSizeRatio,
             color: color,
             height: 1.4,
             fontWeight: bold ? FontWeight.w700 : FontWeight.w400,

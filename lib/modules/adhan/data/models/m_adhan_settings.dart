@@ -18,6 +18,8 @@ class MAdhanSettings extends HiveObject {
     this.bootstrapped = false,
     this.fullScreenAlarm = true,
     this.alarmDefaultsApplied = false,
+    this.vibrate = false,
+    this.adhanVolume = 100,
   });
 
   /// Notification sound is a short bundled clip (works while killed).
@@ -39,10 +41,11 @@ class MAdhanSettings extends HiveObject {
   @HiveField(2)
   bool androidBackgroundFullAdhan;
 
-  // Field 3 was `vibrate`. Retired: Android takes vibration from the channel
-  // from API 26 on, so the flag never reached a modern device, and the adhan
-  // channels are now created non-vibrating. Never reuse the index — records
-  // written before this still carry a value at 3.
+  // Field 3 was an earlier `vibrate` flag that Android never honoured (it was
+  // passed per-notification, which API 26+ ignores in favour of the channel).
+  // The working replacement lives at field 8 and switches channels instead.
+  // Never reuse index 3 — records written before it was retired still carry a
+  // value there, and re-reading it would resurrect a meaningless setting.
 
   /// Optional "remind me X minutes before" silent reminder. 0 = off.
   @HiveField(4)
@@ -68,4 +71,38 @@ class MAdhanSettings extends HiveObject {
   /// this, so a user who later opts back out isn't overridden again.
   @HiveField(7)
   bool alarmDefaultsApplied;
+
+  /// Vibrate alongside the adhan alert.
+  ///
+  /// Android decides vibration from the notification CHANNEL (API 26+), and a
+  /// channel's vibration is frozen at creation — so this flag doesn't configure
+  /// a channel, it *picks* one: every adhan channel has a non-vibrating and a
+  /// vibrating twin, and the scheduler routes to the matching set. The twin is
+  /// only created at boot, so a flip takes visible effect from the next app
+  /// start.
+  ///
+  /// iOS has no app-controlled equivalent — vibration there follows the system
+  /// notification settings. The flag only gates the in-app ringing-screen
+  /// haptic on that platform.
+  ///
+  /// Defaults to off: the adhan announces itself, and legacy records written
+  /// while the setting didn't exist decode to this same default.
+  @HiveField(8)
+  bool vibrate;
+
+  /// How loud the adhan should be, 0–100.
+  ///
+  /// Android: the native playback service raises the device's ALARM stream to
+  /// this share of its maximum for the length of the adhan and puts it back
+  /// afterwards — the only way to be louder than the user's current setting,
+  /// since Android has no per-app volume. Works with the app killed because the
+  /// value is baked into the scheduled alarm rather than read from Dart.
+  ///
+  /// iOS: scales IN-APP playback only. Apple caps the notification / AlarmKit
+  /// path at the system volume and `AVAudioPlayer.volume` can only attenuate,
+  /// so nothing here can make a killed-app adhan louder.
+  ///
+  /// Defaults to 100 — the loudest, which is what a call to prayer wants.
+  @HiveField(9)
+  int adhanVolume;
 }

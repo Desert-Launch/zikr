@@ -61,6 +61,7 @@ import 'package:quran/modules/quran/domain/usecases/uc_get_playback_prefs.dart';
 import 'package:quran/modules/quran/domain/usecases/uc_get_qpc_v4_page.dart';
 import 'package:quran/modules/quran/domain/usecases/uc_get_reader_scroll_mode.dart';
 import 'package:quran/modules/quran/domain/usecases/uc_get_reader_theme.dart';
+import 'package:quran/modules/quran/domain/usecases/uc_get_reader_theme_mode.dart';
 import 'package:quran/modules/quran/domain/usecases/uc_get_reciter_stats.dart';
 import 'package:quran/modules/quran/domain/usecases/uc_get_reciters.dart';
 import 'package:quran/modules/quran/domain/usecases/uc_get_surah_list.dart';
@@ -81,6 +82,7 @@ import 'package:quran/modules/quran/domain/usecases/uc_set_font_mode.dart';
 import 'package:quran/modules/quran/domain/usecases/uc_set_font_scale.dart';
 import 'package:quran/modules/quran/domain/usecases/uc_set_reader_scroll_mode.dart';
 import 'package:quran/modules/quran/domain/usecases/uc_set_reader_theme.dart';
+import 'package:quran/modules/quran/domain/usecases/uc_set_reader_theme_mode.dart';
 import 'package:quran/modules/quran/presentation/cubits/cb_audio_player.dart';
 import 'package:quran/modules/quran/presentation/cubits/cb_bookmarks.dart';
 import 'package:quran/modules/quran/presentation/cubits/cb_mushaf_reader.dart';
@@ -117,10 +119,18 @@ class QuranModule extends Module {
 
     // Local data sources
     i.addSingleton<DSLocalQuran>(DSLocalQuran.new);
-    i.addSingleton<DSLocalBookmarks>(() => DSLocalBookmarks(i.get<BoxBookmarks>(), i.get<BoxLastRead>()));
-    i.addSingleton<DSLocalSettings>(() => DSLocalSettings(i.get<BoxReciterPref>()));
-    i.addSingleton<DSLocalReaderSettings>(() => DSLocalReaderSettings(i.get<BoxReaderSettings>()));
-    i.addSingleton<DSLocalPlaybackPrefs>(() => DSLocalPlaybackPrefs(i.get<BoxPlaybackPrefs>()));
+    i.addSingleton<DSLocalBookmarks>(
+      () => DSLocalBookmarks(i.get<BoxBookmarks>(), i.get<BoxLastRead>()),
+    );
+    i.addSingleton<DSLocalSettings>(
+      () => DSLocalSettings(i.get<BoxReciterPref>()),
+    );
+    i.addSingleton<DSLocalReaderSettings>(
+      () => DSLocalReaderSettings(i.get<BoxReaderSettings>()),
+    );
+    i.addSingleton<DSLocalPlaybackPrefs>(
+      () => DSLocalPlaybackPrefs(i.get<BoxPlaybackPrefs>()),
+    );
     i.addSingleton<DSLocalAudioFiles>(DSLocalAudioFiles.new);
     i.addSingleton<DSQpcV4Data>(DSQpcV4Data.new);
     i.addSingleton<DSQpcV4FontLoader>(DSQpcV4FontLoader.new);
@@ -137,8 +147,16 @@ class QuranModule extends Module {
     i.addSingleton<RQuranV4>(() => RImplQuranV4(i.get<DSQpcV4Data>()));
     i.addSingleton<RTajweed>(() => RImplTajweed(i.get<DSLocalTajweed>()));
     i.addSingleton<RReciter>(() => RImplReciter(i.get<DSLocalSettings>()));
-    i.addSingleton<RAudio>(() => RImplAudio(i.get<DSLocalAudioFiles>(), i.get<DSRemoteAudio>(), i.get<RReciter>()));
-    i.addSingleton<DownloadNotifier>(() => QuranDownloadNotifier(i.get<UCGetSurahList>()));
+    i.addSingleton<RAudio>(
+      () => RImplAudio(
+        i.get<DSLocalAudioFiles>(),
+        i.get<DSRemoteAudio>(),
+        i.get<RReciter>(),
+      ),
+    );
+    i.addSingleton<DownloadNotifier>(
+      () => QuranDownloadNotifier(i.get<UCGetSurahList>()),
+    );
     i.addSingleton<RAudioDownloads>(
       () => RImplAudioDownloads(
         files: i.get<DSLocalAudioFiles>(),
@@ -149,9 +167,15 @@ class QuranModule extends Module {
       ),
     );
     i.addSingleton<RBookmarks>(() => RImplBookmarks(i.get<DSLocalBookmarks>()));
-    i.addSingleton<RReaderSettings>(() => RImplReaderSettings(i.get<DSLocalReaderSettings>()));
-    i.addSingleton<RPlaybackPrefs>(() => RImplPlaybackPrefs(i.get<DSLocalPlaybackPrefs>()));
-    i.addSingleton<RTafsir>(() => RImplTafsir(i.get<DSLocalTafsir>(), i.get<DSRemoteTafsir>()));
+    i.addSingleton<RReaderSettings>(
+      () => RImplReaderSettings(i.get<DSLocalReaderSettings>()),
+    );
+    i.addSingleton<RPlaybackPrefs>(
+      () => RImplPlaybackPrefs(i.get<DSLocalPlaybackPrefs>()),
+    );
+    i.addSingleton<RTafsir>(
+      () => RImplTafsir(i.get<DSLocalTafsir>(), i.get<DSRemoteTafsir>()),
+    );
 
     // Use cases (factory)
     i.add<UCGetSurahList>(() => UCGetSurahList(i.get<RQuran>()));
@@ -163,15 +187,27 @@ class QuranModule extends Module {
     i.add<UCResolveAudioUrl>(() => UCResolveAudioUrl(i.get<RAudio>()));
     i.add<UCPlayAyah>(UCPlayAyah.new);
     i.add<UCPlayRange>(UCPlayRange.new);
-    i.add<UCEnsureAyahDownloaded>(() => UCEnsureAyahDownloaded(i.get<RAudioDownloads>()));
-    i.add<UCResolveAyahSource>(() => UCResolveAyahSource(i.get<RAudioDownloads>()));
+    i.add<UCEnsureAyahDownloaded>(
+      () => UCEnsureAyahDownloaded(i.get<RAudioDownloads>()),
+    );
+    i.add<UCResolveAyahSource>(
+      () => UCResolveAyahSource(i.get<RAudioDownloads>()),
+    );
     i.add<UCDownloadSurah>(() => UCDownloadSurah(i.get<RAudioDownloads>()));
-    i.add<UCDownloadAllSurahs>(() => UCDownloadAllSurahs(i.get<RAudioDownloads>()));
+    i.add<UCDownloadAllSurahs>(
+      () => UCDownloadAllSurahs(i.get<RAudioDownloads>()),
+    );
     i.add<UCGetSurahStatus>(() => UCGetSurahStatus(i.get<RAudioDownloads>()));
-    i.add<UCGetAllSurahsStatus>(() => UCGetAllSurahsStatus(i.get<RAudioDownloads>()));
+    i.add<UCGetAllSurahsStatus>(
+      () => UCGetAllSurahsStatus(i.get<RAudioDownloads>()),
+    );
     i.add<UCGetReciterStats>(() => UCGetReciterStats(i.get<RAudioDownloads>()));
-    i.add<UCDeleteSurahDownload>(() => UCDeleteSurahDownload(i.get<RAudioDownloads>()));
-    i.add<UCDeleteReciterDownloads>(() => UCDeleteReciterDownloads(i.get<RAudioDownloads>()));
+    i.add<UCDeleteSurahDownload>(
+      () => UCDeleteSurahDownload(i.get<RAudioDownloads>()),
+    );
+    i.add<UCDeleteReciterDownloads>(
+      () => UCDeleteReciterDownloads(i.get<RAudioDownloads>()),
+    );
     i.add<UCSaveBookmark>(() => UCSaveBookmark(i.get<RBookmarks>()));
     i.add<UCGetBookmarks>(() => UCGetBookmarks(i.get<RBookmarks>()));
     i.add<UCSaveLastRead>(() => UCSaveLastRead(i.get<RBookmarks>()));
@@ -181,16 +217,32 @@ class QuranModule extends Module {
     i.add<UCSetFontMode>(() => UCSetFontMode(i.get<RReaderSettings>()));
     i.add<UCGetReaderTheme>(() => UCGetReaderTheme(i.get<RReaderSettings>()));
     i.add<UCSetReaderTheme>(() => UCSetReaderTheme(i.get<RReaderSettings>()));
+    i.add<UCGetReaderThemeMode>(
+      () => UCGetReaderThemeMode(i.get<RReaderSettings>()),
+    );
+    i.add<UCSetReaderThemeMode>(
+      () => UCSetReaderThemeMode(i.get<RReaderSettings>()),
+    );
     i.add<UCGetFontScale>(() => UCGetFontScale(i.get<RReaderSettings>()));
     i.add<UCSetFontScale>(() => UCSetFontScale(i.get<RReaderSettings>()));
     i.add<UCGetFontBold>(() => UCGetFontBold(i.get<RReaderSettings>()));
     i.add<UCSetFontBold>(() => UCSetFontBold(i.get<RReaderSettings>()));
-    i.add<UCGetReaderScrollMode>(() => UCGetReaderScrollMode(i.get<RReaderSettings>()));
-    i.add<UCSetReaderScrollMode>(() => UCSetReaderScrollMode(i.get<RReaderSettings>()));
-    i.add<UCGetPlaybackPrefs>(() => UCGetPlaybackPrefs(i.get<RPlaybackPrefs>()));
-    i.add<UCSavePlaybackPrefs>(() => UCSavePlaybackPrefs(i.get<RPlaybackPrefs>()));
+    i.add<UCGetReaderScrollMode>(
+      () => UCGetReaderScrollMode(i.get<RReaderSettings>()),
+    );
+    i.add<UCSetReaderScrollMode>(
+      () => UCSetReaderScrollMode(i.get<RReaderSettings>()),
+    );
+    i.add<UCGetPlaybackPrefs>(
+      () => UCGetPlaybackPrefs(i.get<RPlaybackPrefs>()),
+    );
+    i.add<UCSavePlaybackPrefs>(
+      () => UCSavePlaybackPrefs(i.get<RPlaybackPrefs>()),
+    );
     i.add<UCGetTafsirCatalog>(() => UCGetTafsirCatalog(i.get<RTafsir>()));
-    i.add<UCGetDownloadedTafsirs>(() => UCGetDownloadedTafsirs(i.get<RTafsir>()));
+    i.add<UCGetDownloadedTafsirs>(
+      () => UCGetDownloadedTafsirs(i.get<RTafsir>()),
+    );
     i.add<UCDownloadTafsir>(() => UCDownloadTafsir(i.get<RTafsir>()));
     i.add<UCDeleteTafsir>(() => UCDeleteTafsir(i.get<RTafsir>()));
     i.add<UCGetAyahTafsir>(() => UCGetAyahTafsir(i.get<RTafsir>()));
@@ -222,6 +274,8 @@ class QuranModule extends Module {
         i.get<UCSetFontMode>(),
         i.get<UCGetReaderTheme>(),
         i.get<UCSetReaderTheme>(),
+        i.get<UCGetReaderThemeMode>(),
+        i.get<UCSetReaderThemeMode>(),
         i.get<UCGetFontScale>(),
         i.get<UCSetFontScale>(),
         i.get<UCGetFontBold>(),
@@ -250,10 +304,15 @@ class QuranModule extends Module {
         i.get<CBReaderSettings>(),
       ),
     );
-    i.add<CBBookmarks>(() => CBBookmarks(i.get<UCGetBookmarks>(), i.get<UCSaveBookmark>()));
+    i.add<CBBookmarks>(
+      () => CBBookmarks(i.get<UCGetBookmarks>(), i.get<UCSaveBookmark>()),
+    );
     i.add<CBQuranSearch>(() => CBQuranSearch(i.get<UCSearchQuran>()));
     i.add<CBReciterDownloads>(
-      () => CBReciterDownloads(reciters: i.get<UCGetReciters>(), stats: i.get<UCGetReciterStats>()),
+      () => CBReciterDownloads(
+        reciters: i.get<UCGetReciters>(),
+        stats: i.get<UCGetReciterStats>(),
+      ),
     );
     i.add<CBReciterSurahs>(
       () => CBReciterSurahs(
@@ -304,14 +363,23 @@ class QuranModule extends Module {
         final ayah = int.tryParse(params['ayah'] ?? '');
         return SNMushafReader(
           initialPage: page,
-          initialAyah: (surah != null && ayah != null) ? (surah: surah, ayah: ayah) : null,
+          initialAyah: (surah != null && ayah != null)
+              ? (surah: surah, ayah: ayah)
+              : null,
         );
       },
     );
     r.child(QuranRoutes.reciterPicker, child: (_) => const SNReciterPicker());
     r.child(QuranRoutes.settings, child: (_) => const SNQuranSettings());
-    r.child(QuranRoutes.reciterDownloads, child: (_) => const SNReciterDownloads());
-    r.child(QuranRoutes.reciterSurahs, child: (_) => SNReciterSurahs(reciterId: r.args.queryParams['reciter'] ?? ''));
+    r.child(
+      QuranRoutes.reciterDownloads,
+      child: (_) => const SNReciterDownloads(),
+    );
+    r.child(
+      QuranRoutes.reciterSurahs,
+      child: (_) =>
+          SNReciterSurahs(reciterId: r.args.queryParams['reciter'] ?? ''),
+    );
     r.child(QuranRoutes.bookmarks, child: (_) => const SNBookmarks());
     r.child(QuranRoutes.search, child: (_) => const SNQuranSearch());
     r.child(QuranRoutes.tafsirLibrary, child: (_) => const SNTafsirLibrary());
@@ -321,7 +389,9 @@ class QuranModule extends Module {
         final params = r.args.queryParams;
         final surah = int.tryParse(params['surah'] ?? '') ?? 1;
         final ayah = int.tryParse(params['ayah'] ?? '') ?? 1;
-        return SNTafsir(ayah: ParamAyahRef(surah: surah, ayah: ayah));
+        return SNTafsir(
+          ayah: ParamAyahRef(surah: surah, ayah: ayah),
+        );
       },
     );
   }

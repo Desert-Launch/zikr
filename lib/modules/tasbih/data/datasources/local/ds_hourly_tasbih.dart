@@ -10,8 +10,10 @@ import 'package:quran/core/services/notifications/notification_slots.dart';
 import 'package:quran/core/services/notifications/notifications_service.dart';
 import 'package:quran/modules/tasbih/data/sources/local/box_tasbih_counter.dart';
 
-/// Schedules the hourly zekr notifications (Decision 2). One per hour from
-/// 08:00 to 22:00, silent + low importance — see [AppNotificationChannels.hourly].
+/// Schedules the hourly zekr notifications (Decision 2). One per hour of the
+/// user's reminder window (08:00–22:00 until they change it — see
+/// `BoxAppSettings.reminderWindow`), silent + low importance — see
+/// [AppNotificationChannels.hourly].
 ///
 /// Phrases are loaded from `assets/data/notifictaions/hourly_notifications.json`
 /// (falling back to a hard-coded list), rotated with `hour % len`.
@@ -22,7 +24,7 @@ import 'package:quran/modules/tasbih/data/sources/local/box_tasbih_counter.dart'
 /// changes — the id (`_baseId + hour`) stays stable so cancel/reschedule is
 /// symmetric.
 ///
-/// Notification IDs reserved: 5008..5022 (one per active hour, `_baseId + hour`).
+/// Notification IDs reserved: 5000..5023 (one per hour, `_baseId + hour`).
 class DSHourlyTasbih {
   DSHourlyTasbih(this._notifications, this._counter, this._appSettings);
 
@@ -34,9 +36,11 @@ class DSHourlyTasbih {
       'assets/data/notifictaions/hourly_notifications.json';
 
   static const _baseId = 5000;
-  static const _activeHours = [
-    8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22,
-  ];
+
+  /// Hours to schedule, from the user's reminder window (08:00–22:00 until
+  /// they change it) — the same window the salawat reminder uses, and the only
+  /// other feed it governs.
+  List<int> get _activeHours => _appSettings.reminderWindow().hours;
 
   /// Preferred minutes, in order. `:00` first (the true "hourly" cadence);
   /// shift to `:10`/`:20`/`:50` etc. only when a reserved time collides. `:30`
@@ -72,10 +76,16 @@ class DSHourlyTasbih {
     final reserved = reservedTimes ?? _lastReserved;
     _lastReserved = reserved;
     await _loadAzkar();
+    // Clear the previous window first: narrowing it (or wrapping it past
+    // midnight) would otherwise leave the hours it no longer covers scheduled
+    // and firing. `scheduleDaily` overwrites by id, so re-arming right after is
+    // safe, and the ids are stable per hour.
+    await disable();
     // Each placed slot joins the reserved set so consecutive hours can't be
     // shifted onto each other (e.g. 12:50 and 13:00).
     final taken = NotificationSlots.minutesOfDay(reserved);
-    for (final hour in _activeHours) {
+    final hours = _activeHours;
+    for (final hour in hours) {
       final minute = _minuteForHour(hour, taken);
       taken.add(hour * 60 + minute);
       await _notifications.scheduleDaily(
@@ -89,7 +99,7 @@ class DSHourlyTasbih {
       );
     }
     AppLogger.info(
-      'Hourly zekr scheduled (${_activeHours.length} slots, '
+      'Hourly zekr scheduled (${hours.length} slots, '
       '${reserved.length} reserved times)',
       tag: 'HourlyZekr',
     );
@@ -98,15 +108,29 @@ class DSHourlyTasbih {
   /// Recomputes the hourly schedule against a fresh [reservedTimes] set — call
   /// this once prayer + azkar times are known (from the adhan reschedule). No-op
   /// when the user has the hourly zekr turned off.
-  Future<void> rescheduleWithReservedTimes(
-    List<DateTime> reservedTimes,
-  ) async {
+  Future<void> rescheduleWithReservedTimes(List<DateTime> reservedTimes) async {
     // Recorded even when the feature is off, so switching it on later from the
     // UI (which passes no reserved times) still lands on conflict-free slots.
     _lastReserved = reservedTimes;
     await seedDefaultIfNeeded();
     if (!_counter.current().hourlyEnabled) return;
     await enable(reservedTimes: reservedTimes);
+  }
+
+  /// Rebuilds from the persisted settings, reusing the reserved times from the
+  /// last coordinated run.
+  ///
+  /// For settings changes that carry no prayer-time context — the on/off switch
+  /// or a reminder-window move. Passing an empty list to
+  /// [rescheduleWithReservedTimes] instead would work, but would also overwrite
+  /// the cached reserved set with nothing, so the rebuilt slots would drop back
+  /// onto times the prayer and azkar feeds have already claimed.
+  Future<void> rescheduleFromSettings() async {
+    if (!_counter.current().hourlyEnabled) {
+      await disable();
+      return;
+    }
+    await enable();
   }
 
   /// Turns the hourly zekr on once, for installs carrying the old default.
@@ -131,8 +155,13 @@ class DSHourlyTasbih {
     await _appSettings.setHourlyTasbihSeeded(true);
   }
 
+  /// Cancels every hour this source may have scheduled.
+  ///
+  /// Sweeps the whole day rather than the current window, for the same reason
+  /// [DSSalawatReminder.disable] does: hours dropped by a narrowed window would
+  /// otherwise stay armed and keep firing outside it.
   Future<void> disable() async {
-    for (final hour in _activeHours) {
+    for (var hour = 0; hour < 24; hour++) {
       await _notifications.cancel(_baseId + hour);
     }
   }
@@ -159,8 +188,7 @@ class DSHourlyTasbih {
   Future<void> _loadAzkar() async {
     if (_azkar != null) return;
     try {
-      final root =
-          jsonDecode(await rootBundle.loadString(_assetPath)) as Map;
+      final root = jsonDecode(await rootBundle.loadString(_assetPath)) as Map;
       final rows = (root['hourly_azkar'] as List?) ?? const [];
       _azkar = [
         for (final r in rows)

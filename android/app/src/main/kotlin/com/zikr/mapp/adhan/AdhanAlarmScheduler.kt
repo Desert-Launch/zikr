@@ -30,6 +30,17 @@ object AdhanAlarmScheduler {
     const val EXTRA_PRAYER = "prayer"
     const val EXTRA_FULLSCREEN = "fullScreen"
 
+    /**
+     * Target ALARM-stream level (0–100) for this adhan, baked into the alarm
+     * rather than read at fire time: the alarm fires into a receiver with no
+     * Flutter engine, so there is no isolate to ask. Same reason the voice id
+     * travels this way.
+     */
+    const val EXTRA_VOLUME = "volume"
+
+    /** Used when an alarm predates [EXTRA_VOLUME] — full alarm volume. */
+    const val DEFAULT_VOLUME = 100
+
     /** True when exact alarms are allowed (always pre-API-31; gated after). */
     fun canScheduleExact(context: Context): Boolean {
         if (Build.VERSION.SDK_INT < Build.VERSION_CODES.S) return true
@@ -48,10 +59,11 @@ object AdhanAlarmScheduler {
         openLabel: String,
         prayerKey: String,
         fullScreen: Boolean,
+        volume: Int = DEFAULT_VOLUME,
     ) {
         val am = context.getSystemService(Context.ALARM_SERVICE) as AlarmManager
         val pi = receiverPendingIntent(
-            context, id, rawRes, title, body, stopLabel, openLabel, prayerKey, fullScreen,
+            context, id, rawRes, title, body, stopLabel, openLabel, prayerKey, fullScreen, volume,
         )
         try {
             // setAlarmClock is the strongest guarantee Android offers: it is
@@ -70,7 +82,7 @@ object AdhanAlarmScheduler {
         }
         persist(
             context, id, triggerAtMillis, rawRes, title, body, stopLabel,
-            openLabel, prayerKey, fullScreen,
+            openLabel, prayerKey, fullScreen, volume,
         )
     }
 
@@ -129,6 +141,7 @@ object AdhanAlarmScheduler {
                 o.optString("open"),
                 o.optString("prayer"),
                 o.optBoolean("fullScreen", true),
+                o.optInt("volume", DEFAULT_VOLUME),
             )
         }
     }
@@ -151,6 +164,7 @@ object AdhanAlarmScheduler {
         openLabel: String,
         prayerKey: String,
         fullScreen: Boolean,
+        volume: Int,
     ): PendingIntent = PendingIntent.getBroadcast(
         context,
         id,
@@ -167,6 +181,7 @@ object AdhanAlarmScheduler {
             putExtra(EXTRA_OPEN, openLabel)
             putExtra(EXTRA_PRAYER, prayerKey)
             putExtra(EXTRA_FULLSCREEN, fullScreen)
+            putExtra(EXTRA_VOLUME, volume)
         },
         pendingIntentFlags(),
     )
@@ -240,6 +255,7 @@ object AdhanAlarmScheduler {
         open: String,
         prayer: String,
         fullScreen: Boolean,
+        volume: Int,
     ) {
         val out = withoutId(read(context), id)
         out.put(
@@ -253,6 +269,7 @@ object AdhanAlarmScheduler {
                 put("open", open)
                 put("prayer", prayer)
                 put("fullScreen", fullScreen)
+                put("volume", volume)
             },
         )
         write(context, out)

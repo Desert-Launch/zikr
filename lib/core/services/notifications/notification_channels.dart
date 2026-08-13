@@ -34,12 +34,14 @@ class AppNotificationChannels {
   /// different loudness, and so a silenced notification volume never mutes the
   /// call to prayer.
   ///
-  /// No vibration: the adhan announces itself, and a buzz under it adds
-  /// nothing. Vibration — like sound and audio attributes — is frozen when a
-  /// channel is first created, so silencing it needed a new id (`_v3`) with
-  /// `_v2` retired; see [legacyIds]. Note that `AndroidNotificationDetails`'
-  /// per-notification `enableVibration` cannot substitute for this: from API 26
-  /// on, the channel decides and the per-notification flag is ignored.
+  /// Silent-motor variant, and the default: the adhan announces itself, so a
+  /// buzz under it adds nothing unless the user asks for one.
+  ///
+  /// Vibration — like sound and audio attributes — is frozen when a channel is
+  /// first created, and `AndroidNotificationDetails`' per-notification
+  /// `enableVibration` cannot substitute for it: from API 26 on the channel
+  /// decides and the per-notification flag is ignored. So the user-facing
+  /// vibration toggle is a CHANNEL CHOICE, not a flag — see [adhanVibrate].
   static const adhan = AndroidNotificationChannel(
     'adhan_channel_v3',
     'Adhan',
@@ -47,6 +49,23 @@ class AppNotificationChannels {
     importance: Importance.max,
     playSound: true,
     enableVibration: false,
+    audioAttributesUsage: AudioAttributesUsage.alarm,
+  );
+
+  /// Vibrating twin of [adhan], selected when `MAdhanSettings.vibrate` is on.
+  ///
+  /// Identical in every other respect — same alarm audio attributes, so both
+  /// paths stay on the alarm volume and can't drift to different loudness. It
+  /// must be a separate id rather than a mutation of [adhan] because Android
+  /// freezes vibration at creation; both channels are created at boot and both
+  /// are kept, since the user can flip back at any time.
+  static const adhanVibrate = AndroidNotificationChannel(
+    'adhan_channel_v3_vib',
+    'Adhan (vibrate)',
+    description: 'Call-to-prayer (adhan) alerts with vibration',
+    importance: Importance.max,
+    playSound: true,
+    enableVibration: true,
     audioAttributesUsage: AudioAttributesUsage.alarm,
   );
 
@@ -62,6 +81,24 @@ class AppNotificationChannels {
     importance: Importance.max,
     playSound: false,
     enableVibration: false,
+  );
+
+  /// Vibrating twin of [adhanSilent]. Still soundless — the foreground service
+  /// owns the audio — but it buzzes.
+  ///
+  /// Needed because Android background full-adhan is the DEFAULT: on that path
+  /// the prayer notification goes out on the silent companion rather than
+  /// [adhan] / a per-voice channel, so without this twin the vibration toggle
+  /// would be inert for most Android users.
+  static const adhanSilentVibrate = AndroidNotificationChannel(
+    'adhan_silent_channel_vib',
+    'Adhan (full audio, vibrate)',
+    description:
+        'Adhan alert with vibration, shown while the full adhan plays in the '
+        'background',
+    importance: Importance.max,
+    playSound: false,
+    enableVibration: true,
   );
 
   /// Silent companion channel for the optional "X minutes before" reminder —
@@ -98,6 +135,30 @@ class AppNotificationChannels {
     sound: RawResourceAndroidNotificationSound('salah_3la_mohamed'),
   );
 
+  /// Alarm-attributed twin of [salawat], selected when the user asks to be
+  /// reminded even while the phone is silenced.
+  ///
+  /// [AudioAttributesUsage.alarm] is the same technique the adhan uses: an
+  /// alarm-usage sound follows the ALARM volume and plays through ring/silent,
+  /// where a notification-usage one is muted. High importance so it still
+  /// surfaces a heads-up. Audio attributes are frozen at channel creation, so
+  /// this has to be a separate id — both twins are created at boot and kept,
+  /// and the toggle routes between them.
+  ///
+  /// Android only. iOS cannot sound through Silent mode without the
+  /// critical-alert entitlement, which this app does not hold.
+  static const salawatAlarm = AndroidNotificationChannel(
+    'salawat_channel_alarm',
+    'Salawat Reminder (through silent)',
+    description:
+        'Reminders to send salawat upon the Prophet ﷺ, audible while the '
+        'phone is silenced',
+    importance: Importance.high,
+    playSound: true,
+    sound: RawResourceAndroidNotificationSound('salah_3la_mohamed'),
+    audioAttributesUsage: AudioAttributesUsage.alarm,
+  );
+
   static const reminders = AndroidNotificationChannel(
     'reminders_channel',
     'Custom Reminders',
@@ -131,10 +192,13 @@ class AppNotificationChannels {
     prayer,
     azkar,
     adhan,
+    adhanVibrate,
     adhanSilent,
+    adhanSilentVibrate,
     adhanPre,
     hourly,
     salawat,
+    salawatAlarm,
     reminders,
     quranReminders,
     downloads,

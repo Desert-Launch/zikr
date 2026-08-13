@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_modular/flutter_modular.dart';
@@ -53,7 +54,9 @@ class WSalawatReminderSheet extends StatelessWidget {
       child: Directionality(
         // Explicit extension — `localize_and_translate` also defines `isRTL`
         // on BuildContext, and importing the app extension makes it ambiguous.
-        textDirection: ContextExtensions(context).isRTL ? TextDirection.rtl : TextDirection.ltr,
+        textDirection: ContextExtensions(context).isRTL
+            ? TextDirection.rtl
+            : TextDirection.ltr,
         child: SafeArea(
           child: SingleChildScrollView(
             padding: EdgeInsets.fromLTRB(19.w, 12.h, 19.w, isTab ? 20 : 24.h),
@@ -88,9 +91,13 @@ class WSalawatReminderSheet extends StatelessWidget {
                         children: [
                           for (final value in _intervals)
                             WSettingsRow(
-                              icon: value == 0 ? Icons.alarm_rounded : Icons.schedule_rounded,
+                              icon: value == 0
+                                  ? Icons.alarm_rounded
+                                  : Icons.schedule_rounded,
                               title: _labelFor(value),
-                              trailing: WSettingsCheck(selected: _isSelected(state, value)),
+                              trailing: WSettingsCheck(
+                                selected: _isSelected(state, value),
+                              ),
                               onTap: () => _select(state, value),
                             ),
                         ],
@@ -111,8 +118,66 @@ class WSalawatReminderSheet extends StatelessWidget {
                           ],
                         ),
                         WSettingsNote('salawat_reminder_specific_hint'.tr()),
-                      ] else
-                        WSettingsNote('salawat_reminder_window_hint'.tr()),
+                      ] else ...[
+                        SizedBox(height: isTab ? 12 : 15.h),
+                        WSettingsSectionLabel('salawat_window_section'.tr()),
+                        WSettingsGroup(
+                          children: [
+                            WSettingsRow(
+                              icon: Icons.wb_twilight_rounded,
+                              title: 'salawat_window_start'.tr(),
+                              value: TimeOfDay(
+                                hour: state.windowStartHour,
+                                minute: 0,
+                              ).format(context),
+                              onTap: () =>
+                                  _pickWindow(context, state, start: true),
+                            ),
+                            WSettingsRow(
+                              icon: Icons.bedtime_outlined,
+                              title: 'salawat_window_end'.tr(),
+                              value: TimeOfDay(
+                                hour: state.windowEndHour,
+                                minute: 0,
+                              ).format(context),
+                              onTap: () =>
+                                  _pickWindow(context, state, start: false),
+                            ),
+                          ],
+                        ),
+                        WSettingsNote('salawat_window_hint'.tr()),
+                      ],
+                      SizedBox(height: isTab ? 12 : 15.h),
+                      WSettingsSectionLabel('salawat_behaviour_section'.tr()),
+                      WSettingsGroup(
+                        children: [
+                          WSettingsRow(
+                            icon: Icons.volume_up_outlined,
+                            title: 'salawat_ignore_silent'.tr(),
+                            subtitle:
+                                defaultTargetPlatform == TargetPlatform.iOS
+                                ? 'salawat_ignore_silent_hint_ios'.tr()
+                                : 'salawat_ignore_silent_hint'.tr(),
+                            trailing: WSettingsSwitch(
+                              value: state.ignoreSilent,
+                              onChanged: cubit.setIgnoreSilent,
+                            ),
+                            onTap: () =>
+                                cubit.setIgnoreSilent(!state.ignoreSilent),
+                          ),
+                          WSettingsRow(
+                            icon: Icons.phone_in_talk_outlined,
+                            title: 'salawat_pause_on_call'.tr(),
+                            subtitle: 'salawat_pause_on_call_hint'.tr(),
+                            trailing: WSettingsSwitch(
+                              value: state.pauseOnCall,
+                              onChanged: cubit.setPauseOnCall,
+                            ),
+                            onTap: () =>
+                                cubit.setPauseOnCall(!state.pauseOnCall),
+                          ),
+                        ],
+                      ),
                     ],
                   ],
                 );
@@ -128,14 +193,17 @@ class WSalawatReminderSheet extends StatelessWidget {
   /// toggle off rather than persisting a reminder that can never fire.
   Future<void> _setEnabled(bool value) async {
     if (value) {
-      final granted = await Modular.get<NotificationsService>().requestPermission();
+      final granted = await Modular.get<NotificationsService>()
+          .requestPermission();
       if (!granted) return;
     }
     await cubit.setReminderEnabled(value);
   }
 
   bool _isSelected(STasbih state, int value) {
-    return value == 0 ? state.reminderIsSpecificTime : state.reminderIntervalHours == value;
+    return value == 0
+        ? state.reminderIsSpecificTime
+        : state.reminderIntervalHours == value;
   }
 
   Future<void> _select(STasbih state, int value) {
@@ -148,7 +216,10 @@ class WSalawatReminderSheet extends StatelessWidget {
   Future<void> _pickTime(BuildContext context, STasbih state) async {
     final picked = await showTimePicker(
       context: context,
-      initialTime: TimeOfDay(hour: state.reminderHour, minute: state.reminderMinute),
+      initialTime: TimeOfDay(
+        hour: state.reminderHour,
+        minute: state.reminderMinute,
+      ),
     );
     if (picked == null) return;
     // Honoured exactly. The 08:00–22:00 window belongs to interval mode, which
@@ -157,6 +228,26 @@ class WSalawatReminderSheet extends StatelessWidget {
     // here (`picked.hour.clamp(8, 22)`) silently turned 02:49 into 08:49 —
     // the minute changed, the hour appeared stuck on 8.
     await cubit.setReminderTime(picked.hour, picked.minute);
+  }
+
+  /// Picks one end of the reminder window. Only the hour is kept — both feeds
+  /// schedule per hour and choose their own minute to dodge collisions, so
+  /// offering minutes would promise a precision neither honours.
+  Future<void> _pickWindow(
+    BuildContext context,
+    STasbih state, {
+    required bool start,
+  }) async {
+    final current = start ? state.windowStartHour : state.windowEndHour;
+    final picked = await showTimePicker(
+      context: context,
+      initialTime: TimeOfDay(hour: current, minute: 0),
+    );
+    if (picked == null) return;
+    await cubit.setReminderWindow(
+      start ? picked.hour : state.windowStartHour,
+      start ? state.windowEndHour : picked.hour,
+    );
   }
 
   String _labelFor(int value) {

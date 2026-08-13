@@ -1,6 +1,8 @@
 import 'dart:async';
 
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:quran/core/utils/helper/haptics_helper.dart';
+import 'package:quran/modules/adhan/data/sources/local/box_adhan_settings.dart';
 import 'package:quran/modules/adhan/presentation/cubits/cb_adhan_player.dart';
 import 'package:quran/modules/adhan/presentation/cubits/s_adhan_ringing.dart';
 import 'package:quran/modules/adhan/presentation/cubits/s_adhan_player.dart';
@@ -12,9 +14,10 @@ import 'package:quran/modules/adhan/presentation/cubits/s_adhan_player.dart';
 /// lock-screen media item. This cubit starts it, mirrors its status, and
 /// reports when the screen should dismiss.
 class CBAdhanRinging extends Cubit<SAdhanRinging> {
-  CBAdhanRinging(this._player) : super(const SAdhanRinging());
+  CBAdhanRinging(this._player, this._settings) : super(const SAdhanRinging());
 
   final CBAdhanPlayer _player;
+  final BoxAdhanSettings _settings;
 
   StreamSubscription<SAdhanPlayer>? _playerSub;
 
@@ -27,6 +30,14 @@ class CBAdhanRinging extends Cubit<SAdhanRinging> {
         voiceNameAr: _player.adhanForPrayer(prayerKey)?.nameAr ?? '',
       ),
     );
+
+    // The in-app half of the vibration setting. On Android the OS notification
+    // has already buzzed via the vibrating channel twin; here the app is in the
+    // foreground, so the alert is this screen and the buzz has to come from us.
+    // On iOS this is the ONLY thing the setting can drive — Apple gives no
+    // app-level control over notification vibration. Fire-and-forget: a failed
+    // buzz must never delay or block starting the adhan.
+    if (_settings.current().vibrate) unawaited(HapticsHelper.complete());
 
     _playerSub?.cancel();
     _playerSub = _player.stream.listen((p) {

@@ -132,6 +132,7 @@ class AppModule extends Module {
       () => DSSalawatReminder(
         i.get<NotificationsService>(),
         i.get<BoxTasbihCounter>(),
+        i.get<BoxAppSettings>(),
       ),
     );
 
@@ -236,8 +237,8 @@ class AppModule extends Module {
         local: i.get<DSLocalAdhan>(),
         // Device locale (e.g. ar-EG, ar-SA, en-US) picks the regional default
         // adhan; defaultForLocale degrades gracefully for partial/unknown tags.
-        localeTag:
-            WidgetsBinding.instance.platformDispatcher.locale.toLanguageTag(),
+        localeTag: WidgetsBinding.instance.platformDispatcher.locale
+            .toLanguageTag(),
       ),
     );
 
@@ -272,8 +273,9 @@ class AppModule extends Module {
         prefs: i.get<BoxAdhanPreference>(),
         prayerSettings: i.get<BoxPrayerSettings>(),
         downloads: i.get<BoxAdhanDownload>(),
-        localeTag:
-            WidgetsBinding.instance.platformDispatcher.locale.toLanguageTag(),
+        settings: i.get<BoxAdhanSettings>(),
+        localeTag: WidgetsBinding.instance.platformDispatcher.locale
+            .toLanguageTag(),
       ),
     );
     i.addSingleton<CBAdhanDownload>(
@@ -310,6 +312,8 @@ class AppModule extends Module {
         counterBox: i.get<BoxTasbihCounter>(),
         historyBox: i.get<BoxTasbihHistory>(),
         reminder: i.get<DSSalawatReminder>(),
+        hourly: i.get<DSHourlyTasbih>(),
+        appSettings: i.get<BoxAppSettings>(),
       ),
     );
     // Live Quran radio player — app-wide so playback survives leaving the radio

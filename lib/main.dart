@@ -12,6 +12,7 @@ import 'package:quran/core/data/models/m_app_settings.dart';
 import 'package:quran/core/data/sources/local/box_app_settings.dart';
 import 'package:quran/core/extension/build_context.dart';
 import 'package:quran/core/services/logging/app_logger.dart';
+import 'package:quran/core/services/media/call_interruption.dart';
 import 'package:quran/core/services/media/media_artwork.dart';
 import 'package:quran/core/services/notifications/notification_box/m_notification.dart';
 import 'package:quran/core/services/notifications/notifications_service.dart';
@@ -37,6 +38,7 @@ import 'package:quran/modules/quran/data/models/m_bookmark.dart';
 import 'package:quran/modules/quran/data/models/m_last_read.dart';
 import 'package:quran/modules/quran/data/models/m_reciter_pref.dart';
 import 'package:quran/modules/quran/data/sources/local/quran_hive_registrar.dart';
+import 'package:quran/modules/quran/presentation/cubits/cb_reader_settings.dart';
 import 'package:quran/modules/radio/presentation/widgets/w_radio_peek_tab.dart';
 import 'package:quran/modules/reminders/data/models/m_reminder.dart';
 import 'package:quran/modules/reminders/presentation/cubits/cb_reminders.dart';
@@ -51,7 +53,10 @@ Future<void> main() async {
   AppLogger.init();
   AppLogger.info('Boot start', tag: 'main');
 
-  await SystemChrome.setPreferredOrientations([DeviceOrientation.portraitUp, DeviceOrientation.portraitDown]);
+  await SystemChrome.setPreferredOrientations([
+    DeviceOrientation.portraitUp,
+    DeviceOrientation.portraitDown,
+  ]);
 
   await LocalizeAndTranslate.init(
     supportedLocales: const [Locale('ar'), Locale('en')],
@@ -144,7 +149,15 @@ Future<void> _bootStep(String name, Future<void> Function() run) async {
 /// Wires notification channels + the tap router, then rebuilds every schedule
 /// so they survive reboots / timezone changes / an OS cleanup.
 Future<void> _bootNotifications() async {
-  await _bootStep('notifications.init', Modular.get<NotificationsService>().init);
+  await _bootStep(
+    'notifications.init',
+    Modular.get<NotificationsService>().init,
+  );
+  // Starts watching for audio-session interruptions (a call, in practice) so
+  // the salawat "pause while on a call" setting has something to read. Needs no
+  // permission on either platform; a failure here leaves it reading "not
+  // interrupted", which is the pre-existing behaviour.
+  await _bootStep('call interruption watch', CallInterruption.instance.start);
   // Returning users who finished onboarding on an older build (or declined) may
   // never have granted the notification permission — without it the
   // adhan/reminder/azkar schedulers silently no-op. Re-ask FIRST so the
@@ -216,6 +229,20 @@ class _RootState extends State<_Root> with WidgetsBindingObserver {
     super.dispose();
   }
 
+  /// The device's light/dark setting changed. The Mushaf reader's page theme
+  /// follows it when the user hasn't pinned one, so flipping system dark mode
+  /// re-colours an OPEN reader without a restart.
+  ///
+  /// Handled here rather than in the reader: `CBReaderSettings` is an app-wide
+  /// singleton with no BuildContext, and the setting has to stay correct even
+  /// when the reader isn't on screen.
+  @override
+  void didChangePlatformBrightness() {
+    Modular.get<CBReaderSettings>().applyPlatformBrightness(
+      WidgetsBinding.instance.platformDispatcher.platformBrightness,
+    );
+  }
+
   @override
   void didChangeAppLifecycleState(AppLifecycleState state) {
     if (state != AppLifecycleState.resumed) return;
@@ -257,7 +284,9 @@ class _RootState extends State<_Root> with WidgetsBindingObserver {
                 supportedLocales: LocalizeAndTranslate.getLocals(),
                 // Mount the app-wide radio peek tab above every route so it
                 // follows the user while a station plays.
-                builder: (context, child) => Stack(children: [if (child != null) child, const WRadioPeekTab()]),
+                builder: (context, child) => Stack(
+                  children: [if (child != null) child, const WRadioPeekTab()],
+                ),
               ),
             );
           },

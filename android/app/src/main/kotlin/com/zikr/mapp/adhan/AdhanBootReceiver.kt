@@ -15,7 +15,14 @@ class AdhanBootReceiver : BroadcastReceiver() {
             Intent.ACTION_BOOT_COMPLETED,
             "android.intent.action.QUICKBOOT_POWERON",
             Intent.ACTION_MY_PACKAGE_REPLACED,
-            -> AdhanAlarmScheduler.reArmAll(context)
+            -> {
+                // A device powered off mid-adhan never ran the service's
+                // restore, and stream volumes survive a reboot — so the user
+                // would come back to a permanently raised alarm slider. This is
+                // the earliest point at which that can be undone.
+                AdhanAlarmVolume.restoreIfPending(context)
+                AdhanAlarmScheduler.reArmAll(context)
+            }
         }
     }
 }

@@ -43,6 +43,8 @@ class AdhanAlarmPlugin(private val context: Context) : MethodChannel.MethodCallH
                     call.argument<String>("openLabel") ?: "فتح التطبيق",
                     call.argument<String>("prayerKey").orEmpty(),
                     call.argument<Boolean>("fullScreen") ?: true,
+                    call.argument<Number>("volume")?.toInt()
+                        ?: AdhanAlarmScheduler.DEFAULT_VOLUME,
                 )
                 result.success(true)
             }

@@ -1,3 +1,4 @@
+import 'package:quran/core/data/sources/local/box_app_settings.dart';
 import 'package:quran/core/services/logging/app_logger.dart';
 import 'package:quran/core/services/notifications/notification_channels.dart';
 import 'package:quran/core/services/notifications/notification_payload.dart';
@@ -7,8 +8,10 @@ import 'package:quran/modules/tasbih/data/sources/local/box_tasbih_counter.dart'
 
 /// Schedules the "salawat upon the Prophet ﷺ" reminders. Two modes:
 ///
-///  * **Interval** — fires every `intervalHours` from 08:00 to 22:00 (the
-///    install default is every 3h → 08, 11, 14, 17, 20). The minute defaults to
+///  * **Interval** — fires every `intervalHours` across the user's reminder
+///    window (`BoxAppSettings.reminderWindow`, 08:00–22:00 until they change
+///    it; the install default is every 3h → 08, 11, 14, 17, 20). The minute
+///    defaults to
 ///    `:30` so it never lands on the `:00` boundary shared by the hourly tasbih
 ///    and the azkar/quran feeds.
 ///  * **Specific time** — a single daily reminder at the user's chosen
@@ -26,13 +29,14 @@ import 'package:quran/modules/tasbih/data/sources/local/box_tasbih_counter.dart'
 /// Each reminder plays the bundled salawat clip via
 /// [AppNotificationChannels.salawat] (Android) / [_iosSound] (iOS).
 ///
-/// Notification IDs reserved: 5099 (specific time) + 5108..5122 (one per
-/// active hour) — clear of the hourly tasbih block (5008..5022).
+/// Notification IDs reserved: 5099 (specific time) + 5100..5123 (one per hour
+/// of the day) — clear of the hourly tasbih block (5000..5023).
 class DSSalawatReminder {
-  DSSalawatReminder(this._notifications, this._counter);
+  DSSalawatReminder(this._notifications, this._counter, this._appSettings);
 
   final NotificationsService _notifications;
   final BoxTasbihCounter _counter;
+  final BoxAppSettings _appSettings;
 
   /// iOS notification sound — the CAF copy of `salah_3la_mohamed.mp3` bundled
   /// in `ios/Runner/Sounds/`.
@@ -41,10 +45,6 @@ class DSSalawatReminder {
   /// Preferred minutes, in order. `:30` first (offset from the hourly tasbih's
   /// `:00`); the rest are fallbacks used only when a reserved time collides.
   static const _minuteCandidates = [30, 35, 25, 40, 20, 45, 15, 50, 10];
-
-  /// Reminder window (inclusive).
-  static const _startHour = 8;
-  static const _endHour = 22;
 
   /// ID for the single specific-time reminder.
   static const _specificId = 5099;
@@ -136,14 +136,17 @@ class DSSalawatReminder {
     int minute,
     List<DateTime> reserved,
   ) {
-    // Specific-time mode: the user picked the time, so it's honoured as-is.
+    // Specific-time mode: the user picked the time, so it's honoured as-is —
+    // including outside the window. Interval mode spreads reminders through the
+    // day and needs a window to spread them across; naming an exact time is a
+    // deliberate choice the window has no business overriding.
     if (intervalHours <= 0) return [(_specificId, hour, minute)];
 
     // Each placed slot joins the reserved set, so two salawat reminders can't
     // be pushed onto the same minute either.
     final taken = NotificationSlots.minutesOfDay(reserved);
     final slots = <(int, int, int)>[];
-    for (var h = _startHour; h <= _endHour; h += intervalHours) {
+    for (final h in _appSettings.reminderWindow().hoursEvery(intervalHours)) {
       final m = NotificationSlots.pickMinute(
         hour: h,
         reserved: taken,
@@ -162,16 +165,23 @@ class DSSalawatReminder {
       minute: minute,
       title: 'الصلاة على النبي ﷺ',
       body: 'اللَّهُمَّ صَلِّ وَسَلِّمْ عَلَى نَبِيِّنَا مُحَمَّدٍ',
-      channel: AppNotificationChannels.salawat,
+      channel: _appSettings.current().salawatIgnoreSilent
+          ? AppNotificationChannels.salawatAlarm
+          : AppNotificationChannels.salawat,
       iosSound: _iosSound,
       payload: const NotificationPayload(type: 'salawat'),
     );
   }
 
   /// Cancels every reminder this source may have scheduled.
+  ///
+  /// Sweeps the whole day rather than the current window: narrowing the window
+  /// (or wrapping it past midnight) would otherwise strand reminders scheduled
+  /// under the previous one, and they'd keep firing outside it forever. Ids
+  /// [_hourBase]+0..23 stay clear of the hourly zekr's 5000..5023 band.
   Future<void> disable() async {
     await _notifications.cancel(_specificId);
-    for (var h = _startHour; h <= _endHour; h++) {
+    for (var h = 0; h < 24; h++) {
       await _notifications.cancel(_hourBase + h);
     }
   }

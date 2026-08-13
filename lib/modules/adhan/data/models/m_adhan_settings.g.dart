@@ -25,13 +25,18 @@ class MAdhanSettingsAdapter extends TypeAdapter<MAdhanSettings> {
       bootstrapped: fields[5] == null ? false : fields[5] as bool,
       fullScreenAlarm: fields[6] == null ? true : fields[6] as bool,
       alarmDefaultsApplied: fields[7] == null ? false : fields[7] as bool,
+      // Absent on every record written before field 8 existed (including the
+      // ones written while vibration was removed outright) — those decode to
+      // the off default rather than throwing.
+      vibrate: fields[8] == null ? false : fields[8] as bool,
+      adhanVolume: fields[9] == null ? 100 : (fields[9] as num).toInt(),
     );
   }
 
   @override
   void write(BinaryWriter writer, MAdhanSettings obj) {
     writer
-      ..writeByte(7)
+      ..writeByte(9)
       ..writeByte(0)
       ..write(obj.enabled)
       ..writeByte(1)
@@ -45,7 +50,11 @@ class MAdhanSettingsAdapter extends TypeAdapter<MAdhanSettings> {
       ..writeByte(6)
       ..write(obj.fullScreenAlarm)
       ..writeByte(7)
-      ..write(obj.alarmDefaultsApplied);
+      ..write(obj.alarmDefaultsApplied)
+      ..writeByte(8)
+      ..write(obj.vibrate)
+      ..writeByte(9)
+      ..write(obj.adhanVolume);
   }
 
   @override

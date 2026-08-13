@@ -1,17 +1,21 @@
+import 'package:flutter/widgets.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:quran/modules/quran/domain/entities/e_quran_font_mode.dart';
 import 'package:quran/modules/quran/domain/entities/e_reader_scroll_mode.dart';
 import 'package:quran/modules/quran/domain/entities/e_reader_theme.dart';
+import 'package:quran/modules/quran/domain/entities/e_reader_theme_mode.dart';
 import 'package:quran/modules/quran/domain/usecases/uc_get_font_bold.dart';
 import 'package:quran/modules/quran/domain/usecases/uc_get_font_mode.dart';
 import 'package:quran/modules/quran/domain/usecases/uc_get_font_scale.dart';
 import 'package:quran/modules/quran/domain/usecases/uc_get_reader_scroll_mode.dart';
 import 'package:quran/modules/quran/domain/usecases/uc_get_reader_theme.dart';
+import 'package:quran/modules/quran/domain/usecases/uc_get_reader_theme_mode.dart';
 import 'package:quran/modules/quran/domain/usecases/uc_set_font_bold.dart';
 import 'package:quran/modules/quran/domain/usecases/uc_set_font_mode.dart';
 import 'package:quran/modules/quran/domain/usecases/uc_set_font_scale.dart';
 import 'package:quran/modules/quran/domain/usecases/uc_set_reader_scroll_mode.dart';
 import 'package:quran/modules/quran/domain/usecases/uc_set_reader_theme.dart';
+import 'package:quran/modules/quran/domain/usecases/uc_set_reader_theme_mode.dart';
 import 'package:quran/modules/quran/presentation/cubits/s_reader_settings.dart';
 
 /// App-wide reader display settings.
@@ -27,6 +31,8 @@ class CBReaderSettings extends Cubit<SReaderSettings> {
     this._setFontMode,
     this._getTheme,
     this._setTheme,
+    this._getThemeMode,
+    this._setThemeMode,
     this._getFontScale,
     this._setFontScale,
     this._getFontBold,
@@ -41,6 +47,8 @@ class CBReaderSettings extends Cubit<SReaderSettings> {
   final UCSetFontMode _setFontMode;
   final UCGetReaderTheme _getTheme;
   final UCSetReaderTheme _setTheme;
+  final UCGetReaderThemeMode _getThemeMode;
+  final UCSetReaderThemeMode _setThemeMode;
   final UCGetFontScale _getFontScale;
   final UCSetFontScale _setFontScale;
   final UCGetFontBold _getFontBold;
@@ -63,11 +71,32 @@ class CBReaderSettings extends Cubit<SReaderSettings> {
   /// The printed Mushaf's own size — what the reset control returns to.
   static const double defaultScale = 1.0;
 
+  /// The device's current light/dark setting.
+  ///
+  /// Read straight off the platform dispatcher rather than a `MediaQuery`
+  /// because this cubit is an app-wide singleton constructed outside the widget
+  /// tree — it has no BuildContext. Live changes arrive through
+  /// [applyPlatformBrightness], which the root widget's
+  /// `didChangePlatformBrightness` calls.
+  Brightness get _platformBrightness =>
+      WidgetsBinding.instance.platformDispatcher.platformBrightness;
+
   Future<void> load() async {
     final mode = await _getFontMode();
     mode.fold((_) {}, (m) => emit(state.copyWith(fontMode: m)));
+    // The persisted page colour is only a fallback here: the mode decides, and
+    // for `system` it recomputes from the device rather than trusting whatever
+    // was last written (the user may have flipped dark mode while the app was
+    // closed).
     final theme = await _getTheme();
     theme.fold((_) {}, (t) => emit(state.copyWith(theme: t)));
+    final themeMode = await _getThemeMode();
+    themeMode.fold(
+      (_) {},
+      (m) => emit(
+        state.copyWith(themeMode: m, theme: m.resolve(_platformBrightness)),
+      ),
+    );
     final scale = await _getFontScale();
     scale.fold((_) {}, (s) => emit(state.copyWith(fontScale: s)));
     final bold = await _getFontBold();
@@ -84,10 +113,36 @@ class CBReaderSettings extends Cubit<SReaderSettings> {
     await _setFontMode(mode);
   }
 
-  Future<void> setTheme(ReaderTheme theme) async {
-    if (theme == state.theme) return;
-    emit(state.copyWith(theme: theme));
-    await _setTheme(theme);
+  /// Pins a specific page colour, which also switches the mode off `system` —
+  /// choosing a surface IS the override, so it must stop following the OS.
+  Future<void> setTheme(ReaderTheme theme) =>
+      setThemeMode(EReaderThemeModeX.pinning(theme));
+
+  /// Sets the page-theme mode: `system` resumes following the device's
+  /// light/dark setting, anything else pins that colour and ignores the OS.
+  ///
+  /// The resolved [ReaderTheme] is persisted alongside the mode so a cold start
+  /// paints the right surface before [load] finishes, and so an install that
+  /// later downgrades still finds a sensible page colour.
+  Future<void> setThemeMode(EReaderThemeMode mode) async {
+    final resolved = mode.resolve(_platformBrightness);
+    if (mode == state.themeMode && resolved == state.theme) return;
+    emit(state.copyWith(themeMode: mode, theme: resolved));
+    await _setThemeMode(mode);
+    await _setTheme(resolved);
+  }
+
+  /// Re-resolves the page colour after the device's light/dark setting changed.
+  ///
+  /// A no-op unless the user is on `system` — a pinned theme deliberately
+  /// ignores the OS. The new colour is persisted so a cold start in the same
+  /// brightness paints it immediately.
+  Future<void> applyPlatformBrightness(Brightness brightness) async {
+    if (state.themeMode != EReaderThemeMode.system) return;
+    final resolved = state.themeMode.resolve(brightness);
+    if (resolved == state.theme) return;
+    emit(state.copyWith(theme: resolved));
+    await _setTheme(resolved);
   }
 
   Future<void> setFontScale(double scale) async {
