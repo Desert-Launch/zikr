@@ -181,6 +181,12 @@ class _WMushafV4PageState extends State<WMushafV4Page> {
             : AppColorsLight.primary;
         final muted = context.brand.muted;
         final headerColor = isDark ? Colors.white70 : muted;
+        // The sajdah mark is the one thing in the footer worth spotting from a
+        // glance, so it leaves the muted running-foot grey behind: a light blue
+        // on the dark page, a deep ink blue on the light/sepia ones.
+        final sajdahColor = isDark
+            ? const Color(0xFF8AB4F8)
+            : const Color(0xFF1A4F9C);
         final brightness = isDark ? Brightness.dark : Brightness.light;
 
         return BlocSelector<CBAudioPlayer, SAudioPlayer, ParamAyahRef?>(
@@ -284,7 +290,11 @@ class _WMushafV4PageState extends State<WMushafV4Page> {
                           ),
                           ...wrapped,
                           SizedBox(height: 4.h),
-                          WMushafPageFooter(page: page, color: muted),
+                          WMushafPageFooter(
+                            page: page,
+                            color: muted,
+                            sajdahColor: sajdahColor,
+                          ),
                         ],
                       ),
                     ),

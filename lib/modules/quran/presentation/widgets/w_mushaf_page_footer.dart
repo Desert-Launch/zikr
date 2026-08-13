@@ -17,7 +17,12 @@ import 'package:quran/modules/quran/domain/entities/sajdah_marks.dart';
 /// slots are equal-width [Expanded]s, so a page with no sajdah does not shift
 /// its number.
 class WMushafPageFooter extends StatelessWidget {
-  const WMushafPageFooter({required this.page, required this.color, super.key});
+  const WMushafPageFooter({
+    required this.page,
+    required this.color,
+    this.sajdahColor,
+    super.key,
+  });
 
   /// Page number (1–604) — also derives the sajdah marker.
   final int page;
@@ -25,10 +30,16 @@ class WMushafPageFooter extends StatelessWidget {
   /// Muted foreground that matches the header colour for the theme.
   final Color color;
 
+  /// Colour for the sajdah mark. It deliberately breaks away from [color]:
+  /// the muted running-foot grey made the sign easy to miss, and a sajdah is
+  /// the one thing on this line the reader must notice. Falls back to [color].
+  final Color? sajdahColor;
+
   @override
   Widget build(BuildContext context) {
     final isTablet = context.isTablet;
     final hasSajdah = SajdahMarks.onPage(page);
+    final sajdahTint = sajdahColor ?? color;
 
     return Directionality(
       textDirection: TextDirection.rtl,
@@ -45,18 +56,31 @@ class WMushafPageFooter extends StatelessWidget {
             // End (left in RTL) → sajdah, on the pages that print one.
             Expanded(
               child: hasSajdah
-                  ? Text(
-                      '${SajdahMarks.sign} سجدة',
-                      textAlign: TextAlign.left,
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                      // Amiri carries the sajdah sign; the platform default
-                      // renders it as a box on some Android builds.
-                      style: GoogleFonts.amiri(
-                        fontSize: isTablet ? 20.sp : 12.sp,
-                        fontWeight: FontWeight.w700,
-                        color: color,
-                        height: 1.1,
+                  ? Align(
+                      alignment: AlignmentDirectional.centerEnd,
+                      child: Container(
+                        padding: EdgeInsets.symmetric(
+                          horizontal: isTablet ? 8.w : 5.w,
+                          vertical: isTablet ? 3.h : 1.h,
+                        ),
+                        decoration: BoxDecoration(
+                          color: sajdahTint.withValues(alpha: 0.12),
+                          borderRadius: BorderRadius.circular(20.r),
+                        ),
+                        child: Text(
+                          '${SajdahMarks.sign} سجدة',
+                          textAlign: TextAlign.left,
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          // Amiri carries the sajdah sign; the platform default
+                          // renders it as a box on some Android builds.
+                          style: GoogleFonts.amiri(
+                            fontSize: isTablet ? 20.sp : 12.sp,
+                            fontWeight: FontWeight.w700,
+                            color: sajdahTint,
+                            height: 1.1,
+                          ),
+                        ),
                       ),
                     )
                   : const SizedBox.shrink(),

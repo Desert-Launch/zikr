@@ -259,7 +259,13 @@ class _SNMushafReaderState extends State<SNMushafReader> {
   /// Switching mode swaps the whole widget, so the new one starts at its own
   /// zero — the post-frame re-seat puts it back on the page the reader was
   /// already on.
-  Widget _pagesView(EReaderScrollMode mode) {
+  ///
+  /// [lockScroll] is set while a pinch is in progress. Handing the scroll view
+  /// `NeverScrollableScrollPhysics` does more than ignore new drags: Scrollable
+  /// tears its drag recognizers down and cancels the live drag, which settles a
+  /// half-swiped PageView onto the nearest page instead of leaving it stranded
+  /// between two while the fingers zoom.
+  Widget _pagesView(EReaderScrollMode mode, {required bool lockScroll}) {
     if (mode != _builtMode) {
       _builtMode = mode;
       final page = _cubit.state.currentPage;
@@ -271,6 +277,7 @@ class _SNMushafReaderState extends State<SNMushafReader> {
     if (!mode.isVertical) {
       return PageView.builder(
         controller: _pageController,
+        physics: lockScroll ? const NeverScrollableScrollPhysics() : null,
         // NO `reverse`: a horizontal PageView already follows the ambient
         // direction, so under RTL page 1 sits on the right and swiping left
         // advances. `reverse: true` was needed only while the app was pinned
@@ -306,7 +313,9 @@ class _SNMushafReaderState extends State<SNMushafReader> {
         return CustomScrollView(
           key: _verticalViewportKey,
           controller: _scrollController,
-          physics: const ClampingScrollPhysics(),
+          physics: lockScroll
+              ? const NeverScrollableScrollPhysics()
+              : const ClampingScrollPhysics(),
           center: _verticalCenterKey,
           slivers: [
             // Everything before the anchor, growing backwards: index 0 is the
@@ -387,10 +396,10 @@ class _SNMushafReaderState extends State<SNMushafReader> {
                 behavior: HitTestBehavior.translucent,
                 onTap: _cubit.toggleChrome,
                 // Two-finger pinch drives the SAME text-size value the settings
-                // slider writes, committed once on release. It sits outside the
-                // scroll views but only ever claims a two-pointer gesture, so
-                // paging, continuous scroll and word taps are untouched — see
-                // [TwoFingerScaleRecognizer].
+                // slider writes, committed once on release. It reads raw
+                // pointers rather than competing in the gesture arena, so two
+                // fingers always zoom — even mid-swipe — while single-finger
+                // paging, continuous scroll and word taps are untouched.
                 child:
                     BlocSelector<
                       CBReaderSettings,
@@ -401,7 +410,7 @@ class _SNMushafReaderState extends State<SNMushafReader> {
                       selector: (s) =>
                           (enabled: s.pinchZoom, scale: s.fontScale),
                       builder: (_, zoom) {
-                        final pages = SafeArea(
+                        Widget pages(bool lockScroll) => SafeArea(
                           child:
                               BlocSelector<
                                 CBMushafReader,
@@ -409,13 +418,14 @@ class _SNMushafReaderState extends State<SNMushafReader> {
                                 EReaderScrollMode
                               >(
                                 selector: (s) => s.scrollMode,
-                                builder: (_, mode) => _pagesView(mode),
+                                builder: (_, mode) =>
+                                    _pagesView(mode, lockScroll: lockScroll),
                               ),
                         );
-                        // Switched off: the recognizer isn't installed at all, so
-                        // the gesture arena is exactly as it was before the feature
-                        // existed rather than merely ignoring the callbacks.
-                        if (!zoom.enabled) return pages;
+                        // Switched off: no pointer listener is installed at all,
+                        // so the reader behaves exactly as it did before the
+                        // feature existed rather than merely ignoring callbacks.
+                        if (!zoom.enabled) return pages(false);
                         return WPinchFontZoom(
                           scale: zoom.scale,
                           minScale: CBReaderSettings.minScale,
@@ -424,7 +434,7 @@ class _SNMushafReaderState extends State<SNMushafReader> {
                           onCommit: _settings.commitFontScale,
                           overlayBuilder: (_, pending) =>
                               WPinchZoomBadge(scale: pending),
-                          child: pages,
+                          builder: (_, locked) => pages(locked),
                         );
                       },
                     ),
