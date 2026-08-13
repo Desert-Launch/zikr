@@ -135,28 +135,29 @@ class AppNotificationChannels {
     sound: RawResourceAndroidNotificationSound('salah_3la_mohamed'),
   );
 
-  /// Alarm-attributed twin of [salawat], selected when the user asks to be
-  /// reminded even while the phone is silenced.
+  /// Silent twin of [salawat], used when the user asks to be reminded even
+  /// while the phone is silenced.
   ///
-  /// [AudioAttributesUsage.alarm] is the same technique the adhan uses: an
-  /// alarm-usage sound follows the ALARM volume and plays through ring/silent,
-  /// where a notification-usage one is muted. High importance so it still
-  /// surfaces a heads-up. Audio attributes are frozen at channel creation, so
-  /// this has to be a separate id — both twins are created at boot and kept,
-  /// and the toggle routes between them.
+  /// The obvious implementation — an alarm-attributed channel, which is what
+  /// [salawatAlarm] was — does not survive contact with real devices: One UI's
+  /// "Mute" mode drops app notification sounds whatever the channel's audio
+  /// attributes say, so the reminder arrived silently on exactly the phones the
+  /// toggle exists for (verified: alarm-usage channel, Do Not Disturb off,
+  /// ALARM volume 11/15, and the OS never started a player).
   ///
-  /// Android only. iOS cannot sound through Silent mode without the
-  /// critical-alert entitlement, which this app does not hold.
-  static const salawatAlarm = AndroidNotificationChannel(
-    'salawat_channel_alarm',
+  /// So the audio moved out of the channel: `ReminderSoundAlarms` arms a native
+  /// alarm that plays the clip through MediaPlayer on the ALARM stream, which no
+  /// OEM mutes, and this channel stays silent so the two can't double up. High
+  /// importance keeps the heads-up banner the toggle implies.
+  static const salawatSilent = AndroidNotificationChannel(
+    'salawat_channel_silent',
     'Salawat Reminder (through silent)',
     description:
         'Reminders to send salawat upon the Prophet ﷺ, audible while the '
         'phone is silenced',
     importance: Importance.high,
-    playSound: true,
-    sound: RawResourceAndroidNotificationSound('salah_3la_mohamed'),
-    audioAttributesUsage: AudioAttributesUsage.alarm,
+    playSound: false,
+    enableVibration: false,
   );
 
   static const reminders = AndroidNotificationChannel(
@@ -198,7 +199,7 @@ class AppNotificationChannels {
     adhanPre,
     hourly,
     salawat,
-    salawatAlarm,
+    salawatSilent,
     reminders,
     quranReminders,
     downloads,
@@ -209,7 +210,14 @@ class AppNotificationChannels {
   /// so changing any of them means publishing a new id — and deleting the old
   /// one, or it lingers forever in the app's notification settings as a dead
   /// duplicate. [NotificationsService.init] deletes these once at boot.
-  static const List<String> legacyIds = ['adhan_channel', 'adhan_channel_v2'];
+  static const List<String> legacyIds = [
+    'adhan_channel',
+    'adhan_channel_v2',
+    // Alarm-attributed salawat channel, replaced by [salawatSilent] + the
+    // app-played clip. Its sound never reached users on One UI, and a channel
+    // that still exists keeps showing up in the app's notification settings.
+    'salawat_channel_alarm',
+  ];
 
   /// Prefix of the per-voice adhan channels created by
   /// [NotificationsService.createVoiceChannel] before they moved to the alarm

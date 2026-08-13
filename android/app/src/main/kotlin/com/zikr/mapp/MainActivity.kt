@@ -3,6 +3,7 @@ package com.zikr.mapp
 import com.ryanheise.audioservice.AudioServiceActivity
 import com.zikr.mapp.adhan.AdhanAlarmPlugin
 import com.zikr.mapp.adhan.AdhanAlarmVolume
+import com.zikr.mapp.reminder.ReminderSoundPlugin
 import io.flutter.embedding.engine.FlutterEngine
 import io.flutter.plugin.common.MethodChannel
 
@@ -19,5 +20,10 @@ class MainActivity : AudioServiceActivity() {
         // gracefully fall back to the notification-sound path.
         MethodChannel(flutterEngine.dartExecutor.binaryMessenger, AdhanAlarmPlugin.CHANNEL)
             .setMethodCallHandler(AdhanAlarmPlugin(applicationContext))
+        // Bridge for the reminder clips the app plays itself, so a reminder can
+        // still be heard while the phone is silenced — a notification channel's
+        // sound can't (see ReminderSoundScheduler).
+        MethodChannel(flutterEngine.dartExecutor.binaryMessenger, ReminderSoundPlugin.CHANNEL)
+            .setMethodCallHandler(ReminderSoundPlugin(applicationContext))
     }
 }

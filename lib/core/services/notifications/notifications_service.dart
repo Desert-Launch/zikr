@@ -354,6 +354,12 @@ class NotificationsService {
   /// [iosSound] is a per-notification iOS sound file bundled in the app
   /// (≤30s, e.g. `salah_3la_mohamed.caf`); Android sound is fixed to the
   /// [channel] instead.
+  ///
+  /// [iosTimeSensitive] raises the notification above a Focus mode on iOS 15+.
+  /// `timeSensitive` is the highest interruption level available without an
+  /// entitlement, and it still respects the Ring/Silent switch — nothing short
+  /// of a critical alert pierces that (see
+  /// `docs/ios_critical_alerts_justification.md`).
   Future<bool> scheduleDaily({
     required int id,
     required int hour,
@@ -363,13 +369,20 @@ class NotificationsService {
     required AndroidNotificationChannel channel,
     NotificationPayload? payload,
     String? iosSound,
+    bool iosTimeSensitive = false,
   }) {
     return _zonedSchedule(
       id: id,
       title: title,
       body: body,
       when: _nextInstanceOfTime(hour, minute),
-      details: _details(channel, iosSound: iosSound),
+      details: _details(
+        channel,
+        iosSound: iosSound,
+        iosInterruptionLevel: iosTimeSensitive
+            ? InterruptionLevel.timeSensitive
+            : null,
+      ),
       matchDateTimeComponents: DateTimeComponents.time,
       payload: payload?.encode(),
     );
@@ -482,6 +495,7 @@ class NotificationsService {
     AndroidNotificationChannel channel, {
     String? iosSound,
     bool alarm = false,
+    InterruptionLevel? iosInterruptionLevel,
   }) {
     return NotificationDetails(
       android: AndroidNotificationDetails(
@@ -494,6 +508,12 @@ class NotificationsService {
         sound: channel.sound,
         // Honoured below API 26 only; from 26 on the channel wins.
         enableVibration: channel.enableVibration,
+        // Carried so a channel the plugin has to create itself — it does that
+        // from these details whenever the id doesn't exist yet — lands on the
+        // same audio stream as [AppNotificationChannels]. Without it such a
+        // channel is born with notification usage and, since audio attributes
+        // are frozen at creation, stays that way for good.
+        audioAttributesUsage: channel.audioAttributesUsage,
         category: alarm ? AndroidNotificationCategory.alarm : null,
         fullScreenIntent: alarm,
       ),
@@ -502,6 +522,7 @@ class NotificationsService {
         presentBadge: true,
         presentSound: true,
         sound: iosSound,
+        interruptionLevel: iosInterruptionLevel,
       ),
     );
   }

@@ -139,6 +139,15 @@
             android:turnScreenOn="true"
             android:excludeFromRecents="true"
             android:configChanges="orientation|keyboardHidden|keyboard|screenSize|smallestScreenSize|locale|layoutDirection|fontScale|screenLayout|density|uiMode" />
+        <!-- Reminder sound: an exact alarm fires ReminderSoundReceiver at the
+             same minute as a reminder notification and plays its short clip on
+             the ALARM stream. A notification channel's own sound is dropped by
+             some OEMs (Samsung's Mute mode) even with alarm audio attributes,
+             so the only way to be heard while silenced is to play it ourselves.
+             Re-armed after reboot by AdhanBootReceiver. -->
+        <receiver
+            android:name=".reminder.ReminderSoundReceiver"
+            android:exported="false" />
         <receiver
             android:name=".adhan.AdhanBootReceiver"
             android:exported="true">

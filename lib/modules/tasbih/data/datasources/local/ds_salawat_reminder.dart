@@ -1,9 +1,12 @@
+import 'dart:io';
+
 import 'package:quran/core/data/sources/local/box_app_settings.dart';
 import 'package:quran/core/services/logging/app_logger.dart';
 import 'package:quran/core/services/notifications/notification_channels.dart';
 import 'package:quran/core/services/notifications/notification_payload.dart';
 import 'package:quran/core/services/notifications/notification_slots.dart';
 import 'package:quran/core/services/notifications/notifications_service.dart';
+import 'package:quran/core/services/notifications/reminder_sound_alarms.dart';
 import 'package:quran/modules/tasbih/data/sources/local/box_tasbih_counter.dart';
 
 /// Schedules the "salawat upon the Prophet ﷺ" reminders. Two modes:
@@ -29,18 +32,38 @@ import 'package:quran/modules/tasbih/data/sources/local/box_tasbih_counter.dart'
 /// Each reminder plays the bundled salawat clip via
 /// [AppNotificationChannels.salawat] (Android) / [_iosSound] (iOS).
 ///
+/// **"Remind while silenced"** (`MAppSettings.salawatIgnoreSilent`) is not a
+/// different channel sound but a different *source* of sound: the notification
+/// moves to the silent [AppNotificationChannels.salawatSilent] and the clip is
+/// played by the app itself through [ReminderSoundAlarms], on the ALARM stream.
+/// A channel sound — even an alarm-attributed one — is dropped outright by One
+/// UI's Mute mode, which is exactly the case the toggle exists for. iOS has no
+/// equivalent: only a critical alert pierces the Ring/Silent switch, and this
+/// app's entitlement request scopes that to the adhan alone, so there the
+/// reminder is merely marked time-sensitive (which clears Focus, not silent).
+///
 /// Notification IDs reserved: 5099 (specific time) + 5100..5123 (one per hour
 /// of the day) — clear of the hourly tasbih block (5000..5023).
 class DSSalawatReminder {
-  DSSalawatReminder(this._notifications, this._counter, this._appSettings);
+  DSSalawatReminder(
+    this._notifications,
+    this._counter,
+    this._appSettings, [
+    ReminderSoundAlarms? sound,
+  ]) : _sound = sound ?? ReminderSoundAlarms();
 
   final NotificationsService _notifications;
   final BoxTasbihCounter _counter;
   final BoxAppSettings _appSettings;
+  final ReminderSoundAlarms _sound;
 
   /// iOS notification sound — the CAF copy of `salah_3la_mohamed.mp3` bundled
   /// in `ios/Runner/Sounds/`.
   static const _iosSound = 'salah_3la_mohamed.caf';
+
+  /// Android raw resource (`res/raw/salah_3la_mohamed.mp3`) — the same clip,
+  /// played by [ReminderSoundAlarms] in "remind while silenced" mode.
+  static const _androidClip = 'salah_3la_mohamed';
 
   /// Preferred minutes, in order. `:30` first (offset from the hourly tasbih's
   /// `:00`); the rest are fallbacks used only when a reserved time collides.
@@ -158,31 +181,69 @@ class DSSalawatReminder {
     return slots;
   }
 
+  /// Schedules the notification for one slot and, in "remind while silenced"
+  /// mode on Android, the clip that goes with it.
+  ///
+  /// The two are separate schedules for the same minute rather than one
+  /// mechanism, because no single mechanism does both: only the OS can post a
+  /// notification while the app is dead, and only the app can play audio the
+  /// OS's Mute mode won't drop. They are armed and cancelled together, and the
+  /// notification is silent in this mode so a device that *would* have played
+  /// the channel sound doesn't sound twice.
   Future<void> _scheduleOne(int id, int hour, int minute) async {
+    final throughSilent = _ignoreSilentOnAndroid;
     await _notifications.scheduleDaily(
       id: id,
       hour: hour,
       minute: minute,
       title: 'الصلاة على النبي ﷺ',
       body: 'اللَّهُمَّ صَلِّ وَسَلِّمْ عَلَى نَبِيِّنَا مُحَمَّدٍ',
-      channel: _appSettings.current().salawatIgnoreSilent
-          ? AppNotificationChannels.salawatAlarm
+      channel: throughSilent
+          ? AppNotificationChannels.salawatSilent
           : AppNotificationChannels.salawat,
       iosSound: _iosSound,
+      // iOS can't be made to sound through the Ring/Silent switch, but it can
+      // be lifted above a Focus mode when the user asked to be reminded
+      // regardless — the most the platform allows here.
+      iosTimeSensitive: _appSettings.current().salawatIgnoreSilent,
       payload: const NotificationPayload(type: 'salawat'),
     );
+    if (throughSilent) {
+      await _sound.scheduleDaily(
+        id: id,
+        hour: hour,
+        minute: minute,
+        rawRes: _androidClip,
+      );
+    }
   }
 
-  /// Cancels every reminder this source may have scheduled.
+  /// True when the reminder should be carried by the app-played clip.
+  ///
+  /// Read from the persisted setting alone — never from whether the native
+  /// channel happens to be reachable — so a reschedule from a background
+  /// isolate (which can't reach it) picks the same channel as the UI isolate.
+  /// Otherwise the notification could quietly go back to the sounding channel
+  /// while the armed clips stayed in place, and the reminder would fire twice.
+  bool get _ignoreSilentOnAndroid =>
+      Platform.isAndroid && _appSettings.current().salawatIgnoreSilent;
+
+  /// Cancels every reminder this source may have scheduled — notifications and
+  /// the clips armed alongside them.
   ///
   /// Sweeps the whole day rather than the current window: narrowing the window
   /// (or wrapping it past midnight) would otherwise strand reminders scheduled
   /// under the previous one, and they'd keep firing outside it forever. Ids
   /// [_hourBase]+0..23 stay clear of the hourly zekr's 5000..5023 band.
+  ///
+  /// The clips are cleared unconditionally, not only in "remind while silenced"
+  /// mode: turning the toggle OFF has to take the already-armed ones with it,
+  /// and by then the setting no longer says they exist.
   Future<void> disable() async {
     await _notifications.cancel(_specificId);
     for (var h = 0; h < 24; h++) {
       await _notifications.cancel(_hourBase + h);
     }
+    await _sound.cancelAll();
   }
 }
