@@ -10,6 +10,7 @@ import 'package:quran/modules/quran/presentation/cubits/cb_mushaf_reader.dart';
 import 'package:quran/modules/quran/presentation/cubits/cb_reader_settings.dart';
 import 'package:quran/modules/quran/presentation/cubits/s_audio_player.dart';
 import 'package:quran/modules/quran/presentation/cubits/s_mushaf_reader.dart';
+import 'package:quran/modules/quran/presentation/cubits/s_reader_settings.dart';
 import 'package:quran/modules/quran/presentation/cubits/s_surah_list.dart'
     show LoadStatus;
 import 'package:quran/modules/quran/presentation/widgets/w_ayah_action_sheet.dart';
@@ -34,6 +35,10 @@ const int _kPageCount = 604;
 
 class _SNMushafReaderState extends State<SNMushafReader> {
   late final CBMushafReader _cubit = Modular.get<CBMushafReader>();
+
+  /// Shared reader display settings — the pinch gesture reads its on/off
+  /// switch from here and writes the text size back to it.
+  late final CBReaderSettings _settings = Modular.get<CBReaderSettings>();
 
   /// Horizontal mode: one page per viewport, snapped.
   late final PageController _pageController;
@@ -386,28 +391,43 @@ class _SNMushafReaderState extends State<SNMushafReader> {
                 // scroll views but only ever claims a two-pointer gesture, so
                 // paging, continuous scroll and word taps are untouched — see
                 // [TwoFingerScaleRecognizer].
-                child: BlocSelector<CBMushafReader, SMushafReader, double>(
-                  selector: (s) => s.fontScale,
-                  builder: (_, fontScale) => WPinchFontZoom(
-                    scale: fontScale,
-                    minScale: CBReaderSettings.minScale,
-                    maxScale: CBReaderSettings.maxScale,
-                    onCommit: Modular.get<CBReaderSettings>().setFontScale,
-                    overlayBuilder: (_, pending) =>
-                        WPinchZoomBadge(scale: pending),
-                    child: SafeArea(
-                      child:
-                          BlocSelector<
-                            CBMushafReader,
-                            SMushafReader,
-                            EReaderScrollMode
-                          >(
-                            selector: (s) => s.scrollMode,
-                            builder: (_, mode) => _pagesView(mode),
-                          ),
+                child:
+                    BlocSelector<
+                      CBReaderSettings,
+                      SReaderSettings,
+                      ({bool enabled, double scale})
+                    >(
+                      bloc: _settings,
+                      selector: (s) =>
+                          (enabled: s.pinchZoom, scale: s.fontScale),
+                      builder: (_, zoom) {
+                        final pages = SafeArea(
+                          child:
+                              BlocSelector<
+                                CBMushafReader,
+                                SMushafReader,
+                                EReaderScrollMode
+                              >(
+                                selector: (s) => s.scrollMode,
+                                builder: (_, mode) => _pagesView(mode),
+                              ),
+                        );
+                        // Switched off: the recognizer isn't installed at all, so
+                        // the gesture arena is exactly as it was before the feature
+                        // existed rather than merely ignoring the callbacks.
+                        if (!zoom.enabled) return pages;
+                        return WPinchFontZoom(
+                          scale: zoom.scale,
+                          minScale: CBReaderSettings.minScale,
+                          maxScale: CBReaderSettings.maxScale,
+                          onPreview: _settings.previewFontScale,
+                          onCommit: _settings.commitFontScale,
+                          overlayBuilder: (_, pending) =>
+                              WPinchZoomBadge(scale: pending),
+                          child: pages,
+                        );
+                      },
                     ),
-                  ),
-                ),
               ),
               Align(
                 alignment: Alignment.topCenter,

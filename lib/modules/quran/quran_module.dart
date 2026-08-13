@@ -57,6 +57,7 @@ import 'package:quran/modules/quran/domain/usecases/uc_get_font_mode.dart';
 import 'package:quran/modules/quran/domain/usecases/uc_get_font_scale.dart';
 import 'package:quran/modules/quran/domain/usecases/uc_get_juz_index.dart';
 import 'package:quran/modules/quran/domain/usecases/uc_get_page_layout.dart';
+import 'package:quran/modules/quran/domain/usecases/uc_get_pinch_zoom.dart';
 import 'package:quran/modules/quran/domain/usecases/uc_get_playback_prefs.dart';
 import 'package:quran/modules/quran/domain/usecases/uc_get_qpc_v4_page.dart';
 import 'package:quran/modules/quran/domain/usecases/uc_get_reader_scroll_mode.dart';
@@ -80,6 +81,7 @@ import 'package:quran/modules/quran/domain/usecases/uc_set_active_reciter.dart';
 import 'package:quran/modules/quran/domain/usecases/uc_set_font_bold.dart';
 import 'package:quran/modules/quran/domain/usecases/uc_set_font_mode.dart';
 import 'package:quran/modules/quran/domain/usecases/uc_set_font_scale.dart';
+import 'package:quran/modules/quran/domain/usecases/uc_set_pinch_zoom.dart';
 import 'package:quran/modules/quran/domain/usecases/uc_set_reader_scroll_mode.dart';
 import 'package:quran/modules/quran/domain/usecases/uc_set_reader_theme.dart';
 import 'package:quran/modules/quran/domain/usecases/uc_set_reader_theme_mode.dart';
@@ -227,6 +229,8 @@ class QuranModule extends Module {
     i.add<UCSetFontScale>(() => UCSetFontScale(i.get<RReaderSettings>()));
     i.add<UCGetFontBold>(() => UCGetFontBold(i.get<RReaderSettings>()));
     i.add<UCSetFontBold>(() => UCSetFontBold(i.get<RReaderSettings>()));
+    i.add<UCGetPinchZoom>(() => UCGetPinchZoom(i.get<RReaderSettings>()));
+    i.add<UCSetPinchZoom>(() => UCSetPinchZoom(i.get<RReaderSettings>()));
     i.add<UCGetReaderScrollMode>(
       () => UCGetReaderScrollMode(i.get<RReaderSettings>()),
     );
@@ -280,6 +284,8 @@ class QuranModule extends Module {
         i.get<UCSetFontScale>(),
         i.get<UCGetFontBold>(),
         i.get<UCSetFontBold>(),
+        i.get<UCGetPinchZoom>(),
+        i.get<UCSetPinchZoom>(),
         i.get<UCGetReaderScrollMode>(),
         i.get<UCSetReaderScrollMode>(),
       ),

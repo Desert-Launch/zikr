@@ -26,37 +26,46 @@ class TwoFingerScaleRecognizer extends ScaleGestureRecognizer {
 
 /// Two-finger pinch over the Mushaf that changes the Quran text size.
 ///
-/// **Why this drives the size setting instead of transforming the page.** The
-/// reader preloads the per-page glyph fonts in a ±2-page window and caches page
-/// layout ±3 with eviction. A continuous `Transform.scale` would force every
-/// cached page to relayout on every frame of the pinch, which is exactly the
-/// work that windowing exists to avoid. So the pinch maps to the SAME text-size
-/// value the settings slider writes, and the page is relaid out once, when the
-/// fingers lift.
+/// **Why this drives the size setting instead of transforming the page.** A
+/// continuous `Transform.scale` would leave the glyphs resampled rather than
+/// re-laid-out, so lines would not re-wrap and the result would not match what
+/// the size slider produces. Instead the pinch maps to the SAME text-size value
+/// the slider writes, so the two controls are one setting seen two ways.
 ///
-/// While the pinch is live only [overlayBuilder] rebuilds — a small badge
-/// showing where the size will land. The page itself does not resize until
-/// [onCommit], so there is one relayout per gesture rather than one per frame.
+/// The page resizes DURING the drag: [onPreview] fires as the fingers move, so
+/// the reader reflows under them. Only [onCommit] — once, on release — persists,
+/// because a pinch crosses dozens of sizes on the way to the one the user
+/// means and none of the intermediate ones are worth a write.
+///
+/// Updates are quantised to whole percent, which is the resolution the badge
+/// can show anyway; sub-percent moves are dropped rather than spending a
+/// relayout on a change nobody can see.
 class WPinchFontZoom extends StatefulWidget {
   const WPinchFontZoom({
     super.key,
     required this.scale,
     required this.minScale,
     required this.maxScale,
+    required this.onPreview,
     required this.onCommit,
     required this.child,
     this.overlayBuilder,
   });
 
-  /// The persisted text-size scale the pinch starts from.
+  /// The current text-size scale. Read at gesture start to anchor the pinch;
+  /// changes mid-gesture (from [onPreview]) deliberately do not re-anchor it.
   final double scale;
   final double minScale;
   final double maxScale;
 
-  /// Called once per gesture, when the fingers lift — never mid-pinch.
+  /// Fires as the fingers move, so the page reflows live. Must not persist.
+  final ValueChanged<double> onPreview;
+
+  /// Called once per gesture, when the fingers lift — this is the one that
+  /// persists the size the pinch settled on.
   final ValueChanged<double> onCommit;
 
-  /// Feedback shown while pinching; given the pending scale. Omit for none.
+  /// Feedback shown while pinching; given the live scale. Omit for none.
   final Widget Function(BuildContext context, double pending)? overlayBuilder;
 
   final Widget child;
@@ -71,7 +80,8 @@ class _WPinchFontZoomState extends State<WPinchFontZoom> {
   /// rather than snapping back.
   double _startScale = 1;
 
-  /// Where the size will land when the fingers lift; null when not pinching.
+  /// The live scale while the fingers are down; null when not pinching. Only
+  /// drives the badge — the page itself is resized through `onPreview`.
   double? _pending;
 
   double _resolve(double factor) =>
@@ -79,27 +89,33 @@ class _WPinchFontZoomState extends State<WPinchFontZoom> {
 
   void _onStart(ScaleStartDetails details) {
     if (details.pointerCount < 2) return;
+    // Anchored once, at touch-down. `widget.scale` moves under us for the rest
+    // of the gesture (each preview re-emits it), so re-reading it later would
+    // compound the scale factor against its own output and run away.
     _startScale = widget.scale;
     setState(() => _pending = widget.scale);
   }
 
   void _onUpdate(ScaleUpdateDetails details) {
-    // A two-finger gesture can drop to one finger mid-way; keep the last
-    // pending value rather than resolving against a meaningless scale of 1.
+    // A two-finger gesture can drop to one finger mid-way; hold the last value
+    // rather than resolving against a meaningless scale of 1.
     if (details.pointerCount < 2) return;
     final next = _resolve(details.scale);
-    // Rounded to whole percent: the size is rendered as a percentage, and
-    // rebuilding the badge for changes it cannot show is wasted work.
+    // Whole percent: finer steps cost a full page relayout to move the text by
+    // less than the badge can even display.
     final rounded = (next * 100).roundToDouble() / 100;
     if (rounded == _pending) return;
     setState(() => _pending = rounded);
+    widget.onPreview(rounded);
   }
 
   void _onEnd(ScaleEndDetails details) {
     final pending = _pending;
     setState(() => _pending = null);
-    // The one and only write, and therefore the one and only relayout.
-    if (pending != null && pending != widget.scale) widget.onCommit(pending);
+    // The one and only write of the gesture. Not skipped when it equals
+    // `widget.scale`: the previews already moved that to the same value, so
+    // comparing them would drop every commit.
+    if (pending != null) widget.onCommit(pending);
   }
 
   @override

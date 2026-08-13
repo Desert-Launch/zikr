@@ -129,6 +129,35 @@ class RImplReaderSettings implements RReaderSettings {
   }
 
   @override
+  Future<Either<Failure, bool>> getPinchZoom() async {
+    try {
+      return Right(_local.getPinchZoom());
+    } catch (e, st) {
+      ErrorHelper.printDebugError(
+        name: 'RImplReaderSettings.getPinchZoom',
+        error: e,
+        stackTrace: st,
+      );
+      return Left(Failure.cacheFailure(message: e.toString()));
+    }
+  }
+
+  @override
+  Future<Either<Failure, void>> setPinchZoom(bool enabled) async {
+    try {
+      await _local.setPinchZoom(enabled);
+      return const Right(null);
+    } catch (e, st) {
+      ErrorHelper.printDebugError(
+        name: 'RImplReaderSettings.setPinchZoom',
+        error: e,
+        stackTrace: st,
+      );
+      return Left(Failure.cacheFailure(message: e.toString()));
+    }
+  }
+
+  @override
   Future<Either<Failure, bool>> getFontBold() async {
     try {
       return Right(_local.getFontBold());

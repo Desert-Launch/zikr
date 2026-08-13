@@ -7,12 +7,14 @@ import 'package:quran/modules/quran/domain/entities/e_reader_theme_mode.dart';
 import 'package:quran/modules/quran/domain/usecases/uc_get_font_bold.dart';
 import 'package:quran/modules/quran/domain/usecases/uc_get_font_mode.dart';
 import 'package:quran/modules/quran/domain/usecases/uc_get_font_scale.dart';
+import 'package:quran/modules/quran/domain/usecases/uc_get_pinch_zoom.dart';
 import 'package:quran/modules/quran/domain/usecases/uc_get_reader_scroll_mode.dart';
 import 'package:quran/modules/quran/domain/usecases/uc_get_reader_theme.dart';
 import 'package:quran/modules/quran/domain/usecases/uc_get_reader_theme_mode.dart';
 import 'package:quran/modules/quran/domain/usecases/uc_set_font_bold.dart';
 import 'package:quran/modules/quran/domain/usecases/uc_set_font_mode.dart';
 import 'package:quran/modules/quran/domain/usecases/uc_set_font_scale.dart';
+import 'package:quran/modules/quran/domain/usecases/uc_set_pinch_zoom.dart';
 import 'package:quran/modules/quran/domain/usecases/uc_set_reader_scroll_mode.dart';
 import 'package:quran/modules/quran/domain/usecases/uc_set_reader_theme.dart';
 import 'package:quran/modules/quran/domain/usecases/uc_set_reader_theme_mode.dart';
@@ -37,6 +39,8 @@ class CBReaderSettings extends Cubit<SReaderSettings> {
     this._setFontScale,
     this._getFontBold,
     this._setFontBold,
+    this._getPinchZoom,
+    this._setPinchZoom,
     this._getScrollMode,
     this._setScrollMode,
   ) : super(const SReaderSettings()) {
@@ -53,6 +57,8 @@ class CBReaderSettings extends Cubit<SReaderSettings> {
   final UCSetFontScale _setFontScale;
   final UCGetFontBold _getFontBold;
   final UCSetFontBold _setFontBold;
+  final UCGetPinchZoom _getPinchZoom;
+  final UCSetPinchZoom _setPinchZoom;
   final UCGetReaderScrollMode _getScrollMode;
   final UCSetReaderScrollMode _setScrollMode;
 
@@ -101,6 +107,8 @@ class CBReaderSettings extends Cubit<SReaderSettings> {
     scale.fold((_) {}, (s) => emit(state.copyWith(fontScale: s)));
     final bold = await _getFontBold();
     bold.fold((_) {}, (b) => emit(state.copyWith(bold: b)));
+    final pinch = await _getPinchZoom();
+    pinch.fold((_) {}, (p) => emit(state.copyWith(pinchZoom: p)));
     final scrollMode = await _getScrollMode();
     scrollMode.fold((_) {}, (m) => emit(state.copyWith(scrollMode: m)));
   }
@@ -152,9 +160,40 @@ class CBReaderSettings extends Cubit<SReaderSettings> {
     await _setFontScale(clamped);
   }
 
+  /// Resizes the open reader WITHOUT persisting — the live half of a pinch.
+  ///
+  /// A pinch crosses many sizes on the way to the one the user means, and each
+  /// is a real relayout of the cached pages. Doing the Hive write on every one
+  /// of them buys nothing: only where the fingers lift is worth remembering,
+  /// and [setFontScale] on release records it.
+  void previewFontScale(double scale) {
+    final clamped = scale.clamp(minScale, maxScale);
+    if (clamped == state.fontScale) return;
+    emit(state.copyWith(fontScale: clamped));
+  }
+
+  /// Persists the size a pinch settled on.
+  ///
+  /// Deliberately has NO "same value" guard, unlike [setFontScale]: by the time
+  /// the fingers lift, [previewFontScale] has already emitted this exact value,
+  /// so an equality check here would skip the single write of the whole gesture
+  /// and the new size would be lost on the next launch.
+  Future<void> commitFontScale(double scale) async {
+    final clamped = scale.clamp(minScale, maxScale);
+    if (clamped != state.fontScale) emit(state.copyWith(fontScale: clamped));
+    await _setFontScale(clamped);
+  }
+
   /// Back to the printed size. Deliberately leaves [SReaderSettings.bold]
   /// alone — this resets the size control, not the whole text style.
   Future<void> resetFontScale() => setFontScale(defaultScale);
+
+  /// Turns the two-finger pinch-to-resize gesture on the Mushaf on or off.
+  Future<void> setPinchZoom(bool enabled) async {
+    if (enabled == state.pinchZoom) return;
+    emit(state.copyWith(pinchZoom: enabled));
+    await _setPinchZoom(enabled);
+  }
 
   Future<void> setBold(bool bold) async {
     if (bold == state.bold) return;

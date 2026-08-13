@@ -15,6 +15,8 @@ abstract class RReaderSettings {
   Future<Either<Failure, void>> setTheme(ReaderTheme theme);
   Future<Either<Failure, EReaderThemeMode>> getThemeMode();
   Future<Either<Failure, void>> setThemeMode(EReaderThemeMode mode);
+  Future<Either<Failure, bool>> getPinchZoom();
+  Future<Either<Failure, void>> setPinchZoom(bool enabled);
 
   Future<Either<Failure, double>> getFontScale();
   Future<Either<Failure, void>> setFontScale(double scale);

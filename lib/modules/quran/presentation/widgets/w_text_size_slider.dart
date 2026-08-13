@@ -142,6 +142,24 @@ class WTextSizeSlider extends StatelessWidget {
                     style: AppTextStyles.ink16W500,
                   ),
                 ),
+                // The pinch is the other way to reach this same value, so its
+                // switch belongs beside the slider it drives rather than in a
+                // gestures section of its own.
+                SwitchListTile.adaptive(
+                  value: state.pinchZoom,
+                  onChanged: cubit.setPinchZoom,
+                  contentPadding: EdgeInsets.zero,
+                  dense: true,
+                  activeThumbColor: brand.primary,
+                  title: Text(
+                    'quran_settings_pinch_zoom'.tr(),
+                    style: AppTextStyles.ink16W500,
+                  ),
+                  subtitle: Text(
+                    'quran_settings_pinch_zoom_hint'.tr(),
+                    style: AppTextStyles.grey12W400,
+                  ),
+                ),
               ],
             ),
           ),

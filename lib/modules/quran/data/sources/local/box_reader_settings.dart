@@ -20,6 +20,9 @@ class BoxReaderSettings extends HiveBoxBase<String> {
   /// See `EReaderThemeMode`.
   static const String themeModeKey = 'reader_theme_mode';
   static const String fontScaleKey = 'font_scale';
+
+  /// Whether a two-finger pinch on the Mushaf changes the text size.
+  static const String pinchZoomKey = 'pinch_zoom';
   static const String fontBoldKey = 'font_bold';
   static const String scrollModeKey = 'scroll_mode';
 }

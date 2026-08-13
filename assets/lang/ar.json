@@ -77,6 +77,8 @@
   "quran_settings_reader_theme": "مظهر القراءة",
   "quran_settings_text_size": "حجم الخط",
   "quran_settings_bold": "خط عريض",
+  "quran_settings_pinch_zoom": "التكبير بإصبعين",
+  "quran_settings_pinch_zoom_hint": "غيّر حجم الخط بتقريب إصبعيك أو إبعادهما على الصفحة",
   "quran_settings_reset_size": "إعادة الحجم",
   "quran_settings_theme_system": "حسب الجهاز",
   "quran_settings_theme_white": "أبيض",

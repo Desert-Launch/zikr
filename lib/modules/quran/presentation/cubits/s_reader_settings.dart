@@ -14,6 +14,7 @@ class SReaderSettings extends Equatable {
     this.themeMode = EReaderThemeMode.system,
     this.fontScale = 1.0,
     this.bold = false,
+    this.pinchZoom = true,
     this.scrollMode = EReaderScrollMode.horizontal,
   });
 
@@ -33,6 +34,11 @@ class SReaderSettings extends Equatable {
   /// printed page is the reference.
   final bool bold;
 
+  /// Whether a two-finger pinch on the Mushaf changes [fontScale]. On by
+  /// default; turning it off leaves the size slider as the only control, for
+  /// readers who keep triggering the gesture by accident.
+  final bool pinchZoom;
+
   /// Whether the reader turns pages sideways or scrolls the Mushaf as one
   /// continuous column.
   final EReaderScrollMode scrollMode;
@@ -43,6 +49,7 @@ class SReaderSettings extends Equatable {
     EReaderThemeMode? themeMode,
     double? fontScale,
     bool? bold,
+    bool? pinchZoom,
     EReaderScrollMode? scrollMode,
   }) => SReaderSettings(
     fontMode: fontMode ?? this.fontMode,
@@ -50,6 +57,7 @@ class SReaderSettings extends Equatable {
     themeMode: themeMode ?? this.themeMode,
     fontScale: fontScale ?? this.fontScale,
     bold: bold ?? this.bold,
+    pinchZoom: pinchZoom ?? this.pinchZoom,
     scrollMode: scrollMode ?? this.scrollMode,
   );
 
@@ -60,6 +68,7 @@ class SReaderSettings extends Equatable {
     themeMode,
     fontScale,
     bold,
+    pinchZoom,
     scrollMode,
   ];
 }

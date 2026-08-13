@@ -77,6 +77,8 @@
   "quran_settings_reader_theme": "Reading theme",
   "quran_settings_text_size": "Text size",
   "quran_settings_bold": "Bold text",
+  "quran_settings_pinch_zoom": "Pinch to zoom",
+  "quran_settings_pinch_zoom_hint": "Change the text size by pinching two fingers on the page",
   "quran_settings_reset_size": "Reset size",
   "quran_settings_theme_system": "Match device",
   "quran_settings_theme_white": "White",

@@ -60,6 +60,15 @@ class DSLocalReaderSettings {
     scale.clamp(minScale, maxScale).toString(),
   );
 
+  /// Defaults to ON, so the gesture is discoverable without a settings trip.
+  /// Only an explicit `'false'` disables it — an absent key means "not chosen
+  /// yet", which is the default, not off.
+  bool getPinchZoom() =>
+      _box.box.get(BoxReaderSettings.pinchZoomKey) != 'false';
+
+  Future<void> setPinchZoom(bool enabled) =>
+      _box.box.put(BoxReaderSettings.pinchZoomKey, enabled.toString());
+
   bool getFontBold() => _box.box.get(BoxReaderSettings.fontBoldKey) == 'true';
 
   Future<void> setFontBold(bool bold) =>
