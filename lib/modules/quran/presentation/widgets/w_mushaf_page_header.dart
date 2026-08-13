@@ -25,7 +25,7 @@ class WMushafPageHeader extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Padding(
-      padding: EdgeInsets.only(left: 4.w, right: 4.w, bottom: 6.h),
+      padding: EdgeInsets.only(left: 4.w, right: 4.w),
       child: Directionality(
         textDirection: TextDirection.rtl,
         child: Row(
@@ -38,14 +38,13 @@ class WMushafPageHeader extends StatelessWidget {
                 maxLines: 1,
                 overflow: TextOverflow.ellipsis,
                 style: GoogleFonts.amiri(
-                  fontSize: context.isTablet ? 20.sp : 13.sp,
+                  fontSize: context.isTablet ? 14.sp : 13.sp,
                   fontWeight: FontWeight.w700,
                   color: color,
                   height: 1.1,
                 ),
               ),
             ),
-            SizedBox(width: 8.w),
             // End (left in RTL) → juz' number, with the hizb under it.
             Column(
               mainAxisSize: MainAxisSize.min,
@@ -53,12 +52,16 @@ class WMushafPageHeader extends StatelessWidget {
               children: [
                 Text(
                   'الجزء ${CBMushafReader.juzForPage(page)}',
-                  style: TextStyle(fontSize: context.isTablet ? 20.sp : 11.sp, fontWeight: FontWeight.w500, color: color),
+                  style: TextStyle(
+                    fontSize: context.isTablet ? 14.sp : 11.sp,
+                    fontWeight: FontWeight.w500,
+                    color: color,
+                  ),
                 ),
                 Text(
                   mushafHizbLabel(page),
                   maxLines: 1,
-                  style: TextStyle(fontSize: context.isTablet ? 17.sp : 9.5.sp, color: color),
+                  style: TextStyle(fontSize: context.isTablet ? 14.sp : 9.5.sp, color: color),
                 ),
               ],
             ),
