@@ -237,6 +237,16 @@ class AdhanScheduler {
             : (await _local.fajrDefault()).id;
       }
 
+      // Voices that ship a separate Fajr recording. Whichever voice Fajr ends
+      // up on, if it's in this set the sound name picks up a `_fajr` suffix and
+      // resolves to the Fajr take instead of the daytime one. Voices outside it
+      // (remote/downloaded ones) keep their single recording, so a missing
+      // variant can never leave Fajr silent.
+      final fajrVariants = {
+        for (final adhan in await _local.all())
+          if (adhan.hasFajrVariant) adhan.id,
+      };
+
       // Window: today → end of next week (weeks run Saturday–Friday), trimmed
       // to the iOS budget; Android schedules the whole window. Pure integer
       // day-counting keeps the horizon DST-safe.
@@ -279,6 +289,7 @@ class AdhanScheduler {
           preNotifyPerPrayer: prayer.preNotifyMinutesPerPrayer ?? const {},
           defaultVoiceId: pref.defaultAdhanId,
           fajrVoiceId: fajrVoiceId,
+          fajrVariants: fajrVariants,
           fullAndroid: fullAndroid,
           fullIos: fullIos,
           fullScreen: settings.fullScreenAlarm,
@@ -400,6 +411,7 @@ class AdhanScheduler {
   /// window and a real reschedule never cancels it.
   Future<DateTime?> scheduleTest({
     Duration after = const Duration(minutes: 1),
+    EPrayer prayer = EPrayer.dhuhr,
   }) async {
     if (!await _notifications.hasPermission()) {
       AppLogger.warning(
@@ -411,13 +423,41 @@ class AdhanScheduler {
 
     final settings = _adhanSettings.current();
     final pref = _adhanPrefs.current();
-    final voiceId = pref.defaultAdhanId;
+
+    // A Fajr test has to resolve its voice the way the real window does —
+    // per-prayer override → Fajr-specific voice → default — or it would prove
+    // nothing about the prayer it claims to be testing. Every other prayer
+    // keeps the plain default-voice behaviour this button has always had.
+    String? voiceId = pref.defaultAdhanId;
+    if (prayer == EPrayer.fajr) {
+      String? fajrVoiceId;
+      if (pref.useFajrSpecific) {
+        final explicit = pref.fajrAdhanId;
+        fajrVoiceId = (explicit != null && explicit.isNotEmpty)
+            ? explicit
+            : (await _local.fajrDefault()).id;
+      }
+      voiceId = _voiceForPrayer(
+        prayer,
+        _prayerSettings.current().adhanIdPerPrayer ?? const {},
+        pref.defaultAdhanId,
+        fajrVoiceId,
+      );
+    }
+
+    // …and then through the same `_fajr` recording swap, so the test plays the
+    // exact file Fajr will play.
+    final fajrVariants = {
+      for (final adhan in await _local.all())
+        if (adhan.hasFajrVariant) adhan.id,
+    };
+    final soundId = _soundForPrayer(voiceId, prayer, fajrVariants);
 
     final fullAndroid =
         Platform.isAndroid &&
         settings.androidBackgroundFullAdhan &&
         settings.playbackMode == MAdhanSettings.playbackFull;
-    final useFullAdhan = fullAndroid && voiceId != null && voiceId.isNotEmpty;
+    final useFullAdhan = fullAndroid && soundId != null && soundId.isNotEmpty;
     final fullIos = Platform.isIOS && settings.fullScreenAlarm;
 
     final when = DateTime.now().add(after);
@@ -425,17 +465,17 @@ class AdhanScheduler {
     // iOS native alarm replaces the notification (see [_scheduleDay]).
     final iosNative =
         fullIos &&
-        voiceId != null &&
-        voiceId.isNotEmpty &&
+        soundId != null &&
+        soundId.isNotEmpty &&
         await _audioAlarms.schedule(
           id: _testId,
           when: when,
-          rawRes: voiceId,
+          rawRes: soundId,
           title: 'adhan_test_notif_title'.tr(),
           body: 'adhan_test_notif_body'.tr(),
           stopLabel: 'adhan_stop'.tr(),
           openLabel: 'adhan_alarm_open'.tr(),
-          prayerKey: 'dhuhr',
+          prayerKey: prayer.key,
           fullScreen: settings.fullScreenAlarm,
           volume: settings.adhanVolume,
         );
@@ -443,8 +483,8 @@ class AdhanScheduler {
     if (!iosNative) {
       final channel = useFullAdhan
           ? _silentChannel(vibrate: settings.vibrate)
-          : await _resolveChannel(voiceId, vibrate: settings.vibrate);
-      final iosSound = _iosClipFor(voiceId);
+          : await _resolveChannel(soundId, vibrate: settings.vibrate);
+      final iosSound = _iosClipFor(soundId);
 
       await _notifications.scheduleAt(
         id: _testId,
@@ -454,9 +494,9 @@ class AdhanScheduler {
         channel: channel,
         iosSound: iosSound,
         alarm: !useFullAdhan,
-        payload: const NotificationPayload(
+        payload: NotificationPayload(
           type: 'adhan',
-          data: {'prayer': 'dhuhr'},
+          data: {'prayer': prayer.key},
         ),
       );
 
@@ -464,12 +504,12 @@ class AdhanScheduler {
         await _audioAlarms.schedule(
           id: _testId,
           when: when,
-          rawRes: '${voiceId}_full',
+          rawRes: '${soundId}_full',
           title: 'adhan_playing_title'.tr(),
           body: 'adhan_test_notif_title'.tr(),
           stopLabel: 'adhan_stop'.tr(),
           openLabel: 'adhan_alarm_open'.tr(),
-          prayerKey: 'dhuhr',
+          prayerKey: prayer.key,
           fullScreen: settings.fullScreenAlarm,
           volume: settings.adhanVolume,
         );
@@ -497,6 +537,7 @@ class AdhanScheduler {
     required Map<String, int> preNotifyPerPrayer,
     required String? defaultVoiceId,
     required String? fajrVoiceId,
+    required Set<String> fajrVariants,
     required bool fullAndroid,
     required bool fullIos,
     required bool fullScreen,
@@ -518,6 +559,9 @@ class AdhanScheduler {
         defaultVoiceId,
         fajrVoiceId,
       );
+      // Every sound name below derives from this, not from `voiceId`: at Fajr a
+      // voice with a Fajr take resolves to that recording instead.
+      final soundId = _soundForPrayer(voiceId, prayer, fajrVariants);
 
       // Full-adhan native playback applies to near-window prayers with a known
       // voice. The notification then goes silent (the foreground service plays
@@ -526,8 +570,8 @@ class AdhanScheduler {
       // the UI isolate already armed natively.
       final useFullAdhan =
           fullAndroid &&
-          voiceId != null &&
-          voiceId.isNotEmpty &&
+          soundId != null &&
+          soundId.isNotEmpty &&
           dayOffset < _audioWindowDays;
 
       final id = _mainBandStart + doy * 10 + i;
@@ -540,13 +584,13 @@ class AdhanScheduler {
       // notification below, so iOS never ends up silent.
       final iosNative =
           fullIos &&
-          voiceId != null &&
-          voiceId.isNotEmpty &&
+          soundId != null &&
+          soundId.isNotEmpty &&
           dayOffset < _iosAlarmWindowDays &&
           await _audioAlarms.schedule(
             id: id,
             when: time,
-            rawRes: voiceId,
+            rawRes: soundId,
             title: 'adhan_notif_title'.tr().replaceFirst(
               '{{prayer}}',
               prayerName,
@@ -562,8 +606,8 @@ class AdhanScheduler {
       if (!iosNative) {
         final channel = useFullAdhan
             ? _silentChannel(vibrate: vibrate)
-            : await _resolveChannel(voiceId, vibrate: vibrate);
-        final iosSound = _iosClipFor(voiceId);
+            : await _resolveChannel(soundId, vibrate: vibrate);
+        final iosSound = _iosClipFor(soundId);
 
         await _notifications.scheduleAt(
           id: id,
@@ -588,7 +632,7 @@ class AdhanScheduler {
           await _audioAlarms.schedule(
             id: id,
             when: time,
-            rawRes: '${voiceId}_full',
+            rawRes: '${soundId}_full',
             title: 'adhan_playing_title'.tr(),
             body: 'adhan_notif_title'.tr().replaceFirst(
               '{{prayer}}',
@@ -648,6 +692,30 @@ class AdhanScheduler {
     if (override != null && override.isNotEmpty) return override;
     if (prayer == EPrayer.fajr && fajrVoiceId != null) return fajrVoiceId;
     return defaultVoiceId;
+  }
+
+  /// The sound name to ask each platform for — a *recording*, where
+  /// [_voiceForPrayer] picks a *voice*.
+  ///
+  /// The Fajr adhan is not the daytime adhan: it adds
+  /// «الصلاة خير من النوم». So at Fajr a voice that ships a Fajr take resolves
+  /// to `<voiceId>_fajr`, which is the stem every platform name is built from
+  /// (`res/raw/<stem>` for the channel clip, `res/raw/<stem>_full` for native
+  /// playback, `<stem>.caf` on iOS).
+  ///
+  /// [fajrVariants] is the guard: a voice without a Fajr take — a downloaded or
+  /// catalog-only one — keeps its single recording rather than pointing at a
+  /// file that isn't bundled.
+  String? _soundForPrayer(
+    String? voiceId,
+    EPrayer prayer,
+    Set<String> fajrVariants,
+  ) {
+    if (voiceId == null || voiceId.isEmpty) return voiceId;
+    if (prayer != EPrayer.fajr || !fajrVariants.contains(voiceId)) {
+      return voiceId;
+    }
+    return '${voiceId}_fajr';
   }
 
   Future<void> _cancelWindow() async {

@@ -13,6 +13,8 @@ class MAdhan extends Equatable {
     required this.asset,
     required this.isFajrDefault,
     required this.durationSeconds,
+    this.fajrAsset = '',
+    this.fajrDurationSeconds = 0,
     this.defaultForLocales = const [],
     this.noteAr,
     this.noteEn,
@@ -36,6 +38,8 @@ class MAdhan extends Equatable {
         asset: json['asset'] as String? ?? '',
         isFajrDefault: json['is_fajr_default'] as bool? ?? false,
         durationSeconds: json['duration_seconds'] as int? ?? 0,
+        fajrAsset: json['fajr_asset'] as String? ?? '',
+        fajrDurationSeconds: json['fajr_duration_seconds'] as int? ?? 0,
         defaultForLocales:
             (json['default_for_locales'] as List<dynamic>?)?.cast<String>() ?? const [],
         noteAr: json['note_ar'] as String?,
@@ -59,6 +63,27 @@ class MAdhan extends Equatable {
   final String asset;
   final bool isFajrDefault;
   final int durationSeconds;
+
+  /// The Fajr recording of this same voice — the one that carries
+  /// «الصلاة خير من النوم», which the daytime adhan omits. Empty when the voice
+  /// ships no Fajr take, in which case Fajr falls back to [asset].
+  ///
+  /// Sound-file names on both platforms are derived from the id, not from this
+  /// path: Android wants `res/raw/<id>_fajr[_full]`, iOS `<id>_fajr.caf`. This
+  /// only feeds in-app playback — but its presence is what tells the scheduler
+  /// those native files exist, so keep it in step with them.
+  final String fajrAsset;
+
+  /// Length of [fajrAsset] in seconds (0 when unknown).
+  final int fajrDurationSeconds;
+
+  /// Whether this voice has a distinct Fajr recording.
+  bool get hasFajrVariant => fajrAsset.isNotEmpty;
+
+  /// The recording to use for [prayerKey] — the Fajr take at Fajr, the regular
+  /// one otherwise.
+  String assetForPrayer(String prayerKey) =>
+      (prayerKey == 'fajr' && hasFajrVariant) ? fajrAsset : asset;
   final List<String> defaultForLocales;
   final String? noteAr;
   final String? noteEn;

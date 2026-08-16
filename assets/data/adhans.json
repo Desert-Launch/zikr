@@ -7,9 +7,14 @@
     "muezzin_en": "Egyptian Radio",
     "style": "egyptian",
     "asset": "assets/audio/adhan/adhan_egypt.mp3",
+    "fajr_asset": "assets/audio/adhan/adhan_egypt_fajr.mp3",
+    "fajr_duration_seconds": 246,
     "is_fajr_default": false,
     "is_default": true,
-    "default_for_locales": ["ar-EG", "ar"],
+    "default_for_locales": [
+      "ar-EG",
+      "ar"
+    ],
     "duration_seconds": 183
   },
   {
@@ -20,8 +25,12 @@
     "muezzin_en": "Grand Mosque, Makkah",
     "style": "hijazi",
     "asset": "assets/audio/adhan/adhan_makkah.mp3",
+    "fajr_asset": "assets/audio/adhan/adhan_makkah_fajr.mp3",
+    "fajr_duration_seconds": 223,
     "is_fajr_default": false,
-    "default_for_locales": ["ar-SA"],
+    "default_for_locales": [
+      "ar-SA"
+    ],
     "duration_seconds": 201
   },
   {
@@ -32,6 +41,8 @@
     "muezzin_en": "Prophet's Mosque, Madinah",
     "style": "hijazi",
     "asset": "assets/audio/adhan/adhan_madinah.mp3",
+    "fajr_asset": "assets/audio/adhan/adhan_madinah_fajr.mp3",
+    "fajr_duration_seconds": 279,
     "is_fajr_default": true,
     "duration_seconds": 96
   },
@@ -43,6 +54,8 @@
     "muezzin_en": "Abdul-Basit Abdus-Samad",
     "style": "egyptian",
     "asset": "assets/audio/adhan/adhan_abdulbasit.mp3",
+    "fajr_asset": "assets/audio/adhan/adhan_abdulbasit_fajr.mp3",
+    "fajr_duration_seconds": 293,
     "is_fajr_default": false,
     "duration_seconds": 205
   }

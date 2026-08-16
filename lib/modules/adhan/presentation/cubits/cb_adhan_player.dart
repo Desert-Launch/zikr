@@ -127,7 +127,7 @@ class CBAdhanPlayer extends Cubit<SAdhanPlayer> {
   /// in order: a downloaded full file on disk → the bundled asset → streaming
   /// the remote [MAdhan.fullUrl] (preview before download). This lets remote
   /// voices preview/play even when they ship no bundled asset.
-  Future<void> play(MAdhan adhan) async {
+  Future<void> play(MAdhan adhan, {String? prayerKey}) async {
     try {
       emit(
         state.copyWith(
@@ -145,12 +145,20 @@ class CBAdhanPlayer extends Cubit<SAdhanPlayer> {
         artist: adhan.muezzinAr,
         artUri: MediaArtwork.uri,
       );
+      // At Fajr this is the Fajr recording of the same voice — the take with
+      // «الصلاة خير من النوم» — and it wins over a downloaded file, which is
+      // only ever the daytime one. Voices with no Fajr take are unaffected.
+      final asset = prayerKey == null
+          ? adhan.asset
+          : adhan.assetForPrayer(prayerKey);
       final localPath = _downloads.localPath(adhan.id);
       final AudioSource source;
-      if (localPath != null) {
+      if (localPath != null && asset == adhan.asset) {
         source = AudioSource.uri(Uri.file(localPath), tag: tag);
-      } else if (adhan.asset.isNotEmpty) {
-        source = AudioSource.asset(adhan.asset, tag: tag);
+      } else if (asset.isNotEmpty) {
+        source = AudioSource.asset(asset, tag: tag);
+      } else if (localPath != null) {
+        source = AudioSource.uri(Uri.file(localPath), tag: tag);
       } else if (adhan.fullUrl?.isNotEmpty ?? false) {
         source = AudioSource.uri(Uri.parse(adhan.fullUrl ?? ''), tag: tag);
       } else {
@@ -197,7 +205,7 @@ class CBAdhanPlayer extends Cubit<SAdhanPlayer> {
     final override = overrideId == null ? null : await _local.byId(overrideId);
     final adhan = override ?? adhanForPrayer(prayerKey);
     if (adhan == null) return;
-    await play(adhan);
+    await play(adhan, prayerKey: prayerKey);
     if (state.status == AdhanPlayerStatus.error) return;
     _flip.start(() => unawaited(stop()));
   }

@@ -447,6 +447,7 @@
   "adhan_alarm_issue_battery": "The app isn't exempt from battery optimization.",
   "adhan_alarm_issue_autostart": "Enable autostart for the app in {{oem}} settings.",
   "adhan_test_button": "Test adhan in 1 minute",
+  "adhan_test_fajr_button": "Test Fajr adhan in 1 minute",
   "adhan_test_scheduled": "Test adhan scheduled for {{time}}",
   "adhan_test_no_permission": "Enable notification permission first to test the adhan.",
   "adhan_test_notif_title": "Test adhan",

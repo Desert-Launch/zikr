@@ -447,6 +447,7 @@
   "adhan_alarm_issue_battery": "التطبيق غير مستثنى من توفير البطارية.",
   "adhan_alarm_issue_autostart": "فعّل التشغيل التلقائي للتطبيق من إعدادات {{oem}}.",
   "adhan_test_button": "تجربة الأذان بعد دقيقة",
+  "adhan_test_fajr_button": "تجربة أذان الفجر بعد دقيقة",
   "adhan_test_scheduled": "تم جدولة أذان تجريبي في الساعة {{time}}",
   "adhan_test_no_permission": "فعّل إذن الإشعارات أولاً لتجربة الأذان.",
   "adhan_test_notif_title": "أذان تجريبي",

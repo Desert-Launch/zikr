@@ -1,6 +1,5 @@
 import 'dart:async';
 import 'dart:io';
-
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:permission_handler/permission_handler.dart';
@@ -20,6 +19,7 @@ import 'package:quran/modules/adhan/services/adhan_audio_alarms.dart';
 import 'package:quran/modules/adhan/services/adhan_scheduler.dart';
 import 'package:quran/modules/prayer/data/models/m_prayer_settings.dart';
 import 'package:quran/modules/prayer/data/sources/local/box_prayer_settings.dart';
+import 'package:quran/modules/prayer/domain/entities/e_prayer.dart';
 
 /// Backs the adhan settings screen. Per-prayer toggles live in
 /// `MPrayerSettings.notifyForPrayer`, voice in `MAdhanPreference`, and the
@@ -361,7 +361,12 @@ class CBAdhanSettings extends Cubit<SAdhanSettings> {
   /// for permission first if it's missing. Returns the scheduled fire time, or
   /// null if permission was denied (so the UI can warn instead of promising a
   /// notification that will never arrive).
-  Future<DateTime?> scheduleTestAdhan() async {
+  /// [prayer] picks which prayer's path to exercise. Fajr is worth testing on
+  /// its own: it resolves a different voice *and* a different recording (the
+  /// `_fajr` take), so a passing Dhuhr test says nothing about it.
+  Future<DateTime?> scheduleTestAdhan({
+    EPrayer prayer = EPrayer.dhuhr,
+  }) async {
     // Verify the live OS permission rather than trusting the cubit's cached
     // flag (which defaults to true and can go stale if the user revoked it in
     // system settings). Otherwise scheduleTest() skips with a warning and the
@@ -372,7 +377,7 @@ class CBAdhanSettings extends Cubit<SAdhanSettings> {
     }
     emit(state.copyWith(hasPermission: granted));
     if (!granted) return null;
-    return _scheduler.scheduleTest();
+    return _scheduler.scheduleTest(prayer: prayer);
   }
 
   /// Debug/testing helper: pretty-prints every notification currently scheduled

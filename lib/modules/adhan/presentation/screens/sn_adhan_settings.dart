@@ -20,6 +20,7 @@ import 'package:quran/modules/adhan/presentation/widgets/w_adhan_setting_row.dar
 import 'package:quran/modules/adhan/presentation/widgets/w_adhan_virtue_card.dart';
 import 'package:quran/modules/adhan/presentation/widgets/w_adhan_volume_row.dart';
 import 'package:quran/modules/adhan/presentation/widgets/w_alarm_permission_switch.dart';
+import 'package:quran/modules/prayer/domain/entities/e_prayer.dart';
 
 class SNAdhanSettings extends StatelessWidget {
   const SNAdhanSettings({super.key});
@@ -179,6 +180,12 @@ class SNAdhanSettings extends StatelessWidget {
                         // if (state.fullScreenAlarm) const WAdhanAlarmReadiness(),
                         SizedBox(height: isTab ? 10 : 12.h),
                         _TestAdhanButton(cubit: cubit),
+                        SizedBox(height: isTab ? 8 : 10.h),
+                        _TestAdhanButton(
+                          cubit: cubit,
+                          prayer: EPrayer.fajr,
+                          labelKey: 'adhan_test_fajr_button',
+                        ),
                         // if (defaultTargetPlatform == TargetPlatform.android) ...[
                         //   gap,
                         //   WAdhanSectionLabel('adhan_playback_section'.tr()),
@@ -332,9 +339,20 @@ class _DefaultDownloadPrompt extends StatelessWidget {
 /// exactly as it would for a real adhan) without waiting for a prayer time.
 /// Shows a confirmation / failure snackbar.
 class _TestAdhanButton extends StatefulWidget {
-  const _TestAdhanButton({required this.cubit});
+  const _TestAdhanButton({
+    required this.cubit,
+    this.prayer = EPrayer.dhuhr,
+    this.labelKey = 'adhan_test_button',
+  });
 
   final CBAdhanSettings cubit;
+
+  /// Which prayer's path to exercise — Fajr resolves its own voice and its own
+  /// `_fajr` recording, so it gets a button of its own.
+  final EPrayer prayer;
+
+  /// Translation key for the button label.
+  final String labelKey;
 
   @override
   State<_TestAdhanButton> createState() => _TestAdhanButtonState();
@@ -347,7 +365,7 @@ class _TestAdhanButtonState extends State<_TestAdhanButton> {
   Future<void> _run() async {
     if (_busy) return;
     setState(() => _busy = true);
-    final when = await widget.cubit.scheduleTestAdhan();
+    final when = await widget.cubit.scheduleTestAdhan(prayer: widget.prayer);
     if (!mounted) return;
     setState(() => _busy = false);
     if (when == null) {
@@ -388,7 +406,7 @@ class _TestAdhanButtonState extends State<_TestAdhanButton> {
               )
             : Icon(Icons.notifications_active_outlined, size: 18.r),
         label: Text(
-          'adhan_test_button'.tr(),
+          widget.labelKey.tr(),
           style: GoogleFonts.cairo(
             fontSize: 12.sp,
             fontWeight: FontWeight.w700,

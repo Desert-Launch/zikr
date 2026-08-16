@@ -158,9 +158,26 @@ class AdhanPlaybackService : Service(), SensorEventListener {
         }
     }
 
+    /**
+     * Resolves a raw resource name, falling back to the non-Fajr recording when
+     * a `_fajr` variant isn't bundled.
+     *
+     * Fajr sound names carry a `_fajr` stem (`adhan_makkah_fajr_full`). A build
+     * that ships the Dart side without the matching raw would otherwise hit the
+     * `resId == 0` path below and go completely silent at Fajr — the one prayer
+     * where a missed alarm actually costs the user a prayer. Dropping the
+     * suffix gives them the daytime adhan instead of nothing.
+     */
+    private fun resolveRaw(rawRes: String): Int {
+        val direct = resources.getIdentifier(rawRes, "raw", packageName)
+        if (direct != 0 || !rawRes.contains("_fajr")) return direct
+        val fallback = rawRes.replace("_fajr", "")
+        return resources.getIdentifier(fallback, "raw", packageName)
+    }
+
     private fun playAdhan(rawRes: String) {
         releasePlayer()
-        val resId = resources.getIdentifier(rawRes, "raw", packageName)
+        val resId = resolveRaw(rawRes)
         if (resId == 0) {
             stopEverything()
             return
