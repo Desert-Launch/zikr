@@ -44,6 +44,10 @@ class CBMushafReader extends Cubit<SMushafReader> {
   final CBReaderSettings _settings;
 
   Timer? _saveDebounce;
+
+  /// Page waiting on [_saveDebounce] — kept out of the timer closure so [close]
+  /// can still flush it after the timer is cancelled.
+  int? _pendingLastReadPage;
   Timer? _chromeTimer;
   StreamSubscription<List<MBookmark>>? _bookmarkSub;
   StreamSubscription<SReaderSettings>? _settingsSub;
@@ -341,22 +345,34 @@ class CBMushafReader extends Cubit<SMushafReader> {
     emit(state.copyWith(multiSelection: next));
   }
 
+  /// Debounced so a fast swipe through a juz' writes once, at the page the
+  /// reader actually settled on, instead of once per page flicked past.
   void _scheduleLastReadSave(int page) {
     _saveDebounce?.cancel();
-    _saveDebounce = Timer(const Duration(seconds: 5), () {
-      final layout = state.layout;
-      final first = layout?.allAyahRefs.firstOrNull;
-      _saveLastRead(
-        surah: first?.surah ?? 1,
-        ayah: first?.ayah ?? 1,
-        page: page,
-      );
-    });
+    _pendingLastReadPage = page;
+    _saveDebounce = Timer(const Duration(seconds: 5), _flushLastRead);
+  }
+
+  /// Writes the pending page, if any. Called by the debounce timer and again on
+  /// [close] — leaving the reader inside the debounce window used to drop the
+  /// save outright, which is exactly the case that matters: the page the user
+  /// was on when they walked away is the one to reopen on.
+  void _flushLastRead() {
+    _saveDebounce?.cancel();
+    final page = _pendingLastReadPage;
+    if (page == null) return;
+    _pendingLastReadPage = null;
+    final first = state.layout?.allAyahRefs.firstOrNull;
+    _saveLastRead(
+      surah: first?.surah ?? 1,
+      ayah: first?.ayah ?? 1,
+      page: page,
+    );
   }
 
   @override
   Future<void> close() {
-    _saveDebounce?.cancel();
+    _flushLastRead();
     _chromeTimer?.cancel();
     _bookmarkSub?.cancel();
     _settingsSub?.cancel();

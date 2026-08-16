@@ -88,6 +88,7 @@ import 'package:quran/modules/quran/domain/usecases/uc_set_reader_theme_mode.dar
 import 'package:quran/modules/quran/presentation/cubits/cb_audio_player.dart';
 import 'package:quran/modules/quran/presentation/cubits/cb_bookmarks.dart';
 import 'package:quran/modules/quran/presentation/cubits/cb_mushaf_reader.dart';
+import 'package:quran/modules/quran/presentation/cubits/cb_quran_entry.dart';
 import 'package:quran/modules/quran/presentation/cubits/cb_quran_search.dart';
 import 'package:quran/modules/quran/presentation/cubits/cb_reader_settings.dart';
 import 'package:quran/modules/quran/presentation/cubits/cb_reciter.dart';
@@ -98,6 +99,7 @@ import 'package:quran/modules/quran/presentation/cubits/cb_tafsir.dart';
 import 'package:quran/modules/quran/presentation/cubits/cb_tafsir_library.dart';
 import 'package:quran/modules/quran/presentation/screens/sn_bookmarks.dart';
 import 'package:quran/modules/quran/presentation/screens/sn_mushaf_reader.dart';
+import 'package:quran/modules/quran/presentation/screens/sn_quran_entry.dart';
 import 'package:quran/modules/quran/presentation/screens/sn_quran_search.dart';
 import 'package:quran/modules/quran/presentation/screens/sn_quran_settings.dart';
 import 'package:quran/modules/quran/presentation/screens/sn_reciter_downloads.dart';
@@ -292,6 +294,7 @@ class QuranModule extends Module {
     );
 
     // Per-screen cubits (factory).
+    i.add<CBQuranEntry>(() => CBQuranEntry(i.get<UCSaveLastRead>()));
     i.add<CBSurahList>(
       () => CBSurahList(
         i.get<UCGetSurahList>(),
@@ -359,6 +362,7 @@ class QuranModule extends Module {
   @override
   void routes(RouteManager r) {
     r.child(QuranRoutes.surahList, child: (_) => const SNSurahList());
+    r.child(QuranRoutes.entry, child: (_) => const SNQuranEntry());
     r.child(
       QuranRoutes.reader,
       child: (_) {

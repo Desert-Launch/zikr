@@ -77,6 +77,11 @@ class QuranRoutes {
   QuranRoutes._();
 
   static const String surahList = '/';
+
+  /// Entry gate ('/quran/entry'). Resolves where the module should actually
+  /// open — the reader on the last-read page, or the index on a first visit —
+  /// then replaces itself. Use this from Home, not [surahList].
+  static const String entry = '/entry';
   static const String reader = '/reader';
   static const String reciterPicker = '/reciter';
   static const String settings = '/settings';
@@ -88,6 +93,7 @@ class QuranRoutes {
   static const String tafsirLibrary = '/tafsir-library';
 
   static String fullSurahList() => RoutesNames.quranBase;
+  static String fullEntry() => '${RoutesNames.quranBase}entry';
   static String readerFromPage(int page) =>
       '${RoutesNames.quranBase}reader?page=$page';
   static String readerFromAyah(int surah, int ayah) =>

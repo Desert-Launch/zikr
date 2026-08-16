@@ -100,7 +100,9 @@ class _SNHomeState extends State<SNHome> {
           title: 'home_mushaf'.tr(),
           subtitle: 'home_mushaf_hint'.tr(),
           color: _green,
-          route: RoutesNames.quranBase,
+          // The gate, not the index: it reopens the last page read and only
+          // falls back to the index on a first visit.
+          route: QuranRoutes.fullEntry(),
         ),
         WHomeFeatureCard(
           icon: Assets.icons.clock.path,
