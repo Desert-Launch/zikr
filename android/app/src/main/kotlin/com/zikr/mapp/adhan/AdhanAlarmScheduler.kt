@@ -38,6 +38,18 @@ object AdhanAlarmScheduler {
      */
     const val EXTRA_VOLUME = "volume"
 
+    /**
+     * Whether to buzz for the length of the adhan, baked in for the same reason
+     * as [EXTRA_VOLUME].
+     *
+     * The companion notification's channel cannot cover this: on the full-adhan
+     * path it is deliberately silent and the audio runs for minutes, so its
+     * one-shot channel buzz is over before the adhan has said anything. The
+     * vibration has to belong to the playback, which means it has to travel to
+     * the service.
+     */
+    const val EXTRA_VIBRATE = "vibrate"
+
     /** Used when an alarm predates [EXTRA_VOLUME] — full alarm volume. */
     const val DEFAULT_VOLUME = 100
 
@@ -60,10 +72,12 @@ object AdhanAlarmScheduler {
         prayerKey: String,
         fullScreen: Boolean,
         volume: Int = DEFAULT_VOLUME,
+        vibrate: Boolean = false,
     ) {
         val am = context.getSystemService(Context.ALARM_SERVICE) as AlarmManager
         val pi = receiverPendingIntent(
-            context, id, rawRes, title, body, stopLabel, openLabel, prayerKey, fullScreen, volume,
+            context, id, rawRes, title, body, stopLabel, openLabel, prayerKey, fullScreen,
+            volume, vibrate,
         )
         try {
             // setAlarmClock is the strongest guarantee Android offers: it is
@@ -82,7 +96,7 @@ object AdhanAlarmScheduler {
         }
         persist(
             context, id, triggerAtMillis, rawRes, title, body, stopLabel,
-            openLabel, prayerKey, fullScreen, volume,
+            openLabel, prayerKey, fullScreen, volume, vibrate,
         )
     }
 
@@ -142,6 +156,7 @@ object AdhanAlarmScheduler {
                 o.optString("prayer"),
                 o.optBoolean("fullScreen", true),
                 o.optInt("volume", DEFAULT_VOLUME),
+                o.optBoolean("vibrate", false),
             )
         }
     }
@@ -165,6 +180,7 @@ object AdhanAlarmScheduler {
         prayerKey: String,
         fullScreen: Boolean,
         volume: Int,
+        vibrate: Boolean,
     ): PendingIntent = PendingIntent.getBroadcast(
         context,
         id,
@@ -182,6 +198,7 @@ object AdhanAlarmScheduler {
             putExtra(EXTRA_PRAYER, prayerKey)
             putExtra(EXTRA_FULLSCREEN, fullScreen)
             putExtra(EXTRA_VOLUME, volume)
+            putExtra(EXTRA_VIBRATE, vibrate)
         },
         pendingIntentFlags(),
     )
@@ -256,6 +273,7 @@ object AdhanAlarmScheduler {
         prayer: String,
         fullScreen: Boolean,
         volume: Int,
+        vibrate: Boolean,
     ) {
         val out = withoutId(read(context), id)
         out.put(
@@ -270,6 +288,7 @@ object AdhanAlarmScheduler {
                 put("prayer", prayer)
                 put("fullScreen", fullScreen)
                 put("volume", volume)
+                put("vibrate", vibrate)
             },
         )
         write(context, out)

@@ -119,6 +119,13 @@ class AdhanAudioAlarms {
   /// of the adhan and restores it afterwards; iOS ignores it (Apple caps the
   /// notification path at system volume).
   ///
+  /// [vibrate] buzzes for the length of the adhan and travels with the alarm for
+  /// the same reason [volume] does. It has to live here rather than on the
+  /// companion notification's channel: on this path that notification is
+  /// deliberately silent, and a channel buzz is one tick — it cannot accompany
+  /// audio that runs for minutes. iOS ignores it (the system alert owns the
+  /// haptics there).
+  ///
   /// Returns true when the alarm was actually armed natively. A false result
   /// (unreachable channel, missing authorization, unsupported OS) is the
   /// caller's signal to keep its own notification as the audible fallback —
@@ -134,6 +141,7 @@ class AdhanAudioAlarms {
     required String prayerKey,
     bool fullScreen = true,
     int volume = 100,
+    bool vibrate = false,
   }) async {
     try {
       final armed = await _channel.invokeMethod<bool>('schedule', {
@@ -147,6 +155,7 @@ class AdhanAudioAlarms {
         'prayerKey': prayerKey,
         'fullScreen': fullScreen,
         'volume': volume.clamp(0, 100),
+        'vibrate': vibrate,
       });
       return armed ?? false;
     } on MissingPluginException {

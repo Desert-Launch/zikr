@@ -478,6 +478,7 @@ class AdhanScheduler {
           prayerKey: prayer.key,
           fullScreen: settings.fullScreenAlarm,
           volume: settings.adhanVolume,
+          vibrate: settings.vibrate,
         );
 
     if (!iosNative) {
@@ -512,6 +513,7 @@ class AdhanScheduler {
           prayerKey: prayer.key,
           fullScreen: settings.fullScreenAlarm,
           volume: settings.adhanVolume,
+          vibrate: settings.vibrate,
         );
       }
     }
@@ -601,6 +603,7 @@ class AdhanScheduler {
             prayerKey: prayer.key,
             fullScreen: fullScreen,
             volume: volume,
+            vibrate: vibrate,
           );
 
       if (!iosNative) {
@@ -643,6 +646,7 @@ class AdhanScheduler {
             prayerKey: prayer.key,
             fullScreen: fullScreen,
             volume: volume,
+            vibrate: vibrate,
           );
         }
       }

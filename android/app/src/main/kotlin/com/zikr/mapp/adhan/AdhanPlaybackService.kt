@@ -19,6 +19,9 @@ import android.os.Build
 import android.os.IBinder
 import android.os.PowerManager
 import android.os.SystemClock
+import android.os.VibrationEffect
+import android.os.Vibrator
+import android.os.VibratorManager
 import android.provider.Settings
 import androidx.core.app.NotificationCompat
 
@@ -33,6 +36,9 @@ class AdhanPlaybackService : Service(), SensorEventListener {
     private var player: MediaPlayer? = null
 
     private var sensors: SensorManager? = null
+
+    /** Vibrator buzzing for this adhan, or null when the user asked for none. */
+    private var vibrator: Vibrator? = null
 
     /**
      * True once the device has been seen NOT face-down since this adhan began.
@@ -56,6 +62,9 @@ class AdhanPlaybackService : Service(), SensorEventListener {
      */
     private var alarmId: Int = 0
 
+    /** `MAdhanSettings.vibrate`, carried in on the alarm that started this run. */
+    private var vibrateEnabled = false
+
     override fun onBind(intent: Intent?): IBinder? = null
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
@@ -76,6 +85,8 @@ class AdhanPlaybackService : Service(), SensorEventListener {
             AdhanAlarmScheduler.EXTRA_VOLUME,
             AdhanAlarmScheduler.DEFAULT_VOLUME,
         ) ?: AdhanAlarmScheduler.DEFAULT_VOLUME
+        vibrateEnabled =
+            intent?.getBooleanExtra(AdhanAlarmScheduler.EXTRA_VIBRATE, false) ?: false
 
         // Before anything else: heal a level a previous run never restored (see
         // [AdhanAlarmVolume]), then raise the ALARM stream for this adhan. Done
@@ -228,7 +239,66 @@ class AdhanPlaybackService : Service(), SensorEventListener {
         mp.setOnPreparedListener { it.start() }
         mp.prepareAsync()
         player = mp
+        startVibration()
         startFlipToSilence()
+    }
+
+    /**
+     * Buzzes a repeating pattern for as long as the adhan plays.
+     *
+     * The vibration belongs to the playback, not to a notification: on this path
+     * the companion notification is silent by design and the adhan runs for
+     * minutes, so a channel's one-shot buzz would be over before the call to
+     * prayer had begun — which is why the toggle read as doing nothing at all.
+     *
+     * USAGE_ALARM matches the audio, so the buzz survives the same Do-Not-Disturb
+     * and volume rules the adhan itself does rather than being filtered out as a
+     * notification. A device with no vibrator, or a failure to start, simply
+     * leaves the adhan audible and unbuzzing — never fatal.
+     */
+    private fun startVibration() {
+        if (!vibrateEnabled) return
+        val v = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+            (getSystemService(Context.VIBRATOR_MANAGER_SERVICE) as? VibratorManager)
+                ?.defaultVibrator
+        } else {
+            @Suppress("DEPRECATION")
+            getSystemService(Context.VIBRATOR_SERVICE) as? Vibrator
+        }
+        if (v == null || !v.hasVibrator()) return
+
+        val attrs = AudioAttributes.Builder()
+            .setUsage(AudioAttributes.USAGE_ALARM)
+            .setContentType(AudioAttributes.CONTENT_TYPE_SONIFICATION)
+            .build()
+        try {
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                v.vibrate(
+                    VibrationEffect.createWaveform(VIBRATE_PATTERN, VIBRATE_REPEAT_INDEX),
+                    attrs,
+                )
+            } else {
+                @Suppress("DEPRECATION")
+                v.vibrate(VIBRATE_PATTERN, VIBRATE_REPEAT_INDEX, attrs)
+            }
+            vibrator = v
+        } catch (e: Exception) {
+            vibrator = null
+        }
+    }
+
+    /**
+     * Silences the motor. Must run on EVERY exit — a repeating waveform outlives
+     * the process that started it, so a missed cancel leaves the phone buzzing
+     * with nothing playing and no way to stop it short of a reboot.
+     */
+    private fun stopVibration() {
+        try {
+            vibrator?.cancel()
+        } catch (e: Exception) {
+            // Nothing to do — the service is going away regardless.
+        }
+        vibrator = null
     }
 
     /**
@@ -320,6 +390,7 @@ class AdhanPlaybackService : Service(), SensorEventListener {
      */
     private fun stopEverything() {
         AdhanAlarmVolume.restoreIfPending(this)
+        stopVibration()
         stopFlipToSilence()
         releasePlayer()
         // Tells a visible AdhanAlarmActivity to dismiss itself, whether the
@@ -360,6 +431,7 @@ class AdhanPlaybackService : Service(), SensorEventListener {
         // reclaiming the service, or a task-swipe that tears it down directly.
         // A no-op when stopEverything already restored.
         AdhanAlarmVolume.restoreIfPending(this)
+        stopVibration()
         stopFlipToSilence()
         releasePlayer()
         super.onDestroy()
@@ -472,5 +544,15 @@ class AdhanPlaybackService : Service(), SensorEventListener {
 
         /** How long the device must stay face-down before the adhan is cut. */
         private const val FACE_DOWN_HOLD_MS = 700L
+
+        /**
+         * Buzz pattern while the adhan plays: start at once, 600ms on, 1600ms
+         * off, forever. Long enough to read as a call rather than a notification
+         * tick, sparse enough not to grate across a four-minute recording.
+         */
+        private val VIBRATE_PATTERN = longArrayOf(0, 600, 1600)
+
+        /** Index [VIBRATE_PATTERN] loops back to — 0 repeats the whole pattern. */
+        private const val VIBRATE_REPEAT_INDEX = 0
     }
 }

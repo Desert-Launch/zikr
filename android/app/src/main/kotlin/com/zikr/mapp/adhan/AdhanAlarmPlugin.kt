@@ -45,6 +45,7 @@ class AdhanAlarmPlugin(private val context: Context) : MethodChannel.MethodCallH
                     call.argument<Boolean>("fullScreen") ?: true,
                     call.argument<Number>("volume")?.toInt()
                         ?: AdhanAlarmScheduler.DEFAULT_VOLUME,
+                    call.argument<Boolean>("vibrate") ?: false,
                 )
                 result.success(true)
             }
