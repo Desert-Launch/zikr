@@ -9,6 +9,7 @@ import 'package:quran/core/services/logging/app_logger.dart';
 import 'package:quran/core/services/notifications/notification_channels.dart';
 import 'package:quran/core/services/notifications/notification_payload.dart';
 import 'package:quran/core/services/notifications/notification_router.dart';
+import 'package:quran/core/services/notifications/scheduled_alert_registry.dart';
 import 'package:timezone/data/latest_all.dart' as tzdata;
 import 'package:timezone/timezone.dart' as tz;
 
@@ -19,9 +20,15 @@ import 'package:timezone/timezone.dart' as tz;
 /// register their schedules via [scheduleAt]/[scheduleDaily]; this service
 /// stays domain-agnostic.
 class NotificationsService {
-  NotificationsService(this._router);
+  NotificationsService(this._router, this._alerts);
 
   final NotificationRouter _router;
+
+  /// Mirror of everything armed below, so `InAppNotificationWatcher` can show a
+  /// banner at the moment a scheduled notification fires with the app open.
+  /// Written to here because [_zonedSchedule] is the one place that knows both
+  /// WHAT was scheduled and WHEN it is due.
+  final ScheduledAlertRegistry _alerts;
   final FlutterLocalNotificationsPlugin _plugin =
       FlutterLocalNotificationsPlugin();
 
@@ -211,7 +218,7 @@ class NotificationsService {
       body: body,
       when: tz.TZDateTime.from(when, tz.local),
       details: _details(channel, iosSound: iosSound, alarm: alarm),
-      payload: payload?.encode(),
+      payload: payload,
     );
   }
 
@@ -236,7 +243,7 @@ class NotificationsService {
     required tz.TZDateTime when,
     required NotificationDetails details,
     DateTimeComponents? matchDateTimeComponents,
-    String? payload,
+    NotificationPayload? payload,
   }) async {
     Future<void> attempt(AndroidScheduleMode mode) => _plugin.zonedSchedule(
       id,
@@ -248,16 +255,18 @@ class NotificationsService {
       uiLocalNotificationDateInterpretation:
           UILocalNotificationDateInterpretation.absoluteTime,
       matchDateTimeComponents: matchDateTimeComponents,
-      payload: payload,
+      payload: payload?.encode(),
     );
 
     try {
       await attempt(AndroidScheduleMode.exactAllowWhileIdle);
+      _remember(id, title, body, when, matchDateTimeComponents, payload);
       return true;
     } on PlatformException catch (e, st) {
       if (e.code == 'exact_alarms_not_permitted') {
         try {
           await attempt(AndroidScheduleMode.inexactAllowWhileIdle);
+          _remember(id, title, body, when, matchDateTimeComponents, payload);
           AppLogger.warning(
             'Exact alarms not permitted — notification $id scheduled inexactly '
             '(it may arrive a few minutes late)',
@@ -290,6 +299,37 @@ class NotificationsService {
       );
       return false;
     }
+  }
+
+  /// Mirrors a successfully armed notification into [ScheduledAlertRegistry].
+  ///
+  /// Records the wall-clock instant rather than the [tz.TZDateTime] so the
+  /// watcher can compare it against a plain `DateTime.now()` without either
+  /// side having to reason about zones.
+  void _remember(
+    int id,
+    String title,
+    String body,
+    tz.TZDateTime when,
+    DateTimeComponents? repeat,
+    NotificationPayload? payload,
+  ) {
+    _alerts.put(
+      ScheduledAlert(
+        id: id,
+        title: title,
+        body: body,
+        firesAt: DateTime.fromMillisecondsSinceEpoch(
+          when.millisecondsSinceEpoch,
+        ),
+        payload: payload,
+        repeat: switch (repeat) {
+          DateTimeComponents.time => AlertRepeat.daily,
+          DateTimeComponents.dayOfWeekAndTime => AlertRepeat.weekly,
+          _ => AlertRepeat.once,
+        },
+      ),
+    );
   }
 
   /// Creates (or updates) an Android channel whose sound is a bundled
@@ -384,7 +424,7 @@ class NotificationsService {
             : null,
       ),
       matchDateTimeComponents: DateTimeComponents.time,
-      payload: payload?.encode(),
+      payload: payload,
     );
   }
 
@@ -407,7 +447,7 @@ class NotificationsService {
       when: _nextInstanceOfWeekday(weekday, hour, minute),
       details: _details(channel),
       matchDateTimeComponents: DateTimeComponents.dayOfWeekAndTime,
-      payload: payload?.encode(),
+      payload: payload,
     );
   }
 
@@ -480,8 +520,15 @@ class NotificationsService {
     await _plugin.show(id, title, body, details);
   }
 
-  Future<void> cancel(int id) async => _plugin.cancel(id);
-  Future<void> cancelAll() async => _plugin.cancelAll();
+  Future<void> cancel(int id) async {
+    _alerts.remove(id);
+    await _plugin.cancel(id);
+  }
+
+  Future<void> cancelAll() async {
+    _alerts.clear();
+    await _plugin.cancelAll();
+  }
 
   Future<List<PendingNotificationRequest>> pending() async =>
       _plugin.pendingNotificationRequests();

@@ -13,6 +13,7 @@ import 'package:quran/core/services/notifications/notification_box/ds_notificati
 import 'package:quran/core/services/notifications/notification_box/m_notification.dart';
 import 'package:quran/core/services/notifications/notification_router.dart';
 import 'package:quran/core/services/notifications/notifications_service.dart';
+import 'package:quran/core/services/notifications/scheduled_alert_registry.dart';
 import 'package:quran/modules/adhan/data/datasources/local/ds_local_adhan.dart';
 import 'package:quran/modules/adhan/data/models/m_adhan_preference.dart';
 import 'package:quran/modules/adhan/data/models/m_adhan_settings.dart';
@@ -157,7 +158,12 @@ Future<void> runAdhanBackgroundReschedule() async {
       assetLoader: const AssetLoaderRootBundleJson('assets/lang/'),
     );
 
-    final notifications = NotificationsService(NotificationRouter());
+    // A throwaway registry: it only feeds the in-app banner watcher, and this
+    // isolate is headless — nothing here has a UI to show one in.
+    final notifications = NotificationsService(
+      NotificationRouter(),
+      ScheduledAlertRegistry(),
+    );
     await notifications.init();
 
     final scheduler = AdhanScheduler(

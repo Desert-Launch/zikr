@@ -14,6 +14,7 @@ import 'package:quran/core/extension/build_context.dart';
 import 'package:quran/core/services/logging/app_logger.dart';
 import 'package:quran/core/services/media/call_interruption.dart';
 import 'package:quran/core/services/media/media_artwork.dart';
+import 'package:quran/core/services/notifications/in_app_notification_watcher.dart';
 import 'package:quran/core/services/notifications/notification_box/m_notification.dart';
 import 'package:quran/core/services/notifications/notifications_service.dart';
 import 'package:quran/core/services/routes/app_module.dart';
@@ -153,6 +154,13 @@ Future<void> _bootNotifications() async {
     'notifications.init',
     Modular.get<NotificationsService>().init,
   );
+  // Start mirroring scheduled notifications as in-app banners BEFORE the
+  // reschedules below, so anything they arm for the next few seconds (an
+  // hourly zekr landing on the next :00, say) is already being watched.
+  await _bootStep(
+    'in-app notification banners',
+    () async => Modular.get<InAppNotificationWatcher>().start(),
+  );
   // Starts watching for audio-session interruptions (a call, in practice) so
   // the salawat "pause while on a call" setting has something to read. Needs no
   // permission on either platform; a failure here leaves it reading "not
@@ -225,6 +233,7 @@ class _RootState extends State<_Root> with WidgetsBindingObserver {
 
   @override
   void dispose() {
+    Modular.get<InAppNotificationWatcher>().stop();
     WidgetsBinding.instance.removeObserver(this);
     super.dispose();
   }

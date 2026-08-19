@@ -5,11 +5,13 @@ import 'package:quran/core/data/sources/local/box_app_settings.dart';
 import 'package:quran/core/services/mock_backend/mock_database.dart';
 import 'package:quran/core/services/mock_backend/mock_interceptor.dart';
 import 'package:quran/core/services/network/base_dio.dart';
+import 'package:quran/core/services/notifications/in_app_notification_watcher.dart';
 import 'package:quran/core/services/notifications/init/init_notifications_service.dart';
 import 'package:quran/core/services/notifications/notification_box/box_notifications.dart';
 import 'package:quran/core/services/notifications/notification_box/ds_notification.dart';
 import 'package:quran/core/services/notifications/notification_router.dart';
 import 'package:quran/core/services/notifications/notifications_service.dart';
+import 'package:quran/core/services/notifications/scheduled_alert_registry.dart';
 import 'package:quran/core/services/routes/routes_names.dart';
 import 'package:quran/core/theme/theme_manager.dart';
 import 'package:quran/modules/adhan/adhan_module.dart';
@@ -142,8 +144,21 @@ class AppModule extends Module {
 
     // Notifications + location (cross-cutting infra)
     i.addSingleton<NotificationRouter>(NotificationRouter.new);
+    // In-memory mirror of what's armed with the OS, plus the foreground watcher
+    // that turns a firing schedule into an in-app banner. Registered before the
+    // service because the service writes into it.
+    i.addSingleton<ScheduledAlertRegistry>(ScheduledAlertRegistry.new);
     i.addSingleton<NotificationsService>(
-      () => NotificationsService(i.get<NotificationRouter>()),
+      () => NotificationsService(
+        i.get<NotificationRouter>(),
+        i.get<ScheduledAlertRegistry>(),
+      ),
+    );
+    i.addSingleton<InAppNotificationWatcher>(
+      () => InAppNotificationWatcher(
+        i.get<ScheduledAlertRegistry>(),
+        i.get<NotificationRouter>(),
+      ),
     );
     // Persisted store of scheduled notifications + the JSON-driven init feed
     // (azkar + quran reminders).
