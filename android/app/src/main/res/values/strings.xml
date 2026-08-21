@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  The one piece of copy on the full-screen adhan alarm that does NOT arrive as an
+  intent extra: the du'a said after the adhan is a fixed Arabic text (Bukhari
+  614), identical for every prayer and every app language, so threading it
+  through scheduler -> receiver -> service -> activity would buy nothing. The
+  line breaks are deliberate — they split the du'a at its natural pauses so the
+  centred block reads as verse lines instead of ragged wrapping.
+-->
+<resources>
+    <string name="adhan_alarm_dua">«اللَّهُمَّ رَبَّ هذه الدَّعوةِ التَّامَّةِ،\nوالصَّلاةِ القَائمَةِ،\nآتِ مُحمَّدًا الوسيلَةَ والفَضيلَةَ،\nوابعثْهُ مَقامًا محمودًا الذِي وعدتَهُ»</string>
+</resources>

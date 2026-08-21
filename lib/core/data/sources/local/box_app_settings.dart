@@ -75,4 +75,10 @@ class BoxAppSettings extends HiveBoxBase<MAppSettings> {
     r.salawatPauseOnCall = value;
     await r.save();
   }
+
+  Future<void> setHourlyZikrSound(bool value) async {
+    final r = current();
+    r.hourlyZikrSound = value;
+    await r.save();
+  }
 }

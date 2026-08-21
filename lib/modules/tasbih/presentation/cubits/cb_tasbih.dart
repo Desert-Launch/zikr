@@ -1,4 +1,5 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:quran/core/data/sources/local/box_app_settings.dart';
 import 'package:quran/core/utils/helper/haptics_helper.dart';
 import 'package:quran/modules/tasbih/data/datasources/local/ds_hourly_tasbih.dart';
 
@@ -15,9 +16,11 @@ class CBTasbih extends Cubit<STasbih> {
     required BoxTasbihCounter counterBox,
     required BoxTasbihHistory historyBox,
     required DSHourlyTasbih hourly,
+    required BoxAppSettings appSettings,
   })  : _counter = counterBox,
         _history = historyBox,
         _hourly = hourly,
+        _appSettings = appSettings,
         super(const STasbih()) {
     _hydrate();
     HapticsHelper.prepare();
@@ -26,6 +29,7 @@ class CBTasbih extends Cubit<STasbih> {
   final BoxTasbihCounter _counter;
   final BoxTasbihHistory _history;
   final DSHourlyTasbih _hourly;
+  final BoxAppSettings _appSettings;
   final _uuid = const Uuid();
 
   void _hydrate() {
@@ -36,6 +40,7 @@ class CBTasbih extends Cubit<STasbih> {
       count: c.count,
       vibrate: c.vibrate,
       hourlyEnabled: c.hourlyEnabled,
+      hourlyZikrSound: _appSettings.current().hourlyZikrSound,
     ));
   }
 
@@ -97,5 +102,22 @@ class CBTasbih extends Cubit<STasbih> {
     } else {
       await _hourly.disable();
     }
+  }
+
+  /// Switches the hourly zekr between its own recordings and the device's
+  /// default (silent) notification sound.
+  ///
+  /// Muting a channel isn't an option — Android freezes a channel's sound when
+  /// it creates it, so the two modes are two different sets of channels and the
+  /// whole feed has to be re-armed onto the other set. Hence the reschedule
+  /// rather than a plain flag write.
+  ///
+  /// Lives on [BoxAppSettings] rather than the tasbih counter because
+  /// `DSHourlyTasbih` reads it while scheduling, on the boot path, long before
+  /// this cubit exists.
+  Future<void> setHourlyZikrSound(bool value) async {
+    emit(state.copyWith(hourlyZikrSound: value));
+    await _appSettings.setHourlyZikrSound(value);
+    await _hourly.rescheduleFromSettings();
   }
 }

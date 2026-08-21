@@ -320,6 +320,7 @@ class AppModule extends Module {
         counterBox: i.get<BoxTasbihCounter>(),
         historyBox: i.get<BoxTasbihHistory>(),
         hourly: i.get<DSHourlyTasbih>(),
+        appSettings: i.get<BoxAppSettings>(),
       ),
     );
     i.addSingleton<CBSalawat>(

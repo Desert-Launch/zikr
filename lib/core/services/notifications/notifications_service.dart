@@ -6,6 +6,7 @@ import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:flutter_timezone/flutter_timezone.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:quran/core/services/logging/app_logger.dart';
+import 'package:quran/core/services/notifications/notification_budget.dart';
 import 'package:quran/core/services/notifications/notification_channels.dart';
 import 'package:quran/core/services/notifications/notification_payload.dart';
 import 'package:quran/core/services/notifications/notification_router.dart';
@@ -370,6 +371,22 @@ class NotificationsService {
     );
   }
 
+  /// Creates (or updates in place) a channel that isn't part of the boot set in
+  /// [AppNotificationChannels.all].
+  ///
+  /// For channels whose existence depends on user state — the per-zekr hourly
+  /// audio channels, which only exist while that setting is on. Re-creating an
+  /// existing id is a safe no-op that preserves the user's own tweaks to it;
+  /// only sound, vibration and audio attributes are frozen at first creation.
+  Future<void> createChannel(AndroidNotificationChannel channel) async {
+    final android = _plugin
+        .resolvePlatformSpecificImplementation<
+          AndroidFlutterLocalNotificationsPlugin
+        >();
+    if (android == null) return;
+    await android.createNotificationChannel(channel);
+  }
+
   /// Removes a channel by id. Used to retire a channel whose sound or audio
   /// attributes changed (both immutable after creation, so the replacement
   /// needs a new id). Safe when the channel doesn't exist.
@@ -532,6 +549,18 @@ class NotificationsService {
 
   Future<List<PendingNotificationRequest>> pending() async =>
       _plugin.pendingNotificationRequests();
+
+  /// Whether [id] is actually queued with the OS.
+  ///
+  /// The only way to catch a schedule iOS threw away: past
+  /// [NotificationBudget.iosPendingCap] pending requests it drops `add` calls
+  /// silently, so `zonedSchedule` reports success for a notification that will
+  /// never fire. Callers that own a single long-lived reminder verify with
+  /// this rather than trusting the return value.
+  Future<bool> isPending(int id) async {
+    final requests = await _plugin.pendingNotificationRequests();
+    return requests.any((r) => r.id == id);
+  }
 
   /// Note there is no per-notification vibration knob here on purpose: from API
   /// 26 on Android takes vibration from the channel and ignores the flag on the

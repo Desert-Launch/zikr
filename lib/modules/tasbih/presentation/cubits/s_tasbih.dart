@@ -7,6 +7,7 @@ class STasbih extends Equatable {
     this.count = 0,
     this.vibrate = true,
     this.hourlyEnabled = true,
+    this.hourlyZikrSound = true,
     this.reminderEnabled = true,
     this.reminderIntervalHours = 3,
     this.reminderHour = 9,
@@ -22,6 +23,10 @@ class STasbih extends Equatable {
   final int count;
   final bool vibrate;
   final bool hourlyEnabled;
+
+  /// Read each hourly zekr aloud with its own clip, instead of leaving the
+  /// reminder silent. See [MAppSettings.hourlyZikrSound].
+  final bool hourlyZikrSound;
 
   /// Salawat reminder settings (used by the salawat screen only).
   final bool reminderEnabled;
@@ -56,6 +61,7 @@ class STasbih extends Equatable {
     int? count,
     bool? vibrate,
     bool? hourlyEnabled,
+    bool? hourlyZikrSound,
     bool? reminderEnabled,
     int? reminderIntervalHours,
     int? reminderHour,
@@ -71,6 +77,7 @@ class STasbih extends Equatable {
       count: count ?? this.count,
       vibrate: vibrate ?? this.vibrate,
       hourlyEnabled: hourlyEnabled ?? this.hourlyEnabled,
+      hourlyZikrSound: hourlyZikrSound ?? this.hourlyZikrSound,
       reminderEnabled: reminderEnabled ?? this.reminderEnabled,
       reminderIntervalHours:
           reminderIntervalHours ?? this.reminderIntervalHours,
@@ -90,6 +97,7 @@ class STasbih extends Equatable {
     count,
     vibrate,
     hourlyEnabled,
+    hourlyZikrSound,
     reminderEnabled,
     reminderIntervalHours,
     reminderHour,

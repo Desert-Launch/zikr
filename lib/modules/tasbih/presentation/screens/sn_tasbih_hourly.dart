@@ -63,25 +63,47 @@ class SNTasbihHourly extends StatelessWidget {
                 sliver: SliverList.list(
                   children: [
                     WSettingsSectionLabel('tasbih_hourly_section'.tr()),
-                    BlocSelector<CBTasbih, STasbih, bool>(
-                      selector: (s) => s.hourlyEnabled,
-                      builder: (context, enabled) => WSettingsGroup(
-                        children: [
-                          WSettingsRow(
-                            icon: Icons.notifications_active_outlined,
-                            title: 'tasbih_hourly_enable'.tr(),
-                            // Reads the live window rather than naming 08–22:
-                            // the hourly zekr shares the salawat reminder's
-                            // window, and this screen doesn't own the pickers.
-                            subtitle: _hourlyHint(context, window),
-                            trailing: WSettingsSwitch(
-                              value: enabled,
-                              onChanged: (value) => _setHourly(cb, value),
+                    // Both switches in one selector: the sound row is only
+                    // meaningful while the reminder itself is on, so it reads
+                    // both flags and disables itself when the reminder is off.
+                    BlocSelector<CBTasbih, STasbih, (bool, bool)>(
+                      selector: (s) => (s.hourlyEnabled, s.hourlyZikrSound),
+                      builder: (context, flags) {
+                        final (enabled, withSound) = flags;
+                        return WSettingsGroup(
+                          children: [
+                            WSettingsRow(
+                              icon: Icons.notifications_active_outlined,
+                              title: 'tasbih_hourly_enable'.tr(),
+                              // Reads the live window rather than naming 08–22:
+                              // the hourly zekr shares the salawat reminder's
+                              // window, and this screen doesn't own the pickers.
+                              subtitle: _hourlyHint(context, window),
+                              trailing: WSettingsSwitch(
+                                value: enabled,
+                                onChanged: (value) => _setHourly(cb, value),
+                              ),
+                              onTap: () => _setHourly(cb, !enabled),
                             ),
-                            onTap: () => _setHourly(cb, !enabled),
-                          ),
-                        ],
-                      ),
+                            WSettingsRow(
+                              icon: withSound
+                                  ? Icons.volume_up_outlined
+                                  : Icons.volume_off_outlined,
+                              title: 'tasbih_hourly_sound'.tr(),
+                              subtitle: 'tasbih_hourly_sound_hint'.tr(),
+                              trailing: WSettingsSwitch(
+                                value: withSound,
+                                onChanged: enabled
+                                    ? cb.setHourlyZikrSound
+                                    : null,
+                              ),
+                              onTap: enabled
+                                  ? () => cb.setHourlyZikrSound(!withSound)
+                                  : null,
+                            ),
+                          ],
+                        );
+                      },
                     ),
                     WSettingsNote('tasbih_hourly_explainer'.tr()),
                     SizedBox(height: isTab ? 12 : 15.h),

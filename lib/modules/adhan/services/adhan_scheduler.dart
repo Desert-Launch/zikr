@@ -4,6 +4,7 @@ import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:localize_and_translate/localize_and_translate.dart';
 import 'package:quran/core/services/logging/app_logger.dart';
 import 'package:quran/core/services/notifications/init/init_notifications_service.dart';
+import 'package:quran/core/services/notifications/notification_budget.dart';
 import 'package:quran/core/services/notifications/notification_channels.dart';
 import 'package:quran/core/services/notifications/notification_payload.dart';
 import 'package:quran/core/services/notifications/notifications_service.dart';
@@ -87,13 +88,13 @@ class AdhanScheduler {
 
   /// Adhan's slice of iOS's 64 pending-notification budget. Ignored on Android.
   ///
-  /// iOS drops everything past 64 pending requests silently, and the companion
-  /// feeds are all *repeating* requests that sit in that list permanently:
-  /// 6 azkar/quran + 5 salawat (every 3h) + up to 15 hourly zekr, before the
-  /// user's own reminders. At 56 the adhan window swallowed the budget and
-  /// those feeds simply never fired on iOS. 40 still buys ~8 days of adhan
-  /// (5 prayers/day, pre-reminders included) while leaving room for the rest.
-  static const int _iosBudget = 40;
+  /// The split lives in [NotificationBudget] so every feed that permanently
+  /// occupies a slot is accounted for in one place. It used to be a flat 40
+  /// here, which — with 6 azkar/quran + 5 salawat + 15 hourly zekr — came to
+  /// 66 against a cap of 64, so whatever was armed last was silently dropped.
+  /// The khatma wird reminder, armed from its cubit rather than the boot chain,
+  /// was never queued at all as a result.
+  static const int _iosBudget = NotificationBudget.adhanWindow;
 
   /// Notifications still allowed in the current [reschedule] run (iOS budget).
   int _remaining = 0;

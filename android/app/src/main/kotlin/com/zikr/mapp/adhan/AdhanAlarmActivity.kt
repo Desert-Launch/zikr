@@ -12,8 +12,7 @@ import android.view.WindowManager
 import android.widget.ImageView
 import android.widget.TextView
 import com.zikr.mapp.R
-import java.text.SimpleDateFormat
-import java.util.Date
+import java.util.Calendar
 import java.util.Locale
 
 /**
@@ -61,8 +60,7 @@ class AdhanAlarmActivity : Activity() {
 
         findViewById<TextView>(R.id.adhan_alarm_title).text = title
         findViewById<TextView>(R.id.adhan_alarm_body).text = body
-        findViewById<TextView>(R.id.adhan_alarm_clock).text =
-            SimpleDateFormat("HH:mm", Locale.getDefault()).format(Date())
+        findViewById<TextView>(R.id.adhan_alarm_clock).text = clockLabel()
 
         findViewById<TextView>(R.id.adhan_alarm_stop).apply {
             text = stopLabel
@@ -82,6 +80,27 @@ class AdhanAlarmActivity : Activity() {
         } else {
             registerReceiver(finishReceiver, filter)
         }
+    }
+
+    /**
+     * The fire time as a 12-hour clock with an Arabic meridiem — "05:14 ص" —
+     * mirroring `TimeFormat.hm12` (lib/core/utils/helper/time_format.dart), the
+     * shared Dart formatter every prayer time in the app already goes through.
+     * A 24-hour "17:14" here would contradict the time the user saw on the
+     * prayer screen minutes earlier.
+     *
+     * Built by hand rather than with SimpleDateFormat("hh:mm a"): that follows
+     * the DEVICE locale, which is not the app locale — an Arabic app on an
+     * English phone would read "PM", and an Arabic phone would render
+     * Arabic-Indic digits nothing else in this app uses. Latin digits with a
+     * fixed ص/م is what the Dart helper does, so it is what this does.
+     */
+    private fun clockLabel(): String {
+        val now = Calendar.getInstance()
+        val hour24 = now.get(Calendar.HOUR_OF_DAY)
+        val hour12 = if (hour24 % 12 == 0) 12 else hour24 % 12
+        val meridiem = if (hour24 >= 12) "م" else "ص"
+        return String.format(Locale.US, "%02d:%02d %s", hour12, now.get(Calendar.MINUTE), meridiem)
     }
 
     /**

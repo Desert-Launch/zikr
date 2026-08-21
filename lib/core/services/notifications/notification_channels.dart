@@ -113,12 +113,57 @@ class AppNotificationChannels {
   );
 
   /// Hourly tasbih is silent + low importance so it doesn't interrupt.
+  ///
+  /// Still the channel used whenever the per-zekr audio is switched off, or
+  /// when the hour's clip isn't bundled — see [hourlyZikr].
   static const hourly = AndroidNotificationChannel(
     'hourly_channel',
     'Hourly Tasbih',
     description: 'Quiet hourly zekr (08:00 — 22:00 only)',
     importance: Importance.low,
     playSound: false,
+    enableVibration: false,
+  );
+
+  /// Prefix of the per-zekr hourly channels built by [hourlyZikr]. Their ids
+  /// embed the clip's slug, so they're matched by prefix rather than listed.
+  static const String hourlyZikrChannelPrefix = 'hourly_zikr_';
+
+  /// Channel id for the hourly zekr whose clip is [soundSlug].
+  ///
+  /// The `_v1` suffix is the escape hatch for changing a clip later: a
+  /// channel's sound is frozen when Android first creates it, so replacing
+  /// `zikr_01_subhan_allah.mp3` with a different recording means bumping this
+  /// to `_v2` and adding the old id to [legacyIds] — editing the file alone
+  /// leaves every existing install playing the original.
+  static String hourlyZikrChannelId(String soundSlug) =>
+      '$hourlyZikrChannelPrefix${soundSlug}_v1';
+
+  /// An audible hourly-zekr channel that plays the bundled clip [soundSlug]
+  /// (an `android/app/src/main/res/raw/<soundSlug>.mp3`), labelled [name].
+  ///
+  /// One channel per zekr, because the sound lives on the channel and not on
+  /// the notification — a single channel could only ever play one clip. They're
+  /// created on demand by `DSHourlyTasbih` rather than at boot, so an install
+  /// that never turns the audio on never grows ten entries in its notification
+  /// settings, and deleted again when the user switches the audio back off.
+  ///
+  /// [name] is the zekr's own text so the ten entries are tellable apart in
+  /// Android's per-channel settings, where the user can silence just one.
+  ///
+  /// Default importance rather than [Importance.low]: low is silent whatever
+  /// the channel's sound says. Vibration stays off — this fires up to 15 times
+  /// a day, and the clip is the point.
+  static AndroidNotificationChannel hourlyZikr({
+    required String soundSlug,
+    required String name,
+  }) => AndroidNotificationChannel(
+    hourlyZikrChannelId(soundSlug),
+    name,
+    description: 'Hourly zekr reminder, read aloud',
+    importance: Importance.defaultImportance,
+    playSound: true,
+    sound: RawResourceAndroidNotificationSound(soundSlug),
     enableVibration: false,
   );
 

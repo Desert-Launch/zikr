@@ -18,6 +18,7 @@ class MAppSettings extends HiveObject {
     this.reminderWindowEndHour = 22,
     this.salawatIgnoreSilent = false,
     this.salawatPauseOnCall = true,
+    this.hourlyZikrSound = true,
   });
 
   @HiveField(0)
@@ -71,4 +72,18 @@ class MAppSettings extends HiveObject {
   /// READ_PHONE_STATE grant. Best-effort by design.
   @HiveField(8)
   bool salawatPauseOnCall;
+
+  /// Play each hourly zekr's own recording as the notification sound, instead
+  /// of leaving the reminder on the silent `hourly_channel`.
+  ///
+  /// Switching this off doesn't just mute a channel — Android freezes a
+  /// channel's sound at creation, so the two modes are two different sets of
+  /// channels and the hourly feed has to be rescheduled onto the other set.
+  /// See `DSHourlyTasbih.enable`.
+  ///
+  /// An hour whose clip isn't bundled falls back to the silent channel however
+  /// this is set, so turning it on can't produce a notification that claims to
+  /// have audio and doesn't.
+  @HiveField(9)
+  bool hourlyZikrSound;
 }

@@ -32,13 +32,17 @@ class MAppSettingsAdapter extends TypeAdapter<MAppSettings> {
           : (fields[6] as num).toInt(),
       salawatIgnoreSilent: fields[7] == null ? false : fields[7] as bool,
       salawatPauseOnCall: fields[8] == null ? true : fields[8] as bool,
+      // Absent on every record predating the per-zekr audio — those decode to
+      // `true`, matching a fresh install. Nothing changes for them until the
+      // clips are actually bundled; see `DSHourlyTasbih`.
+      hourlyZikrSound: fields[9] == null ? true : fields[9] as bool,
     );
   }
 
   @override
   void write(BinaryWriter writer, MAppSettings obj) {
     writer
-      ..writeByte(9)
+      ..writeByte(10)
       ..writeByte(0)
       ..write(obj.hasSeenOnboarding)
       ..writeByte(1)
@@ -56,7 +60,9 @@ class MAppSettingsAdapter extends TypeAdapter<MAppSettings> {
       ..writeByte(7)
       ..write(obj.salawatIgnoreSilent)
       ..writeByte(8)
-      ..write(obj.salawatPauseOnCall);
+      ..write(obj.salawatPauseOnCall)
+      ..writeByte(9)
+      ..write(obj.hourlyZikrSound);
   }
 
   @override

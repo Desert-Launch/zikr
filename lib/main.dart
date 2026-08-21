@@ -33,6 +33,7 @@ import 'package:quran/modules/azkar/data/models/m_azkar_progress.dart';
 import 'package:quran/modules/khatma/data/models/m_khatma_completion.dart';
 import 'package:quran/modules/khatma/data/models/m_khatma_day.dart';
 import 'package:quran/modules/khatma/data/models/m_khatma_plan.dart';
+import 'package:quran/modules/khatma/presentation/cubits/cb_khatma.dart';
 import 'package:quran/modules/prayer/data/models/m_prayer_cache.dart';
 import 'package:quran/modules/prayer/data/models/m_prayer_settings.dart';
 import 'package:quran/modules/quran/data/models/m_bookmark.dart';
@@ -192,6 +193,15 @@ Future<void> _bootNotifications() async {
   await _bootStep(
     'adhan window',
     () => Modular.get<AdhanScheduler>().reschedule(useCachedLocation: true),
+  );
+  // The khatma wird reminder is armed by CBKhatma itself at module commit —
+  // long before this, when the queue still holds the previous session's
+  // schedule. On iOS that attempt can be dropped silently against the pending
+  // cap, so re-arm it here, once the adhan window has been rebuilt within
+  // budget and there is room. A no-op when it's already queued.
+  await _bootStep(
+    'wird reminder',
+    Modular.get<CBKhatma>().ensureReminderScheduled,
   );
   // Arm the weekly Saturday background refresh (Android), and the best-effort
   // iOS background refresh.

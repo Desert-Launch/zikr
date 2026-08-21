@@ -1,4 +1,6 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:quran/core/services/logging/app_logger.dart';
+import 'package:quran/core/services/notifications/notification_budget.dart';
 import 'package:quran/core/services/notifications/notification_channels.dart';
 import 'package:quran/core/services/notifications/notification_payload.dart';
 import 'package:quran/core/services/notifications/notifications_service.dart';
@@ -30,6 +32,7 @@ class CBKhatma extends Cubit<SKhatma> {
   }
 
   static const _notificationId = 6000;
+  static const _tag = 'CBKhatma';
 
   final BoxKhatmaPlan _plan;
   final BoxKhatmaDay _days;
@@ -151,6 +154,32 @@ class CBKhatma extends Cubit<SKhatma> {
     if (plan.reminderEnabled) await _scheduleReminder(plan);
   }
 
+  /// Re-arms the daily wird reminder when the OS isn't holding it.
+  ///
+  /// Runs from the boot chain *after* the adhan window is rebuilt. [hydrate]
+  /// already arms it much earlier — at module commit, while the queue still
+  /// holds the previous session's full schedule — and on iOS that attempt can
+  /// land against a full queue and be dropped (see [NotificationBudget]). By
+  /// this point the window has been cancelled and rebuilt within budget, so
+  /// there is room. Reads the plan from the box rather than the state because
+  /// [hydrate] may still be in flight.
+  Future<void> ensureReminderScheduled() async {
+    final plan = state.plan ?? _plan.current();
+    if (plan == null || !plan.isActive || !plan.reminderEnabled) return;
+    if (await _notifications.isPending(_notificationId)) return;
+    await _scheduleReminder(plan);
+  }
+
+  /// Arms the daily wird reminder, then checks it actually reached the OS
+  /// queue.
+  ///
+  /// The check is not paranoia: iOS silently discards an `add` once the app
+  /// holds [NotificationBudget.iosPendingCap] pending requests, and this
+  /// reminder — one daily repeat armed from a cubit rather than the boot chain
+  /// — is the first thing to lose when the other feeds oversubscribe the cap.
+  /// `scheduleDaily` still reports success in that case, so the pending list is
+  /// the only honest signal. If this ever warns, the reserves in
+  /// [NotificationBudget] no longer cover what the app schedules.
   Future<void> _scheduleReminder(MKhatmaPlan plan) async {
     await _notifications.init();
     final hasPermission = await _notifications.hasPermission();
@@ -167,6 +196,19 @@ class CBKhatma extends Cubit<SKhatma> {
       body: 'حان وقت قراءة وردك اليومي',
       channel: AppNotificationChannels.quranReminders,
       payload: const NotificationPayload(type: 'khatma'),
+    );
+    final time =
+        '${plan.reminderHour.toString().padLeft(2, '0')}:'
+        '${plan.reminderMinute.toString().padLeft(2, '0')}';
+    if (await _notifications.isPending(_notificationId)) {
+      AppLogger.info('Wird reminder queued for $time', tag: _tag);
+      return;
+    }
+    final queued = (await _notifications.pending()).length;
+    AppLogger.warning(
+      'Wird reminder was NOT queued for $time — the OS dropped it '
+      '($queued notifications already pending)',
+      tag: _tag,
     );
   }
 
