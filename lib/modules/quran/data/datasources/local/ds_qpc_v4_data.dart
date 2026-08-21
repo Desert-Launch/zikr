@@ -67,6 +67,59 @@ class DSQpcV4Data {
     return jsonDecode(utf8.decode(bytes));
   }
 
+  /// The page the basmala's own glyphs are lifted from.
+  ///
+  /// Page 1, because Al-Fatiha is one of the two surahs whose basmala is a
+  /// numbered verse rather than a heading, so the dataset carries it as real
+  /// words with real glyph ids. Every OTHER basmala in the Mushaf is marked
+  /// `line_type: basmallah` with EMPTY `first_word_id` / `last_word_id` — all
+  /// 112 of them — and the per-page fonts carry a glyph for every word on their
+  /// page and not one more, so there is nothing there to draw. Borrowing
+  /// Al-Fatiha's is what lets all 112 be set in the Mushaf's own hand instead of
+  /// a substitute typeface.
+  static const int basmalaSourcePage = 1;
+
+  List<String>? _basmalaWords;
+  Future<List<String>>? _basmalaLoading;
+
+  /// The basmala's word glyph runs if they have already been resolved, without
+  /// an async hop — so a page that scrolls into view paints its basmala on the
+  /// first frame instead of a frame later.
+  ///
+  /// They must be rendered in [basmalaSourcePage]'s font family: the glyphs are
+  /// Private Use codepoints that mean something different in every page font.
+  List<String>? get cachedBasmalaWords => _basmalaWords;
+
+  /// Resolves the basmala's word glyph runs. Empty if page 1's layout does not
+  /// yield them, which is the caller's cue to fall back to a text basmala.
+  Future<List<String>> basmalaWords() {
+    final cached = _basmalaWords;
+    if (cached != null) return Future<List<String>>.value(cached);
+    return _basmalaLoading ??= _loadBasmalaWords().whenComplete(
+      () => _basmalaLoading = null,
+    );
+  }
+
+  Future<List<String>> _loadBasmalaWords() async {
+    final page = await loadPage(basmalaSourcePage);
+    var words = const <String>[];
+    for (final block in page.blocks) {
+      if (block is! MQpcV4LineBlock) continue;
+      final segments = block.segments;
+      if (segments.isEmpty) continue;
+      final first = segments.first;
+      if (first.surah != 1 || first.ayah != 1) continue;
+      // The trailing ayah-number element is already dropped by
+      // [_buildAyahSegmentsForLine], so this is the four words and nothing else.
+      words = segments.map((s) => s.glyphs).toList(growable: false);
+      break;
+    }
+    // Cached even when empty: a miss is permanent, and retrying it on every
+    // rebuild of every page would re-resolve page 1 forever.
+    _basmalaWords = words;
+    return words;
+  }
+
   /// Resolves [page] (1-based) into ordered render blocks.
   Future<MQpcV4Page> loadPage(int page) async {
     await _ensureLoaded();

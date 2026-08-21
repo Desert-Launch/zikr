@@ -35,6 +35,7 @@ class WMushafLine extends StatefulWidget {
     super.key,
     required this.block,
     required this.baseSize,
+    required this.maxWidth,
     required this.selected,
     required this.playing,
     required this.bookmarks,
@@ -52,6 +53,15 @@ class WMushafLine extends StatefulWidget {
 
   /// The page's printed glyph size at 100%, solved once by the page renderer.
   final double baseSize;
+
+  /// Width of the page's text column, handed down by the page renderer.
+  ///
+  /// Every line on a page is stretched to the same column, so the page — which
+  /// already had to measure that column to solve [baseSize] — passes it in
+  /// rather than each line rediscovering it through a `LayoutBuilder` of its
+  /// own. Fifteen nested relayout boundaries per page is real work in a scroll,
+  /// and all fifteen would have arrived at the same number.
+  final double maxWidth;
   final ParamAyahRef? selected;
   final ParamAyahRef? playing;
   final Map<String, String?> bookmarks;
@@ -189,6 +199,17 @@ class _WMushafLineState extends State<WMushafLine> {
   double _paintedWidth = 0;
   TextAlign _paintedAlign = TextAlign.center;
 
+  /// Last span tree built, with the inputs that produced it.
+  ///
+  /// The span tree is the expensive half of a rebuild — grouping the line's
+  /// segments, joining the glyph runs and allocating a span per word — and it
+  /// depends on none of the things that actually change while the page is on
+  /// screen. Selection, playback and bookmarks only move the *highlights*, and
+  /// those are re-derived from the cached ranges on every build for the cost of
+  /// a loop over the line's two or three ayahs. Only a change to the size, the
+  /// font or the ink rebuilds the tree.
+  _SpanCache? _cache;
+
   @override
   void dispose() {
     for (final r in _recognizers.values) {
@@ -220,10 +241,67 @@ class _WMushafLineState extends State<WMushafLine> {
     return groups;
   }
 
+  /// Returns the line's span tree, rebuilding it only when one of the inputs
+  /// that can move it has changed — see [_cache].
+  ({TextSpan span, List<_AyahRange> ranges}) _spans(
+    double size,
+    double lineHeight,
+  ) {
+    final cached = _cache;
+    if (cached != null &&
+        cached.size == size &&
+        cached.lineHeight == lineHeight &&
+        cached.fontFamily == widget.fontFamily &&
+        cached.baseColor == widget.baseColor &&
+        cached.markerColor == widget.markerColor &&
+        cached.bold == widget.bold &&
+        identical(cached.block, widget.block)) {
+      return (span: cached.span, ranges: cached.ranges);
+    }
+    final built = _buildSpans(_groups(), size, lineHeight);
+    _cache = _SpanCache(
+      block: widget.block,
+      size: size,
+      lineHeight: lineHeight,
+      fontFamily: widget.fontFamily,
+      baseColor: widget.baseColor,
+      markerColor: widget.markerColor,
+      bold: widget.bold,
+      span: built.span,
+      ranges: built.ranges,
+    );
+    return built;
+  }
+
+  /// The tint each ayah on the line currently carries, mapped onto the cached
+  /// character ranges. Cheap enough to redo on every build — a line holds two
+  /// or three ayahs.
+  List<AyahHighlight> _highlights(List<_AyahRange> ranges) {
+    final highlights = <AyahHighlight>[];
+    for (final range in ranges) {
+      final tint = ayahTint(
+        isSelected: widget.selected?.key == range.ref.key,
+        isPlaying: widget.playing?.key == range.ref.key,
+        bookmarkHex: widget.bookmarks[range.ref.key],
+        hasBookmark: widget.bookmarks.containsKey(range.ref.key),
+        brightness: widget.brightness,
+      );
+      if (tint != null) {
+        highlights.add(
+          AyahHighlight(start: range.start, end: range.end, color: tint),
+        );
+      }
+    }
+    return highlights;
+  }
+
   /// Builds the line's span tree at [size], recording each ayah's character
   /// range as it goes.
-  ({TextSpan span, List<AyahHighlight> highlights, List<_AyahRange> ranges})
-  _build(List<_AyahGroup> groups, double size, double lineHeight) {
+  ({TextSpan span, List<_AyahRange> ranges}) _buildSpans(
+    List<_AyahGroup> groups,
+    double size,
+    double lineHeight,
+  ) {
     final glyphStyle = TextStyle(
       fontFamily: widget.fontFamily,
       fontSize: size,
@@ -244,7 +322,6 @@ class _WMushafLineState extends State<WMushafLine> {
     );
 
     final spans = <InlineSpan>[];
-    final highlights = <AyahHighlight>[];
     final ranges = <_AyahRange>[];
     var offset = 0;
 
@@ -289,18 +366,6 @@ class _WMushafLineState extends State<WMushafLine> {
         len += markerText.length;
       }
 
-      final tint = ayahTint(
-        isSelected: widget.selected?.key == group.ref.key,
-        isPlaying: widget.playing?.key == group.ref.key,
-        bookmarkHex: widget.bookmarks[group.ref.key],
-        hasBookmark: widget.bookmarks.containsKey(group.ref.key),
-        brightness: widget.brightness,
-      );
-      if (tint != null) {
-        highlights.add(
-          AyahHighlight(start: offset, end: offset + len, color: tint),
-        );
-      }
       ranges.add(_AyahRange(ref: group.ref, start: offset, end: offset + len));
 
       // A break opportunity between ayahs too, so a line can wrap at the seam
@@ -314,11 +379,7 @@ class _WMushafLineState extends State<WMushafLine> {
       offset += len;
     }
 
-    return (
-      span: TextSpan(children: spans),
-      highlights: highlights,
-      ranges: ranges,
-    );
+    return (span: TextSpan(children: spans), ranges: ranges);
   }
 
   /// Maps a long press at [local] back to the ayah under the finger.
@@ -350,73 +411,93 @@ class _WMushafLineState extends State<WMushafLine> {
 
   @override
   Widget build(BuildContext context) {
-    final groups = _groups();
+    final maxWidth = widget.maxWidth;
+    // One size for the whole page, solved by the page renderer so its widest
+    // justified line spans the text column exactly — the printed look at
+    // 100% — with the reader's scale applied on top. Fitting each line on
+    // its own instead would either stretch a surah's closing line across the
+    // page, or (the bug this replaced) refuse to grow any line past a fixed
+    // reference and leave a tablet reading with phone-sized text between two
+    // fat margins.
+    final size = widget.baseSize * widget.fontScale;
 
-    return LayoutBuilder(
-      builder: (context, constraints) {
-        final maxWidth = constraints.maxWidth;
-        // One size for the whole page, solved by the page renderer so its widest
-        // justified line spans the text column exactly — the printed look at
-        // 100% — with the reader's scale applied on top. Fitting each line on
-        // its own instead would either stretch a surah's closing line across the
-        // page, or (the bug this replaced) refuse to grow any line past a fixed
-        // reference and leave a tablet reading with phone-sized text between two
-        // fat margins.
-        final size = widget.baseSize * widget.fontScale;
+    // Line height opens up with the text size: at 100% it stays 1.0 (the
+    // tight printed spacing), and grows from there so the extra rows a
+    // wrapped line produces are not cramped against each other.
+    final lineHeight = _lineHeightFor(widget.fontScale);
 
-        // Line height opens up with the text size: at 100% it stays 1.0 (the
-        // tight printed spacing), and grows from there so the extra rows a
-        // wrapped line produces are not cramped against each other.
-        final lineHeight = _lineHeightFor(widget.fontScale);
+    final built = _spans(size, lineHeight);
+    _painted = built.span;
+    _ranges = built.ranges;
+    _paintedWidth = maxWidth;
 
-        final built = _build(groups, size, lineHeight);
-        _painted = built.span;
-        _ranges = built.ranges;
-        _paintedWidth = maxWidth;
+    // Always centred — the printed page is centred, and so are the extra
+    // rows once a line wraps.
+    const align = TextAlign.center;
+    _paintedAlign = align;
 
-        // Always centred — the printed page is centred, and so are the extra
-        // rows once a line wraps.
-        const align = TextAlign.center;
-        _paintedAlign = align;
+    // `BoxHeightStyle.max` already grows the highlight box with the line
+    // height, so cancel that out of the pill padding — otherwise the tint
+    // would balloon past the glyphs as the text size goes up.
+    final leading = size * (lineHeight - 1) / 2;
+    // Asymmetric on purpose. The measured box spans the font's ascent to
+    // its descent, and on a printed Mushaf line those two edges sit very
+    // differently against the ink: the tashkeel climb well above the
+    // ascent, while the descent already clears the tails underneath. An
+    // equal pad on both edges therefore left the marks on the pill's very
+    // edge and hung an empty skirt below that reached into the next line.
+    final padTop = (size * kPillPadTop - leading).clamp(
+      0.0,
+      size * kPillPadTop,
+    );
+    final padBottom = (size * kPillPadBottom - leading).clamp(
+      0.0,
+      size * kPillPadBottom,
+    );
 
-        // `BoxHeightStyle.max` already grows the highlight box with the line
-        // height, so cancel that out of the pill padding — otherwise the tint
-        // would balloon past the glyphs as the text size goes up.
-        final leading = size * (lineHeight - 1) / 2;
-        // Asymmetric on purpose. The measured box spans the font's ascent to
-        // its descent, and on a printed Mushaf line those two edges sit very
-        // differently against the ink: the tashkeel climb well above the
-        // ascent, while the descent already clears the tails underneath. An
-        // equal pad on both edges therefore left the marks on the pill's very
-        // edge and hung an empty skirt below that reached into the next line.
-        final padTop = (size * kPillPadTop - leading).clamp(
-          0.0,
-          size * kPillPadTop,
-        );
-        final padBottom = (size * kPillPadBottom - leading).clamp(
-          0.0,
-          size * kPillPadBottom,
-        );
-
-        return GestureDetector(
-          behavior: HitTestBehavior.deferToChild,
-          onLongPressStart: (d) => _handleLongPress(d.localPosition),
-          child: Padding(
-            padding: EdgeInsets.symmetric(vertical: 1.h),
-            child: WAyahHighlightText(
-              text: built.span,
-              ranges: built.highlights,
-              maxWidth: maxWidth,
-              // Grow the pill above/below the glyphs without touching line height.
-              padTop: padTop,
-              padBottom: padBottom,
-              textAlign: align,
-            ),
-          ),
-        );
-      },
+    return GestureDetector(
+      behavior: HitTestBehavior.deferToChild,
+      onLongPressStart: (d) => _handleLongPress(d.localPosition),
+      child: Padding(
+        padding: EdgeInsets.symmetric(vertical: 1.h),
+        child: WAyahHighlightText(
+          text: built.span,
+          ranges: _highlights(built.ranges),
+          maxWidth: maxWidth,
+          // Grow the pill above/below the glyphs without touching line height.
+          padTop: padTop,
+          padBottom: padBottom,
+          textAlign: align,
+        ),
+      ),
     );
   }
+}
+
+/// A built span tree plus the inputs it was built from — see
+/// [_WMushafLineState._cache].
+class _SpanCache {
+  const _SpanCache({
+    required this.block,
+    required this.size,
+    required this.lineHeight,
+    required this.fontFamily,
+    required this.baseColor,
+    required this.markerColor,
+    required this.bold,
+    required this.span,
+    required this.ranges,
+  });
+
+  final MQpcV4LineBlock block;
+  final double size;
+  final double lineHeight;
+  final String fontFamily;
+  final Color baseColor;
+  final Color markerColor;
+  final bool bold;
+  final TextSpan span;
+  final List<_AyahRange> ranges;
 }
 
 /// Selection/playback/bookmark tint for an ayah, by priority: live selection →

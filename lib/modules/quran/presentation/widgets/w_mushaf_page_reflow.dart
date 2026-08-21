@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart' show listEquals;
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:quran/modules/quran/data/models/m_qpc_v4_page.dart';
@@ -92,6 +93,7 @@ class WMushafPageReflow extends StatefulWidget {
     super.key,
     required this.blocks,
     required this.baseSize,
+    required this.maxWidth,
     required this.selected,
     required this.playing,
     required this.bookmarks,
@@ -113,6 +115,11 @@ class WMushafPageReflow extends StatefulWidget {
   /// else. Deriving it from a fixed reference instead made the text jump a size
   /// at the threshold on any screen the page had to grow to fill.
   final double baseSize;
+
+  /// Width of the page's text column, handed down by the page renderer — the
+  /// same bound [WMushafLine] is given, and for the same reason: the page has
+  /// already measured it, so a `LayoutBuilder` here would only rediscover it.
+  final double maxWidth;
   final ParamAyahRef? selected;
   final ParamAyahRef? playing;
   final Map<String, String?> bookmarks;
@@ -141,6 +148,12 @@ class _WMushafPageReflowState extends State<WMushafPageReflow> {
   List<_AyahRange> _ranges = const [];
   TextSpan? _painted;
   double _paintedWidth = 0;
+
+  /// Last span tree built, with the inputs that produced it — the run's stream
+  /// is far more expensive to assemble than a single printed line, and none of
+  /// selection, playback or bookmarks can change it. See
+  /// `_WMushafLineState._cache`.
+  _ReflowSpanCache? _cache;
 
   /// Justified, like the printed Mushaf.
   ///
@@ -190,10 +203,60 @@ class _WMushafPageReflowState extends State<WMushafPageReflow> {
     return groups;
   }
 
+  /// Returns the run's span tree, rebuilding it only when one of the inputs
+  /// that can move it has changed — see [_cache].
+  ({TextSpan span, List<_AyahRange> ranges}) _spans(double size) {
+    final cached = _cache;
+    if (cached != null &&
+        cached.size == size &&
+        cached.fontFamily == widget.fontFamily &&
+        cached.baseColor == widget.baseColor &&
+        cached.markerColor == widget.markerColor &&
+        cached.bold == widget.bold &&
+        listEquals(cached.blocks, widget.blocks)) {
+      return (span: cached.span, ranges: cached.ranges);
+    }
+    final built = _buildSpans(_groups(), size);
+    _cache = _ReflowSpanCache(
+      blocks: widget.blocks,
+      size: size,
+      fontFamily: widget.fontFamily,
+      baseColor: widget.baseColor,
+      markerColor: widget.markerColor,
+      bold: widget.bold,
+      span: built.span,
+      ranges: built.ranges,
+    );
+    return built;
+  }
+
+  /// The tint each ayah in the run currently carries, mapped onto the cached
+  /// character ranges.
+  List<AyahHighlight> _highlights(List<_AyahRange> ranges) {
+    final highlights = <AyahHighlight>[];
+    for (final range in ranges) {
+      final tint = ayahTint(
+        isSelected: widget.selected?.key == range.ref.key,
+        isPlaying: widget.playing?.key == range.ref.key,
+        bookmarkHex: widget.bookmarks[range.ref.key],
+        hasBookmark: widget.bookmarks.containsKey(range.ref.key),
+        brightness: widget.brightness,
+      );
+      if (tint != null) {
+        highlights.add(
+          AyahHighlight(start: range.start, end: range.end, color: tint),
+        );
+      }
+    }
+    return highlights;
+  }
+
   /// Builds the run's span tree at [size], recording each ayah's character range
   /// as it goes.
-  ({TextSpan span, List<AyahHighlight> highlights, List<_AyahRange> ranges})
-  _build(List<_AyahGroup> groups, double size) {
+  ({TextSpan span, List<_AyahRange> ranges}) _buildSpans(
+    List<_AyahGroup> groups,
+    double size,
+  ) {
     final glyphStyle = TextStyle(
       fontFamily: widget.fontFamily,
       fontSize: size,
@@ -221,7 +284,6 @@ class _WMushafPageReflowState extends State<WMushafPageReflow> {
     );
 
     final spans = <InlineSpan>[];
-    final highlights = <AyahHighlight>[];
     final ranges = <_AyahRange>[];
     var offset = 0;
 
@@ -284,18 +346,6 @@ class _WMushafPageReflowState extends State<WMushafPageReflow> {
         len += markerText.length;
       }
 
-      final tint = ayahTint(
-        isSelected: widget.selected?.key == group.ref.key,
-        isPlaying: widget.playing?.key == group.ref.key,
-        bookmarkHex: widget.bookmarks[group.ref.key],
-        hasBookmark: widget.bookmarks.containsKey(group.ref.key),
-        brightness: widget.brightness,
-      );
-      if (tint != null) {
-        highlights.add(
-          AyahHighlight(start: offset, end: offset + len, color: tint),
-        );
-      }
       ranges.add(_AyahRange(ref: group.ref, start: offset, end: offset + len));
 
       // A break opportunity at the seam between two verses too.
@@ -308,11 +358,7 @@ class _WMushafPageReflowState extends State<WMushafPageReflow> {
       offset += len;
     }
 
-    return (
-      span: TextSpan(children: spans),
-      highlights: highlights,
-      ranges: ranges,
-    );
+    return (span: TextSpan(children: spans), ranges: ranges);
   }
 
   /// Maps a long press at [local] back to the ayah under the finger, through the
@@ -342,8 +388,9 @@ class _WMushafPageReflowState extends State<WMushafPageReflow> {
 
   @override
   Widget build(BuildContext context) {
-    final groups = _groups();
-    if (groups.isEmpty) return const SizedBox.shrink();
+    if (widget.blocks.every((b) => b.segments.isEmpty)) {
+      return const SizedBox.shrink();
+    }
 
     // No per-line fit here — that is the whole point. The size is the page's
     // printed size scaled by the reader, so the text picks up exactly where the
@@ -351,45 +398,65 @@ class _WMushafPageReflowState extends State<WMushafPageReflow> {
     // line and wrap.
     final size = widget.baseSize * widget.fontScale;
 
-    return LayoutBuilder(
-      builder: (context, constraints) {
-        final maxWidth = constraints.maxWidth;
-        final built = _build(groups, size);
-        _painted = built.span;
-        _ranges = built.ranges;
-        _paintedWidth = maxWidth;
+    final maxWidth = widget.maxWidth;
+    final built = _spans(size);
+    _painted = built.span;
+    _ranges = built.ranges;
+    _paintedWidth = maxWidth;
 
-        // `BoxHeightStyle.max` already grows the highlight box with the line
-        // height, so cancel that out of the pill padding — otherwise the tint
-        // would balloon past the glyphs as the text size goes up.
-        final leading = size * (_reflowLineHeight - 1) / 2;
-        // Lopsided for the same reason as the printed layout — see
-        // [kPillPadTop] / [kPillPadBottom]. The generous leading here eats most
-        // of it, which is why a reflowed page needs so little extra.
-        final padTop = (size * kPillPadTop - leading).clamp(
-          0.0,
-          size * kPillPadTop,
-        );
-        final padBottom = (size * kPillPadBottom - leading).clamp(
-          0.0,
-          size * kPillPadBottom,
-        );
+    // `BoxHeightStyle.max` already grows the highlight box with the line
+    // height, so cancel that out of the pill padding — otherwise the tint
+    // would balloon past the glyphs as the text size goes up.
+    final leading = size * (_reflowLineHeight - 1) / 2;
+    // Lopsided for the same reason as the printed layout — see
+    // [kPillPadTop] / [kPillPadBottom]. The generous leading here eats most
+    // of it, which is why a reflowed page needs so little extra.
+    final padTop = (size * kPillPadTop - leading).clamp(
+      0.0,
+      size * kPillPadTop,
+    );
+    final padBottom = (size * kPillPadBottom - leading).clamp(
+      0.0,
+      size * kPillPadBottom,
+    );
 
-        return GestureDetector(
-          behavior: HitTestBehavior.deferToChild,
-          onLongPressStart: (d) => _handleLongPress(d.localPosition),
-          child: WAyahHighlightText(
-            text: built.span,
-            ranges: built.highlights,
-            maxWidth: maxWidth,
-            padTop: padTop,
-            padBottom: padBottom,
-            textAlign: _align,
-          ),
-        );
-      },
+    return GestureDetector(
+      behavior: HitTestBehavior.deferToChild,
+      onLongPressStart: (d) => _handleLongPress(d.localPosition),
+      child: WAyahHighlightText(
+        text: built.span,
+        ranges: _highlights(built.ranges),
+        maxWidth: maxWidth,
+        padTop: padTop,
+        padBottom: padBottom,
+        textAlign: _align,
+      ),
     );
   }
+}
+
+/// A built reflow span tree plus the inputs it was built from — see
+/// [_WMushafPageReflowState._cache].
+class _ReflowSpanCache {
+  const _ReflowSpanCache({
+    required this.blocks,
+    required this.size,
+    required this.fontFamily,
+    required this.baseColor,
+    required this.markerColor,
+    required this.bold,
+    required this.span,
+    required this.ranges,
+  });
+
+  final List<MQpcV4LineBlock> blocks;
+  final double size;
+  final String fontFamily;
+  final Color baseColor;
+  final Color markerColor;
+  final bool bold;
+  final TextSpan span;
+  final List<_AyahRange> ranges;
 }
 
 class _AyahGroup {

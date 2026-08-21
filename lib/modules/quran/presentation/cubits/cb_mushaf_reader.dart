@@ -5,6 +5,8 @@ import 'package:quran/modules/quran/data/datasources/local/ds_local_quran.dart';
 import 'package:quran/modules/quran/data/datasources/local/ds_qpc_v4_font_loader.dart';
 import 'package:quran/modules/quran/data/models/m_bookmark.dart';
 import 'package:quran/modules/quran/data/models/m_qpc_v4_page.dart';
+import 'package:quran/modules/quran/domain/entities/e_quran_font_mode.dart';
+import 'package:quran/modules/quran/domain/entities/e_reader_theme.dart';
 import 'package:quran/modules/quran/domain/entities/param_ayah_ref.dart';
 import 'package:quran/modules/quran/domain/repos/r_bookmarks.dart';
 import 'package:quran/modules/quran/domain/usecases/uc_get_qpc_v4_page.dart';
@@ -147,7 +149,16 @@ class CBMushafReader extends Cubit<SMushafReader> {
     );
     // Register the page's QPC-V4 colour font (+ background neighbour warmup) in
     // parallel with the layout resolve so glyphs are ready when we paint.
-    final preloadFut = _fonts.preloadWindow(page);
+    //
+    // Only the variant this reader is actually painting with is awaited; the
+    // loader registers the other three in the background (see
+    // `DSQpcV4FontLoader`), which is what keeps a page turn to one font
+    // registration instead of four.
+    final preloadFut = _fonts.preloadWindow(
+      page,
+      dark: _settings.state.theme == ReaderTheme.dark,
+      tajweed: _settings.state.fontMode == EQuranFontMode.tajweedV4,
+    );
     final ok = cached != null ? true : await _resolve(page);
     await preloadFut;
     if (state.currentPage != page) return;
@@ -281,6 +292,24 @@ class CBMushafReader extends Cubit<SMushafReader> {
     _scheduleChromeHide();
   }
 
+  /// A tap that landed on the page but on no word — the margins, the space
+  /// between the last line and the running foot, anywhere the glyphs are not.
+  ///
+  /// Dismissing the selection has to come first. A reader who has a verse lit up
+  /// and taps away from it is telling us they are done with it, and answering
+  /// that by sliding the app bar in or out instead left the highlight and its
+  /// action sheet sitting there with no obvious way to be rid of them short of
+  /// finding and re-tapping the exact verse. Only once nothing is selected does
+  /// a tap on the page go back to meaning "show/hide the chrome".
+  void dismissOrToggleChrome() {
+    if (state.selectedAyah != null || state.multiSelection.isNotEmpty) {
+      emit(state.copyWith(clearSelected: true, multiSelection: const {}));
+      _scheduleChromeHide();
+      return;
+    }
+    toggleChrome();
+  }
+
   void toggleChrome() {
     final next = !state.chromeVisible;
     // Hiding the chrome also dismisses the search panel so it never floats
@@ -327,12 +356,16 @@ class CBMushafReader extends Cubit<SMushafReader> {
   /// timer would fight the user instead of getting out of the way.
   void _scheduleChromeHide() {
     _chromeTimer?.cancel();
-    if (!state.chromeVisible || state.searchOpen || state.selectedAyah != null) {
+    if (!state.chromeVisible ||
+        state.searchOpen ||
+        state.selectedAyah != null) {
       return;
     }
     _chromeTimer = Timer(chromeAutoHide, () {
       if (isClosed) return;
-      if (!state.chromeVisible || state.searchOpen || state.selectedAyah != null) {
+      if (!state.chromeVisible ||
+          state.searchOpen ||
+          state.selectedAyah != null) {
         return;
       }
       emit(state.copyWith(chromeVisible: false));
@@ -363,11 +396,7 @@ class CBMushafReader extends Cubit<SMushafReader> {
     if (page == null) return;
     _pendingLastReadPage = null;
     final first = state.layout?.allAyahRefs.firstOrNull;
-    _saveLastRead(
-      surah: first?.surah ?? 1,
-      ayah: first?.ayah ?? 1,
-      page: page,
-    );
+    _saveLastRead(surah: first?.surah ?? 1, ayah: first?.ayah ?? 1, page: page);
   }
 
   @override

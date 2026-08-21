@@ -17,6 +17,15 @@ class DSLocalQuran {
   List<MSurah>? _surahsCache;
   final Map<int, MPageLayout> _pageCache = {};
 
+  /// The surah list if it has already been read, without an async hop.
+  ///
+  /// The Mushaf renderer needs the surah names to label a page, and every page
+  /// scrolled into view would otherwise `await loadSurahs()` and rebuild itself
+  /// a microtask later — a wasted rebuild per page in the middle of a scroll.
+  /// After the first read this returns it straight away and the rebuild never
+  /// happens.
+  List<MSurah>? get cachedSurahs => _surahsCache;
+
   Future<List<MSurah>> loadSurahs() async {
     if (_surahsCache != null) return _surahsCache!;
     final raw = await rootBundle.loadString(_surahsPath);
