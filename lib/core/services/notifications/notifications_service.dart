@@ -1,6 +1,6 @@
 import 'dart:async';
 
-import 'package:flutter/services.dart' show PlatformException;
+import 'package:flutter/services.dart' show MethodChannel, PlatformException;
 import 'package:flutter/widgets.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:flutter_timezone/flutter_timezone.dart';
@@ -547,8 +547,95 @@ class NotificationsService {
     await _plugin.cancelAll();
   }
 
-  Future<List<PendingNotificationRequest>> pending() async =>
-      _plugin.pendingNotificationRequests();
+  /// The plugin's own method channel.
+  ///
+  /// Only ever used to re-decode a pending list the plugin itself refused to —
+  /// see [pending]. Nothing is ever *scheduled* through it; the public API owns
+  /// that.
+  static const MethodChannel _pluginChannel = MethodChannel(
+    'dexterous.com/flutter/local_notifications',
+  );
+
+  /// Everything currently queued with the OS, skipping anything this app did
+  /// not schedule.
+  ///
+  /// ## Why this cannot just call the plugin
+  ///
+  /// On iOS the plugin does not read a request's id from its identifier — it
+  /// reads it from `userInfo["NotificationId"]`, a key only its own scheduler
+  /// stamps on. Any pending request that came from anywhere else (an older
+  /// build of this app, another notification path, a request the system
+  /// re-registered) therefore hands back a null id, and the plugin drops it
+  /// straight into a non-nullable `int`:
+  ///
+  ///     PendingNotificationRequest(p['id'], p['title'], p['body'], ...)
+  ///
+  /// One such request poisons the WHOLE list — the map throws
+  /// `type 'Null' is not a subtype of type 'int'` before a single element is
+  /// returned. That took out every caller at once: the adhan window could not
+  /// be rebuilt, the wird reminder could not be verified, and because most of
+  /// these run from boot steps and platform callbacks rather than from the
+  /// widget tree it surfaced as unhandled exceptions rather than as anything
+  /// the user could see.
+  ///
+  /// So the plugin is tried first — it stays the source of truth while it
+  /// works, and a channel rename in a future version keeps working — and its
+  /// decode is redone by hand only when it throws. Requests with no id are
+  /// dropped rather than guessed at: an id is the only handle this app has on a
+  /// notification, and one it cannot name is not one it can manage.
+  Future<List<PendingNotificationRequest>> pending() async {
+    try {
+      return await _plugin.pendingNotificationRequests();
+    } catch (_) {
+      return _pendingDefensively();
+    }
+  }
+
+  Future<List<PendingNotificationRequest>> _pendingDefensively() async {
+    try {
+      final raw = await _pluginChannel.invokeListMethod<Map<dynamic, dynamic>>(
+        'pendingNotificationRequests',
+      );
+      if (raw == null) return const <PendingNotificationRequest>[];
+
+      final requests = <PendingNotificationRequest>[];
+      var foreign = 0;
+      for (final entry in raw) {
+        final id = entry['id'];
+        if (id is! int) {
+          foreign++;
+          continue;
+        }
+        requests.add(
+          PendingNotificationRequest(
+            id,
+            entry['title'] as String?,
+            entry['body'] as String?,
+            entry['payload'] as String?,
+          ),
+        );
+      }
+      if (foreign > 0) {
+        AppLogger.warning(
+          '$foreign pending notification(s) carry no id — not scheduled by '
+          'this app, skipped',
+          tag: 'NotificationsService',
+        );
+      }
+      return requests;
+    } catch (e, st) {
+      // Both reads failed: report nothing pending rather than take the caller
+      // down with us. A caller that verifies its own reminder will re-arm it,
+      // which is the safe way to be wrong here.
+      AppLogger.error(
+        'Reading pending notifications failed',
+        error: e,
+        stackTrace: st,
+        tag: 'NotificationsService',
+      );
+      return const <PendingNotificationRequest>[];
+    }
+  }
 
   /// Whether [id] is actually queued with the OS.
   ///
@@ -558,7 +645,7 @@ class NotificationsService {
   /// never fire. Callers that own a single long-lived reminder verify with
   /// this rather than trusting the return value.
   Future<bool> isPending(int id) async {
-    final requests = await _plugin.pendingNotificationRequests();
+    final requests = await pending();
     return requests.any((r) => r.id == id);
   }
 
