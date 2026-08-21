@@ -175,6 +175,23 @@ double get kOpenerBasmalaTailGap => 14.h;
 /// reads as though it were part of the frame above it.
 double get kFatihaHeaderGap => 10.h;
 
+/// The text measure on the Mushaf's two opening pages, as a fraction of the
+/// column — how wide their lines are allowed to run.
+///
+/// Every other page is solved so its widest line spans the column, which is
+/// what the print does: one size per page, chosen so the justified lines reach
+/// both margins. The openers are the exception. The print sets them inside a
+/// decorative frame on a deliberately narrow measure, and — this is the part
+/// the renderer cannot infer — it sets BOTH of them at the same point size.
+///
+/// Every line on pp. 1–2 is marked `is_centered`, so there is no justified line
+/// to solve against and the page falls back to its widest, whatever that is.
+/// Al-Fatiha's longest verse is much shorter than Al-Baqara's, so solving each
+/// page on its own blew Al-Fatiha up to fill a width the print never gives it.
+/// The two fractions differ for exactly that reason: they are what one shared
+/// point size looks like expressed per page.
+double kOpenerTextWidth(int page) => page == 1 ? 0.85 : 0.85;
+
 class _WMushafV4PageState extends State<WMushafV4Page> {
   late final DSQpcV4FontLoader _fonts = Modular.get<DSQpcV4FontLoader>();
   late final DSLocalQuran _quran = Modular.get<DSLocalQuran>();
@@ -381,7 +398,14 @@ class _WMushafV4PageState extends State<WMushafV4Page> {
                 // relayout boundaries per page is a cost the scroll pays on
                 // every page that comes into view.
                 final columnWidth = pageConstraints.maxWidth - hPad * 2;
-                final baseSize = _printSize(columnWidth, fontFamily);
+                // The openers run to a narrower measure than the rest of the
+                // Mushaf — see [kOpenerTextWidth]. Everything downstream works
+                // off this rather than the column: the glyph size is solved
+                // from it, and it is the width each line is actually given, so
+                // the highlight painter measures the same box it paints into.
+                final isOpenerPage = page <= 2;
+                final textWidth = isOpenerPage ? columnWidth * kOpenerTextWidth(page) : columnWidth;
+                final baseSize = _printSize(textWidth, fontFamily);
 
                 // The basmala is set in Al-Fatiha's own glyphs, which live in
                 // page 1's font — a different file from this page's, and the
@@ -405,7 +429,7 @@ class _WMushafV4PageState extends State<WMushafV4Page> {
                   cubit: cubit,
                   bigText: bigText,
                   baseSize: baseSize,
-                  columnWidth: columnWidth,
+                  textWidth: textWidth,
                   basmalaFamily: basmalaFamily,
                   selected: view.selected,
                   playing: playing,
@@ -425,12 +449,18 @@ class _WMushafV4PageState extends State<WMushafV4Page> {
                 final openerGap = page <= 2 ? 7.h : 0.0;
                 final wrapped = lineWidgets
                     .map((w) {
-                      if (w is WSurahHeader || w is _SurahOpening || openerGap == 0) {
+                      // The surah banner keeps the full column on an opener —
+                      // the print insets the TEXT inside the frame, not the
+                      // frame itself — and so does everything on an ordinary
+                      // page, where the measure is the column anyway.
+                      if (w is WSurahHeader || w is _SurahOpening || !isOpenerPage) {
                         return w;
                       }
                       return Padding(
                         padding: EdgeInsets.symmetric(vertical: openerGap),
-                        child: w,
+                        child: Center(
+                          child: SizedBox(width: textWidth, child: w),
+                        ),
                       );
                     })
                     .toList(growable: false);
@@ -540,7 +570,7 @@ class _WMushafV4PageState extends State<WMushafV4Page> {
     required CBMushafReader cubit,
     required bool bigText,
     required double baseSize,
-    required double columnWidth,
+    required double textWidth,
     required String? basmalaFamily,
     required ParamAyahRef? selected,
     required ParamAyahRef? playing,
@@ -562,7 +592,7 @@ class _WMushafV4PageState extends State<WMushafV4Page> {
         WMushafPageReflow(
           blocks: List<MQpcV4LineBlock>.of(run),
           baseSize: baseSize,
-          maxWidth: columnWidth,
+          maxWidth: textWidth,
           selected: selected,
           playing: playing,
           bookmarks: bookmarks,
@@ -600,7 +630,7 @@ class _WMushafV4PageState extends State<WMushafV4Page> {
                 header: header,
                 basmala: _basmala(
                   color: baseColor,
-                  columnWidth: columnWidth,
+                  columnWidth: textWidth,
                   size: baseSize * fontScale,
                   family: basmalaFamily,
                   bold: bold,
@@ -620,7 +650,7 @@ class _WMushafV4PageState extends State<WMushafV4Page> {
           widgets.add(
             _basmala(
               color: baseColor,
-              columnWidth: columnWidth,
+              columnWidth: textWidth,
               size: baseSize * fontScale,
               family: basmalaFamily,
               bold: bold,
@@ -635,7 +665,7 @@ class _WMushafV4PageState extends State<WMushafV4Page> {
               WMushafLine(
                 block: block,
                 baseSize: baseSize,
-                maxWidth: columnWidth,
+                maxWidth: textWidth,
                 selected: selected,
                 playing: playing,
                 bookmarks: bookmarks,
