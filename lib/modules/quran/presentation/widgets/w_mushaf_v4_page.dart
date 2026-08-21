@@ -124,6 +124,45 @@ const double kPageFillFactor = 0.99;
 /// independently of the page's whole rhythm.
 double get kMushafChromeGap => 12.h;
 
+/// Extra leading every printed line carries while the page is in landscape.
+///
+/// The page's glyph size is solved from its WIDTH — that is what makes the
+/// widest justified line span the column exactly, on any screen. Turn a tablet
+/// sideways and the column gets half as wide again, so the glyphs grow with it
+/// while the height available to stack them in shrinks. Portrait has slack left
+/// over and `spaceBetween` spends it on the gaps between lines; landscape has
+/// none, every box sits at `height: 1.0`, and the lines close up until the
+/// tashkeel of one collide with the line above it.
+///
+/// 0.6 puts a line's pitch at 1.6x its glyph size — comfortably past the ~1.3x
+/// the distributed slack works out to on a portrait tablet, because a landscape
+/// line is set half again as large and wants the air to match. It is added to
+/// the line height rather than to a gap between lines so the highlight pills
+/// grow with it — [WMushafLine] already discounts the leading out of its pill
+/// padding.
+const double kLandscapeLineHeightBoost = 0.6;
+
+/// The surah opening's metrics in landscape, in ems of the page's own glyph
+/// size — the banner's height, the gap under it, and the gaps under the whole
+/// opening.
+///
+/// Portrait sets all four in `.h` units or in flat logical pixels, and both go
+/// wrong the moment the tablet turns. A `.h` unit is a share of the SCREEN's
+/// height, so it loses about a third of itself when the long side becomes the
+/// short one; a flat pixel constant does not move at all. Meanwhile the glyphs
+/// they are meant to sit against have grown by half again, because the page is
+/// solved from its width. The banner ends up a thin strip under enormous text
+/// and the basmala crowds up against it.
+///
+/// Tying them to [baseSize] instead makes the opening scale with the text it
+/// belongs to, which is the relationship portrait already has — these are the
+/// portrait proportions, measured and re-expressed.
+const double kLandscapeSurahHeaderEm = 1.25;
+const double kLandscapeOpeningGapEm = 0.45;
+const double kLandscapeOpeningTailEm = 0.40;
+const double kLandscapeOpenerBasmalaTailEm = 0.55;
+const double kLandscapeFatihaHeaderEm = 0.40;
+
 /// How wide a surah-heading basmala is set, as a fraction of the text column.
 ///
 /// This IS the basmala's width: it is fitted to exactly this slice of the page,
@@ -388,6 +427,12 @@ class _WMushafV4PageState extends State<WMushafV4Page> {
             // not just move the text outwards, it makes the whole page bigger.
             final hPad = 2.w;
 
+            // Landscape is read off the viewport rather than off the page's own
+            // constraints: in continuous mode the page is laid out with an
+            // unbounded height, so comparing its own width against its height
+            // would call every page portrait.
+            final isLandscape = MediaQuery.orientationOf(context) == Orientation.landscape;
+
             // The page's own width decides its glyph size, so it has to be known
             // before a single line is built — hence the outer LayoutBuilder.
             return LayoutBuilder(
@@ -441,6 +486,8 @@ class _WMushafV4PageState extends State<WMushafV4Page> {
                   fontScale: view.fontScale,
                   bold: view.bold,
                   isDark: isDark,
+                  lineHeightBoost: isLandscape ? kLandscapeLineHeightBoost : 0.0,
+                  isLandscape: isLandscape,
                 );
 
                 final isFullPage = widget.layout.blocks.length >= 12;
@@ -582,7 +629,17 @@ class _WMushafV4PageState extends State<WMushafV4Page> {
     required double fontScale,
     required bool bold,
     required bool isDark,
+    required double lineHeightBoost,
+    required bool isLandscape,
   }) {
+    // Portrait keeps every one of these at its printed value — `null` and the
+    // `k*` constants below are what the page has always used.
+    final headerHeight = isLandscape ? baseSize * kLandscapeSurahHeaderEm : null;
+    final openingGap = isLandscape ? baseSize * kLandscapeOpeningGapEm : kSurahOpeningGap;
+    final openingTailGap = isLandscape ? baseSize * kLandscapeOpeningTailEm : kSurahOpeningTailGap;
+    final openerBasmalaTailGap = isLandscape ? baseSize * kLandscapeOpenerBasmalaTailEm : kOpenerBasmalaTailGap;
+    final fatihaHeaderGap = isLandscape ? baseSize * kLandscapeFatihaHeaderEm : kFatihaHeaderGap;
+
     final widgets = <Widget>[];
     final run = <MQpcV4LineBlock>[];
 
@@ -620,13 +677,14 @@ class _WMushafV4PageState extends State<WMushafV4Page> {
           // put a full line gap between the name and the basmala directly under
           // it — the one place on the page where that gap is wrong.
           final next = i + 1 < blocks.length ? blocks[i + 1] : null;
-          final header = _surahHeader(block.surahNumber, dark: isDark);
+          final header = _surahHeader(block.surahNumber, dark: isDark, height: headerHeight);
           if (next is MQpcV4BasmalaBlock) {
             i++;
             final opener = isIlluminatedOpener(page: widget.layout.page, surahNumber: next.surahNumber);
             widgets.add(
               _SurahOpening(
-                tailGap: opener ? kOpenerBasmalaTailGap : kSurahOpeningTailGap,
+                tailGap: opener ? openerBasmalaTailGap : openingTailGap,
+                openingGap: openingGap,
                 header: header,
                 basmala: _basmala(
                   color: baseColor,
@@ -641,7 +699,7 @@ class _WMushafV4PageState extends State<WMushafV4Page> {
           } else if (block.surahNumber == 1) {
             // Al-Fatiha: banner, then straight into verse 1. The gap the other
             // surahs get from their basmala block has to be put there by hand.
-            widgets.add(_SurahOpening(header: header, tailGap: kFatihaHeaderGap));
+            widgets.add(_SurahOpening(header: header, tailGap: fatihaHeaderGap));
           } else {
             widgets.add(header);
           }
@@ -675,6 +733,7 @@ class _WMushafV4PageState extends State<WMushafV4Page> {
                 brightness: brightness,
                 fontScale: fontScale,
                 bold: bold,
+                lineHeightBoost: lineHeightBoost,
                 onSelect: cubit.selectAyah,
                 onLongPress: (ref) => toggleAyahBookmark(context, ref, cubit),
               ),
@@ -695,13 +754,16 @@ class _WMushafV4PageState extends State<WMushafV4Page> {
     return surah.arabic.isNotEmpty ? surah.arabic : surah.arabicLong;
   }
 
-  Widget _surahHeader(int surahNumber, {required bool dark}) {
+  /// [height] is null on a portrait page, where the banner keeps its own `.h`
+  /// default; landscape passes one solved from the page's glyph size.
+  Widget _surahHeader(int surahNumber, {required bool dark, double? height}) {
     final surah = _surahs[surahNumber];
     return WSurahHeader(
       title: surah == null ? '' : (surah.arabicLong.isNotEmpty ? surah.arabicLong : surah.arabic),
       surahNumber: surah?.number ?? surahNumber,
       ayahCount: surah?.totalAyah,
       dark: dark,
+      height: height,
     );
   }
 
@@ -837,7 +899,12 @@ class _WMushafV4PageState extends State<WMushafV4Page> {
 ///
 /// See [kSurahOpeningGap] for why the pair is not left as two.
 class _SurahOpening extends StatelessWidget {
-  const _SurahOpening({required this.header, required this.tailGap, this.basmala});
+  const _SurahOpening({
+    required this.header,
+    required this.tailGap,
+    this.basmala,
+    this.openingGap = kSurahOpeningGap,
+  });
 
   final Widget header;
 
@@ -850,6 +917,11 @@ class _SurahOpening extends StatelessWidget {
   /// banner standing on its own each want a different amount.
   final double tailGap;
 
+  /// Space between the banner and the basmala directly under it. Defaults to
+  /// the printed [kSurahOpeningGap]; landscape sets it against the page's glyph
+  /// size instead — see [kLandscapeOpeningGapEm].
+  final double openingGap;
+
   @override
   Widget build(BuildContext context) {
     final basmala = this.basmala;
@@ -858,7 +930,7 @@ class _SurahOpening extends StatelessWidget {
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
         header,
-        if (basmala != null) ...[SizedBox(height: kSurahOpeningGap), basmala],
+        if (basmala != null) ...[SizedBox(height: openingGap), basmala],
         SizedBox(height: tailGap),
       ],
     );

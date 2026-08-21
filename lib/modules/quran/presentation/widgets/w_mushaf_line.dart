@@ -47,6 +47,7 @@ class WMushafLine extends StatefulWidget {
     required this.bold,
     required this.onSelect,
     required this.onLongPress,
+    this.lineHeightBoost = 0,
   });
 
   final MQpcV4LineBlock block;
@@ -73,6 +74,17 @@ class WMushafLine extends StatefulWidget {
 
   /// Heavier glyph weight, from the reader's text settings.
   final bool bold;
+
+  /// Extra leading added on top of the line height [fontScale] alone would ask
+  /// for — see [kLandscapeLineHeightBoost], the page's landscape allowance.
+  ///
+  /// The printed page distributes its slack BETWEEN the lines, so how far apart
+  /// they sit is a property of the page, not of the line. On a page whose text
+  /// outgrows the viewport there is no slack left to distribute and the boxes
+  /// butt together at `height: 1.0` — which is where the tashkeel of one line
+  /// start landing in the one above. This puts the leading back inside the line
+  /// box, where it survives the page running out of room.
+  final double lineHeightBoost;
   final ValueChanged<ParamAyahRef> onSelect;
   final ValueChanged<ParamAyahRef> onLongPress;
 
@@ -424,7 +436,7 @@ class _WMushafLineState extends State<WMushafLine> {
     // Line height opens up with the text size: at 100% it stays 1.0 (the
     // tight printed spacing), and grows from there so the extra rows a
     // wrapped line produces are not cramped against each other.
-    final lineHeight = _lineHeightFor(widget.fontScale);
+    final lineHeight = _lineHeightFor(widget.fontScale) + widget.lineHeightBoost;
 
     final built = _spans(size, lineHeight);
     _painted = built.span;
