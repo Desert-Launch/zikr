@@ -6,7 +6,7 @@ import 'package:flutter_modular/flutter_modular.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:localize_and_translate/localize_and_translate.dart';
 import 'package:quran/core/widgets/w_shared_scaffold.dart';
-import 'package:quran/modules/adhan/services/adhan_scheduler.dart';
+import 'package:quran/modules/adhan/presentation/cubits/cb_adhan_settings.dart';
 import 'package:quran/modules/prayer/data/models/m_prayer_settings.dart';
 import 'package:quran/modules/prayer/data/sources/local/box_prayer_settings.dart';
 import 'package:quran/modules/prayer/domain/entities/e_location_failure.dart';
@@ -24,8 +24,7 @@ class SNPrayerTimes extends StatefulWidget {
   State<SNPrayerTimes> createState() => _SNPrayerTimesState();
 }
 
-class _SNPrayerTimesState extends State<SNPrayerTimes>
-    with WidgetsBindingObserver {
+class _SNPrayerTimesState extends State<SNPrayerTimes> with WidgetsBindingObserver {
   static const _green = Color(0xFF007A58);
   static const _gold = Color(0xFFD6A72C);
   static const _canvas = Color(0xFFF8F7F4);
@@ -82,19 +81,11 @@ class _SNPrayerTimesState extends State<SNPrayerTimes>
               physics: const AlwaysScrollableScrollPhysics(),
               slivers: [
                 SliverToBoxAdapter(
-                  child: WPrayerHeader(
-                    state: state,
-                    green: _green,
-                    onRefresh: _cubit.refresh,
-                  ),
+                  child: WPrayerHeader(state: state, green: _green, onRefresh: _cubit.refresh),
                 ),
-                if (state.slots.isEmpty &&
-                    state.status == PrayerLoadStatus.loading)
-                  const SliverFillRemaining(
-                    child: Center(child: CircularProgressIndicator()),
-                  )
-                else if (state.slots.isEmpty &&
-                    state.status == PrayerLoadStatus.permissionDenied)
+                if (state.slots.isEmpty && state.status == PrayerLoadStatus.loading)
+                  const SliverFillRemaining(child: Center(child: CircularProgressIndicator()))
+                else if (state.slots.isEmpty && state.status == PrayerLoadStatus.permissionDenied)
                   SliverFillRemaining(
                     child: WPrayerMessageView(
                       icon: Icons.location_off_rounded,
@@ -104,14 +95,11 @@ class _SNPrayerTimesState extends State<SNPrayerTimes>
                       // in the log, not on screen — rendering it here is what
                       // put "Location services are disabled" under an Arabic
                       // heading.
-                      message: (state.locationFailure?.messageKey ??
-                              'prayer_permission_body')
-                          .tr(),
+                      message: (state.locationFailure?.messageKey ?? 'prayer_permission_body').tr(),
                       onRetry: _cubit.retry,
                     ),
                   )
-                else if (state.slots.isEmpty &&
-                    state.status == PrayerLoadStatus.error)
+                else if (state.slots.isEmpty && state.status == PrayerLoadStatus.error)
                   SliverFillRemaining(
                     child: WPrayerMessageView(
                       icon: Icons.error_outline_rounded,
@@ -131,14 +119,14 @@ class _SNPrayerTimesState extends State<SNPrayerTimes>
                         return WPrayerTile(
                           slot: slot,
                           isNext: state.nextPrayer?.prayer == slot.prayer,
-                          notificationEnabled: _notificationEnabled(
-                            slot.prayer,
-                          ),
+                          notificationEnabled: _notificationEnabled(slot.prayer),
                           green: _green,
                           gold: _gold,
-                          onNotificationChanged: slot.prayer.isSalah
-                              ? (value) => _setNotification(slot.prayer, value)
-                              : null,
+                          // Every slot gets a switch, sunrise included. It is
+                          // not a salah and gets no adhan, but it does carry an
+                          // alert now, and a row that can be turned on has to
+                          // show that it can.
+                          onNotificationChanged: (value) => _setNotification(slot.prayer, value),
                         );
                       },
                     ),
@@ -159,27 +147,37 @@ class _SNPrayerTimesState extends State<SNPrayerTimes>
     return _settings.notifyForPrayer[index];
   }
 
+  /// Flips one prayer's alert.
+  ///
+  /// Routed through [CBAdhanSettings] rather than writing the box directly.
+  /// That cubit is an app-wide singleton holding its own snapshot of these
+  /// flags, so a direct write here changed the stored value but left the adhan
+  /// settings screen showing the old one — turn sunrise on from this switch and
+  /// the other screen still called it off.
+  ///
+  /// It also carries two things this screen was missing: it turns the master
+  /// adhan switch on when a prayer is enabled — without which the scheduler
+  /// returns at its `if (!settings.enabled)` gate and the toggle changes
+  /// nothing — and it reschedules on its own debounce.
+  ///
+  /// The list itself needs no padding here: [CBAdhanSettings.togglePrayer]
+  /// grows it, and `current()` hands both screens the same Hive instance, so
+  /// [_settings] sees the write without being re-read.
   Future<void> _setNotification(EPrayer prayer, bool value) async {
     final index = _notificationIndex(prayer);
     if (index == null) return;
-    final notifications = [..._settings.notifyForPrayer];
-    while (notifications.length < 5) {
-      notifications.add(true);
-    }
-    notifications[index] = value;
-    _settings.notifyForPrayer = notifications;
-    await _settingsBox.save(_settings);
-    // Rebuild the rolling adhan window so the toggle takes effect immediately.
-    unawaited(Modular.get<AdhanScheduler>().reschedule());
+    await Modular.get<CBAdhanSettings>().togglePrayer(index, value);
     if (mounted) setState(() {});
   }
 
+  /// Slot in `notifyForPrayer`. Sunrise follows the five rather than sitting in
+  /// clock order — see [MPrayerSettings.notifyForPrayer] for why.
   int? _notificationIndex(EPrayer prayer) => switch (prayer) {
     EPrayer.fajr => 0,
     EPrayer.dhuhr => 1,
     EPrayer.asr => 2,
     EPrayer.maghrib => 3,
     EPrayer.isha => 4,
-    EPrayer.sunrise => null,
+    EPrayer.sunrise => MPrayerSettings.sunriseIndex,
   };
 }

@@ -194,7 +194,10 @@ class CBAdhanSettings extends Cubit<SAdhanSettings> {
   }
 
   Future<void> togglePrayer(int index, bool value) async {
-    if (index < 0 || index > 4) return;
+    // Bounded by the list's own length, not by a literal. This read `index > 4`
+    // and so dropped every sunrise toggle on the floor: the row was pressable,
+    // the write never happened.
+    if (index < 0 || index >= MPrayerSettings.slotCount) return;
     if (value && !state.enabled) {
       final settings = _adhanSettings.current()..enabled = true;
       await _adhanSettings.save(settings);
@@ -202,7 +205,12 @@ class CBAdhanSettings extends Cubit<SAdhanSettings> {
     }
     final p = _prayerSettings.current();
     final updated = List<bool>.of(p.notifyForPrayer);
-    if (index >= updated.length) return;
+    // Grow rather than refuse: an install written before sunrise existed holds
+    // a five-element list, and the sunrise toggle addresses index 5. Refusing
+    // was why it could never be switched on.
+    while (updated.length <= index) {
+      updated.add(false);
+    }
     updated[index] = value;
     p.notifyForPrayer = updated;
     await _prayerSettings.save(p);

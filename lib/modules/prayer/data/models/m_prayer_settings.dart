@@ -10,7 +10,7 @@ class MPrayerSettings extends HiveObject {
   MPrayerSettings({
     this.calculationMethodIndex = 1, // egyptian by default
     this.madhabIndex = 0,            // shafi by default
-    this.notifyForPrayer = const [true, true, true, true, true],
+    this.notifyForPrayer = const [true, true, true, true, true, false],
     this.adhanIdPerPrayer,
     this.fajrAdhanId,
     this.preNotifyMinutesPerPrayer,
@@ -24,7 +24,28 @@ class MPrayerSettings extends HiveObject {
   @HiveField(1)
   int madhabIndex;
 
-  /// One bool per prayer in fajr/dhuhr/asr/maghrib/isha order.
+  /// Index of the sunrise alert in [notifyForPrayer], and the list's full
+  /// length.
+  ///
+  /// Named here rather than written as a bare 5 at each of the four places that
+  /// need it. One of them — a `index > 4` bounds check in `togglePrayer` —
+  /// silently swallowed every sunrise toggle, and a literal in a guard is
+  /// exactly the kind of thing that does not turn up when the slot is added
+  /// somewhere else.
+  static const int sunriseIndex = 5;
+  static const int slotCount = 6;
+
+  /// One bool per alert in fajr/dhuhr/asr/maghrib/isha/**sunrise** order.
+  ///
+  /// Sunrise is last rather than in clock order, and off by default, because it
+  /// was added after the five: an install written before it exists holds a
+  /// five-element list, and every reader here bounds-checks, so the missing
+  /// slot reads as off. Putting it in clock order instead would have silently
+  /// re-pointed every stored flag by one on upgrade — dhuhr's setting landing
+  /// on asr, and so on down the list.
+  ///
+  /// Off by default on purpose: sunrise is not a salah, and an upgrade should
+  /// not start alerting anybody at dawn without being asked.
   @HiveField(2)
   List<bool> notifyForPrayer;
 

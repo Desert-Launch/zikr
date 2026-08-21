@@ -17,6 +17,7 @@ import 'package:quran/modules/prayer/data/datasources/local/ds_last_location.dar
 import 'package:quran/modules/prayer/data/datasources/local/ds_location.dart';
 import 'package:quran/modules/prayer/data/models/m_prayer_timings.dart';
 import 'package:quran/modules/prayer/data/sources/local/box_prayer_settings.dart';
+import 'package:quran/modules/prayer/data/models/m_prayer_settings.dart';
 import 'package:quran/modules/prayer/domain/entities/e_prayer.dart';
 import 'package:quran/modules/prayer/domain/entities/param_prayer_times.dart';
 import 'package:quran/modules/prayer/domain/usecases/uc_get_prayer_times.dart';
@@ -109,8 +110,16 @@ class AdhanScheduler {
   static const int _preBandStart = 300000;
   static const int _preBandEnd = 400000;
 
+  /// Slot sunrise occupies in `notifyForPrayer` and in a day's id block.
+  ///
+  /// It follows the five rather than sitting in clock order, so that a settings
+  /// record written before sunrise existed keeps every other flag pointing at
+  /// the prayer it was set for.
+  static const int _sunriseIndex = MPrayerSettings.sunriseIndex;
+
   /// fajr/dhuhr/asr/maghrib/isha → index used in ids and the per-prayer
-  /// notify-toggle list. Sunrise is intentionally excluded (not a salah).
+  /// notify-toggle list. Sunrise is NOT one of these — it is not a salah and
+  /// gets no adhan; it is scheduled separately at [_sunriseIndex].
   static const List<EPrayer> _salah = [
     EPrayer.fajr,
     EPrayer.dhuhr,
@@ -681,6 +690,50 @@ class AdhanScheduler {
         }
       }
     }
+
+    await _scheduleSunrise(doy: doy, timings: timings, notify: notify, now: now);
+  }
+
+  /// The sunrise marker.
+  ///
+  /// Deliberately NOT part of the salah loop above, and deliberately not an
+  /// adhan. Shurooq is not a prayer — there is no call to it — so this is a
+  /// plain notification on the ordinary prayer channel saying the Fajr window
+  /// has closed: no voice, no per-prayer voice override, no alarm intent, no
+  /// pre-notification, no full-adhan path.
+  ///
+  /// It rides in the same id block as the day's five (`doy * 10 + 5`), which
+  /// leaves it inside the main band — so [_cancelWindow] tears it down with
+  /// everything else and it needs no band or budget reservation of its own. It
+  /// draws from the same [_remaining] as the prayers, so an iOS queue that is
+  /// nearly full drops the tail of the horizon rather than overflowing.
+  Future<void> _scheduleSunrise({
+    required int doy,
+    required MPrayerTimings timings,
+    required List<bool> notify,
+    required DateTime now,
+  }) async {
+    if (_remaining <= 0) return;
+    // A record written before sunrise existed is five long — absent reads off.
+    if (_sunriseIndex >= notify.length || !notify[_sunriseIndex]) return;
+
+    final time = _timeFor(timings, EPrayer.sunrise);
+    if (time.isBefore(now)) return;
+
+    final id = _mainBandStart + doy * 10 + _sunriseIndex;
+    await _notifications.scheduleAt(
+      id: id,
+      when: time,
+      title: 'adhan_sunrise_title'.tr(),
+      body: 'adhan_sunrise_body'.tr(),
+      channel: AppNotificationChannels.prayer,
+      payload: const NotificationPayload(
+        type: 'prayer',
+        data: {'prayer': 'sunrise'},
+      ),
+    );
+    _scheduledTimes[id] = time;
+    _remaining--;
   }
 
   /// Per-prayer voice: an explicit per-prayer override wins; otherwise Fajr
