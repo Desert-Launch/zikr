@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_modular/flutter_modular.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:localize_and_translate/localize_and_translate.dart';
+import 'package:quran/core/extension/build_context.dart';
 import 'package:quran/core/services/routes/routes_names.dart';
 import 'package:quran/core/theme/app_text_styles.dart';
 import 'package:quran/core/widgets/w_localize_rotation.dart';
@@ -9,12 +10,7 @@ import 'package:quran/modules/prayer/presentation/cubits/s_prayer_times.dart';
 import 'package:quran/modules/prayer/presentation/widgets/w_prayer_outline_circle.dart';
 
 class WPrayerHeader extends StatelessWidget {
-  const WPrayerHeader({
-    super.key,
-    required this.state,
-    required this.green,
-    required this.onRefresh,
-  });
+  const WPrayerHeader({super.key, required this.state, required this.green, required this.onRefresh});
 
   final SPrayerTimes state;
   final Color green;
@@ -24,7 +20,7 @@ class WPrayerHeader extends StatelessWidget {
   Widget build(BuildContext context) {
     final now = DateTime.now();
     return Container(
-      height: 325.h,
+      height: context.isTablet ? 250.h : 325.h,
       padding: EdgeInsets.fromLTRB(18.w, 8.h, 18.w, 16.h),
       decoration: BoxDecoration(
         color: green,
@@ -54,34 +50,21 @@ class WPrayerHeader extends StatelessWidget {
                       onPressed: Modular.to.pop,
                       icon: const WLocalizeRotation(
                         reverse: true,
-                        child: Icon(
-                          Icons.arrow_back_rounded,
-                          color: Colors.white,
-                        ),
+                        child: Icon(Icons.arrow_back_rounded, color: Colors.white),
                       ),
                     ),
                     SizedBox(width: 7.w),
                     Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Text(
-                          'prayer_title'.tr(),
-                          style: AppTextStyles.white22W500,
-                        ),
-                        Text(
-                          'prayer_header_subtitle'.tr(),
-                          style: AppTextStyles.white14W400,
-                        ),
+                        Text('prayer_title'.tr(), style: AppTextStyles.white22W500),
+                        Text('prayer_header_subtitle'.tr(), style: AppTextStyles.white14W400),
                       ],
                     ),
                     const Spacer(),
                     IconButton(
-                      onPressed: () =>
-                          Modular.to.pushNamed(AdhanRoutes.overview()),
-                      icon: const Icon(
-                        Icons.settings_outlined,
-                        color: Colors.white,
-                      ),
+                      onPressed: () => Modular.to.pushNamed(AdhanRoutes.overview()),
+                      icon: const Icon(Icons.settings_outlined, color: Colors.white),
                     ),
                   ],
                 ),
@@ -91,27 +74,18 @@ class WPrayerHeader extends StatelessWidget {
                   onTap: onRefresh,
                   child: Container(
                     width: double.infinity,
-                    padding: EdgeInsets.symmetric(
-                      horizontal: 12.w,
-                      vertical: 9.h,
-                    ),
+                    padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 9.h),
                     decoration: BoxDecoration(
                       color: Colors.white.withValues(alpha: 0.08),
                       borderRadius: BorderRadius.circular(20.r),
                     ),
                     child: Row(
                       children: [
-                        Icon(
-                          Icons.location_on_outlined,
-                          color: Colors.white.withValues(alpha: 0.85),
-                          size: 18.r,
-                        ),
+                        Icon(Icons.location_on_outlined, color: Colors.white.withValues(alpha: 0.85), size: 18.r),
                         SizedBox(width: 5.w),
                         Expanded(
                           child: Text(
-                            state.cityName.isNotEmpty
-                                ? state.cityName
-                                : 'prayer_location_unknown'.tr(),
+                            state.cityName.isNotEmpty ? state.cityName : 'prayer_location_unknown'.tr(),
                             maxLines: 1,
                             overflow: TextOverflow.ellipsis,
                             style: AppTextStyles.white14W400,
@@ -128,9 +102,7 @@ class WPrayerHeader extends StatelessWidget {
                   decoration: BoxDecoration(
                     color: Colors.white.withValues(alpha: 0.07),
                     borderRadius: BorderRadius.circular(18.r),
-                    border: Border.all(
-                      color: Colors.white.withValues(alpha: 0.04),
-                    ),
+                    border: Border.all(color: Colors.white.withValues(alpha: 0.04)),
                   ),
                   child: Column(
                     children: [
@@ -151,27 +123,9 @@ class WPrayerHeader extends StatelessWidget {
   }
 
   String _weekday(DateTime date) {
-    const ar = [
-      'الاثنين',
-      'الثلاثاء',
-      'الأربعاء',
-      'الخميس',
-      'الجمعة',
-      'السبت',
-      'الأحد',
-    ];
-    const en = [
-      'Monday',
-      'Tuesday',
-      'Wednesday',
-      'Thursday',
-      'Friday',
-      'Saturday',
-      'Sunday',
-    ];
-    return LocalizeAndTranslate.getLanguageCode() == 'ar'
-        ? ar[date.weekday - 1]
-        : en[date.weekday - 1];
+    const ar = ['الاثنين', 'الثلاثاء', 'الأربعاء', 'الخميس', 'الجمعة', 'السبت', 'الأحد'];
+    const en = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
+    return LocalizeAndTranslate.getLanguageCode() == 'ar' ? ar[date.weekday - 1] : en[date.weekday - 1];
   }
 
   String _date(DateTime date) {
@@ -203,9 +157,7 @@ class WPrayerHeader extends StatelessWidget {
       'November',
       'December',
     ];
-    final month = LocalizeAndTranslate.getLanguageCode() == 'ar'
-        ? arMonths[date.month - 1]
-        : enMonths[date.month - 1];
+    final month = LocalizeAndTranslate.getLanguageCode() == 'ar' ? arMonths[date.month - 1] : enMonths[date.month - 1];
     return '${date.day} $month ${date.year}';
   }
 
@@ -213,26 +165,13 @@ class WPrayerHeader extends StatelessWidget {
     final a = (14 - date.month) ~/ 12;
     final y = date.year + 4800 - a;
     final m = date.month + (12 * a) - 3;
-    final julianDay =
-        date.day +
-        ((153 * m + 2) ~/ 5) +
-        (365 * y) +
-        (y ~/ 4) -
-        (y ~/ 100) +
-        (y ~/ 400) -
-        32045;
+    final julianDay = date.day + ((153 * m + 2) ~/ 5) + (365 * y) + (y ~/ 4) - (y ~/ 100) + (y ~/ 400) - 32045;
 
     var l = julianDay - 1948440 + 10632;
     final n = (l - 1) ~/ 10631;
     l = l - (10631 * n) + 354;
-    final j =
-        (((10985 - l) ~/ 5316) * ((50 * l) ~/ 17719)) +
-        ((l ~/ 5670) * ((43 * l) ~/ 15238));
-    l =
-        l -
-        (((30 - j) ~/ 15) * ((17719 * j) ~/ 50)) -
-        ((j ~/ 16) * ((15238 * j) ~/ 43)) +
-        29;
+    final j = (((10985 - l) ~/ 5316) * ((50 * l) ~/ 17719)) + ((l ~/ 5670) * ((43 * l) ~/ 15238));
+    l = l - (((30 - j) ~/ 15) * ((17719 * j) ~/ 50)) - ((j ~/ 16) * ((15238 * j) ~/ 43)) + 29;
     final month = (24 * l) ~/ 709;
     final day = l - ((709 * month) ~/ 24);
     final year = (30 * n) + j - 30;
