@@ -4,12 +4,7 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 /// A value/label stat tile used in the azkar headers. [compact] switches to the
 /// smaller sizing used by the player's header.
 class WAzkarStatCard extends StatelessWidget {
-  const WAzkarStatCard({
-    super.key,
-    required this.value,
-    required this.label,
-    this.compact = false,
-  });
+  const WAzkarStatCard({super.key, required this.value, required this.label, this.compact = false});
 
   final int value;
   final String label;
@@ -18,7 +13,7 @@ class WAzkarStatCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: EdgeInsets.symmetric(vertical: compact ? 7.h : 10.h),
+      padding: EdgeInsets.symmetric(vertical: compact ? 7.h : 7.h),
       decoration: BoxDecoration(
         color: Colors.white.withValues(alpha: 0.08),
         borderRadius: BorderRadius.circular(compact ? 12.r : 14.r),

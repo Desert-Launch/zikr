@@ -35,7 +35,7 @@ class WAzkarCounterCard extends StatelessWidget {
       child: Container(
         width: double.infinity,
         constraints: BoxConstraints(minHeight: 365.h),
-        padding: EdgeInsets.all(18.r),
+        padding: EdgeInsets.all(12.r),
         decoration: BoxDecoration(
           color: Colors.white,
           borderRadius: BorderRadius.circular(16.r),

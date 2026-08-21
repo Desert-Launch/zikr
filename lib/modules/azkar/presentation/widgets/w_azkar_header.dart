@@ -33,7 +33,7 @@ class WAzkarHeader extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      height: context.isTablet ? 160.h : 228.h,
+      height: context.isTablet ? 140.h : 205.h,
       padding: EdgeInsets.fromLTRB(0.w, 8.h, 0.w, 0.h),
       decoration: BoxDecoration(
         color: green,
@@ -108,7 +108,7 @@ class WAzkarHeader extends StatelessWidget {
                 ),
                 const Spacer(),
                 Padding(
-                  padding: EdgeInsets.symmetric(horizontal: 20.w, vertical: 20.h),
+                  padding: EdgeInsets.symmetric(horizontal: 20.w, vertical: 10.h),
                   child: Row(
                     children: [
                       Expanded(

@@ -95,7 +95,7 @@ class _SNAzkarPlayerState extends State<SNAzkarPlayer> {
                       final completed = state.countFor(item.id);
                       final virtue = item.virtueAr;
                       return SingleChildScrollView(
-                        padding: EdgeInsets.fromLTRB(18.w, 8.h, 18.w, 28.h),
+                        padding: EdgeInsets.fromLTRB(12.w, 8.h, 12.w, 28.h),
                         child: Column(
                           mainAxisSize: MainAxisSize.min,
                           children: [
