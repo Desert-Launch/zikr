@@ -145,10 +145,24 @@ class WPrayerTile extends StatelessWidget {
                       ),
                     ),
                     SizedBox(width: 2.w),
+                    // Gold track, white thumb.
+                    //
+                    // The track used to be white, and the thumb is white on
+                    // both platforms when a switch is on — so "on" rendered as
+                    // a blank white pill with nothing in it, on the one tile
+                    // where the switch matters most. Gold is the same accent
+                    // this tile already borders itself with, and it carries a
+                    // white thumb clearly against the green.
+                    //
+                    // The thumb is pinned rather than left to the theme:
+                    // Material's unselected thumb is `outline` grey, which is
+                    // muddy on the gradient, and Cupertino's is always white.
+                    // Pinning makes both platforms agree in both states.
                     Switch.adaptive(
                       value: notificationEnabled,
-                      activeTrackColor: Colors.white,
+                      activeTrackColor: gold,
                       inactiveTrackColor: Colors.white24,
+                      thumbColor: const WidgetStatePropertyAll(Colors.white),
                       onChanged: onNotificationChanged,
                     ),
                     SizedBox(width: 2.w),
