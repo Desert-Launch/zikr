@@ -257,7 +257,18 @@ class _RootState extends State<_Root> with WidgetsBindingObserver {
   /// when the reader isn't on screen.
   @override
   void didChangePlatformBrightness() {
-    Modular.get<CBReaderSettings>().applyPlatformBrightness(
+    // `tryGet`, not `get`. CBReaderSettings lives in QuranModule, and Modular
+    // unloads that module the moment the reader's route tree is popped — so
+    // flipping system dark mode from anywhere else in the app was asking for a
+    // bind that genuinely is not there and taking a BindNotFoundException. This
+    // runs on a platform callback rather than in the widget tree, so it
+    // surfaced as an unhandled exception rather than as anything the user could
+    // see or recover from.
+    //
+    // Skipping is correct, not merely safe: `CBReaderSettings.load()` resolves
+    // the platform brightness itself, so the next time the module is mounted
+    // the reader picks up whatever the device settled on.
+    Modular.tryGet<CBReaderSettings>()?.applyPlatformBrightness(
       WidgetsBinding.instance.platformDispatcher.platformBrightness,
     );
   }
