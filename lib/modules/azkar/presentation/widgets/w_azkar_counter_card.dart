@@ -47,12 +47,12 @@ class WAzkarCounterCard extends StatelessWidget {
           children: [
             Directionality(
               textDirection: TextDirection.rtl,
-              child: Text(item.textAr, textAlign: TextAlign.center, style: AppTextStyles.ink18W400),
+              child: Text(item.textAr, textAlign: TextAlign.center, style: AppTextStyles.ink20W400),
             ),
             SizedBox(height: 28.h),
             Container(
-              width: 180.r,
-              height: 180.r,
+              width: 150.r,
+              height: 150.r,
               decoration: BoxDecoration(
                 shape: BoxShape.circle,
                 border: Border.all(color: green, width: 8),
