@@ -69,7 +69,7 @@ class WRadioStationTile extends StatelessWidget {
                     children: [
                       Text(
                         station.displayName(isArabic: isArabic),
-                        maxLines: 1,
+                        maxLines: 2,
                         overflow: TextOverflow.ellipsis,
                         style: AppTextStyles.ink16W700,
                       ),
