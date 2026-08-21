@@ -1,0 +1,32 @@
+{
+  "version": 1,
+  "readerId": "muhammad-jibril",
+  "audio": [
+    {
+      "id": "muhammad-jibril:cat:adhkar-alsabah-walmasa-muhamad-jibril_0",
+      "audioType": "category_recording",
+      "categoryIds": [
+        "morning"
+      ],
+      "titleAr": "أذكار الصباح",
+      "remoteUrl": "https://archive.org/download/adhkar-alsabah-walmasa-muhamad-jibril/%D8%A3%D8%B0%D9%83%D8%A7%D8%B1%20%D8%A7%D9%84%D8%B5%D8%A8%D8%A7%D8%AD.mp3",
+      "duration": 1308,
+      "fileSize": 10473433,
+      "sourceUrl": "https://archive.org/details/adhkar-alsabah-walmasa-muhamad-jibril",
+      "matchingConfidence": "manual"
+    },
+    {
+      "id": "muhammad-jibril:cat:adhkar-alsabah-walmasa-muhamad-jibril_1",
+      "audioType": "category_recording",
+      "categoryIds": [
+        "evening"
+      ],
+      "titleAr": "أذكار المساء",
+      "remoteUrl": "https://archive.org/download/adhkar-alsabah-walmasa-muhamad-jibril/%D8%A3%D8%B0%D9%83%D8%A7%D8%B1%20%D8%A7%D9%84%D9%85%D8%B3%D8%A7%D8%A1.mp3",
+      "duration": 1347,
+      "fileSize": 10782096,
+      "sourceUrl": "https://archive.org/details/adhkar-alsabah-walmasa-muhamad-jibril",
+      "matchingConfidence": "manual"
+    }
+  ]
+}

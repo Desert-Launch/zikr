@@ -1,0 +1,32 @@
+{
+  "version": 1,
+  "readerId": "salman-al-otaibi",
+  "audio": [
+    {
+      "id": "salman-al-otaibi:cat:Bvtrtyuiouyuewtuiouioiyrbvcrettyiooppuioytriy1433_gmail_201801_0",
+      "audioType": "category_recording",
+      "categoryIds": [
+        "morning"
+      ],
+      "titleAr": "أذكار الصباح",
+      "remoteUrl": "https://archive.org/download/Bvtrtyuiouyuewtuiouioiyrbvcrettyiooppuioytriy1433_gmail_201801/%D8%A7%D8%B0%D9%83%D8%A7%D8%B1%20%D8%A7%D9%84%D8%B5%D8%A8%D8%A7%D8%AD%20%D8%A8%D8%B5%D9%88%D8%AA%20%D8%B3%D9%84%D9%85%D8%A7%D9%86%20%D8%A7%D9%84%D8%B9%D8%AA%D9%8A%D8%A8%D9%89%20%D8%AA%D9%84%D8%A7%D9%88%D8%A9%20%D9%85%D8%A8%D9%83%D9%8A%D8%A9%20%D8%AE%D8%A7%D8%B4%D8%B9%D8%A9.mp3",
+      "duration": 635,
+      "fileSize": 10165740,
+      "sourceUrl": "https://archive.org/details/Bvtrtyuiouyuewtuiouioiyrbvcrettyiooppuioytriy1433_gmail_201801",
+      "matchingConfidence": "manual"
+    },
+    {
+      "id": "salman-al-otaibi:cat:Bvtrtyuiouyuewtuiouioiyrbvcrettyiooppuioytriy1433_gmail_201801_1",
+      "audioType": "category_recording",
+      "categoryIds": [
+        "evening"
+      ],
+      "titleAr": "أذكار المساء",
+      "remoteUrl": "https://archive.org/download/Bvtrtyuiouyuewtuiouioiyrbvcrettyiooppuioytriy1433_gmail_201801/%D8%A7%D8%B0%D9%83%D8%A7%D8%B1%20%D8%A7%D9%84%D9%85%D8%B3%D8%A7%D8%A1%20%D8%A8%D8%B5%D9%88%D8%AA%20%D8%B3%D9%84%D9%85%D8%A7%D9%86%20%D8%A7%D9%84%D8%B9%D8%AA%D9%8A%D8%A8%D9%89%20%D8%AA%D9%84%D8%A7%D9%88%D8%A9%20%D9%85%D8%A8%D9%83%D9%8A%D8%A9%20%D8%AE%D8%A7%D8%B4%D8%B9%D8%A9.mp3",
+      "duration": 589,
+      "fileSize": 9421772,
+      "sourceUrl": "https://archive.org/details/Bvtrtyuiouyuewtuiouioiyrbvcrettyiooppuioytriy1433_gmail_201801",
+      "matchingConfidence": "manual"
+    }
+  ]
+}

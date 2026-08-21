@@ -166,6 +166,8 @@ flutter:
     - assets/data/qpc_v4/
     - assets/fonts/qpc_v4/
     - assets/data/azkar/
+    - assets/data/azkar_audio/
+    - assets/data/azkar_audio/mappings/
     - assets/data/khatma/
     - assets/data/notifictaions/
     - assets/audio/adhan/

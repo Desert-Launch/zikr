@@ -25,6 +25,7 @@ class HiveTypeIds {
   //   30–39  Azkar
   static const int azkarFavorite = 30;
   static const int azkarProgress = 31;
+  static const int azkarAudioDownload = 32;
 
   //   40–49  Tasbih
   static const int tasbihCounter = 40;

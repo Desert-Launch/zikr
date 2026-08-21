@@ -3,7 +3,9 @@ import 'package:quran/core/services/routes/routes_names.dart';
 import 'package:quran/modules/azkar/data/datasources/local/ds_local_azkar.dart';
 import 'package:quran/modules/azkar/data/sources/local/box_azkar_progress.dart';
 import 'package:quran/modules/azkar/presentation/cubits/cb_azkar_session.dart';
+import 'package:quran/modules/azkar/presentation/screens/sn_azkar_audio_downloads.dart';
 import 'package:quran/modules/azkar/presentation/screens/sn_azkar_category.dart';
+import 'package:quran/modules/azkar/presentation/screens/sn_azkar_reader_detail.dart';
 import 'package:quran/modules/azkar/presentation/screens/sn_azkar_favorites.dart';
 import 'package:quran/modules/azkar/presentation/screens/sn_azkar_home.dart';
 import 'package:quran/modules/azkar/presentation/screens/sn_azkar_other.dart';
@@ -12,7 +14,9 @@ import 'package:quran/modules/azkar/presentation/screens/sn_azkar_player.dart';
 class AzkarModule extends Module {
   @override
   void binds(Injector i) {
-    // Per-screen cubit (factory). Boxes + DS live in AppModule.
+    // Per-screen cubit (factory). Boxes, the audio DS/repo and the two audio
+    // cubits are app-wide singletons in AppModule — playback and downloads
+    // have to outlive any single azkar route.
     i.add<CBAzkarSession>(
       () => CBAzkarSession(local: Modular.get<DSLocalAzkar>(), progress: Modular.get<BoxAzkarProgress>()),
     );
@@ -38,5 +42,15 @@ class AzkarModule extends Module {
       },
     );
     r.child(AzkarRoutes.favorites, child: (_) => const SNAzkarFavorites());
+    r.child(
+      AzkarRoutes.audioDownloads,
+      child: (_) => const SNAzkarAudioDownloads(),
+    );
+    r.child(
+      AzkarRoutes.audioReader,
+      child: (_) => SNAzkarReaderDetail(
+        readerId: r.args.queryParams['reader'] ?? '',
+      ),
+    );
   }
 }

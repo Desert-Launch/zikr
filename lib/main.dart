@@ -28,8 +28,10 @@ import 'package:quran/modules/adhan/data/models/m_adhan_settings.dart';
 import 'package:quran/modules/adhan/services/adhan_background.dart';
 import 'package:quran/modules/adhan/services/adhan_bootstrap.dart';
 import 'package:quran/modules/adhan/services/adhan_scheduler.dart';
+import 'package:quran/modules/azkar/data/models/m_azkar_audio_download.dart';
 import 'package:quran/modules/azkar/data/models/m_azkar_favorite.dart';
 import 'package:quran/modules/azkar/data/models/m_azkar_progress.dart';
+import 'package:quran/modules/azkar/presentation/cubits/cb_azkar_audio_downloads.dart';
 import 'package:quran/modules/khatma/data/models/m_khatma_completion.dart';
 import 'package:quran/modules/khatma/data/models/m_khatma_day.dart';
 import 'package:quran/modules/khatma/data/models/m_khatma_plan.dart';
@@ -89,6 +91,8 @@ Future<void> main() async {
   await Hive.openBox<MAzkarFavorite>('azkar_favorites');
   await Hive.openBox<String>('azkar_category_favorites');
   await Hive.openBox<MAzkarProgress>('azkar_progress');
+  await Hive.openBox<MAzkarAudioDownload>('azkar_audio_downloads');
+  await Hive.openBox<String>('azkar_audio_prefs');
   await Hive.openBox<String>('radio_favorites');
   await Hive.openBox<MTasbihCounter>('tasbih_counter');
   await Hive.openBox<MTasbihHistory>('tasbih_history');
@@ -185,6 +189,13 @@ Future<void> _bootNotifications() async {
     Modular.get<AdhanScheduler>().reconcileCompanionNotifications,
   );
   await _bootStep('adhan bootstrap', Modular.get<AdhanBootstrap>().run);
+  // Adhkar audio: reconcile the persisted download table against the actual
+  // files. A record that says "downloaded" for a file the OS has reclaimed
+  // would otherwise make the player resolve to a path that no longer exists.
+  await _bootStep(
+    'adhkar audio reconcile',
+    Modular.get<CBAzkarAudioDownloads>().reconcile,
+  );
   // Rebuild the rolling adhan window on every cold start so scheduling never
   // depends solely on opening Home or an app-resume event — the resume callback
   // does NOT fire on the initial launch. Cached location only (no premature GPS

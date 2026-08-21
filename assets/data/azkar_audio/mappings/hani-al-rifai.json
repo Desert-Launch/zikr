@@ -1,0 +1,20 @@
+{
+  "version": 1,
+  "readerId": "hani-al-rifai",
+  "audio": [
+    {
+      "id": "hani-al-rifai:cat:AthkarHani247247247247245242aei_0",
+      "audioType": "category_recording",
+      "categoryIds": [
+        "morning",
+        "evening"
+      ],
+      "titleAr": "أذكار الصباح والمساء",
+      "remoteUrl": "https://archive.org/download/AthkarHani247247247247245242aei/Athkar%20Hani%20Alrefaei.mp3",
+      "duration": 1024,
+      "fileSize": 16510283,
+      "sourceUrl": "https://archive.org/details/AthkarHani247247247247245242aei",
+      "matchingConfidence": "manual"
+    }
+  ]
+}

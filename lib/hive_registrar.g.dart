@@ -10,6 +10,7 @@ import 'package:quran/modules/adhan/data/models/m_adhan_preference.dart';
 import 'package:quran/modules/adhan/data/models/m_adhan_settings.dart';
 import 'package:quran/modules/auth/data/models/m_auth_token.dart';
 import 'package:quran/modules/auth/data/models/m_user.dart';
+import 'package:quran/modules/azkar/data/models/m_azkar_audio_download.dart';
 import 'package:quran/modules/azkar/data/models/m_azkar_favorite.dart';
 import 'package:quran/modules/azkar/data/models/m_azkar_progress.dart';
 import 'package:quran/modules/khatma/data/models/m_khatma_completion.dart';
@@ -32,6 +33,7 @@ extension HiveRegistrar on HiveInterface {
     registerAdapter(MAdhanSettingsAdapter());
     registerAdapter(MAppSettingsAdapter());
     registerAdapter(MAuthTokenAdapter());
+    registerAdapter(MAzkarAudioDownloadAdapter());
     registerAdapter(MAzkarFavoriteAdapter());
     registerAdapter(MAzkarProgressAdapter());
     registerAdapter(MBookmarkAdapter());
@@ -58,6 +60,7 @@ extension IsolatedHiveRegistrar on IsolatedHiveInterface {
     registerAdapter(MAdhanSettingsAdapter());
     registerAdapter(MAppSettingsAdapter());
     registerAdapter(MAuthTokenAdapter());
+    registerAdapter(MAzkarAudioDownloadAdapter());
     registerAdapter(MAzkarFavoriteAdapter());
     registerAdapter(MAzkarProgressAdapter());
     registerAdapter(MBookmarkAdapter());

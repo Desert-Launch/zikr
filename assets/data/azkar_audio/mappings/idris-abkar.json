@@ -1,0 +1,20 @@
+{
+  "version": 1,
+  "readerId": "idris-abkar",
+  "audio": [
+    {
+      "id": "idris-abkar:cat:Athka247424724724475dreesAbkar_0",
+      "audioType": "category_recording",
+      "categoryIds": [
+        "morning",
+        "evening"
+      ],
+      "titleAr": "أذكار الصباح والمساء",
+      "remoteUrl": "https://archive.org/download/Athka247424724724475dreesAbkar/Athkar%20Idrees%20Abkar.mp3",
+      "duration": 900,
+      "fileSize": 14529350,
+      "sourceUrl": "https://archive.org/details/Athka247424724724475dreesAbkar",
+      "matchingConfidence": "manual"
+    }
+  ]
+}

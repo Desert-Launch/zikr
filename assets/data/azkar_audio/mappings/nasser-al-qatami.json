@@ -1,0 +1,20 @@
+{
+  "version": 1,
+  "readerId": "nasser-al-qatami",
+  "audio": [
+    {
+      "id": "nasser-al-qatami:cat:adhkar-alyawm-wallayl-nasir-alqataami_0",
+      "audioType": "category_recording",
+      "categoryIds": [
+        "morning",
+        "evening"
+      ],
+      "titleAr": "أذكار اليوم والليلة",
+      "remoteUrl": "https://archive.org/download/adhkar-alyawm-wallayl-nasir-alqataami/%D8%A3%D8%B0%D9%83%D8%A7%D8%B1%20%D8%A7%D9%84%D9%8A%D9%88%D9%85%20%D9%88%D8%A7%D9%84%D9%84%D9%8A%D9%84%D8%A9.mp3",
+      "duration": 354,
+      "fileSize": 2836306,
+      "sourceUrl": "https://archive.org/details/adhkar-alyawm-wallayl-nasir-alqataami",
+      "matchingConfidence": "manual"
+    }
+  ]
+}

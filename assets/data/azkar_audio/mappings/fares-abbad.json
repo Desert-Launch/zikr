@@ -1,0 +1,32 @@
+{
+  "version": 1,
+  "readerId": "fares-abbad",
+  "audio": [
+    {
+      "id": "fares-abbad:cat:adhkar-alsabah-walmasa-faris-abaad_0",
+      "audioType": "category_recording",
+      "categoryIds": [
+        "morning"
+      ],
+      "titleAr": "أذكار الصباح",
+      "remoteUrl": "https://archive.org/download/adhkar-alsabah-walmasa-faris-abaad/%D8%A3%D8%B0%D9%83%D8%A7%D8%B1%20%D8%A7%D9%84%D8%B5%D8%A8%D8%A7%D8%AD.mp3",
+      "duration": 1233,
+      "fileSize": 9873243,
+      "sourceUrl": "https://archive.org/details/adhkar-alsabah-walmasa-faris-abaad",
+      "matchingConfidence": "manual"
+    },
+    {
+      "id": "fares-abbad:cat:adhkar-alsabah-walmasa-faris-abaad_1",
+      "audioType": "category_recording",
+      "categoryIds": [
+        "evening"
+      ],
+      "titleAr": "أذكار المساء",
+      "remoteUrl": "https://archive.org/download/adhkar-alsabah-walmasa-faris-abaad/%D8%A3%D8%B0%D9%83%D8%A7%D8%B1%20%D8%A7%D9%84%D9%85%D8%B3%D8%A7%D8%A1.mp3",
+      "duration": 1228,
+      "fileSize": 9830403,
+      "sourceUrl": "https://archive.org/details/adhkar-alsabah-walmasa-faris-abaad",
+      "matchingConfidence": "manual"
+    }
+  ]
+}

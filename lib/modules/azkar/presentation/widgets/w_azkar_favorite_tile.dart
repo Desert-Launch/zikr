@@ -7,6 +7,7 @@ import 'package:quran/core/theme/brand_colors.dart';
 import 'package:quran/modules/azkar/data/datasources/local/ds_local_azkar.dart';
 import 'package:quran/modules/azkar/data/models/m_azkar_favorite.dart';
 import 'package:quran/modules/azkar/data/models/m_azkar_item.dart';
+import 'package:quran/modules/azkar/presentation/widgets/w_azkar_audio_button.dart';
 
 /// A favorited zekr card. Resolves its text/repeat/category lazily from [ds] by
 /// item id and, when tapped, reopens the counter screen at that zekr.
@@ -88,6 +89,14 @@ class WAzkarFavoriteTile extends StatelessWidget {
                             ),
                           ),
                         ),
+                      // The audio index is global, so a favourite plays from
+                      // whichever category it came from.
+                      WAzkarAudioButton(
+                        adhkarId: fav.itemId,
+                        title: categoryName ?? '',
+                        color: AppColorsLight.primaryDark,
+                        size: 32,
+                      ),
                       IconButton(
                         icon: const Icon(Icons.favorite_rounded, color: AppColorsLight.error),
                         onPressed: onRemove,

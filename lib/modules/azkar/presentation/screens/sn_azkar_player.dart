@@ -4,9 +4,13 @@ import 'package:flutter_modular/flutter_modular.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:localize_and_translate/localize_and_translate.dart';
 import 'package:quran/core/widgets/w_shared_scaffold.dart';
+import 'package:quran/modules/azkar/data/models/m_azkar_item.dart';
 import 'package:quran/modules/azkar/data/sources/local/box_azkar_favorite.dart';
+import 'package:quran/modules/azkar/presentation/cubits/cb_azkar_audio.dart';
 import 'package:quran/modules/azkar/presentation/cubits/cb_azkar_session.dart';
 import 'package:quran/modules/azkar/presentation/cubits/s_azkar_session.dart';
+import 'package:quran/modules/azkar/presentation/widgets/w_azkar_audio_bar.dart';
+import 'package:quran/modules/azkar/presentation/widgets/w_azkar_audio_button.dart';
 import 'package:quran/modules/azkar/presentation/widgets/w_azkar_header.dart';
 import 'package:quran/modules/azkar/presentation/widgets/w_azkar_counter_card.dart';
 import 'package:quran/modules/azkar/presentation/widgets/w_azkar_virtue_card.dart';
@@ -27,6 +31,9 @@ class _SNAzkarPlayerState extends State<SNAzkarPlayer> {
   static const _canvas = Color(0xFFF8F7F4);
 
   late final CBAzkarSession _cubit = Modular.get<CBAzkarSession>();
+  // App-wide singleton: a recitation keeps playing when the user leaves this
+  // screen, and the preferred reader is shared with the download manager.
+  late final CBAzkarAudio _audio = Modular.get<CBAzkarAudio>();
   late final BoxAzkarFavorite _favorites = Modular.get<BoxAzkarFavorite>();
   late final PageController _pageController = PageController(initialPage: widget.itemIndex);
 
@@ -45,12 +52,23 @@ class _SNAzkarPlayerState extends State<SNAzkarPlayer> {
   Future<void> _open() async {
     await _cubit.open(widget.categoryId);
     _cubit.jumpTo(widget.itemIndex);
+    // Works out which adhkar have a recording, so a play button only appears
+    // where tapping it would actually produce sound.
+    await _audio.prepareAudioIndex();
   }
+
+  String _categoryTitle(MAzkarCategory category) =>
+      LocalizeAndTranslate.getLanguageCode() == 'ar'
+      ? category.nameAr
+      : category.nameEn;
 
   @override
   Widget build(BuildContext context) {
-    return BlocProvider.value(
-      value: _cubit,
+    return MultiBlocProvider(
+      providers: [
+        BlocProvider.value(value: _cubit),
+        BlocProvider.value(value: _audio),
+      ],
       child: WSharedScaffold(
         backgroundColor: _canvas,
         withSafeArea: false,
@@ -79,7 +97,7 @@ class _SNAzkarPlayerState extends State<SNAzkarPlayer> {
               children: [
                 WAzkarHeader(
                   green: _green,
-                  title: LocalizeAndTranslate.getLanguageCode() == 'ar' ? category.nameAr : category.nameEn,
+                  title: _categoryTitle(category),
                   categoryCount: category.items.length,
                   completedToday: category.items.where((item) => state.isComplete(item)).length,
                   favorites: _favorites.all().length,
@@ -107,6 +125,17 @@ class _SNAzkarPlayerState extends State<SNAzkarPlayer> {
                               onReset: _cubit.resetCurrent,
                               onPrevious: _cubit.previous,
                               onNext: _cubit.next,
+                              audioButton: WAzkarAudioButton(
+                                adhkarId: item.id,
+                                title: _categoryTitle(category),
+                                color: _green,
+                              ),
+                            ),
+                            WAzkarAudioBar(
+                              adhkarId: item.id,
+                              title: _categoryTitle(category),
+                              categoryId: category.id,
+                              categoryTitle: _categoryTitle(category),
                             ),
                             if (virtue != null && virtue.isNotEmpty) ...[
                               SizedBox(height: 12.h),

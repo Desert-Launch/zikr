@@ -16,6 +16,7 @@ class WAzkarCounterCard extends StatelessWidget {
     required this.onReset,
     required this.onPrevious,
     required this.onNext,
+    this.audioButton,
   });
 
   final MAzkarItem item;
@@ -25,6 +26,11 @@ class WAzkarCounterCard extends StatelessWidget {
   final VoidCallback onReset;
   final VoidCallback onPrevious;
   final VoidCallback onNext;
+
+  /// Optional play control, shown above the zekr text. Its own InkWell wins the
+  /// gesture arena over the card's tap-to-count, so playing audio never nudges
+  /// the counter.
+  final Widget? audioButton;
 
   @override
   Widget build(BuildContext context) {
@@ -45,6 +51,11 @@ class WAzkarCounterCard extends StatelessWidget {
           mainAxisAlignment: MainAxisAlignment.center,
           mainAxisSize: MainAxisSize.min,
           children: [
+            if (audioButton != null)
+              Align(
+                alignment: AlignmentDirectional.centerStart,
+                child: audioButton,
+              ),
             Directionality(
               textDirection: TextDirection.rtl,
               child: Text(item.textAr, textAlign: TextAlign.center, style: AppTextStyles.ink18W400),

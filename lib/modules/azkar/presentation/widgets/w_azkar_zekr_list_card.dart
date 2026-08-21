@@ -14,6 +14,7 @@ class WAzkarZekrListCard extends StatelessWidget {
     required this.gold,
     required this.onFavorite,
     required this.onTap,
+    this.audioButton,
   });
 
   final MAzkarItem item;
@@ -21,6 +22,10 @@ class WAzkarZekrListCard extends StatelessWidget {
   final Color gold;
   final VoidCallback onFavorite;
   final VoidCallback onTap;
+
+  /// Optional play control. Its own InkWell wins the gesture arena over the
+  /// row's tap-to-open, so playing never navigates away by accident.
+  final Widget? audioButton;
 
   @override
   Widget build(BuildContext context) {
@@ -85,15 +90,21 @@ class WAzkarZekrListCard extends StatelessWidget {
                 ],
               ),
             ),
-            IconButton(
-              onPressed: onFavorite,
-              icon: Icon(
-                favorite
-                    ? Icons.favorite_rounded
-                    : Icons.favorite_border_rounded,
-                size: 18.r,
-                color: favorite ? Colors.red : Colors.grey[600],
-              ),
+            Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                IconButton(
+                  onPressed: onFavorite,
+                  icon: Icon(
+                    favorite
+                        ? Icons.favorite_rounded
+                        : Icons.favorite_border_rounded,
+                    size: 18.r,
+                    color: favorite ? Colors.red : Colors.grey[600],
+                  ),
+                ),
+                if (audioButton != null) audioButton ?? const SizedBox.shrink(),
+              ],
             ),
           ],
         ),

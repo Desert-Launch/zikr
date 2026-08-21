@@ -1,0 +1,4903 @@
+{
+  "version": 1,
+  "readerId": "hamad-al-duraihem",
+  "audio": [
+    {
+      "id": "hamad-al-duraihem:evening_1",
+      "audioType": "single_adhkar",
+      "adhkarId": "evening_1",
+      "categoryIds": [
+        "evening"
+      ],
+      "remoteUrl": "https://www.hisnmuslim.com/audio/ar/75.mp3",
+      "sourceUrl": "https://www.hisnmuslim.com/",
+      "matchingConfidence": "high",
+      "fileSize": 1347922
+    },
+    {
+      "id": "hamad-al-duraihem:evening_2",
+      "audioType": "single_adhkar",
+      "adhkarId": "evening_2",
+      "categoryIds": [
+        "evening"
+      ],
+      "remoteUrl": "https://www.hisnmuslim.com/audio/ar/101.mp3",
+      "sourceUrl": "https://www.hisnmuslim.com/",
+      "matchingConfidence": "high",
+      "fileSize": 1539347
+    },
+    {
+      "id": "hamad-al-duraihem:evening_7",
+      "audioType": "single_adhkar",
+      "adhkarId": "evening_7",
+      "categoryIds": [
+        "evening"
+      ],
+      "remoteUrl": "https://www.hisnmuslim.com/audio/ar/79.mp3",
+      "sourceUrl": "https://www.hisnmuslim.com/",
+      "matchingConfidence": "high",
+      "fileSize": 582220
+    },
+    {
+      "id": "hamad-al-duraihem:evening_8",
+      "audioType": "single_adhkar",
+      "adhkarId": "evening_8",
+      "categoryIds": [
+        "evening"
+      ],
+      "remoteUrl": "https://www.hisnmuslim.com/audio/ar/87.mp3",
+      "sourceUrl": "https://www.hisnmuslim.com/",
+      "matchingConfidence": "exact",
+      "fileSize": 359030
+    },
+    {
+      "id": "hamad-al-duraihem:evening_11",
+      "audioType": "single_adhkar",
+      "adhkarId": "evening_11",
+      "categoryIds": [
+        "evening"
+      ],
+      "remoteUrl": "https://www.hisnmuslim.com/audio/ar/83.mp3",
+      "sourceUrl": "https://www.hisnmuslim.com/",
+      "matchingConfidence": "exact",
+      "fileSize": 310965
+    },
+    {
+      "id": "hamad-al-duraihem:evening_12",
+      "audioType": "single_adhkar",
+      "adhkarId": "evening_12",
+      "categoryIds": [
+        "evening"
+      ],
+      "remoteUrl": "https://www.hisnmuslim.com/audio/ar/86.mp3",
+      "sourceUrl": "https://www.hisnmuslim.com/",
+      "matchingConfidence": "exact",
+      "fileSize": 342730
+    },
+    {
+      "id": "hamad-al-duraihem:evening_15",
+      "audioType": "single_adhkar",
+      "adhkarId": "evening_15",
+      "categoryIds": [
+        "evening"
+      ],
+      "remoteUrl": "https://www.hisnmuslim.com/audio/ar/94.mp3",
+      "sourceUrl": "https://www.hisnmuslim.com/",
+      "matchingConfidence": "exact",
+      "fileSize": 406678
+    },
+    {
+      "id": "hamad-al-duraihem:evening_18",
+      "audioType": "single_adhkar",
+      "adhkarId": "evening_18",
+      "categoryIds": [
+        "evening"
+      ],
+      "remoteUrl": "https://www.hisnmuslim.com/audio/ar/84.mp3",
+      "sourceUrl": "https://www.hisnmuslim.com/",
+      "matchingConfidence": "exact",
+      "fileSize": 725580
+    },
+    {
+      "id": "hamad-al-duraihem:evening_19",
+      "audioType": "single_adhkar",
+      "adhkarId": "evening_19",
+      "categoryIds": [
+        "evening"
+      ],
+      "remoteUrl": "https://www.hisnmuslim.com/audio/ar/88.mp3",
+      "sourceUrl": "https://www.hisnmuslim.com/",
+      "matchingConfidence": "exact",
+      "fileSize": 390795
+    },
+    {
+      "id": "hamad-al-duraihem:evening_21",
+      "audioType": "single_adhkar",
+      "adhkarId": "evening_21",
+      "categoryIds": [
+        "evening"
+      ],
+      "remoteUrl": "https://www.hisnmuslim.com/audio/ar/109.mp3",
+      "sourceUrl": "https://www.hisnmuslim.com/",
+      "matchingConfidence": "high",
+      "fileSize": 582220
+    },
+    {
+      "id": "hamad-al-duraihem:evening_22",
+      "audioType": "single_adhkar",
+      "adhkarId": "evening_22",
+      "categoryIds": [
+        "evening"
+      ],
+      "remoteUrl": "https://www.hisnmuslim.com/audio/ar/97.mp3",
+      "sourceUrl": "https://www.hisnmuslim.com/",
+      "matchingConfidence": "high",
+      "fileSize": 310965
+    },
+    {
+      "id": "hamad-al-duraihem:evening_23",
+      "audioType": "single_adhkar",
+      "adhkarId": "evening_23",
+      "categoryIds": [
+        "evening"
+      ],
+      "remoteUrl": "https://www.hisnmuslim.com/audio/ar/98.mp3",
+      "sourceUrl": "https://www.hisnmuslim.com/",
+      "matchingConfidence": "high",
+      "fileSize": 306785
+    },
+    {
+      "id": "hamad-al-duraihem:evening_28",
+      "audioType": "single_adhkar",
+      "adhkarId": "evening_28",
+      "categoryIds": [
+        "evening"
+      ],
+      "remoteUrl": "https://www.hisnmuslim.com/audio/ar/92.mp3",
+      "sourceUrl": "https://www.hisnmuslim.com/",
+      "matchingConfidence": "high",
+      "fileSize": 438442
+    },
+    {
+      "id": "hamad-al-duraihem:evening_30",
+      "audioType": "single_adhkar",
+      "adhkarId": "evening_30",
+      "categoryIds": [
+        "evening"
+      ],
+      "remoteUrl": "https://www.hisnmuslim.com/audio/ar/91.mp3",
+      "sourceUrl": "https://www.hisnmuslim.com/",
+      "matchingConfidence": "exact",
+      "fileSize": 231135
+    },
+    {
+      "id": "hamad-al-duraihem:morning_1",
+      "audioType": "single_adhkar",
+      "adhkarId": "morning_1",
+      "categoryIds": [
+        "morning"
+      ],
+      "remoteUrl": "https://www.hisnmuslim.com/audio/ar/75.mp3",
+      "sourceUrl": "https://www.hisnmuslim.com/",
+      "matchingConfidence": "high",
+      "fileSize": 1347922
+    },
+    {
+      "id": "hamad-al-duraihem:morning_5",
+      "audioType": "single_adhkar",
+      "adhkarId": "morning_5",
+      "categoryIds": [
+        "morning"
+      ],
+      "remoteUrl": "https://www.hisnmuslim.com/audio/ar/77.mp3",
+      "sourceUrl": "https://www.hisnmuslim.com/",
+      "matchingConfidence": "high",
+      "fileSize": 1012718
+    },
+    {
+      "id": "hamad-al-duraihem:morning_6",
+      "audioType": "single_adhkar",
+      "adhkarId": "morning_6",
+      "categoryIds": [
+        "morning"
+      ],
+      "remoteUrl": "https://www.hisnmuslim.com/audio/ar/79.mp3",
+      "sourceUrl": "https://www.hisnmuslim.com/",
+      "matchingConfidence": "high",
+      "fileSize": 582220
+    },
+    {
+      "id": "hamad-al-duraihem:morning_7",
+      "audioType": "single_adhkar",
+      "adhkarId": "morning_7",
+      "categoryIds": [
+        "morning"
+      ],
+      "remoteUrl": "https://www.hisnmuslim.com/audio/ar/87.mp3",
+      "sourceUrl": "https://www.hisnmuslim.com/",
+      "matchingConfidence": "exact",
+      "fileSize": 359030
+    },
+    {
+      "id": "hamad-al-duraihem:morning_8",
+      "audioType": "single_adhkar",
+      "adhkarId": "morning_8",
+      "categoryIds": [
+        "morning"
+      ],
+      "remoteUrl": "https://www.hisnmuslim.com/audio/ar/80.mp3",
+      "sourceUrl": "https://www.hisnmuslim.com/",
+      "matchingConfidence": "exact",
+      "fileSize": 550456
+    },
+    {
+      "id": "hamad-al-duraihem:morning_9",
+      "audioType": "single_adhkar",
+      "adhkarId": "morning_9",
+      "categoryIds": [
+        "morning"
+      ],
+      "remoteUrl": "https://www.hisnmuslim.com/audio/ar/81.mp3",
+      "sourceUrl": "https://www.hisnmuslim.com/",
+      "matchingConfidence": "exact",
+      "fileSize": 326847
+    },
+    {
+      "id": "hamad-al-duraihem:morning_10",
+      "audioType": "single_adhkar",
+      "adhkarId": "morning_10",
+      "categoryIds": [
+        "morning"
+      ],
+      "remoteUrl": "https://www.hisnmuslim.com/audio/ar/83.mp3",
+      "sourceUrl": "https://www.hisnmuslim.com/",
+      "matchingConfidence": "exact",
+      "fileSize": 310965
+    },
+    {
+      "id": "hamad-al-duraihem:morning_11",
+      "audioType": "single_adhkar",
+      "adhkarId": "morning_11",
+      "categoryIds": [
+        "morning"
+      ],
+      "remoteUrl": "https://www.hisnmuslim.com/audio/ar/86.mp3",
+      "sourceUrl": "https://www.hisnmuslim.com/",
+      "matchingConfidence": "exact",
+      "fileSize": 342730
+    },
+    {
+      "id": "hamad-al-duraihem:morning_12",
+      "audioType": "single_adhkar",
+      "adhkarId": "morning_12",
+      "categoryIds": [
+        "morning"
+      ],
+      "remoteUrl": "https://www.hisnmuslim.com/audio/ar/78.mp3",
+      "sourceUrl": "https://www.hisnmuslim.com/",
+      "matchingConfidence": "exact",
+      "fileSize": 518273
+    },
+    {
+      "id": "hamad-al-duraihem:morning_13",
+      "audioType": "single_adhkar",
+      "adhkarId": "morning_13",
+      "categoryIds": [
+        "morning"
+      ],
+      "remoteUrl": "https://www.hisnmuslim.com/audio/ar/90.mp3",
+      "sourceUrl": "https://www.hisnmuslim.com/",
+      "matchingConfidence": "exact",
+      "fileSize": 518273
+    },
+    {
+      "id": "hamad-al-duraihem:morning_14",
+      "audioType": "single_adhkar",
+      "adhkarId": "morning_14",
+      "categoryIds": [
+        "morning"
+      ],
+      "remoteUrl": "https://www.hisnmuslim.com/audio/ar/94.mp3",
+      "sourceUrl": "https://www.hisnmuslim.com/",
+      "matchingConfidence": "exact",
+      "fileSize": 406678
+    },
+    {
+      "id": "hamad-al-duraihem:morning_17",
+      "audioType": "single_adhkar",
+      "adhkarId": "morning_17",
+      "categoryIds": [
+        "morning"
+      ],
+      "remoteUrl": "https://www.hisnmuslim.com/audio/ar/84.mp3",
+      "sourceUrl": "https://www.hisnmuslim.com/",
+      "matchingConfidence": "exact",
+      "fileSize": 725580
+    },
+    {
+      "id": "hamad-al-duraihem:morning_18",
+      "audioType": "single_adhkar",
+      "adhkarId": "morning_18",
+      "categoryIds": [
+        "morning"
+      ],
+      "remoteUrl": "https://www.hisnmuslim.com/audio/ar/88.mp3",
+      "sourceUrl": "https://www.hisnmuslim.com/",
+      "matchingConfidence": "exact",
+      "fileSize": 390795
+    },
+    {
+      "id": "hamad-al-duraihem:morning_19",
+      "audioType": "single_adhkar",
+      "adhkarId": "morning_19",
+      "categoryIds": [
+        "morning"
+      ],
+      "remoteUrl": "https://www.hisnmuslim.com/audio/ar/89.mp3",
+      "sourceUrl": "https://www.hisnmuslim.com/",
+      "matchingConfidence": "exact",
+      "fileSize": 486508
+    },
+    {
+      "id": "hamad-al-duraihem:morning_20",
+      "audioType": "single_adhkar",
+      "adhkarId": "morning_20",
+      "categoryIds": [
+        "morning"
+      ],
+      "remoteUrl": "https://www.hisnmuslim.com/audio/ar/85.mp3",
+      "sourceUrl": "https://www.hisnmuslim.com/",
+      "matchingConfidence": "high",
+      "fileSize": 598103
+    },
+    {
+      "id": "hamad-al-duraihem:morning_21",
+      "audioType": "single_adhkar",
+      "adhkarId": "morning_21",
+      "categoryIds": [
+        "morning"
+      ],
+      "remoteUrl": "https://www.hisnmuslim.com/audio/ar/97.mp3",
+      "sourceUrl": "https://www.hisnmuslim.com/",
+      "matchingConfidence": "high",
+      "fileSize": 310965
+    },
+    {
+      "id": "hamad-al-duraihem:morning_22",
+      "audioType": "single_adhkar",
+      "adhkarId": "morning_22",
+      "categoryIds": [
+        "morning"
+      ],
+      "remoteUrl": "https://www.hisnmuslim.com/audio/ar/98.mp3",
+      "sourceUrl": "https://www.hisnmuslim.com/",
+      "matchingConfidence": "high",
+      "fileSize": 306785
+    },
+    {
+      "id": "hamad-al-duraihem:morning_27",
+      "audioType": "single_adhkar",
+      "adhkarId": "morning_27",
+      "categoryIds": [
+        "morning"
+      ],
+      "remoteUrl": "https://www.hisnmuslim.com/audio/ar/95.mp3",
+      "sourceUrl": "https://www.hisnmuslim.com/",
+      "matchingConfidence": "high",
+      "fileSize": 342730
+    },
+    {
+      "id": "hamad-al-duraihem:morning_29",
+      "audioType": "single_adhkar",
+      "adhkarId": "morning_29",
+      "categoryIds": [
+        "morning"
+      ],
+      "remoteUrl": "https://www.hisnmuslim.com/audio/ar/92.mp3",
+      "sourceUrl": "https://www.hisnmuslim.com/",
+      "matchingConfidence": "high",
+      "fileSize": 438442
+    },
+    {
+      "id": "hamad-al-duraihem:morning_30",
+      "audioType": "single_adhkar",
+      "adhkarId": "morning_30",
+      "categoryIds": [
+        "morning"
+      ],
+      "remoteUrl": "https://www.hisnmuslim.com/audio/ar/91.mp3",
+      "sourceUrl": "https://www.hisnmuslim.com/",
+      "matchingConfidence": "exact",
+      "fileSize": 231135
+    },
+    {
+      "id": "hamad-al-duraihem:morning_31",
+      "audioType": "single_adhkar",
+      "adhkarId": "morning_31",
+      "categoryIds": [
+        "morning"
+      ],
+      "remoteUrl": "https://www.hisnmuslim.com/audio/ar/96.mp3",
+      "sourceUrl": "https://www.hisnmuslim.com/",
+      "matchingConfidence": "exact",
+      "fileSize": 279200
+    },
+    {
+      "id": "hamad-al-duraihem:wakeing_up_1",
+      "audioType": "single_adhkar",
+      "adhkarId": "wakeing_up_1",
+      "categoryIds": [
+        "wakeing_up"
+      ],
+      "remoteUrl": "https://www.hisnmuslim.com/audio/ar/1.mp3",
+      "sourceUrl": "https://www.hisnmuslim.com/",
+      "matchingConfidence": "exact",
+      "fileSize": 255770
+    },
+    {
+      "id": "hamad-al-duraihem:wakeing_up_2",
+      "audioType": "single_adhkar",
+      "adhkarId": "wakeing_up_2",
+      "categoryIds": [
+        "wakeing_up"
+      ],
+      "remoteUrl": "https://www.hisnmuslim.com/audio/ar/3.mp3",
+      "sourceUrl": "https://www.hisnmuslim.com/",
+      "matchingConfidence": "exact",
+      "fileSize": 326847
+    },
+    {
+      "id": "hamad-al-duraihem:wakeing_up_3",
+      "audioType": "single_adhkar",
+      "adhkarId": "wakeing_up_3",
+      "categoryIds": [
+        "wakeing_up"
+      ],
+      "remoteUrl": "https://www.hisnmuslim.com/audio/ar/2.mp3",
+      "sourceUrl": "https://www.hisnmuslim.com/",
+      "matchingConfidence": "exact",
+      "fileSize": 661633
+    },
+    {
+      "id": "hamad-al-duraihem:sleeping_1",
+      "audioType": "single_adhkar",
+      "adhkarId": "sleeping_1",
+      "categoryIds": [
+        "sleeping"
+      ],
+      "remoteUrl": "https://www.hisnmuslim.com/audio/ar/102.mp3",
+      "sourceUrl": "https://www.hisnmuslim.com/",
+      "matchingConfidence": "exact",
+      "fileSize": 422560
+    },
+    {
+      "id": "hamad-al-duraihem:sleeping_2",
+      "audioType": "single_adhkar",
+      "adhkarId": "sleeping_2",
+      "categoryIds": [
+        "sleeping"
+      ],
+      "remoteUrl": "https://www.hisnmuslim.com/audio/ar/103.mp3",
+      "sourceUrl": "https://www.hisnmuslim.com/",
+      "matchingConfidence": "exact",
+      "fileSize": 486508
+    },
+    {
+      "id": "hamad-al-duraihem:sleeping_3",
+      "audioType": "single_adhkar",
+      "adhkarId": "sleeping_3",
+      "categoryIds": [
+        "sleeping"
+      ],
+      "remoteUrl": "https://www.hisnmuslim.com/audio/ar/104.mp3",
+      "sourceUrl": "https://www.hisnmuslim.com/",
+      "matchingConfidence": "exact",
+      "fileSize": 279200
+    },
+    {
+      "id": "hamad-al-duraihem:sleeping_4",
+      "audioType": "single_adhkar",
+      "adhkarId": "sleeping_4",
+      "categoryIds": [
+        "sleeping"
+      ],
+      "remoteUrl": "https://www.hisnmuslim.com/audio/ar/105.mp3",
+      "sourceUrl": "https://www.hisnmuslim.com/",
+      "matchingConfidence": "exact",
+      "fileSize": 215252
+    },
+    {
+      "id": "hamad-al-duraihem:sleeping_5",
+      "audioType": "single_adhkar",
+      "adhkarId": "sleeping_5",
+      "categoryIds": [
+        "sleeping"
+      ],
+      "remoteUrl": "https://www.hisnmuslim.com/audio/ar/108.mp3",
+      "sourceUrl": "https://www.hisnmuslim.com/",
+      "matchingConfidence": "exact",
+      "fileSize": 374495
+    },
+    {
+      "id": "hamad-al-duraihem:sleeping_6",
+      "audioType": "single_adhkar",
+      "adhkarId": "sleeping_6",
+      "categoryIds": [
+        "sleeping"
+      ],
+      "remoteUrl": "https://www.hisnmuslim.com/audio/ar/109.mp3",
+      "sourceUrl": "https://www.hisnmuslim.com/",
+      "matchingConfidence": "high",
+      "fileSize": 582220
+    },
+    {
+      "id": "hamad-al-duraihem:sleeping_7",
+      "audioType": "single_adhkar",
+      "adhkarId": "sleeping_7",
+      "categoryIds": [
+        "sleeping"
+      ],
+      "remoteUrl": "https://www.hisnmuslim.com/audio/ar/111.mp3",
+      "sourceUrl": "https://www.hisnmuslim.com/",
+      "matchingConfidence": "exact",
+      "fileSize": 647840
+    },
+    {
+      "id": "hamad-al-duraihem:sleeping_8",
+      "audioType": "single_adhkar",
+      "adhkarId": "sleeping_8",
+      "categoryIds": [
+        "sleeping"
+      ],
+      "remoteUrl": "https://www.hisnmuslim.com/audio/ar/240.mp3",
+      "sourceUrl": "https://www.hisnmuslim.com/",
+      "matchingConfidence": "exact",
+      "fileSize": 260810
+    },
+    {
+      "id": "hamad-al-duraihem:sleeping_10",
+      "audioType": "single_adhkar",
+      "adhkarId": "sleeping_10",
+      "categoryIds": [
+        "sleeping"
+      ],
+      "remoteUrl": "https://www.hisnmuslim.com/audio/ar/241.mp3",
+      "sourceUrl": "https://www.hisnmuslim.com/",
+      "matchingConfidence": "exact",
+      "fileSize": 181816
+    },
+    {
+      "id": "hamad-al-duraihem:sleeping_12",
+      "audioType": "single_adhkar",
+      "adhkarId": "sleeping_12",
+      "categoryIds": [
+        "sleeping"
+      ],
+      "remoteUrl": "https://www.hisnmuslim.com/audio/ar/101.mp3",
+      "sourceUrl": "https://www.hisnmuslim.com/",
+      "matchingConfidence": "high",
+      "fileSize": 1539347
+    },
+    {
+      "id": "hamad-al-duraihem:sleeping_13",
+      "audioType": "single_adhkar",
+      "adhkarId": "sleeping_13",
+      "categoryIds": [
+        "sleeping"
+      ],
+      "remoteUrl": "https://www.hisnmuslim.com/audio/ar/75.mp3",
+      "sourceUrl": "https://www.hisnmuslim.com/",
+      "matchingConfidence": "high",
+      "fileSize": 1347922
+    },
+    {
+      "id": "hamad-al-duraihem:after_pray_2",
+      "audioType": "single_adhkar",
+      "adhkarId": "after_pray_2",
+      "categoryIds": [
+        "after_pray"
+      ],
+      "remoteUrl": "https://www.hisnmuslim.com/audio/ar/67.mp3",
+      "sourceUrl": "https://www.hisnmuslim.com/",
+      "matchingConfidence": "exact",
+      "fileSize": 518273
+    },
+    {
+      "id": "hamad-al-duraihem:after_pray_3",
+      "audioType": "single_adhkar",
+      "adhkarId": "after_pray_3",
+      "categoryIds": [
+        "after_pray"
+      ],
+      "remoteUrl": "https://www.hisnmuslim.com/audio/ar/68.mp3",
+      "sourceUrl": "https://www.hisnmuslim.com/",
+      "matchingConfidence": "exact",
+      "fileSize": 725162
+    },
+    {
+      "id": "hamad-al-duraihem:after_pray_4",
+      "audioType": "single_adhkar",
+      "adhkarId": "after_pray_4",
+      "categoryIds": [
+        "after_pray"
+      ],
+      "remoteUrl": "https://www.hisnmuslim.com/audio/ar/106.mp3",
+      "sourceUrl": "https://www.hisnmuslim.com/",
+      "matchingConfidence": "exact",
+      "fileSize": 406678
+    },
+    {
+      "id": "hamad-al-duraihem:after_pray_5",
+      "audioType": "single_adhkar",
+      "adhkarId": "after_pray_5",
+      "categoryIds": [
+        "after_pray"
+      ],
+      "remoteUrl": "https://www.hisnmuslim.com/audio/ar/92.mp3",
+      "sourceUrl": "https://www.hisnmuslim.com/",
+      "matchingConfidence": "high",
+      "fileSize": 438442
+    },
+    {
+      "id": "hamad-al-duraihem:after_pray_9",
+      "audioType": "single_adhkar",
+      "adhkarId": "after_pray_9",
+      "categoryIds": [
+        "after_pray"
+      ],
+      "remoteUrl": "https://www.hisnmuslim.com/audio/ar/75.mp3",
+      "sourceUrl": "https://www.hisnmuslim.com/",
+      "matchingConfidence": "high",
+      "fileSize": 1347922
+    },
+    {
+      "id": "hamad-al-duraihem:after_pray_10",
+      "audioType": "single_adhkar",
+      "adhkarId": "after_pray_10",
+      "categoryIds": [
+        "after_pray"
+      ],
+      "remoteUrl": "https://www.hisnmuslim.com/audio/ar/72.mp3",
+      "sourceUrl": "https://www.hisnmuslim.com/",
+      "matchingConfidence": "exact",
+      "fileSize": 454325
+    },
+    {
+      "id": "hamad-al-duraihem:after_pray_11",
+      "audioType": "single_adhkar",
+      "adhkarId": "after_pray_11",
+      "categoryIds": [
+        "after_pray"
+      ],
+      "remoteUrl": "https://www.hisnmuslim.com/audio/ar/73.mp3",
+      "sourceUrl": "https://www.hisnmuslim.com/",
+      "matchingConfidence": "high",
+      "fileSize": 374495
+    },
+    {
+      "id": "hamad-al-duraihem:after_pray_13",
+      "audioType": "single_adhkar",
+      "adhkarId": "after_pray_13",
+      "categoryIds": [
+        "after_pray"
+      ],
+      "remoteUrl": "https://www.hisnmuslim.com/audio/ar/59.mp3",
+      "sourceUrl": "https://www.hisnmuslim.com/",
+      "matchingConfidence": "exact",
+      "fileSize": 247435
+    },
+    {
+      "id": "hamad-al-duraihem:faraj_keys_2",
+      "audioType": "single_adhkar",
+      "adhkarId": "faraj_keys_2",
+      "categoryIds": [
+        "faraj_keys"
+      ],
+      "remoteUrl": "https://www.hisnmuslim.com/audio/ar/125.mp3",
+      "sourceUrl": "https://www.hisnmuslim.com/",
+      "matchingConfidence": "exact",
+      "fileSize": 259138
+    },
+    {
+      "id": "hamad-al-duraihem:faraj_keys_3",
+      "audioType": "single_adhkar",
+      "adhkarId": "faraj_keys_3",
+      "categoryIds": [
+        "faraj_keys"
+      ],
+      "remoteUrl": "https://www.hisnmuslim.com/audio/ar/124.mp3",
+      "sourceUrl": "https://www.hisnmuslim.com/",
+      "matchingConfidence": "exact",
+      "fileSize": 262900
+    },
+    {
+      "id": "hamad-al-duraihem:faraj_keys_4",
+      "audioType": "single_adhkar",
+      "adhkarId": "faraj_keys_4",
+      "categoryIds": [
+        "faraj_keys"
+      ],
+      "remoteUrl": "https://www.hisnmuslim.com/audio/ar/128.mp3",
+      "sourceUrl": "https://www.hisnmuslim.com/",
+      "matchingConfidence": "exact",
+      "fileSize": 223193
+    },
+    {
+      "id": "hamad-al-duraihem:faraj_keys_7",
+      "audioType": "single_adhkar",
+      "adhkarId": "faraj_keys_7",
+      "categoryIds": [
+        "faraj_keys"
+      ],
+      "remoteUrl": "https://www.hisnmuslim.com/audio/ar/122.mp3",
+      "sourceUrl": "https://www.hisnmuslim.com/",
+      "matchingConfidence": "high",
+      "fileSize": 582220
+    },
+    {
+      "id": "hamad-al-duraihem:faraj_keys_9",
+      "audioType": "single_adhkar",
+      "adhkarId": "faraj_keys_9",
+      "categoryIds": [
+        "faraj_keys"
+      ],
+      "remoteUrl": "https://www.hisnmuslim.com/audio/ar/88.mp3",
+      "sourceUrl": "https://www.hisnmuslim.com/",
+      "matchingConfidence": "exact",
+      "fileSize": 390795
+    },
+    {
+      "id": "hamad-al-duraihem:faraj_keys_10",
+      "audioType": "single_adhkar",
+      "adhkarId": "faraj_keys_10",
+      "categoryIds": [
+        "faraj_keys"
+      ],
+      "remoteUrl": "https://www.hisnmuslim.com/audio/ar/123.mp3",
+      "sourceUrl": "https://www.hisnmuslim.com/",
+      "matchingConfidence": "exact",
+      "fileSize": 357358
+    },
+    {
+      "id": "hamad-al-duraihem:other_0_1347",
+      "audioType": "single_adhkar",
+      "adhkarId": "other_0_1347",
+      "categoryIds": [
+        "other_0"
+      ],
+      "remoteUrl": "https://www.hisnmuslim.com/audio/ar/5.mp3",
+      "sourceUrl": "https://www.hisnmuslim.com/",
+      "matchingConfidence": "exact",
+      "fileSize": 267054
+    },
+    {
+      "id": "hamad-al-duraihem:other_1_2410",
+      "audioType": "single_adhkar",
+      "adhkarId": "other_1_2410",
+      "categoryIds": [
+        "other_1"
+      ],
+      "remoteUrl": "https://www.hisnmuslim.com/audio/ar/6.mp3",
+      "sourceUrl": "https://www.hisnmuslim.com/",
+      "matchingConfidence": "exact",
+      "fileSize": 313902
+    },
+    {
+      "id": "hamad-al-duraihem:other_1_2996",
+      "audioType": "single_adhkar",
+      "adhkarId": "other_1_2996",
+      "categoryIds": [
+        "other_1"
+      ],
+      "remoteUrl": "https://www.hisnmuslim.com/audio/ar/7.mp3",
+      "sourceUrl": "https://www.hisnmuslim.com/",
+      "matchingConfidence": "exact",
+      "fileSize": 307203
+    },
+    {
+      "id": "hamad-al-duraihem:other_1_2780",
+      "audioType": "single_adhkar",
+      "adhkarId": "other_1_2780",
+      "categoryIds": [
+        "other_1"
+      ],
+      "remoteUrl": "https://www.hisnmuslim.com/audio/ar/8.mp3",
+      "sourceUrl": "https://www.hisnmuslim.com/",
+      "matchingConfidence": "exact",
+      "fileSize": 283798
+    },
+    {
+      "id": "hamad-al-duraihem:other_2_805",
+      "audioType": "single_adhkar",
+      "adhkarId": "other_2_805",
+      "categoryIds": [
+        "other_2"
+      ],
+      "remoteUrl": "https://www.hisnmuslim.com/audio/ar/9.mp3",
+      "sourceUrl": "https://www.hisnmuslim.com/",
+      "matchingConfidence": "high",
+      "fileSize": 219246
+    },
+    {
+      "id": "hamad-al-duraihem:other_3_3703",
+      "audioType": "single_adhkar",
+      "adhkarId": "other_3_3703",
+      "categoryIds": [
+        "other_3"
+      ],
+      "remoteUrl": "https://www.hisnmuslim.com/audio/ar/10.mp3",
+      "sourceUrl": "https://www.hisnmuslim.com/",
+      "matchingConfidence": "exact",
+      "fileSize": 253230
+    },
+    {
+      "id": "hamad-al-duraihem:other_4_3740",
+      "audioType": "single_adhkar",
+      "adhkarId": "other_4_3740",
+      "categoryIds": [
+        "other_4"
+      ],
+      "remoteUrl": "https://www.hisnmuslim.com/audio/ar/11.mp3",
+      "sourceUrl": "https://www.hisnmuslim.com/",
+      "matchingConfidence": "exact",
+      "fileSize": 206382
+    },
+    {
+      "id": "hamad-al-duraihem:other_5_1277",
+      "audioType": "single_adhkar",
+      "adhkarId": "other_5_1277",
+      "categoryIds": [
+        "other_5"
+      ],
+      "remoteUrl": "https://www.hisnmuslim.com/audio/ar/12.mp3",
+      "sourceUrl": "https://www.hisnmuslim.com/",
+      "matchingConfidence": "high",
+      "fileSize": 220974
+    },
+    {
+      "id": "hamad-al-duraihem:other_6_1732",
+      "audioType": "single_adhkar",
+      "adhkarId": "other_6_1732",
+      "categoryIds": [
+        "other_6"
+      ],
+      "remoteUrl": "https://www.hisnmuslim.com/audio/ar/13.mp3",
+      "sourceUrl": "https://www.hisnmuslim.com/",
+      "matchingConfidence": "exact",
+      "fileSize": 425486
+    },
+    {
+      "id": "hamad-al-duraihem:other_6_3902",
+      "audioType": "single_adhkar",
+      "adhkarId": "other_6_3902",
+      "categoryIds": [
+        "other_6"
+      ],
+      "remoteUrl": "https://www.hisnmuslim.com/audio/ar/14.mp3",
+      "sourceUrl": "https://www.hisnmuslim.com/",
+      "matchingConfidence": "exact",
+      "fileSize": 278364
+    },
+    {
+      "id": "hamad-al-duraihem:other_6_1933",
+      "audioType": "single_adhkar",
+      "adhkarId": "other_6_1933",
+      "categoryIds": [
+        "other_6"
+      ],
+      "remoteUrl": "https://www.hisnmuslim.com/audio/ar/15.mp3",
+      "sourceUrl": "https://www.hisnmuslim.com/",
+      "matchingConfidence": "high",
+      "fileSize": 360284
+    },
+    {
+      "id": "hamad-al-duraihem:other_7_3736",
+      "audioType": "single_adhkar",
+      "adhkarId": "other_7_3736",
+      "categoryIds": [
+        "other_7"
+      ],
+      "remoteUrl": "https://www.hisnmuslim.com/audio/ar/16.mp3",
+      "sourceUrl": "https://www.hisnmuslim.com/",
+      "matchingConfidence": "exact",
+      "fileSize": 394557
+    },
+    {
+      "id": "hamad-al-duraihem:other_7_1835",
+      "audioType": "single_adhkar",
+      "adhkarId": "other_7_1835",
+      "categoryIds": [
+        "other_7"
+      ],
+      "remoteUrl": "https://www.hisnmuslim.com/audio/ar/17.mp3",
+      "sourceUrl": "https://www.hisnmuslim.com/",
+      "matchingConfidence": "exact",
+      "fileSize": 435099
+    },
+    {
+      "id": "hamad-al-duraihem:other_8_75",
+      "audioType": "single_adhkar",
+      "adhkarId": "other_8_75",
+      "categoryIds": [
+        "other_8"
+      ],
+      "remoteUrl": "https://www.hisnmuslim.com/audio/ar/18.mp3",
+      "sourceUrl": "https://www.hisnmuslim.com/",
+      "matchingConfidence": "exact",
+      "fileSize": 312750
+    },
+    {
+      "id": "hamad-al-duraihem:other_9_1848",
+      "audioType": "single_adhkar",
+      "adhkarId": "other_9_1848",
+      "categoryIds": [
+        "other_9"
+      ],
+      "remoteUrl": "https://www.hisnmuslim.com/audio/ar/22.mp3",
+      "sourceUrl": "https://www.hisnmuslim.com/",
+      "matchingConfidence": "exact",
+      "fileSize": 457251
+    },
+    {
+      "id": "hamad-al-duraihem:other_9_3099",
+      "audioType": "single_adhkar",
+      "adhkarId": "other_9_3099",
+      "categoryIds": [
+        "other_9"
+      ],
+      "remoteUrl": "https://www.hisnmuslim.com/audio/ar/23.mp3",
+      "sourceUrl": "https://www.hisnmuslim.com/",
+      "matchingConfidence": "exact",
+      "fileSize": 516601
+    },
+    {
+      "id": "hamad-al-duraihem:other_9_2669",
+      "audioType": "single_adhkar",
+      "adhkarId": "other_9_2669",
+      "categoryIds": [
+        "other_9"
+      ],
+      "remoteUrl": "https://www.hisnmuslim.com/audio/ar/24.mp3",
+      "sourceUrl": "https://www.hisnmuslim.com/",
+      "matchingConfidence": "exact",
+      "fileSize": 270423
+    },
+    {
+      "id": "hamad-al-duraihem:other_9_2667",
+      "audioType": "single_adhkar",
+      "adhkarId": "other_9_2667",
+      "categoryIds": [
+        "other_9"
+      ],
+      "remoteUrl": "https://www.hisnmuslim.com/audio/ar/25.mp3",
+      "sourceUrl": "https://www.hisnmuslim.com/",
+      "matchingConfidence": "exact",
+      "fileSize": 503644
+    },
+    {
+      "id": "hamad-al-duraihem:other_9_1228",
+      "audioType": "single_adhkar",
+      "adhkarId": "other_9_1228",
+      "categoryIds": [
+        "other_9"
+      ],
+      "remoteUrl": "https://www.hisnmuslim.com/audio/ar/26.mp3",
+      "sourceUrl": "https://www.hisnmuslim.com/",
+      "matchingConfidence": "exact",
+      "fileSize": 283380
+    },
+    {
+      "id": "hamad-al-duraihem:other_10_2267",
+      "audioType": "single_adhkar",
+      "adhkarId": "other_10_2267",
+      "categoryIds": [
+        "other_10"
+      ],
+      "remoteUrl": "https://www.hisnmuslim.com/audio/ar/27.mp3",
+      "sourceUrl": "https://www.hisnmuslim.com/",
+      "matchingConfidence": "exact",
+      "fileSize": 598103
+    },
+    {
+      "id": "hamad-al-duraihem:other_10_3755",
+      "audioType": "single_adhkar",
+      "adhkarId": "other_10_3755",
+      "categoryIds": [
+        "other_10"
+      ],
+      "remoteUrl": "https://www.hisnmuslim.com/audio/ar/28.mp3",
+      "sourceUrl": "https://www.hisnmuslim.com/",
+      "matchingConfidence": "exact",
+      "fileSize": 346491
+    },
+    {
+      "id": "hamad-al-duraihem:other_10_3553",
+      "audioType": "single_adhkar",
+      "adhkarId": "other_10_3553",
+      "categoryIds": [
+        "other_10"
+      ],
+      "remoteUrl": "https://www.hisnmuslim.com/audio/ar/29.mp3",
+      "sourceUrl": "https://www.hisnmuslim.com/",
+      "matchingConfidence": "exact",
+      "fileSize": 1428170
+    },
+    {
+      "id": "hamad-al-duraihem:other_10_3851",
+      "audioType": "single_adhkar",
+      "adhkarId": "other_10_3851",
+      "categoryIds": [
+        "other_10"
+      ],
+      "remoteUrl": "https://www.hisnmuslim.com/audio/ar/30.mp3",
+      "sourceUrl": "https://www.hisnmuslim.com/",
+      "matchingConfidence": "exact",
+      "fileSize": 630286
+    },
+    {
+      "id": "hamad-al-duraihem:other_10_2763",
+      "audioType": "single_adhkar",
+      "adhkarId": "other_10_2763",
+      "categoryIds": [
+        "other_10"
+      ],
+      "remoteUrl": "https://www.hisnmuslim.com/audio/ar/31.mp3",
+      "sourceUrl": "https://www.hisnmuslim.com/",
+      "matchingConfidence": "exact",
+      "fileSize": 678351
+    },
+    {
+      "id": "hamad-al-duraihem:other_10_2932",
+      "audioType": "single_adhkar",
+      "adhkarId": "other_10_2932",
+      "categoryIds": [
+        "other_10"
+      ],
+      "remoteUrl": "https://www.hisnmuslim.com/audio/ar/32.mp3",
+      "sourceUrl": "https://www.hisnmuslim.com/",
+      "matchingConfidence": "exact",
+      "fileSize": 1693156
+    },
+    {
+      "id": "hamad-al-duraihem:other_11_3953",
+      "audioType": "single_adhkar",
+      "adhkarId": "other_11_3953",
+      "categoryIds": [
+        "other_11"
+      ],
+      "remoteUrl": "https://www.hisnmuslim.com/audio/ar/33.mp3",
+      "sourceUrl": "https://www.hisnmuslim.com/",
+      "matchingConfidence": "exact",
+      "fileSize": 313891
+    },
+    {
+      "id": "hamad-al-duraihem:other_11_2354",
+      "audioType": "single_adhkar",
+      "adhkarId": "other_11_2354",
+      "categoryIds": [
+        "other_11"
+      ],
+      "remoteUrl": "https://www.hisnmuslim.com/audio/ar/34.mp3",
+      "sourceUrl": "https://www.hisnmuslim.com/",
+      "matchingConfidence": "high",
+      "fileSize": 266661
+    },
+    {
+      "id": "hamad-al-duraihem:other_11_2070",
+      "audioType": "single_adhkar",
+      "adhkarId": "other_11_2070",
+      "categoryIds": [
+        "other_11"
+      ],
+      "remoteUrl": "https://www.hisnmuslim.com/audio/ar/35.mp3",
+      "sourceUrl": "https://www.hisnmuslim.com/",
+      "matchingConfidence": "high",
+      "fileSize": 248689
+    },
+    {
+      "id": "hamad-al-duraihem:other_11_1153",
+      "audioType": "single_adhkar",
+      "adhkarId": "other_11_1153",
+      "categoryIds": [
+        "other_11"
+      ],
+      "remoteUrl": "https://www.hisnmuslim.com/audio/ar/36.mp3",
+      "sourceUrl": "https://www.hisnmuslim.com/",
+      "matchingConfidence": "exact",
+      "fileSize": 422560
+    },
+    {
+      "id": "hamad-al-duraihem:other_11_186",
+      "audioType": "single_adhkar",
+      "adhkarId": "other_11_186",
+      "categoryIds": [
+        "other_11"
+      ],
+      "remoteUrl": "https://www.hisnmuslim.com/audio/ar/37.mp3",
+      "sourceUrl": "https://www.hisnmuslim.com/",
+      "matchingConfidence": "high",
+      "fileSize": 267079
+    },
+    {
+      "id": "hamad-al-duraihem:other_12_2071",
+      "audioType": "single_adhkar",
+      "adhkarId": "other_12_2071",
+      "categoryIds": [
+        "other_12"
+      ],
+      "remoteUrl": "https://www.hisnmuslim.com/audio/ar/38.mp3",
+      "sourceUrl": "https://www.hisnmuslim.com/",
+      "matchingConfidence": "exact",
+      "fileSize": 279200
+    },
+    {
+      "id": "hamad-al-duraihem:other_12_748",
+      "audioType": "single_adhkar",
+      "adhkarId": "other_12_748",
+      "categoryIds": [
+        "other_12"
+      ],
+      "remoteUrl": "https://www.hisnmuslim.com/audio/ar/39.mp3",
+      "sourceUrl": "https://www.hisnmuslim.com/",
+      "matchingConfidence": "exact",
+      "fileSize": 274184
+    },
+    {
+      "id": "hamad-al-duraihem:other_12_3838",
+      "audioType": "single_adhkar",
+      "adhkarId": "other_12_3838",
+      "categoryIds": [
+        "other_12"
+      ],
+      "remoteUrl": "https://www.hisnmuslim.com/audio/ar/40.mp3",
+      "sourceUrl": "https://www.hisnmuslim.com/",
+      "matchingConfidence": "exact",
+      "fileSize": 667066
+    },
+    {
+      "id": "hamad-al-duraihem:other_13_1732",
+      "audioType": "single_adhkar",
+      "adhkarId": "other_13_1732",
+      "categoryIds": [
+        "other_13"
+      ],
+      "remoteUrl": "https://www.hisnmuslim.com/audio/ar/41.mp3",
+      "sourceUrl": "https://www.hisnmuslim.com/",
+      "matchingConfidence": "exact",
+      "fileSize": 305531
+    },
+    {
+      "id": "hamad-al-duraihem:other_13_814",
+      "audioType": "single_adhkar",
+      "adhkarId": "other_13_814",
+      "categoryIds": [
+        "other_13"
+      ],
+      "remoteUrl": "https://www.hisnmuslim.com/audio/ar/42.mp3",
+      "sourceUrl": "https://www.hisnmuslim.com/",
+      "matchingConfidence": "high",
+      "fileSize": 263736
+    },
+    {
+      "id": "hamad-al-duraihem:other_13_1997",
+      "audioType": "single_adhkar",
+      "adhkarId": "other_13_1997",
+      "categoryIds": [
+        "other_13"
+      ],
+      "remoteUrl": "https://www.hisnmuslim.com/audio/ar/43.mp3",
+      "sourceUrl": "https://www.hisnmuslim.com/",
+      "matchingConfidence": "high",
+      "fileSize": 247853
+    },
+    {
+      "id": "hamad-al-duraihem:other_13_1853",
+      "audioType": "single_adhkar",
+      "adhkarId": "other_13_1853",
+      "categoryIds": [
+        "other_13"
+      ],
+      "remoteUrl": "https://www.hisnmuslim.com/audio/ar/44.mp3",
+      "sourceUrl": "https://www.hisnmuslim.com/",
+      "matchingConfidence": "exact",
+      "fileSize": 470625
+    },
+    {
+      "id": "hamad-al-duraihem:other_13_623",
+      "audioType": "single_adhkar",
+      "adhkarId": "other_13_623",
+      "categoryIds": [
+        "other_13"
+      ],
+      "remoteUrl": "https://www.hisnmuslim.com/audio/ar/45.mp3",
+      "sourceUrl": "https://www.hisnmuslim.com/",
+      "matchingConfidence": "high",
+      "fileSize": 263736
+    },
+    {
+      "id": "hamad-al-duraihem:other_13_1034",
+      "audioType": "single_adhkar",
+      "adhkarId": "other_13_1034",
+      "categoryIds": [
+        "other_13"
+      ],
+      "remoteUrl": "https://www.hisnmuslim.com/audio/ar/46.mp3",
+      "sourceUrl": "https://www.hisnmuslim.com/",
+      "matchingConfidence": "exact",
+      "fileSize": 352343
+    },
+    {
+      "id": "hamad-al-duraihem:other_13_1044",
+      "audioType": "single_adhkar",
+      "adhkarId": "other_13_1044",
+      "categoryIds": [
+        "other_13"
+      ],
+      "remoteUrl": "https://www.hisnmuslim.com/audio/ar/47.mp3",
+      "sourceUrl": "https://www.hisnmuslim.com/",
+      "matchingConfidence": "high",
+      "fileSize": 464356
+    },
+    {
+      "id": "hamad-al-duraihem:other_14_3999",
+      "audioType": "single_adhkar",
+      "adhkarId": "other_14_3999",
+      "categoryIds": [
+        "other_14"
+      ],
+      "remoteUrl": "https://www.hisnmuslim.com/audio/ar/48.mp3",
+      "sourceUrl": "https://www.hisnmuslim.com/",
+      "matchingConfidence": "exact",
+      "fileSize": 336042
+    },
+    {
+      "id": "hamad-al-duraihem:other_14_3897",
+      "audioType": "single_adhkar",
+      "adhkarId": "other_14_3897",
+      "categoryIds": [
+        "other_14"
+      ],
+      "remoteUrl": "https://www.hisnmuslim.com/audio/ar/49.mp3",
+      "sourceUrl": "https://www.hisnmuslim.com/",
+      "matchingConfidence": "exact",
+      "fileSize": 359030
+    },
+    {
+      "id": "hamad-al-duraihem:other_15_2659",
+      "audioType": "single_adhkar",
+      "adhkarId": "other_15_2659",
+      "categoryIds": [
+        "other_15"
+      ],
+      "remoteUrl": "https://www.hisnmuslim.com/audio/ar/50.mp3",
+      "sourceUrl": "https://www.hisnmuslim.com/",
+      "matchingConfidence": "exact",
+      "fileSize": 461848
+    },
+    {
+      "id": "hamad-al-duraihem:other_15_943",
+      "audioType": "single_adhkar",
+      "adhkarId": "other_15_943",
+      "categoryIds": [
+        "other_15"
+      ],
+      "remoteUrl": "https://www.hisnmuslim.com/audio/ar/51.mp3",
+      "sourceUrl": "https://www.hisnmuslim.com/",
+      "matchingConfidence": "exact",
+      "fileSize": 419216
+    },
+    {
+      "id": "hamad-al-duraihem:other_16_1173",
+      "audioType": "single_adhkar",
+      "adhkarId": "other_16_1173",
+      "categoryIds": [
+        "other_16"
+      ],
+      "remoteUrl": "https://www.hisnmuslim.com/audio/ar/52.mp3",
+      "sourceUrl": "https://www.hisnmuslim.com/",
+      "matchingConfidence": "exact",
+      "fileSize": 418350
+    },
+    {
+      "id": "hamad-al-duraihem:other_17_3065",
+      "audioType": "single_adhkar",
+      "adhkarId": "other_17_3065",
+      "categoryIds": [
+        "other_17"
+      ],
+      "remoteUrl": "https://www.hisnmuslim.com/audio/ar/53.mp3",
+      "sourceUrl": "https://www.hisnmuslim.com/",
+      "matchingConfidence": "exact",
+      "fileSize": 748150
+    },
+    {
+      "id": "hamad-al-duraihem:other_17_2119",
+      "audioType": "single_adhkar",
+      "adhkarId": "other_17_2119",
+      "categoryIds": [
+        "other_17"
+      ],
+      "remoteUrl": "https://www.hisnmuslim.com/audio/ar/54.mp3",
+      "sourceUrl": "https://www.hisnmuslim.com/",
+      "matchingConfidence": "exact",
+      "fileSize": 534573
+    },
+    {
+      "id": "hamad-al-duraihem:other_18_1051",
+      "audioType": "single_adhkar",
+      "adhkarId": "other_18_1051",
+      "categoryIds": [
+        "other_18"
+      ],
+      "remoteUrl": "https://www.hisnmuslim.com/audio/ar/55.mp3",
+      "sourceUrl": "https://www.hisnmuslim.com/",
+      "matchingConfidence": "exact",
+      "fileSize": 534991
+    },
+    {
+      "id": "hamad-al-duraihem:other_18_1465",
+      "audioType": "single_adhkar",
+      "adhkarId": "other_18_1465",
+      "categoryIds": [
+        "other_18"
+      ],
+      "remoteUrl": "https://www.hisnmuslim.com/audio/ar/56.mp3",
+      "sourceUrl": "https://www.hisnmuslim.com/",
+      "matchingConfidence": "exact",
+      "fileSize": 471043
+    },
+    {
+      "id": "hamad-al-duraihem:other_18_925",
+      "audioType": "single_adhkar",
+      "adhkarId": "other_18_925",
+      "categoryIds": [
+        "other_18"
+      ],
+      "remoteUrl": "https://www.hisnmuslim.com/audio/ar/57.mp3",
+      "sourceUrl": "https://www.hisnmuslim.com/",
+      "matchingConfidence": "exact",
+      "fileSize": 422978
+    },
+    {
+      "id": "hamad-al-duraihem:other_18_3908",
+      "audioType": "single_adhkar",
+      "adhkarId": "other_18_3908",
+      "categoryIds": [
+        "other_18"
+      ],
+      "remoteUrl": "https://www.hisnmuslim.com/audio/ar/58.mp3",
+      "sourceUrl": "https://www.hisnmuslim.com/",
+      "matchingConfidence": "exact",
+      "fileSize": 518691
+    },
+    {
+      "id": "hamad-al-duraihem:other_18_597",
+      "audioType": "single_adhkar",
+      "adhkarId": "other_18_597",
+      "categoryIds": [
+        "other_18"
+      ],
+      "remoteUrl": "https://www.hisnmuslim.com/audio/ar/59.mp3",
+      "sourceUrl": "https://www.hisnmuslim.com/",
+      "matchingConfidence": "exact",
+      "fileSize": 247435
+    },
+    {
+      "id": "hamad-al-duraihem:other_18_262",
+      "audioType": "single_adhkar",
+      "adhkarId": "other_18_262",
+      "categoryIds": [
+        "other_18"
+      ],
+      "remoteUrl": "https://www.hisnmuslim.com/audio/ar/60.mp3",
+      "sourceUrl": "https://www.hisnmuslim.com/",
+      "matchingConfidence": "exact",
+      "fileSize": 455161
+    },
+    {
+      "id": "hamad-al-duraihem:other_18_3802",
+      "audioType": "single_adhkar",
+      "adhkarId": "other_18_3802",
+      "categoryIds": [
+        "other_18"
+      ],
+      "remoteUrl": "https://www.hisnmuslim.com/audio/ar/61.mp3",
+      "sourceUrl": "https://www.hisnmuslim.com/",
+      "matchingConfidence": "exact",
+      "fileSize": 237822
+    },
+    {
+      "id": "hamad-al-duraihem:other_18_994",
+      "audioType": "single_adhkar",
+      "adhkarId": "other_18_994",
+      "categoryIds": [
+        "other_18"
+      ],
+      "remoteUrl": "https://www.hisnmuslim.com/audio/ar/62.mp3",
+      "sourceUrl": "https://www.hisnmuslim.com/",
+      "matchingConfidence": "exact",
+      "fileSize": 1285646
+    },
+    {
+      "id": "hamad-al-duraihem:other_18_2635",
+      "audioType": "single_adhkar",
+      "adhkarId": "other_18_2635",
+      "categoryIds": [
+        "other_18"
+      ],
+      "remoteUrl": "https://www.hisnmuslim.com/audio/ar/63.mp3",
+      "sourceUrl": "https://www.hisnmuslim.com/",
+      "matchingConfidence": "exact",
+      "fileSize": 486926
+    },
+    {
+      "id": "hamad-al-duraihem:other_18_652",
+      "audioType": "single_adhkar",
+      "adhkarId": "other_18_652",
+      "categoryIds": [
+        "other_18"
+      ],
+      "remoteUrl": "https://www.hisnmuslim.com/audio/ar/64.mp3",
+      "sourceUrl": "https://www.hisnmuslim.com/",
+      "matchingConfidence": "exact",
+      "fileSize": 598939
+    },
+    {
+      "id": "hamad-al-duraihem:other_18_794",
+      "audioType": "single_adhkar",
+      "adhkarId": "other_18_794",
+      "categoryIds": [
+        "other_18"
+      ],
+      "remoteUrl": "https://www.hisnmuslim.com/audio/ar/65.mp3",
+      "sourceUrl": "https://www.hisnmuslim.com/",
+      "matchingConfidence": "exact",
+      "fileSize": 416291
+    },
+    {
+      "id": "hamad-al-duraihem:other_19_3742",
+      "audioType": "single_adhkar",
+      "adhkarId": "other_19_3742",
+      "categoryIds": [
+        "other_19"
+      ],
+      "remoteUrl": "https://www.hisnmuslim.com/audio/ar/66.mp3",
+      "sourceUrl": "https://www.hisnmuslim.com/",
+      "matchingConfidence": "exact",
+      "fileSize": 486090
+    },
+    {
+      "id": "hamad-al-duraihem:other_19_3665",
+      "audioType": "single_adhkar",
+      "adhkarId": "other_19_3665",
+      "categoryIds": [
+        "other_19"
+      ],
+      "remoteUrl": "https://www.hisnmuslim.com/audio/ar/67.mp3",
+      "sourceUrl": "https://www.hisnmuslim.com/",
+      "matchingConfidence": "exact",
+      "fileSize": 518273
+    },
+    {
+      "id": "hamad-al-duraihem:other_19_1751",
+      "audioType": "single_adhkar",
+      "adhkarId": "other_19_1751",
+      "categoryIds": [
+        "other_19"
+      ],
+      "remoteUrl": "https://www.hisnmuslim.com/audio/ar/68.mp3",
+      "sourceUrl": "https://www.hisnmuslim.com/",
+      "matchingConfidence": "exact",
+      "fileSize": 725162
+    },
+    {
+      "id": "hamad-al-duraihem:other_19_2607",
+      "audioType": "single_adhkar",
+      "adhkarId": "other_19_2607",
+      "categoryIds": [
+        "other_19"
+      ],
+      "remoteUrl": "https://www.hisnmuslim.com/audio/ar/69.mp3",
+      "sourceUrl": "https://www.hisnmuslim.com/",
+      "matchingConfidence": "exact",
+      "fileSize": 534155
+    },
+    {
+      "id": "hamad-al-duraihem:other_19_2674",
+      "audioType": "single_adhkar",
+      "adhkarId": "other_19_2674",
+      "categoryIds": [
+        "other_19"
+      ],
+      "remoteUrl": "https://www.hisnmuslim.com/audio/ar/70.mp3",
+      "sourceUrl": "https://www.hisnmuslim.com/",
+      "matchingConfidence": "exact",
+      "fileSize": 1586158
+    },
+    {
+      "id": "hamad-al-duraihem:other_19_1172",
+      "audioType": "single_adhkar",
+      "adhkarId": "other_19_1172",
+      "categoryIds": [
+        "other_19"
+      ],
+      "remoteUrl": "https://www.hisnmuslim.com/audio/ar/71.mp3",
+      "sourceUrl": "https://www.hisnmuslim.com/",
+      "matchingConfidence": "exact",
+      "fileSize": 1092967
+    },
+    {
+      "id": "hamad-al-duraihem:other_19_128",
+      "audioType": "single_adhkar",
+      "adhkarId": "other_19_128",
+      "categoryIds": [
+        "other_19"
+      ],
+      "remoteUrl": "https://www.hisnmuslim.com/audio/ar/72.mp3",
+      "sourceUrl": "https://www.hisnmuslim.com/",
+      "matchingConfidence": "exact",
+      "fileSize": 454325
+    },
+    {
+      "id": "hamad-al-duraihem:other_19_2290",
+      "audioType": "single_adhkar",
+      "adhkarId": "other_19_2290",
+      "categoryIds": [
+        "other_19"
+      ],
+      "remoteUrl": "https://www.hisnmuslim.com/audio/ar/73.mp3",
+      "sourceUrl": "https://www.hisnmuslim.com/",
+      "matchingConfidence": "high",
+      "fileSize": 374495
+    },
+    {
+      "id": "hamad-al-duraihem:other_20_1628",
+      "audioType": "single_adhkar",
+      "adhkarId": "other_20_1628",
+      "categoryIds": [
+        "other_20"
+      ],
+      "remoteUrl": "https://www.hisnmuslim.com/audio/ar/74.mp3",
+      "sourceUrl": "https://www.hisnmuslim.com/",
+      "matchingConfidence": "exact",
+      "fileSize": 1065774
+    },
+    {
+      "id": "hamad-al-duraihem:other_21_3751",
+      "audioType": "single_adhkar",
+      "adhkarId": "other_21_3751",
+      "categoryIds": [
+        "other_21"
+      ],
+      "remoteUrl": "https://www.hisnmuslim.com/audio/ar/112.mp3",
+      "sourceUrl": "https://www.hisnmuslim.com/",
+      "matchingConfidence": "exact",
+      "fileSize": 306606
+    },
+    {
+      "id": "hamad-al-duraihem:other_22_2666",
+      "audioType": "single_adhkar",
+      "adhkarId": "other_22_2666",
+      "categoryIds": [
+        "other_22"
+      ],
+      "remoteUrl": "https://www.hisnmuslim.com/audio/ar/113.mp3",
+      "sourceUrl": "https://www.hisnmuslim.com/",
+      "matchingConfidence": "exact",
+      "fileSize": 332718
+    },
+    {
+      "id": "hamad-al-duraihem:other_23_541",
+      "audioType": "single_adhkar",
+      "adhkarId": "other_23_541",
+      "categoryIds": [
+        "other_23"
+      ],
+      "remoteUrl": "https://www.hisnmuslim.com/audio/ar/115.mp3",
+      "sourceUrl": "https://www.hisnmuslim.com/",
+      "matchingConfidence": "exact",
+      "fileSize": 242002
+    },
+    {
+      "id": "hamad-al-duraihem:other_24_1528",
+      "audioType": "single_adhkar",
+      "adhkarId": "other_24_1528",
+      "categoryIds": [
+        "other_24"
+      ],
+      "remoteUrl": "https://www.hisnmuslim.com/audio/ar/116.mp3",
+      "sourceUrl": "https://www.hisnmuslim.com/",
+      "matchingConfidence": "exact",
+      "fileSize": 843027
+    },
+    {
+      "id": "hamad-al-duraihem:other_24_2475",
+      "audioType": "single_adhkar",
+      "adhkarId": "other_24_2475",
+      "categoryIds": [
+        "other_24"
+      ],
+      "remoteUrl": "https://www.hisnmuslim.com/audio/ar/117.mp3",
+      "sourceUrl": "https://www.hisnmuslim.com/",
+      "matchingConfidence": "high",
+      "fileSize": 436771
+    },
+    {
+      "id": "hamad-al-duraihem:other_24_3478",
+      "audioType": "single_adhkar",
+      "adhkarId": "other_24_3478",
+      "categoryIds": [
+        "other_24"
+      ],
+      "remoteUrl": "https://www.hisnmuslim.com/audio/ar/118.mp3",
+      "sourceUrl": "https://www.hisnmuslim.com/",
+      "matchingConfidence": "exact",
+      "fileSize": 762779
+    },
+    {
+      "id": "hamad-al-duraihem:other_25_602",
+      "audioType": "single_adhkar",
+      "adhkarId": "other_25_602",
+      "categoryIds": [
+        "other_25"
+      ],
+      "remoteUrl": "https://www.hisnmuslim.com/audio/ar/119.mp3",
+      "sourceUrl": "https://www.hisnmuslim.com/",
+      "matchingConfidence": "exact",
+      "fileSize": 335214
+    },
+    {
+      "id": "hamad-al-duraihem:other_26_461",
+      "audioType": "single_adhkar",
+      "adhkarId": "other_26_461",
+      "categoryIds": [
+        "other_26"
+      ],
+      "remoteUrl": "https://www.hisnmuslim.com/audio/ar/120.mp3",
+      "sourceUrl": "https://www.hisnmuslim.com/",
+      "matchingConfidence": "exact",
+      "fileSize": 950860
+    },
+    {
+      "id": "hamad-al-duraihem:other_26_809",
+      "audioType": "single_adhkar",
+      "adhkarId": "other_26_809",
+      "categoryIds": [
+        "other_26"
+      ],
+      "remoteUrl": "https://www.hisnmuslim.com/audio/ar/121.mp3",
+      "sourceUrl": "https://www.hisnmuslim.com/",
+      "matchingConfidence": "high",
+      "fileSize": 389541
+    },
+    {
+      "id": "hamad-al-duraihem:other_27_2263",
+      "audioType": "single_adhkar",
+      "adhkarId": "other_27_2263",
+      "categoryIds": [
+        "other_27"
+      ],
+      "remoteUrl": "https://www.hisnmuslim.com/audio/ar/122.mp3",
+      "sourceUrl": "https://www.hisnmuslim.com/",
+      "matchingConfidence": "exact",
+      "fileSize": 582220
+    },
+    {
+      "id": "hamad-al-duraihem:other_27_3674",
+      "audioType": "single_adhkar",
+      "adhkarId": "other_27_3674",
+      "categoryIds": [
+        "other_27"
+      ],
+      "remoteUrl": "https://www.hisnmuslim.com/audio/ar/123.mp3",
+      "sourceUrl": "https://www.hisnmuslim.com/",
+      "matchingConfidence": "exact",
+      "fileSize": 357358
+    },
+    {
+      "id": "hamad-al-duraihem:other_27_1838",
+      "audioType": "single_adhkar",
+      "adhkarId": "other_27_1838",
+      "categoryIds": [
+        "other_27"
+      ],
+      "remoteUrl": "https://www.hisnmuslim.com/audio/ar/124.mp3",
+      "sourceUrl": "https://www.hisnmuslim.com/",
+      "matchingConfidence": "exact",
+      "fileSize": 262900
+    },
+    {
+      "id": "hamad-al-duraihem:other_27_2699",
+      "audioType": "single_adhkar",
+      "adhkarId": "other_27_2699",
+      "categoryIds": [
+        "other_27"
+      ],
+      "remoteUrl": "https://www.hisnmuslim.com/audio/ar/125.mp3",
+      "sourceUrl": "https://www.hisnmuslim.com/",
+      "matchingConfidence": "exact",
+      "fileSize": 259138
+    },
+    {
+      "id": "hamad-al-duraihem:other_28_2727",
+      "audioType": "single_adhkar",
+      "adhkarId": "other_28_2727",
+      "categoryIds": [
+        "other_28"
+      ],
+      "remoteUrl": "https://www.hisnmuslim.com/audio/ar/126.mp3",
+      "sourceUrl": "https://www.hisnmuslim.com/",
+      "matchingConfidence": "exact",
+      "fileSize": 438442
+    },
+    {
+      "id": "hamad-al-duraihem:other_28_2958",
+      "audioType": "single_adhkar",
+      "adhkarId": "other_28_2958",
+      "categoryIds": [
+        "other_28"
+      ],
+      "remoteUrl": "https://www.hisnmuslim.com/audio/ar/127.mp3",
+      "sourceUrl": "https://www.hisnmuslim.com/",
+      "matchingConfidence": "exact",
+      "fileSize": 310129
+    },
+    {
+      "id": "hamad-al-duraihem:other_28_1876",
+      "audioType": "single_adhkar",
+      "adhkarId": "other_28_1876",
+      "categoryIds": [
+        "other_28"
+      ],
+      "remoteUrl": "https://www.hisnmuslim.com/audio/ar/128.mp3",
+      "sourceUrl": "https://www.hisnmuslim.com/",
+      "matchingConfidence": "exact",
+      "fileSize": 223193
+    },
+    {
+      "id": "hamad-al-duraihem:other_29_1125",
+      "audioType": "single_adhkar",
+      "adhkarId": "other_29_1125",
+      "categoryIds": [
+        "other_29"
+      ],
+      "remoteUrl": "https://www.hisnmuslim.com/audio/ar/129.mp3",
+      "sourceUrl": "https://www.hisnmuslim.com/",
+      "matchingConfidence": "exact",
+      "fileSize": 680441
+    },
+    {
+      "id": "hamad-al-duraihem:other_29_1986",
+      "audioType": "single_adhkar",
+      "adhkarId": "other_29_1986",
+      "categoryIds": [
+        "other_29"
+      ],
+      "remoteUrl": "https://www.hisnmuslim.com/audio/ar/130.mp3",
+      "sourceUrl": "https://www.hisnmuslim.com/",
+      "matchingConfidence": "exact",
+      "fileSize": 980953
+    },
+    {
+      "id": "hamad-al-duraihem:other_30_1312",
+      "audioType": "single_adhkar",
+      "adhkarId": "other_30_1312",
+      "categoryIds": [
+        "other_30"
+      ],
+      "remoteUrl": "https://www.hisnmuslim.com/audio/ar/131.mp3",
+      "sourceUrl": "https://www.hisnmuslim.com/",
+      "matchingConfidence": "exact",
+      "fileSize": 285294
+    },
+    {
+      "id": "hamad-al-duraihem:other_31_3494",
+      "audioType": "single_adhkar",
+      "adhkarId": "other_31_3494",
+      "categoryIds": [
+        "other_31"
+      ],
+      "remoteUrl": "https://www.hisnmuslim.com/audio/ar/132.mp3",
+      "sourceUrl": "https://www.hisnmuslim.com/",
+      "matchingConfidence": "exact",
+      "fileSize": 223854
+    },
+    {
+      "id": "hamad-al-duraihem:other_32_2802",
+      "audioType": "single_adhkar",
+      "adhkarId": "other_32_2802",
+      "categoryIds": [
+        "other_32"
+      ],
+      "remoteUrl": "https://www.hisnmuslim.com/audio/ar/133.mp3",
+      "sourceUrl": "https://www.hisnmuslim.com/",
+      "matchingConfidence": "exact",
+      "fileSize": 318070
+    },
+    {
+      "id": "hamad-al-duraihem:other_32_2227",
+      "audioType": "single_adhkar",
+      "adhkarId": "other_32_2227",
+      "categoryIds": [
+        "other_32"
+      ],
+      "remoteUrl": "https://www.hisnmuslim.com/audio/ar/134.mp3",
+      "sourceUrl": "https://www.hisnmuslim.com/",
+      "matchingConfidence": "exact",
+      "fileSize": 214834
+    },
+    {
+      "id": "hamad-al-duraihem:other_32_666",
+      "audioType": "single_adhkar",
+      "adhkarId": "other_32_666",
+      "categoryIds": [
+        "other_32"
+      ],
+      "remoteUrl": "https://www.hisnmuslim.com/audio/ar/135.mp3",
+      "sourceUrl": "https://www.hisnmuslim.com/",
+      "matchingConfidence": "exact",
+      "fileSize": 339386
+    },
+    {
+      "id": "hamad-al-duraihem:other_33_1290",
+      "audioType": "single_adhkar",
+      "adhkarId": "other_33_1290",
+      "categoryIds": [
+        "other_33"
+      ],
+      "remoteUrl": "https://www.hisnmuslim.com/audio/ar/136.mp3",
+      "sourceUrl": "https://www.hisnmuslim.com/",
+      "matchingConfidence": "exact",
+      "fileSize": 374913
+    },
+    {
+      "id": "hamad-al-duraihem:other_33_2446",
+      "audioType": "single_adhkar",
+      "adhkarId": "other_33_2446",
+      "categoryIds": [
+        "other_33"
+      ],
+      "remoteUrl": "https://www.hisnmuslim.com/audio/ar/137.mp3",
+      "sourceUrl": "https://www.hisnmuslim.com/",
+      "matchingConfidence": "high",
+      "fileSize": 425904
+    },
+    {
+      "id": "hamad-al-duraihem:other_34_1743",
+      "audioType": "single_adhkar",
+      "adhkarId": "other_34_1743",
+      "categoryIds": [
+        "other_34"
+      ],
+      "remoteUrl": "https://www.hisnmuslim.com/audio/ar/138.mp3",
+      "sourceUrl": "https://www.hisnmuslim.com/",
+      "matchingConfidence": "exact",
+      "fileSize": 270126
+    },
+    {
+      "id": "hamad-al-duraihem:other_35_2621",
+      "audioType": "single_adhkar",
+      "adhkarId": "other_35_2621",
+      "categoryIds": [
+        "other_35"
+      ],
+      "remoteUrl": "https://www.hisnmuslim.com/audio/ar/139.mp3",
+      "sourceUrl": "https://www.hisnmuslim.com/",
+      "matchingConfidence": "exact",
+      "fileSize": 286830
+    },
+    {
+      "id": "hamad-al-duraihem:other_36_2335",
+      "audioType": "single_adhkar",
+      "adhkarId": "other_36_2335",
+      "categoryIds": [
+        "other_36"
+      ],
+      "remoteUrl": "https://www.hisnmuslim.com/audio/ar/140.mp3",
+      "sourceUrl": "https://www.hisnmuslim.com/",
+      "matchingConfidence": "exact",
+      "fileSize": 321774
+    },
+    {
+      "id": "hamad-al-duraihem:other_37_2811",
+      "audioType": "single_adhkar",
+      "adhkarId": "other_37_2811",
+      "categoryIds": [
+        "other_37"
+      ],
+      "remoteUrl": "https://www.hisnmuslim.com/audio/ar/141.mp3",
+      "sourceUrl": "https://www.hisnmuslim.com/",
+      "matchingConfidence": "exact",
+      "fileSize": 273767
+    },
+    {
+      "id": "hamad-al-duraihem:other_37_1513",
+      "audioType": "single_adhkar",
+      "adhkarId": "other_37_1513",
+      "categoryIds": [
+        "other_37"
+      ],
+      "remoteUrl": "https://www.hisnmuslim.com/audio/ar/142.mp3",
+      "sourceUrl": "https://www.hisnmuslim.com/",
+      "matchingConfidence": "exact",
+      "fileSize": 184323
+    },
+    {
+      "id": "hamad-al-duraihem:other_37_2341",
+      "audioType": "single_adhkar",
+      "adhkarId": "other_37_2341",
+      "categoryIds": [
+        "other_37"
+      ],
+      "remoteUrl": "https://www.hisnmuslim.com/audio/ar/143.mp3",
+      "sourceUrl": "https://www.hisnmuslim.com/",
+      "matchingConfidence": "exact",
+      "fileSize": 206057
+    },
+    {
+      "id": "hamad-al-duraihem:other_38_551",
+      "audioType": "single_adhkar",
+      "adhkarId": "other_38_551",
+      "categoryIds": [
+        "other_38"
+      ],
+      "remoteUrl": "https://www.hisnmuslim.com/audio/ar/144.mp3",
+      "sourceUrl": "https://www.hisnmuslim.com/",
+      "matchingConfidence": "exact",
+      "fileSize": 238062
+    },
+    {
+      "id": "hamad-al-duraihem:other_39_2660",
+      "audioType": "single_adhkar",
+      "adhkarId": "other_39_2660",
+      "categoryIds": [
+        "other_39"
+      ],
+      "remoteUrl": "https://www.hisnmuslim.com/audio/ar/145.mp3",
+      "sourceUrl": "https://www.hisnmuslim.com/",
+      "matchingConfidence": "exact",
+      "fileSize": 435054
+    },
+    {
+      "id": "hamad-al-duraihem:other_40_2438",
+      "audioType": "single_adhkar",
+      "adhkarId": "other_40_2438",
+      "categoryIds": [
+        "other_40"
+      ],
+      "remoteUrl": "https://www.hisnmuslim.com/audio/ar/146.mp3",
+      "sourceUrl": "https://www.hisnmuslim.com/",
+      "matchingConfidence": "exact",
+      "fileSize": 336942
+    },
+    {
+      "id": "hamad-al-duraihem:other_41_2993",
+      "audioType": "single_adhkar",
+      "adhkarId": "other_41_2993",
+      "categoryIds": [
+        "other_41"
+      ],
+      "remoteUrl": "https://www.hisnmuslim.com/audio/ar/147.mp3",
+      "sourceUrl": "https://www.hisnmuslim.com/",
+      "matchingConfidence": "exact",
+      "fileSize": 321414
+    },
+    {
+      "id": "hamad-al-duraihem:other_41_479",
+      "audioType": "single_adhkar",
+      "adhkarId": "other_41_479",
+      "categoryIds": [
+        "other_41"
+      ],
+      "remoteUrl": "https://www.hisnmuslim.com/audio/ar/148.mp3",
+      "sourceUrl": "https://www.hisnmuslim.com/",
+      "matchingConfidence": "exact",
+      "fileSize": 282962
+    },
+    {
+      "id": "hamad-al-duraihem:other_42_1398",
+      "audioType": "single_adhkar",
+      "adhkarId": "other_42_1398",
+      "categoryIds": [
+        "other_42"
+      ],
+      "remoteUrl": "https://www.hisnmuslim.com/audio/ar/149.mp3",
+      "sourceUrl": "https://www.hisnmuslim.com/",
+      "matchingConfidence": "exact",
+      "fileSize": 407214
+    },
+    {
+      "id": "hamad-al-duraihem:other_43_1010",
+      "audioType": "single_adhkar",
+      "adhkarId": "other_43_1010",
+      "categoryIds": [
+        "other_43"
+      ],
+      "remoteUrl": "https://www.hisnmuslim.com/audio/ar/150.mp3",
+      "sourceUrl": "https://www.hisnmuslim.com/",
+      "matchingConfidence": "exact",
+      "fileSize": 359866
+    },
+    {
+      "id": "hamad-al-duraihem:other_43_114",
+      "audioType": "single_adhkar",
+      "adhkarId": "other_43_114",
+      "categoryIds": [
+        "other_43"
+      ],
+      "remoteUrl": "https://www.hisnmuslim.com/audio/ar/151.mp3",
+      "sourceUrl": "https://www.hisnmuslim.com/",
+      "matchingConfidence": "exact",
+      "fileSize": 440114
+    },
+    {
+      "id": "hamad-al-duraihem:other_43_1153",
+      "audioType": "single_adhkar",
+      "adhkarId": "other_43_1153",
+      "categoryIds": [
+        "other_43"
+      ],
+      "remoteUrl": "https://www.hisnmuslim.com/audio/ar/152.mp3",
+      "sourceUrl": "https://www.hisnmuslim.com/",
+      "matchingConfidence": "exact",
+      "fileSize": 616493
+    },
+    {
+      "id": "hamad-al-duraihem:other_45_1960",
+      "audioType": "single_adhkar",
+      "adhkarId": "other_45_1960",
+      "categoryIds": [
+        "other_45"
+      ],
+      "remoteUrl": "https://www.hisnmuslim.com/audio/ar/154.mp3",
+      "sourceUrl": "https://www.hisnmuslim.com/",
+      "matchingConfidence": "exact",
+      "fileSize": 306606
+    },
+    {
+      "id": "hamad-al-duraihem:other_46_1492",
+      "audioType": "single_adhkar",
+      "adhkarId": "other_46_1492",
+      "categoryIds": [
+        "other_46"
+      ],
+      "remoteUrl": "https://www.hisnmuslim.com/audio/ar/155.mp3",
+      "sourceUrl": "https://www.hisnmuslim.com/",
+      "matchingConfidence": "exact",
+      "fileSize": 402414
+    },
+    {
+      "id": "hamad-al-duraihem:other_47_666",
+      "audioType": "single_adhkar",
+      "adhkarId": "other_47_666",
+      "categoryIds": [
+        "other_47"
+      ],
+      "remoteUrl": "https://www.hisnmuslim.com/audio/ar/156.mp3",
+      "sourceUrl": "https://www.hisnmuslim.com/",
+      "matchingConfidence": "exact",
+      "fileSize": 907811
+    },
+    {
+      "id": "hamad-al-duraihem:other_47_1953",
+      "audioType": "single_adhkar",
+      "adhkarId": "other_47_1953",
+      "categoryIds": [
+        "other_47"
+      ],
+      "remoteUrl": "https://www.hisnmuslim.com/audio/ar/157.mp3",
+      "sourceUrl": "https://www.hisnmuslim.com/",
+      "matchingConfidence": "exact",
+      "fileSize": 673336
+    },
+    {
+      "id": "hamad-al-duraihem:other_47_647",
+      "audioType": "single_adhkar",
+      "adhkarId": "other_47_647",
+      "categoryIds": [
+        "other_47"
+      ],
+      "remoteUrl": "https://www.hisnmuslim.com/audio/ar/158.mp3",
+      "sourceUrl": "https://www.hisnmuslim.com/",
+      "matchingConfidence": "exact",
+      "fileSize": 505316
+    },
+    {
+      "id": "hamad-al-duraihem:other_47_2725",
+      "audioType": "single_adhkar",
+      "adhkarId": "other_47_2725",
+      "categoryIds": [
+        "other_47"
+      ],
+      "remoteUrl": "https://www.hisnmuslim.com/audio/ar/159.mp3",
+      "sourceUrl": "https://www.hisnmuslim.com/",
+      "matchingConfidence": "exact",
+      "fileSize": 455161
+    },
+    {
+      "id": "hamad-al-duraihem:other_48_1188",
+      "audioType": "single_adhkar",
+      "adhkarId": "other_48_1188",
+      "categoryIds": [
+        "other_48"
+      ],
+      "remoteUrl": "https://www.hisnmuslim.com/audio/ar/160.mp3",
+      "sourceUrl": "https://www.hisnmuslim.com/",
+      "matchingConfidence": "exact",
+      "fileSize": 1040722
+    },
+    {
+      "id": "hamad-al-duraihem:other_48_3391",
+      "audioType": "single_adhkar",
+      "adhkarId": "other_48_3391",
+      "categoryIds": [
+        "other_48"
+      ],
+      "remoteUrl": "https://www.hisnmuslim.com/audio/ar/161.mp3",
+      "sourceUrl": "https://www.hisnmuslim.com/",
+      "matchingConfidence": "exact",
+      "fileSize": 232389
+    },
+    {
+      "id": "hamad-al-duraihem:other_49_86",
+      "audioType": "single_adhkar",
+      "adhkarId": "other_49_86",
+      "categoryIds": [
+        "other_49"
+      ],
+      "remoteUrl": "https://www.hisnmuslim.com/audio/ar/162.mp3",
+      "sourceUrl": "https://www.hisnmuslim.com/",
+      "matchingConfidence": "exact",
+      "fileSize": 389358
+    },
+    {
+      "id": "hamad-al-duraihem:other_50_2613",
+      "audioType": "single_adhkar",
+      "adhkarId": "other_50_2613",
+      "categoryIds": [
+        "other_50"
+      ],
+      "remoteUrl": "https://www.hisnmuslim.com/audio/ar/163.mp3",
+      "sourceUrl": "https://www.hisnmuslim.com/",
+      "matchingConfidence": "exact",
+      "fileSize": 238830
+    },
+    {
+      "id": "hamad-al-duraihem:other_51_1471",
+      "audioType": "single_adhkar",
+      "adhkarId": "other_51_1471",
+      "categoryIds": [
+        "other_51"
+      ],
+      "remoteUrl": "https://www.hisnmuslim.com/audio/ar/164.mp3",
+      "sourceUrl": "https://www.hisnmuslim.com/",
+      "matchingConfidence": "exact",
+      "fileSize": 234990
+    },
+    {
+      "id": "hamad-al-duraihem:other_52_2323",
+      "audioType": "single_adhkar",
+      "adhkarId": "other_52_2323",
+      "categoryIds": [
+        "other_52"
+      ],
+      "remoteUrl": "https://www.hisnmuslim.com/audio/ar/165.mp3",
+      "sourceUrl": "https://www.hisnmuslim.com/",
+      "matchingConfidence": "exact",
+      "fileSize": 355182
+    },
+    {
+      "id": "hamad-al-duraihem:other_53_439",
+      "audioType": "single_adhkar",
+      "adhkarId": "other_53_439",
+      "categoryIds": [
+        "other_53"
+      ],
+      "remoteUrl": "https://www.hisnmuslim.com/audio/ar/166.mp3",
+      "sourceUrl": "https://www.hisnmuslim.com/",
+      "matchingConfidence": "exact",
+      "fileSize": 359030
+    },
+    {
+      "id": "hamad-al-duraihem:other_53_1086",
+      "audioType": "single_adhkar",
+      "adhkarId": "other_53_1086",
+      "categoryIds": [
+        "other_53"
+      ],
+      "remoteUrl": "https://www.hisnmuslim.com/audio/ar/167.mp3",
+      "sourceUrl": "https://www.hisnmuslim.com/",
+      "matchingConfidence": "exact",
+      "fileSize": 407096
+    },
+    {
+      "id": "hamad-al-duraihem:other_54_1304",
+      "audioType": "single_adhkar",
+      "adhkarId": "other_54_1304",
+      "categoryIds": [
+        "other_54"
+      ],
+      "remoteUrl": "https://www.hisnmuslim.com/audio/ar/168.mp3",
+      "sourceUrl": "https://www.hisnmuslim.com/",
+      "matchingConfidence": "exact",
+      "fileSize": 266670
+    },
+    {
+      "id": "hamad-al-duraihem:other_55_1171",
+      "audioType": "single_adhkar",
+      "adhkarId": "other_55_1171",
+      "categoryIds": [
+        "other_55"
+      ],
+      "remoteUrl": "https://www.hisnmuslim.com/audio/ar/169.mp3",
+      "sourceUrl": "https://www.hisnmuslim.com/",
+      "matchingConfidence": "exact",
+      "fileSize": 438860
+    },
+    {
+      "id": "hamad-al-duraihem:other_55_2058",
+      "audioType": "single_adhkar",
+      "adhkarId": "other_55_2058",
+      "categoryIds": [
+        "other_55"
+      ],
+      "remoteUrl": "https://www.hisnmuslim.com/audio/ar/170.mp3",
+      "sourceUrl": "https://www.hisnmuslim.com/",
+      "matchingConfidence": "exact",
+      "fileSize": 295082
+    },
+    {
+      "id": "hamad-al-duraihem:other_55_802",
+      "audioType": "single_adhkar",
+      "adhkarId": "other_55_802",
+      "categoryIds": [
+        "other_55"
+      ],
+      "remoteUrl": "https://www.hisnmuslim.com/audio/ar/171.mp3",
+      "sourceUrl": "https://www.hisnmuslim.com/",
+      "matchingConfidence": "exact",
+      "fileSize": 298426
+    },
+    {
+      "id": "hamad-al-duraihem:other_56_3428",
+      "audioType": "single_adhkar",
+      "adhkarId": "other_56_3428",
+      "categoryIds": [
+        "other_56"
+      ],
+      "remoteUrl": "https://www.hisnmuslim.com/audio/ar/172.mp3",
+      "sourceUrl": "https://www.hisnmuslim.com/",
+      "matchingConfidence": "exact",
+      "fileSize": 228270
+    },
+    {
+      "id": "hamad-al-duraihem:other_57_1293",
+      "audioType": "single_adhkar",
+      "adhkarId": "other_57_1293",
+      "categoryIds": [
+        "other_57"
+      ],
+      "remoteUrl": "https://www.hisnmuslim.com/audio/ar/173.mp3",
+      "sourceUrl": "https://www.hisnmuslim.com/",
+      "matchingConfidence": "exact",
+      "fileSize": 225582
+    },
+    {
+      "id": "hamad-al-duraihem:other_58_2412",
+      "audioType": "single_adhkar",
+      "adhkarId": "other_58_2412",
+      "categoryIds": [
+        "other_58"
+      ],
+      "remoteUrl": "https://www.hisnmuslim.com/audio/ar/174.mp3",
+      "sourceUrl": "https://www.hisnmuslim.com/",
+      "matchingConfidence": "exact",
+      "fileSize": 282798
+    },
+    {
+      "id": "hamad-al-duraihem:other_59_252",
+      "audioType": "single_adhkar",
+      "adhkarId": "other_59_252",
+      "categoryIds": [
+        "other_59"
+      ],
+      "remoteUrl": "https://www.hisnmuslim.com/audio/ar/175.mp3",
+      "sourceUrl": "https://www.hisnmuslim.com/",
+      "matchingConfidence": "exact",
+      "fileSize": 340782
+    },
+    {
+      "id": "hamad-al-duraihem:other_60_2942",
+      "audioType": "single_adhkar",
+      "adhkarId": "other_60_2942",
+      "categoryIds": [
+        "other_60"
+      ],
+      "remoteUrl": "https://www.hisnmuslim.com/audio/ar/176.mp3",
+      "sourceUrl": "https://www.hisnmuslim.com/",
+      "matchingConfidence": "exact",
+      "fileSize": 359448
+    },
+    {
+      "id": "hamad-al-duraihem:other_60_2139",
+      "audioType": "single_adhkar",
+      "adhkarId": "other_60_2139",
+      "categoryIds": [
+        "other_60"
+      ],
+      "remoteUrl": "https://www.hisnmuslim.com/audio/ar/177.mp3",
+      "sourceUrl": "https://www.hisnmuslim.com/",
+      "matchingConfidence": "exact",
+      "fileSize": 272931
+    },
+    {
+      "id": "hamad-al-duraihem:other_61_3503",
+      "audioType": "single_adhkar",
+      "adhkarId": "other_61_3503",
+      "categoryIds": [
+        "other_61"
+      ],
+      "remoteUrl": "https://www.hisnmuslim.com/audio/ar/178.mp3",
+      "sourceUrl": "https://www.hisnmuslim.com/",
+      "matchingConfidence": "exact",
+      "fileSize": 390377
+    },
+    {
+      "id": "hamad-al-duraihem:other_61_41",
+      "audioType": "single_adhkar",
+      "adhkarId": "other_61_41",
+      "categoryIds": [
+        "other_61"
+      ],
+      "remoteUrl": "https://www.hisnmuslim.com/audio/ar/179.mp3",
+      "sourceUrl": "https://www.hisnmuslim.com/",
+      "matchingConfidence": "exact",
+      "fileSize": 475641
+    },
+    {
+      "id": "hamad-al-duraihem:other_62_2194",
+      "audioType": "single_adhkar",
+      "adhkarId": "other_62_2194",
+      "categoryIds": [
+        "other_62"
+      ],
+      "remoteUrl": "https://www.hisnmuslim.com/audio/ar/180.mp3",
+      "sourceUrl": "https://www.hisnmuslim.com/",
+      "matchingConfidence": "exact",
+      "fileSize": 412529
+    },
+    {
+      "id": "hamad-al-duraihem:other_62_1659",
+      "audioType": "single_adhkar",
+      "adhkarId": "other_62_1659",
+      "categoryIds": [
+        "other_62"
+      ],
+      "remoteUrl": "https://www.hisnmuslim.com/audio/ar/181.mp3",
+      "sourceUrl": "https://www.hisnmuslim.com/",
+      "matchingConfidence": "exact",
+      "fileSize": 347327
+    },
+    {
+      "id": "hamad-al-duraihem:other_63_2108",
+      "audioType": "single_adhkar",
+      "adhkarId": "other_63_2108",
+      "categoryIds": [
+        "other_63"
+      ],
+      "remoteUrl": "https://www.hisnmuslim.com/audio/ar/182.mp3",
+      "sourceUrl": "https://www.hisnmuslim.com/",
+      "matchingConfidence": "exact",
+      "fileSize": 264750
+    },
+    {
+      "id": "hamad-al-duraihem:other_64_1012",
+      "audioType": "single_adhkar",
+      "adhkarId": "other_64_1012",
+      "categoryIds": [
+        "other_64"
+      ],
+      "remoteUrl": "https://www.hisnmuslim.com/audio/ar/183.mp3",
+      "sourceUrl": "https://www.hisnmuslim.com/",
+      "matchingConfidence": "exact",
+      "fileSize": 257070
+    },
+    {
+      "id": "hamad-al-duraihem:other_65_2894",
+      "audioType": "single_adhkar",
+      "adhkarId": "other_65_2894",
+      "categoryIds": [
+        "other_65"
+      ],
+      "remoteUrl": "https://www.hisnmuslim.com/audio/ar/184.mp3",
+      "sourceUrl": "https://www.hisnmuslim.com/",
+      "matchingConfidence": "exact",
+      "fileSize": 282606
+    },
+    {
+      "id": "hamad-al-duraihem:other_66_548",
+      "audioType": "single_adhkar",
+      "adhkarId": "other_66_548",
+      "categoryIds": [
+        "other_66"
+      ],
+      "remoteUrl": "https://www.hisnmuslim.com/audio/ar/185.mp3",
+      "sourceUrl": "https://www.hisnmuslim.com/",
+      "matchingConfidence": "exact",
+      "fileSize": 319278
+    },
+    {
+      "id": "hamad-al-duraihem:other_67_770",
+      "audioType": "single_adhkar",
+      "adhkarId": "other_67_770",
+      "categoryIds": [
+        "other_67"
+      ],
+      "remoteUrl": "https://www.hisnmuslim.com/audio/ar/186.mp3",
+      "sourceUrl": "https://www.hisnmuslim.com/",
+      "matchingConfidence": "exact",
+      "fileSize": 235566
+    },
+    {
+      "id": "hamad-al-duraihem:other_68_2108",
+      "audioType": "single_adhkar",
+      "adhkarId": "other_68_2108",
+      "categoryIds": [
+        "other_68"
+      ],
+      "remoteUrl": "https://www.hisnmuslim.com/audio/ar/187.mp3",
+      "sourceUrl": "https://www.hisnmuslim.com/",
+      "matchingConfidence": "exact",
+      "fileSize": 327534
+    },
+    {
+      "id": "hamad-al-duraihem:other_69_948",
+      "audioType": "single_adhkar",
+      "adhkarId": "other_69_948",
+      "categoryIds": [
+        "other_69"
+      ],
+      "remoteUrl": "https://www.hisnmuslim.com/audio/ar/188.mp3",
+      "sourceUrl": "https://www.hisnmuslim.com/",
+      "matchingConfidence": "exact",
+      "fileSize": 335406
+    },
+    {
+      "id": "hamad-al-duraihem:other_70_3098",
+      "audioType": "single_adhkar",
+      "adhkarId": "other_70_3098",
+      "categoryIds": [
+        "other_70"
+      ],
+      "remoteUrl": "https://www.hisnmuslim.com/audio/ar/189.mp3",
+      "sourceUrl": "https://www.hisnmuslim.com/",
+      "matchingConfidence": "exact",
+      "fileSize": 239406
+    },
+    {
+      "id": "hamad-al-duraihem:other_71_101",
+      "audioType": "single_adhkar",
+      "adhkarId": "other_71_101",
+      "categoryIds": [
+        "other_71"
+      ],
+      "remoteUrl": "https://www.hisnmuslim.com/audio/ar/190.mp3",
+      "sourceUrl": "https://www.hisnmuslim.com/",
+      "matchingConfidence": "exact",
+      "fileSize": 264174
+    },
+    {
+      "id": "hamad-al-duraihem:other_72_1364",
+      "audioType": "single_adhkar",
+      "adhkarId": "other_72_1364",
+      "categoryIds": [
+        "other_72"
+      ],
+      "remoteUrl": "https://www.hisnmuslim.com/audio/ar/191.mp3",
+      "sourceUrl": "https://www.hisnmuslim.com/",
+      "matchingConfidence": "exact",
+      "fileSize": 393006
+    },
+    {
+      "id": "hamad-al-duraihem:other_73_2978",
+      "audioType": "single_adhkar",
+      "adhkarId": "other_73_2978",
+      "categoryIds": [
+        "other_73"
+      ],
+      "remoteUrl": "https://www.hisnmuslim.com/audio/ar/192.mp3",
+      "sourceUrl": "https://www.hisnmuslim.com/",
+      "matchingConfidence": "exact",
+      "fileSize": 261870
+    },
+    {
+      "id": "hamad-al-duraihem:other_74_1477",
+      "audioType": "single_adhkar",
+      "adhkarId": "other_74_1477",
+      "categoryIds": [
+        "other_74"
+      ],
+      "remoteUrl": "https://www.hisnmuslim.com/audio/ar/193.mp3",
+      "sourceUrl": "https://www.hisnmuslim.com/",
+      "matchingConfidence": "exact",
+      "fileSize": 225390
+    },
+    {
+      "id": "hamad-al-duraihem:other_75_3711",
+      "audioType": "single_adhkar",
+      "adhkarId": "other_75_3711",
+      "categoryIds": [
+        "other_75"
+      ],
+      "remoteUrl": "https://www.hisnmuslim.com/audio/ar/194.mp3",
+      "sourceUrl": "https://www.hisnmuslim.com/",
+      "matchingConfidence": "exact",
+      "fileSize": 275886
+    },
+    {
+      "id": "hamad-al-duraihem:other_76_631",
+      "audioType": "single_adhkar",
+      "adhkarId": "other_76_631",
+      "categoryIds": [
+        "other_76"
+      ],
+      "remoteUrl": "https://www.hisnmuslim.com/audio/ar/195.mp3",
+      "sourceUrl": "https://www.hisnmuslim.com/",
+      "matchingConfidence": "exact",
+      "fileSize": 321390
+    },
+    {
+      "id": "hamad-al-duraihem:other_77_3361",
+      "audioType": "single_adhkar",
+      "adhkarId": "other_77_3361",
+      "categoryIds": [
+        "other_77"
+      ],
+      "remoteUrl": "https://www.hisnmuslim.com/audio/ar/196.mp3",
+      "sourceUrl": "https://www.hisnmuslim.com/",
+      "matchingConfidence": "high",
+      "fileSize": 271854
+    },
+    {
+      "id": "hamad-al-duraihem:other_78_3227",
+      "audioType": "single_adhkar",
+      "adhkarId": "other_78_3227",
+      "categoryIds": [
+        "other_78"
+      ],
+      "remoteUrl": "https://www.hisnmuslim.com/audio/ar/197.mp3",
+      "sourceUrl": "https://www.hisnmuslim.com/",
+      "matchingConfidence": "exact",
+      "fileSize": 210414
+    },
+    {
+      "id": "hamad-al-duraihem:other_79_2361",
+      "audioType": "single_adhkar",
+      "adhkarId": "other_79_2361",
+      "categoryIds": [
+        "other_79"
+      ],
+      "remoteUrl": "https://www.hisnmuslim.com/audio/ar/198.mp3",
+      "sourceUrl": "https://www.hisnmuslim.com/",
+      "matchingConfidence": "exact",
+      "fileSize": 225198
+    },
+    {
+      "id": "hamad-al-duraihem:other_80_2379",
+      "audioType": "single_adhkar",
+      "adhkarId": "other_80_2379",
+      "categoryIds": [
+        "other_80"
+      ],
+      "remoteUrl": "https://www.hisnmuslim.com/audio/ar/199.mp3",
+      "sourceUrl": "https://www.hisnmuslim.com/",
+      "matchingConfidence": "exact",
+      "fileSize": 284910
+    },
+    {
+      "id": "hamad-al-duraihem:other_81_3303",
+      "audioType": "single_adhkar",
+      "adhkarId": "other_81_3303",
+      "categoryIds": [
+        "other_81"
+      ],
+      "remoteUrl": "https://www.hisnmuslim.com/audio/ar/200.mp3",
+      "sourceUrl": "https://www.hisnmuslim.com/",
+      "matchingConfidence": "exact",
+      "fileSize": 232302
+    },
+    {
+      "id": "hamad-al-duraihem:other_82_750",
+      "audioType": "single_adhkar",
+      "adhkarId": "other_82_750",
+      "categoryIds": [
+        "other_82"
+      ],
+      "remoteUrl": "https://www.hisnmuslim.com/audio/ar/201.mp3",
+      "sourceUrl": "https://www.hisnmuslim.com/",
+      "matchingConfidence": "exact",
+      "fileSize": 226158
+    },
+    {
+      "id": "hamad-al-duraihem:other_83_1680",
+      "audioType": "single_adhkar",
+      "adhkarId": "other_83_1680",
+      "categoryIds": [
+        "other_83"
+      ],
+      "remoteUrl": "https://www.hisnmuslim.com/audio/ar/202.mp3",
+      "sourceUrl": "https://www.hisnmuslim.com/",
+      "matchingConfidence": "exact",
+      "fileSize": 266286
+    },
+    {
+      "id": "hamad-al-duraihem:other_84_1911",
+      "audioType": "single_adhkar",
+      "adhkarId": "other_84_1911",
+      "categoryIds": [
+        "other_84"
+      ],
+      "remoteUrl": "https://www.hisnmuslim.com/audio/ar/203.mp3",
+      "sourceUrl": "https://www.hisnmuslim.com/",
+      "matchingConfidence": "exact",
+      "fileSize": 269166
+    },
+    {
+      "id": "hamad-al-duraihem:other_85_151",
+      "audioType": "single_adhkar",
+      "adhkarId": "other_85_151",
+      "categoryIds": [
+        "other_85"
+      ],
+      "remoteUrl": "https://www.hisnmuslim.com/audio/ar/204.mp3",
+      "sourceUrl": "https://www.hisnmuslim.com/",
+      "matchingConfidence": "exact",
+      "fileSize": 214830
+    },
+    {
+      "id": "hamad-al-duraihem:other_86_1749",
+      "audioType": "single_adhkar",
+      "adhkarId": "other_86_1749",
+      "categoryIds": [
+        "other_86"
+      ],
+      "remoteUrl": "https://www.hisnmuslim.com/audio/ar/205.mp3",
+      "sourceUrl": "https://www.hisnmuslim.com/",
+      "matchingConfidence": "exact",
+      "fileSize": 272238
+    },
+    {
+      "id": "hamad-al-duraihem:other_87_1822",
+      "audioType": "single_adhkar",
+      "adhkarId": "other_87_1822",
+      "categoryIds": [
+        "other_87"
+      ],
+      "remoteUrl": "https://www.hisnmuslim.com/audio/ar/206.mp3",
+      "sourceUrl": "https://www.hisnmuslim.com/",
+      "matchingConfidence": "exact",
+      "fileSize": 515502
+    },
+    {
+      "id": "hamad-al-duraihem:other_88_1108",
+      "audioType": "single_adhkar",
+      "adhkarId": "other_88_1108",
+      "categoryIds": [
+        "other_88"
+      ],
+      "remoteUrl": "https://www.hisnmuslim.com/audio/ar/207.mp3",
+      "sourceUrl": "https://www.hisnmuslim.com/",
+      "matchingConfidence": "exact",
+      "fileSize": 720558
+    },
+    {
+      "id": "hamad-al-duraihem:other_89_3437",
+      "audioType": "single_adhkar",
+      "adhkarId": "other_89_3437",
+      "categoryIds": [
+        "other_89"
+      ],
+      "remoteUrl": "https://www.hisnmuslim.com/audio/ar/208.mp3",
+      "sourceUrl": "https://www.hisnmuslim.com/",
+      "matchingConfidence": "exact",
+      "fileSize": 460590
+    },
+    {
+      "id": "hamad-al-duraihem:other_90_1599",
+      "audioType": "single_adhkar",
+      "adhkarId": "other_90_1599",
+      "categoryIds": [
+        "other_90"
+      ],
+      "remoteUrl": "https://www.hisnmuslim.com/audio/ar/209.mp3",
+      "sourceUrl": "https://www.hisnmuslim.com/",
+      "matchingConfidence": "exact",
+      "fileSize": 350382
+    },
+    {
+      "id": "hamad-al-duraihem:other_91_2728",
+      "audioType": "single_adhkar",
+      "adhkarId": "other_91_2728",
+      "categoryIds": [
+        "other_91"
+      ],
+      "remoteUrl": "https://www.hisnmuslim.com/audio/ar/210.mp3",
+      "sourceUrl": "https://www.hisnmuslim.com/",
+      "matchingConfidence": "high",
+      "fileSize": 213486
+    },
+    {
+      "id": "hamad-al-duraihem:other_92_1771",
+      "audioType": "single_adhkar",
+      "adhkarId": "other_92_1771",
+      "categoryIds": [
+        "other_92"
+      ],
+      "remoteUrl": "https://www.hisnmuslim.com/audio/ar/211.mp3",
+      "sourceUrl": "https://www.hisnmuslim.com/",
+      "matchingConfidence": "exact",
+      "fileSize": 238830
+    },
+    {
+      "id": "hamad-al-duraihem:other_93_2375",
+      "audioType": "single_adhkar",
+      "adhkarId": "other_93_2375",
+      "categoryIds": [
+        "other_93"
+      ],
+      "remoteUrl": "https://www.hisnmuslim.com/audio/ar/212.mp3",
+      "sourceUrl": "https://www.hisnmuslim.com/",
+      "matchingConfidence": "exact",
+      "fileSize": 330191
+    },
+    {
+      "id": "hamad-al-duraihem:other_93_505",
+      "audioType": "single_adhkar",
+      "adhkarId": "other_93_505",
+      "categoryIds": [
+        "other_93"
+      ],
+      "remoteUrl": "https://www.hisnmuslim.com/audio/ar/213.mp3",
+      "sourceUrl": "https://www.hisnmuslim.com/",
+      "matchingConfidence": "exact",
+      "fileSize": 315562
+    },
+    {
+      "id": "hamad-al-duraihem:other_94_1039",
+      "audioType": "single_adhkar",
+      "adhkarId": "other_94_1039",
+      "categoryIds": [
+        "other_94"
+      ],
+      "remoteUrl": "https://www.hisnmuslim.com/audio/ar/214.mp3",
+      "sourceUrl": "https://www.hisnmuslim.com/",
+      "matchingConfidence": "exact",
+      "fileSize": 268398
+    },
+    {
+      "id": "hamad-al-duraihem:other_95_491",
+      "audioType": "single_adhkar",
+      "adhkarId": "other_95_491",
+      "categoryIds": [
+        "other_95"
+      ],
+      "remoteUrl": "https://www.hisnmuslim.com/audio/ar/215.mp3",
+      "sourceUrl": "https://www.hisnmuslim.com/",
+      "matchingConfidence": "exact",
+      "fileSize": 314862
+    },
+    {
+      "id": "hamad-al-duraihem:other_96_2900",
+      "audioType": "single_adhkar",
+      "adhkarId": "other_96_2900",
+      "categoryIds": [
+        "other_96"
+      ],
+      "remoteUrl": "https://www.hisnmuslim.com/audio/ar/216.mp3",
+      "sourceUrl": "https://www.hisnmuslim.com/",
+      "matchingConfidence": "high",
+      "fileSize": 256302
+    },
+    {
+      "id": "hamad-al-duraihem:other_97_896",
+      "audioType": "single_adhkar",
+      "adhkarId": "other_97_896",
+      "categoryIds": [
+        "other_97"
+      ],
+      "remoteUrl": "https://www.hisnmuslim.com/audio/ar/217.mp3",
+      "sourceUrl": "https://www.hisnmuslim.com/",
+      "matchingConfidence": "exact",
+      "fileSize": 450990
+    },
+    {
+      "id": "hamad-al-duraihem:other_98_887",
+      "audioType": "single_adhkar",
+      "adhkarId": "other_98_887",
+      "categoryIds": [
+        "other_98"
+      ],
+      "remoteUrl": "https://www.hisnmuslim.com/audio/ar/218.mp3",
+      "sourceUrl": "https://www.hisnmuslim.com/",
+      "matchingConfidence": "exact",
+      "fileSize": 369966
+    },
+    {
+      "id": "hamad-al-duraihem:other_99_830",
+      "audioType": "single_adhkar",
+      "adhkarId": "other_99_830",
+      "categoryIds": [
+        "other_99"
+      ],
+      "remoteUrl": "https://www.hisnmuslim.com/audio/ar/219.mp3",
+      "sourceUrl": "https://www.hisnmuslim.com/",
+      "matchingConfidence": "exact",
+      "fileSize": 377002
+    },
+    {
+      "id": "hamad-al-duraihem:other_99_680",
+      "audioType": "single_adhkar",
+      "adhkarId": "other_99_680",
+      "categoryIds": [
+        "other_99"
+      ],
+      "remoteUrl": "https://www.hisnmuslim.com/audio/ar/220.mp3",
+      "sourceUrl": "https://www.hisnmuslim.com/",
+      "matchingConfidence": "exact",
+      "fileSize": 375331
+    },
+    {
+      "id": "hamad-al-duraihem:other_99_395",
+      "audioType": "single_adhkar",
+      "adhkarId": "other_99_395",
+      "categoryIds": [
+        "other_99"
+      ],
+      "remoteUrl": "https://www.hisnmuslim.com/audio/ar/221.mp3",
+      "sourceUrl": "https://www.hisnmuslim.com/",
+      "matchingConfidence": "exact",
+      "fileSize": 302606
+    },
+    {
+      "id": "hamad-al-duraihem:other_99_2020",
+      "audioType": "single_adhkar",
+      "adhkarId": "other_99_2020",
+      "categoryIds": [
+        "other_99"
+      ],
+      "remoteUrl": "https://www.hisnmuslim.com/audio/ar/222.mp3",
+      "sourceUrl": "https://www.hisnmuslim.com/",
+      "matchingConfidence": "exact",
+      "fileSize": 364046
+    },
+    {
+      "id": "hamad-al-duraihem:other_99_3440",
+      "audioType": "single_adhkar",
+      "adhkarId": "other_99_3440",
+      "categoryIds": [
+        "other_99"
+      ],
+      "remoteUrl": "https://www.hisnmuslim.com/audio/ar/223.mp3",
+      "sourceUrl": "https://www.hisnmuslim.com/",
+      "matchingConfidence": "exact",
+      "fileSize": 400826
+    },
+    {
+      "id": "hamad-al-duraihem:other_100_2941",
+      "audioType": "single_adhkar",
+      "adhkarId": "other_100_2941",
+      "categoryIds": [
+        "other_100"
+      ],
+      "remoteUrl": "https://www.hisnmuslim.com/audio/ar/224.mp3",
+      "sourceUrl": "https://www.hisnmuslim.com/",
+      "matchingConfidence": "exact",
+      "fileSize": 553381
+    },
+    {
+      "id": "hamad-al-duraihem:other_100_1915",
+      "audioType": "single_adhkar",
+      "adhkarId": "other_100_1915",
+      "categoryIds": [
+        "other_100"
+      ],
+      "remoteUrl": "https://www.hisnmuslim.com/audio/ar/225.mp3",
+      "sourceUrl": "https://www.hisnmuslim.com/",
+      "matchingConfidence": "exact",
+      "fileSize": 407096
+    },
+    {
+      "id": "hamad-al-duraihem:other_100_2549",
+      "audioType": "single_adhkar",
+      "adhkarId": "other_100_2549",
+      "categoryIds": [
+        "other_100"
+      ],
+      "remoteUrl": "https://www.hisnmuslim.com/audio/ar/226.mp3",
+      "sourceUrl": "https://www.hisnmuslim.com/",
+      "matchingConfidence": "exact",
+      "fileSize": 647422
+    },
+    {
+      "id": "hamad-al-duraihem:other_101_283",
+      "audioType": "single_adhkar",
+      "adhkarId": "other_101_283",
+      "categoryIds": [
+        "other_101"
+      ],
+      "remoteUrl": "https://www.hisnmuslim.com/audio/ar/227.mp3",
+      "sourceUrl": "https://www.hisnmuslim.com/",
+      "matchingConfidence": "exact",
+      "fileSize": 238638
+    },
+    {
+      "id": "hamad-al-duraihem:other_102_1800",
+      "audioType": "single_adhkar",
+      "adhkarId": "other_102_1800",
+      "categoryIds": [
+        "other_102"
+      ],
+      "remoteUrl": "https://www.hisnmuslim.com/audio/ar/228.mp3",
+      "sourceUrl": "https://www.hisnmuslim.com/",
+      "matchingConfidence": "exact",
+      "fileSize": 345966
+    },
+    {
+      "id": "hamad-al-duraihem:other_103_2693",
+      "audioType": "single_adhkar",
+      "adhkarId": "other_103_2693",
+      "categoryIds": [
+        "other_103"
+      ],
+      "remoteUrl": "https://www.hisnmuslim.com/audio/ar/229.mp3",
+      "sourceUrl": "https://www.hisnmuslim.com/",
+      "matchingConfidence": "exact",
+      "fileSize": 299502
+    },
+    {
+      "id": "hamad-al-duraihem:other_104_3913",
+      "audioType": "single_adhkar",
+      "adhkarId": "other_104_3913",
+      "categoryIds": [
+        "other_104"
+      ],
+      "remoteUrl": "https://www.hisnmuslim.com/audio/ar/230.mp3",
+      "sourceUrl": "https://www.hisnmuslim.com/",
+      "matchingConfidence": "exact",
+      "fileSize": 292014
+    },
+    {
+      "id": "hamad-al-duraihem:other_105_280",
+      "audioType": "single_adhkar",
+      "adhkarId": "other_105_280",
+      "categoryIds": [
+        "other_105"
+      ],
+      "remoteUrl": "https://www.hisnmuslim.com/audio/ar/231.mp3",
+      "sourceUrl": "https://www.hisnmuslim.com/",
+      "matchingConfidence": "exact",
+      "fileSize": 400494
+    },
+    {
+      "id": "hamad-al-duraihem:other_106_3965",
+      "audioType": "single_adhkar",
+      "adhkarId": "other_106_3965",
+      "categoryIds": [
+        "other_106"
+      ],
+      "remoteUrl": "https://www.hisnmuslim.com/audio/ar/232.mp3",
+      "sourceUrl": "https://www.hisnmuslim.com/",
+      "matchingConfidence": "exact",
+      "fileSize": 305454
+    },
+    {
+      "id": "hamad-al-duraihem:other_107_1392",
+      "audioType": "single_adhkar",
+      "adhkarId": "other_107_1392",
+      "categoryIds": [
+        "other_107"
+      ],
+      "remoteUrl": "https://www.hisnmuslim.com/audio/ar/233.mp3",
+      "sourceUrl": "https://www.hisnmuslim.com/",
+      "matchingConfidence": "exact",
+      "fileSize": 332526
+    },
+    {
+      "id": "hamad-al-duraihem:other_108_1442",
+      "audioType": "single_adhkar",
+      "adhkarId": "other_108_1442",
+      "categoryIds": [
+        "other_108"
+      ],
+      "remoteUrl": "https://www.hisnmuslim.com/audio/ar/234.mp3",
+      "sourceUrl": "https://www.hisnmuslim.com/",
+      "matchingConfidence": "exact",
+      "fileSize": 266670
+    },
+    {
+      "id": "hamad-al-duraihem:other_109_1039",
+      "audioType": "single_adhkar",
+      "adhkarId": "other_109_1039",
+      "categoryIds": [
+        "other_109"
+      ],
+      "remoteUrl": "https://www.hisnmuslim.com/audio/ar/235.mp3",
+      "sourceUrl": "https://www.hisnmuslim.com/",
+      "matchingConfidence": "exact",
+      "fileSize": 287982
+    },
+    {
+      "id": "hamad-al-duraihem:other_110_3987",
+      "audioType": "single_adhkar",
+      "adhkarId": "other_110_3987",
+      "categoryIds": [
+        "other_110"
+      ],
+      "remoteUrl": "https://www.hisnmuslim.com/audio/ar/236.mp3",
+      "sourceUrl": "https://www.hisnmuslim.com/",
+      "matchingConfidence": "exact",
+      "fileSize": 692142
+    },
+    {
+      "id": "hamad-al-duraihem:other_111_2472",
+      "audioType": "single_adhkar",
+      "adhkarId": "other_111_2472",
+      "categoryIds": [
+        "other_111"
+      ],
+      "remoteUrl": "https://www.hisnmuslim.com/audio/ar/237.mp3",
+      "sourceUrl": "https://www.hisnmuslim.com/",
+      "matchingConfidence": "exact",
+      "fileSize": 337710
+    },
+    {
+      "id": "hamad-al-duraihem:other_112_3958",
+      "audioType": "single_adhkar",
+      "adhkarId": "other_112_3958",
+      "categoryIds": [
+        "other_112"
+      ],
+      "remoteUrl": "https://www.hisnmuslim.com/audio/ar/238.mp3",
+      "sourceUrl": "https://www.hisnmuslim.com/",
+      "matchingConfidence": "exact",
+      "fileSize": 354414
+    },
+    {
+      "id": "hamad-al-duraihem:other_113_3996",
+      "audioType": "single_adhkar",
+      "adhkarId": "other_113_3996",
+      "categoryIds": [
+        "other_113"
+      ],
+      "remoteUrl": "https://www.hisnmuslim.com/audio/ar/239.mp3",
+      "sourceUrl": "https://www.hisnmuslim.com/",
+      "matchingConfidence": "exact",
+      "fileSize": 400494
+    },
+    {
+      "id": "hamad-al-duraihem:other_114_806",
+      "audioType": "single_adhkar",
+      "adhkarId": "other_114_806",
+      "categoryIds": [
+        "other_114"
+      ],
+      "remoteUrl": "https://www.hisnmuslim.com/audio/ar/240.mp3",
+      "sourceUrl": "https://www.hisnmuslim.com/",
+      "matchingConfidence": "exact",
+      "fileSize": 260810
+    },
+    {
+      "id": "hamad-al-duraihem:other_114_3816",
+      "audioType": "single_adhkar",
+      "adhkarId": "other_114_3816",
+      "categoryIds": [
+        "other_114"
+      ],
+      "remoteUrl": "https://www.hisnmuslim.com/audio/ar/241.mp3",
+      "sourceUrl": "https://www.hisnmuslim.com/",
+      "matchingConfidence": "exact",
+      "fileSize": 181816
+    },
+    {
+      "id": "hamad-al-duraihem:other_115_207",
+      "audioType": "single_adhkar",
+      "adhkarId": "other_115_207",
+      "categoryIds": [
+        "other_115"
+      ],
+      "remoteUrl": "https://www.hisnmuslim.com/audio/ar/242.mp3",
+      "sourceUrl": "https://www.hisnmuslim.com/",
+      "matchingConfidence": "exact",
+      "fileSize": 285870
+    },
+    {
+      "id": "hamad-al-duraihem:other_116_3239",
+      "audioType": "single_adhkar",
+      "adhkarId": "other_116_3239",
+      "categoryIds": [
+        "other_116"
+      ],
+      "remoteUrl": "https://www.hisnmuslim.com/audio/ar/243.mp3",
+      "sourceUrl": "https://www.hisnmuslim.com/",
+      "matchingConfidence": "exact",
+      "fileSize": 317934
+    },
+    {
+      "id": "hamad-al-duraihem:other_117_1543",
+      "audioType": "single_adhkar",
+      "adhkarId": "other_117_1543",
+      "categoryIds": [
+        "other_117"
+      ],
+      "remoteUrl": "https://www.hisnmuslim.com/audio/ar/244.mp3",
+      "sourceUrl": "https://www.hisnmuslim.com/",
+      "matchingConfidence": "exact",
+      "fileSize": 295662
+    },
+    {
+      "id": "hamad-al-duraihem:other_118_2375",
+      "audioType": "single_adhkar",
+      "adhkarId": "other_118_2375",
+      "categoryIds": [
+        "other_118"
+      ],
+      "remoteUrl": "https://www.hisnmuslim.com/audio/ar/245.mp3",
+      "sourceUrl": "https://www.hisnmuslim.com/",
+      "matchingConfidence": "exact",
+      "fileSize": 217518
+    },
+    {
+      "id": "hamad-al-duraihem:other_119_149",
+      "audioType": "single_adhkar",
+      "adhkarId": "other_119_149",
+      "categoryIds": [
+        "other_119"
+      ],
+      "remoteUrl": "https://www.hisnmuslim.com/audio/ar/246.mp3",
+      "sourceUrl": "https://www.hisnmuslim.com/",
+      "matchingConfidence": "exact",
+      "fileSize": 261870
+    },
+    {
+      "id": "hamad-al-duraihem:other_120_251",
+      "audioType": "single_adhkar",
+      "adhkarId": "other_120_251",
+      "categoryIds": [
+        "other_120"
+      ],
+      "remoteUrl": "https://www.hisnmuslim.com/audio/ar/247.mp3",
+      "sourceUrl": "https://www.hisnmuslim.com/",
+      "matchingConfidence": "exact",
+      "fileSize": 502254
+    },
+    {
+      "id": "hamad-al-duraihem:other_121_1439",
+      "audioType": "single_adhkar",
+      "adhkarId": "other_121_1439",
+      "categoryIds": [
+        "other_121"
+      ],
+      "remoteUrl": "https://www.hisnmuslim.com/audio/ar/248.mp3",
+      "sourceUrl": "https://www.hisnmuslim.com/",
+      "matchingConfidence": "exact",
+      "fileSize": 406678
+    },
+    {
+      "id": "hamad-al-duraihem:other_121_679",
+      "audioType": "single_adhkar",
+      "adhkarId": "other_121_679",
+      "categoryIds": [
+        "other_121"
+      ],
+      "remoteUrl": "https://www.hisnmuslim.com/audio/ar/249.mp3",
+      "sourceUrl": "https://www.hisnmuslim.com/",
+      "matchingConfidence": "exact",
+      "fileSize": 364464
+    },
+    {
+      "id": "hamad-al-duraihem:other_121_2562",
+      "audioType": "single_adhkar",
+      "adhkarId": "other_121_2562",
+      "categoryIds": [
+        "other_121"
+      ],
+      "remoteUrl": "https://www.hisnmuslim.com/audio/ar/250.mp3",
+      "sourceUrl": "https://www.hisnmuslim.com/",
+      "matchingConfidence": "exact",
+      "fileSize": 422978
+    },
+    {
+      "id": "hamad-al-duraihem:other_121_3667",
+      "audioType": "single_adhkar",
+      "adhkarId": "other_121_3667",
+      "categoryIds": [
+        "other_121"
+      ],
+      "remoteUrl": "https://www.hisnmuslim.com/audio/ar/251.mp3",
+      "sourceUrl": "https://www.hisnmuslim.com/",
+      "matchingConfidence": "exact",
+      "fileSize": 406678
+    },
+    {
+      "id": "hamad-al-duraihem:other_121_3434",
+      "audioType": "single_adhkar",
+      "adhkarId": "other_121_3434",
+      "categoryIds": [
+        "other_121"
+      ],
+      "remoteUrl": "https://www.hisnmuslim.com/audio/ar/252.mp3",
+      "sourceUrl": "https://www.hisnmuslim.com/",
+      "matchingConfidence": "exact",
+      "fileSize": 327265
+    },
+    {
+      "id": "hamad-al-duraihem:other_121_1163",
+      "audioType": "single_adhkar",
+      "adhkarId": "other_121_1163",
+      "categoryIds": [
+        "other_121"
+      ],
+      "remoteUrl": "https://www.hisnmuslim.com/audio/ar/253.mp3",
+      "sourceUrl": "https://www.hisnmuslim.com/",
+      "matchingConfidence": "exact",
+      "fileSize": 344820
+    },
+    {
+      "id": "hamad-al-duraihem:other_122_1024",
+      "audioType": "single_adhkar",
+      "adhkarId": "other_122_1024",
+      "categoryIds": [
+        "other_122"
+      ],
+      "remoteUrl": "https://www.hisnmuslim.com/audio/ar/254.mp3",
+      "sourceUrl": "https://www.hisnmuslim.com/",
+      "matchingConfidence": "exact",
+      "fileSize": 470207
+    },
+    {
+      "id": "hamad-al-duraihem:other_122_148",
+      "audioType": "single_adhkar",
+      "adhkarId": "other_122_148",
+      "categoryIds": [
+        "other_122"
+      ],
+      "remoteUrl": "https://www.hisnmuslim.com/audio/ar/255.mp3",
+      "sourceUrl": "https://www.hisnmuslim.com/",
+      "matchingConfidence": "exact",
+      "fileSize": 501972
+    },
+    {
+      "id": "hamad-al-duraihem:other_122_3378",
+      "audioType": "single_adhkar",
+      "adhkarId": "other_122_3378",
+      "categoryIds": [
+        "other_122"
+      ],
+      "remoteUrl": "https://www.hisnmuslim.com/audio/ar/256.mp3",
+      "sourceUrl": "https://www.hisnmuslim.com/",
+      "matchingConfidence": "exact",
+      "fileSize": 454325
+    },
+    {
+      "id": "hamad-al-duraihem:other_122_3012",
+      "audioType": "single_adhkar",
+      "adhkarId": "other_122_3012",
+      "categoryIds": [
+        "other_122"
+      ],
+      "remoteUrl": "https://www.hisnmuslim.com/audio/ar/257.mp3",
+      "sourceUrl": "https://www.hisnmuslim.com/",
+      "matchingConfidence": "exact",
+      "fileSize": 422560
+    },
+    {
+      "id": "hamad-al-duraihem:other_122_336",
+      "audioType": "single_adhkar",
+      "adhkarId": "other_122_336",
+      "categoryIds": [
+        "other_122"
+      ],
+      "remoteUrl": "https://www.hisnmuslim.com/audio/ar/258.mp3",
+      "sourceUrl": "https://www.hisnmuslim.com/",
+      "matchingConfidence": "exact",
+      "fileSize": 581802
+    },
+    {
+      "id": "hamad-al-duraihem:other_122_1155",
+      "audioType": "single_adhkar",
+      "adhkarId": "other_122_1155",
+      "categoryIds": [
+        "other_122"
+      ],
+      "remoteUrl": "https://www.hisnmuslim.com/audio/ar/259.mp3",
+      "sourceUrl": "https://www.hisnmuslim.com/",
+      "matchingConfidence": "exact",
+      "fileSize": 326847
+    },
+    {
+      "id": "hamad-al-duraihem:other_122_1325",
+      "audioType": "single_adhkar",
+      "adhkarId": "other_122_1325",
+      "categoryIds": [
+        "other_122"
+      ],
+      "remoteUrl": "https://www.hisnmuslim.com/audio/ar/260.mp3",
+      "sourceUrl": "https://www.hisnmuslim.com/",
+      "matchingConfidence": "exact",
+      "fileSize": 486090
+    },
+    {
+      "id": "hamad-al-duraihem:other_122_2645",
+      "audioType": "single_adhkar",
+      "adhkarId": "other_122_2645",
+      "categoryIds": [
+        "other_122"
+      ],
+      "remoteUrl": "https://www.hisnmuslim.com/audio/ar/261.mp3",
+      "sourceUrl": "https://www.hisnmuslim.com/",
+      "matchingConfidence": "exact",
+      "fileSize": 470207
+    },
+    {
+      "id": "hamad-al-duraihem:other_122_1059",
+      "audioType": "single_adhkar",
+      "adhkarId": "other_122_1059",
+      "categoryIds": [
+        "other_122"
+      ],
+      "remoteUrl": "https://www.hisnmuslim.com/audio/ar/262.mp3",
+      "sourceUrl": "https://www.hisnmuslim.com/",
+      "matchingConfidence": "exact",
+      "fileSize": 916588
+    },
+    {
+      "id": "hamad-al-duraihem:other_122_3293",
+      "audioType": "single_adhkar",
+      "adhkarId": "other_122_3293",
+      "categoryIds": [
+        "other_122"
+      ],
+      "remoteUrl": "https://www.hisnmuslim.com/audio/ar/263.mp3",
+      "sourceUrl": "https://www.hisnmuslim.com/",
+      "matchingConfidence": "exact",
+      "fileSize": 454325
+    },
+    {
+      "id": "hamad-al-duraihem:other_122_2947",
+      "audioType": "single_adhkar",
+      "adhkarId": "other_122_2947",
+      "categoryIds": [
+        "other_122"
+      ],
+      "remoteUrl": "https://www.hisnmuslim.com/audio/ar/264.mp3",
+      "sourceUrl": "https://www.hisnmuslim.com/",
+      "matchingConfidence": "exact",
+      "fileSize": 310965
+    },
+    {
+      "id": "hamad-al-duraihem:other_122_584",
+      "audioType": "single_adhkar",
+      "adhkarId": "other_122_584",
+      "categoryIds": [
+        "other_122"
+      ],
+      "remoteUrl": "https://www.hisnmuslim.com/audio/ar/265.mp3",
+      "sourceUrl": "https://www.hisnmuslim.com/",
+      "matchingConfidence": "exact",
+      "fileSize": 436771
+    },
+    {
+      "id": "hamad-al-duraihem:other_123_3195",
+      "audioType": "single_adhkar",
+      "adhkarId": "other_123_3195",
+      "categoryIds": [
+        "other_123"
+      ],
+      "remoteUrl": "https://www.hisnmuslim.com/audio/ar/266.mp3",
+      "sourceUrl": "https://www.hisnmuslim.com/",
+      "matchingConfidence": "exact",
+      "fileSize": 287598
+    },
+    {
+      "id": "hamad-al-duraihem:other_124_2045",
+      "audioType": "single_adhkar",
+      "adhkarId": "other_124_2045",
+      "categoryIds": [
+        "other_124"
+      ],
+      "remoteUrl": "https://www.hisnmuslim.com/audio/ar/267.mp3",
+      "sourceUrl": "https://www.hisnmuslim.com/",
+      "matchingConfidence": "exact",
+      "fileSize": 995164
+    },
+    {
+      "id": "hamad-al-duraihem:other_125_207",
+      "audioType": "single_adhkar",
+      "adhkarId": "other_125_207",
+      "categoryIds": [
+        "other_125"
+      ],
+      "remoteUrl": "https://www.hisnmuslim.com/audio/ar/71.mp3",
+      "sourceUrl": "https://www.hisnmuslim.com/",
+      "matchingConfidence": "high",
+      "fileSize": 1092967
+    },
+    {
+      "id": "hamad-al-duraihem:other_126_642",
+      "audioType": "single_adhkar",
+      "adhkarId": "other_126_642",
+      "categoryIds": [
+        "other_126"
+      ],
+      "remoteUrl": "https://www.hisnmuslim.com/audio/ar/97.mp3",
+      "sourceUrl": "https://www.hisnmuslim.com/",
+      "matchingConfidence": "high",
+      "fileSize": 310965
+    },
+    {
+      "id": "hamad-al-duraihem:other_126_2777",
+      "audioType": "single_adhkar",
+      "adhkarId": "other_126_2777",
+      "categoryIds": [
+        "other_126"
+      ],
+      "remoteUrl": "https://www.hisnmuslim.com/audio/ar/148.mp3",
+      "sourceUrl": "https://www.hisnmuslim.com/",
+      "matchingConfidence": "exact",
+      "fileSize": 282962
+    },
+    {
+      "id": "hamad-al-duraihem:other_126_2492",
+      "audioType": "single_adhkar",
+      "adhkarId": "other_126_2492",
+      "categoryIds": [
+        "other_126"
+      ],
+      "remoteUrl": "https://www.hisnmuslim.com/audio/ar/247.mp3",
+      "sourceUrl": "https://www.hisnmuslim.com/",
+      "matchingConfidence": "exact",
+      "fileSize": 502254
+    },
+    {
+      "id": "hamad-al-duraihem:other_126_2154",
+      "audioType": "single_adhkar",
+      "adhkarId": "other_126_2154",
+      "categoryIds": [
+        "other_126"
+      ],
+      "remoteUrl": "https://www.hisnmuslim.com/audio/ar/86.mp3",
+      "sourceUrl": "https://www.hisnmuslim.com/",
+      "matchingConfidence": "exact",
+      "fileSize": 342730
+    },
+    {
+      "id": "hamad-al-duraihem:other_126_130",
+      "audioType": "single_adhkar",
+      "adhkarId": "other_126_130",
+      "categoryIds": [
+        "other_126"
+      ],
+      "remoteUrl": "https://www.hisnmuslim.com/audio/ar/113.mp3",
+      "sourceUrl": "https://www.hisnmuslim.com/",
+      "matchingConfidence": "high",
+      "fileSize": 332718
+    },
+    {
+      "id": "hamad-al-duraihem:other_126_2024",
+      "audioType": "single_adhkar",
+      "adhkarId": "other_126_2024",
+      "categoryIds": [
+        "other_126"
+      ],
+      "remoteUrl": "https://www.hisnmuslim.com/audio/ar/53.mp3",
+      "sourceUrl": "https://www.hisnmuslim.com/",
+      "matchingConfidence": "high",
+      "fileSize": 748150
+    },
+    {
+      "id": "hamad-al-duraihem:cat:27",
+      "audioType": "category_recording",
+      "categoryIds": [
+        "evening",
+        "morning"
+      ],
+      "titleAr": "أذكار الصباح والمساء",
+      "remoteUrl": "https://www.hisnmuslim.com/audio/ar/ar_7esn_AlMoslem_by_Doors_028.mp3",
+      "sourceUrl": "https://www.hisnmuslim.com/",
+      "matchingConfidence": "high",
+      "fileSize": 5339144
+    },
+    {
+      "id": "hamad-al-duraihem:cat:28",
+      "audioType": "category_recording",
+      "categoryIds": [
+        "sleeping"
+      ],
+      "titleAr": "أذكار النوم",
+      "remoteUrl": "https://www.hisnmuslim.com/audio/ar/ar_7esn_AlMoslem_by_Doors_029.mp3",
+      "sourceUrl": "https://www.hisnmuslim.com/",
+      "matchingConfidence": "exact",
+      "fileSize": 4037942
+    },
+    {
+      "id": "hamad-al-duraihem:cat:8",
+      "audioType": "category_recording",
+      "categoryIds": [
+        "other_5"
+      ],
+      "titleAr": "الذكر قبل الوضوء",
+      "remoteUrl": "https://www.hisnmuslim.com/audio/ar/ar_7esn_AlMoslem_by_Doors_009.mp3",
+      "sourceUrl": "https://www.hisnmuslim.com/",
+      "matchingConfidence": "exact",
+      "fileSize": 220990
+    },
+    {
+      "id": "hamad-al-duraihem:cat:9",
+      "audioType": "category_recording",
+      "categoryIds": [
+        "other_6"
+      ],
+      "titleAr": "الذكر بعد الفراغ من الوضوء",
+      "remoteUrl": "https://www.hisnmuslim.com/audio/ar/ar_7esn_AlMoslem_by_Doors_010.mp3",
+      "sourceUrl": "https://www.hisnmuslim.com/",
+      "matchingConfidence": "exact",
+      "fileSize": 494228
+    },
+    {
+      "id": "hamad-al-duraihem:cat:10",
+      "audioType": "category_recording",
+      "categoryIds": [
+        "other_7"
+      ],
+      "titleAr": "الذكر عند الخروج من المنزل",
+      "remoteUrl": "https://www.hisnmuslim.com/audio/ar/ar_7esn_AlMoslem_by_Doors_011.mp3",
+      "sourceUrl": "https://www.hisnmuslim.com/",
+      "matchingConfidence": "exact",
+      "fileSize": 432020
+    },
+    {
+      "id": "hamad-al-duraihem:cat:11",
+      "audioType": "category_recording",
+      "categoryIds": [
+        "other_8"
+      ],
+      "titleAr": "الذكر عند دخول المنزل",
+      "remoteUrl": "https://www.hisnmuslim.com/audio/ar/ar_7esn_AlMoslem_by_Doors_012.mp3",
+      "sourceUrl": "https://www.hisnmuslim.com/",
+      "matchingConfidence": "exact",
+      "fileSize": 312778
+    },
+    {
+      "id": "hamad-al-duraihem:cat:15",
+      "audioType": "category_recording",
+      "categoryIds": [
+        "other_9"
+      ],
+      "titleAr": "أذكار الآذان",
+      "remoteUrl": "https://www.hisnmuslim.com/audio/ar/ar_7esn_AlMoslem_by_Doors_016.mp3",
+      "sourceUrl": "https://www.hisnmuslim.com/",
+      "matchingConfidence": "exact",
+      "fileSize": 813688
+    },
+    {
+      "id": "hamad-al-duraihem:cat:2",
+      "audioType": "category_recording",
+      "categoryIds": [
+        "other_0"
+      ],
+      "titleAr": "دعاء ُلبْس الثوب",
+      "remoteUrl": "https://www.hisnmuslim.com/audio/ar/ar_7esn_AlMoslem_by_Doors_003.mp3",
+      "sourceUrl": "https://www.hisnmuslim.com/",
+      "matchingConfidence": "exact",
+      "fileSize": 267070
+    },
+    {
+      "id": "hamad-al-duraihem:cat:3",
+      "audioType": "category_recording",
+      "categoryIds": [
+        "other_1"
+      ],
+      "titleAr": "دعاء ُلبْس الثوب الجديد",
+      "remoteUrl": "https://www.hisnmuslim.com/audio/ar/ar_7esn_AlMoslem_by_Doors_004.mp3",
+      "sourceUrl": "https://www.hisnmuslim.com/",
+      "matchingConfidence": "exact",
+      "fileSize": 313932
+    },
+    {
+      "id": "hamad-al-duraihem:cat:16",
+      "audioType": "category_recording",
+      "categoryIds": [
+        "other_10"
+      ],
+      "titleAr": "دعاء الاستفتاح",
+      "remoteUrl": "https://www.hisnmuslim.com/audio/ar/ar_7esn_AlMoslem_by_Doors_017.mp3",
+      "sourceUrl": "https://www.hisnmuslim.com/",
+      "matchingConfidence": "exact",
+      "fileSize": 2491004
+    },
+    {
+      "id": "hamad-al-duraihem:cat:17",
+      "audioType": "category_recording",
+      "categoryIds": [
+        "other_11"
+      ],
+      "titleAr": "دعاء الركوع",
+      "remoteUrl": "https://www.hisnmuslim.com/audio/ar/ar_7esn_AlMoslem_by_Doors_018.mp3",
+      "sourceUrl": "https://www.hisnmuslim.com/",
+      "matchingConfidence": "exact",
+      "fileSize": 592502
+    },
+    {
+      "id": "hamad-al-duraihem:cat:18",
+      "audioType": "category_recording",
+      "categoryIds": [
+        "other_12"
+      ],
+      "titleAr": "دعاء الرفع من الركوع",
+      "remoteUrl": "https://www.hisnmuslim.com/audio/ar/ar_7esn_AlMoslem_by_Doors_019.mp3",
+      "sourceUrl": "https://www.hisnmuslim.com/",
+      "matchingConfidence": "exact",
+      "fileSize": 577544
+    },
+    {
+      "id": "hamad-al-duraihem:cat:19",
+      "audioType": "category_recording",
+      "categoryIds": [
+        "other_13"
+      ],
+      "titleAr": "دعاء السجود",
+      "remoteUrl": "https://www.hisnmuslim.com/audio/ar/ar_7esn_AlMoslem_by_Doors_020.mp3",
+      "sourceUrl": "https://www.hisnmuslim.com/",
+      "matchingConfidence": "exact",
+      "fileSize": 920822
+    },
+    {
+      "id": "hamad-al-duraihem:cat:20",
+      "audioType": "category_recording",
+      "categoryIds": [
+        "other_14"
+      ],
+      "titleAr": "دعاء الجلسة بين السجدتين",
+      "remoteUrl": "https://www.hisnmuslim.com/audio/ar/ar_7esn_AlMoslem_by_Doors_021.mp3",
+      "sourceUrl": "https://www.hisnmuslim.com/",
+      "matchingConfidence": "exact",
+      "fileSize": 361168
+    },
+    {
+      "id": "hamad-al-duraihem:cat:21",
+      "audioType": "category_recording",
+      "categoryIds": [
+        "other_15"
+      ],
+      "titleAr": "دعاء سجود التلاوة",
+      "remoteUrl": "https://www.hisnmuslim.com/audio/ar/ar_7esn_AlMoslem_by_Doors_022.mp3",
+      "sourceUrl": "https://www.hisnmuslim.com/",
+      "matchingConfidence": "exact",
+      "fileSize": 458114
+    },
+    {
+      "id": "hamad-al-duraihem:cat:22",
+      "audioType": "category_recording",
+      "categoryIds": [
+        "other_16"
+      ],
+      "titleAr": "التشهد",
+      "remoteUrl": "https://www.hisnmuslim.com/audio/ar/ar_7esn_AlMoslem_by_Doors_023.mp3",
+      "sourceUrl": "https://www.hisnmuslim.com/",
+      "matchingConfidence": "exact",
+      "fileSize": 418348
+    },
+    {
+      "id": "hamad-al-duraihem:cat:23",
+      "audioType": "category_recording",
+      "categoryIds": [
+        "other_17"
+      ],
+      "titleAr": "الصلاة على النبي بعد التشهد",
+      "remoteUrl": "https://www.hisnmuslim.com/audio/ar/ar_7esn_AlMoslem_by_Doors_024.mp3",
+      "sourceUrl": "https://www.hisnmuslim.com/",
+      "matchingConfidence": "exact",
+      "fileSize": 664726
+    },
+    {
+      "id": "hamad-al-duraihem:cat:24",
+      "audioType": "category_recording",
+      "categoryIds": [
+        "other_18"
+      ],
+      "titleAr": "الدعاء بعد التشهد الأخير قبل السلام",
+      "remoteUrl": "https://www.hisnmuslim.com/audio/ar/ar_7esn_AlMoslem_by_Doors_025.mp3",
+      "sourceUrl": "https://www.hisnmuslim.com/",
+      "matchingConfidence": "exact",
+      "fileSize": 2397350
+    },
+    {
+      "id": "hamad-al-duraihem:cat:25",
+      "audioType": "category_recording",
+      "categoryIds": [
+        "other_19"
+      ],
+      "titleAr": "الأذكار بعد السلام من الصلاة",
+      "remoteUrl": "https://www.hisnmuslim.com/audio/ar/ar_7esn_AlMoslem_by_Doors_026.mp3",
+      "sourceUrl": "https://www.hisnmuslim.com/",
+      "matchingConfidence": "exact",
+      "fileSize": 2568792
+    },
+    {
+      "id": "hamad-al-duraihem:cat:26",
+      "audioType": "category_recording",
+      "categoryIds": [
+        "other_20"
+      ],
+      "titleAr": "دعاء صلاة الاستخارة",
+      "remoteUrl": "https://www.hisnmuslim.com/audio/ar/ar_7esn_AlMoslem_by_Doors_027.mp3",
+      "sourceUrl": "https://www.hisnmuslim.com/",
+      "matchingConfidence": "exact",
+      "fileSize": 1065798
+    },
+    {
+      "id": "hamad-al-duraihem:cat:30",
+      "audioType": "category_recording",
+      "categoryIds": [
+        "other_22"
+      ],
+      "titleAr": "دعاء الفزع في النوم و من بُلِيَ بالوحشة",
+      "remoteUrl": "https://www.hisnmuslim.com/audio/ar/ar_7esn_AlMoslem_by_Doors_031.mp3",
+      "sourceUrl": "https://www.hisnmuslim.com/",
+      "matchingConfidence": "exact",
+      "fileSize": 332782
+    },
+    {
+      "id": "hamad-al-duraihem:cat:32",
+      "audioType": "category_recording",
+      "categoryIds": [
+        "other_24"
+      ],
+      "titleAr": "دعاء قنوت الوتر",
+      "remoteUrl": "https://www.hisnmuslim.com/audio/ar/ar_7esn_AlMoslem_by_Doors_033.mp3",
+      "sourceUrl": "https://www.hisnmuslim.com/",
+      "matchingConfidence": "exact",
+      "fileSize": 991486
+    },
+    {
+      "id": "hamad-al-duraihem:cat:33",
+      "audioType": "category_recording",
+      "categoryIds": [
+        "other_25"
+      ],
+      "titleAr": "الذكر عقب السلام من الوتر",
+      "remoteUrl": "https://www.hisnmuslim.com/audio/ar/ar_7esn_AlMoslem_by_Doors_034.mp3",
+      "sourceUrl": "https://www.hisnmuslim.com/",
+      "matchingConfidence": "exact",
+      "fileSize": 335250
+    },
+    {
+      "id": "hamad-al-duraihem:cat:34",
+      "audioType": "category_recording",
+      "categoryIds": [
+        "other_26"
+      ],
+      "titleAr": "دعاء الهم والحزن",
+      "remoteUrl": "https://www.hisnmuslim.com/audio/ar/ar_7esn_AlMoslem_by_Doors_035.mp3",
+      "sourceUrl": "https://www.hisnmuslim.com/",
+      "matchingConfidence": "exact",
+      "fileSize": 700032
+    },
+    {
+      "id": "hamad-al-duraihem:cat:35",
+      "audioType": "category_recording",
+      "categoryIds": [
+        "other_27"
+      ],
+      "titleAr": "دعاء الكرب",
+      "remoteUrl": "https://www.hisnmuslim.com/audio/ar/ar_7esn_AlMoslem_by_Doors_036.mp3",
+      "sourceUrl": "https://www.hisnmuslim.com/",
+      "matchingConfidence": "exact",
+      "fileSize": 648372
+    },
+    {
+      "id": "hamad-al-duraihem:cat:36",
+      "audioType": "category_recording",
+      "categoryIds": [
+        "other_28"
+      ],
+      "titleAr": "دعاء لقاء العدو و ذي السلطان",
+      "remoteUrl": "https://www.hisnmuslim.com/audio/ar/ar_7esn_AlMoslem_by_Doors_037.mp3",
+      "sourceUrl": "https://www.hisnmuslim.com/",
+      "matchingConfidence": "exact",
+      "fileSize": 456408
+    },
+    {
+      "id": "hamad-al-duraihem:cat:37",
+      "audioType": "category_recording",
+      "categoryIds": [
+        "other_29"
+      ],
+      "titleAr": "دعاء من خاف ظلم السلطان",
+      "remoteUrl": "https://www.hisnmuslim.com/audio/ar/ar_7esn_AlMoslem_by_Doors_038.mp3",
+      "sourceUrl": "https://www.hisnmuslim.com/",
+      "matchingConfidence": "exact",
+      "fileSize": 848654
+    },
+    {
+      "id": "hamad-al-duraihem:cat:38",
+      "audioType": "category_recording",
+      "categoryIds": [
+        "other_30"
+      ],
+      "titleAr": "الدعاء على العدو",
+      "remoteUrl": "https://www.hisnmuslim.com/audio/ar/ar_7esn_AlMoslem_by_Doors_039.mp3",
+      "sourceUrl": "https://www.hisnmuslim.com/",
+      "matchingConfidence": "exact",
+      "fileSize": 285312
+    },
+    {
+      "id": "hamad-al-duraihem:cat:39",
+      "audioType": "category_recording",
+      "categoryIds": [
+        "other_31"
+      ],
+      "titleAr": "ما يقول من خاف قوما",
+      "remoteUrl": "https://www.hisnmuslim.com/audio/ar/ar_7esn_AlMoslem_by_Doors_040.mp3",
+      "sourceUrl": "https://www.hisnmuslim.com/",
+      "matchingConfidence": "exact",
+      "fileSize": 223878
+    },
+    {
+      "id": "hamad-al-duraihem:cat:40",
+      "audioType": "category_recording",
+      "categoryIds": [
+        "other_32"
+      ],
+      "titleAr": "دعاء من أصابه وسوسة في الإيمان",
+      "remoteUrl": "https://www.hisnmuslim.com/audio/ar/ar_7esn_AlMoslem_by_Doors_041.mp3",
+      "sourceUrl": "https://www.hisnmuslim.com/",
+      "matchingConfidence": "exact",
+      "fileSize": 376726
+    },
+    {
+      "id": "hamad-al-duraihem:cat:41",
+      "audioType": "category_recording",
+      "categoryIds": [
+        "other_33"
+      ],
+      "titleAr": "دعاء قضاء الدين",
+      "remoteUrl": "https://www.hisnmuslim.com/audio/ar/ar_7esn_AlMoslem_by_Doors_042.mp3",
+      "sourceUrl": "https://www.hisnmuslim.com/",
+      "matchingConfidence": "exact",
+      "fileSize": 417982
+    },
+    {
+      "id": "hamad-al-duraihem:cat:42",
+      "audioType": "category_recording",
+      "categoryIds": [
+        "other_34"
+      ],
+      "titleAr": "دعاء الوسوسة في الصلاة و القراءة",
+      "remoteUrl": "https://www.hisnmuslim.com/audio/ar/ar_7esn_AlMoslem_by_Doors_043.mp3",
+      "sourceUrl": "https://www.hisnmuslim.com/",
+      "matchingConfidence": "exact",
+      "fileSize": 270176
+    },
+    {
+      "id": "hamad-al-duraihem:cat:43",
+      "audioType": "category_recording",
+      "categoryIds": [
+        "other_35"
+      ],
+      "titleAr": "دعاء من استصعب عليه أمر",
+      "remoteUrl": "https://www.hisnmuslim.com/audio/ar/ar_7esn_AlMoslem_by_Doors_044.mp3",
+      "sourceUrl": "https://www.hisnmuslim.com/",
+      "matchingConfidence": "exact",
+      "fileSize": 286862
+    },
+    {
+      "id": "hamad-al-duraihem:cat:44",
+      "audioType": "category_recording",
+      "categoryIds": [
+        "other_36"
+      ],
+      "titleAr": "ما يقول ويفعل من أذنب ذنبا",
+      "remoteUrl": "https://www.hisnmuslim.com/audio/ar/ar_7esn_AlMoslem_by_Doors_045.mp3",
+      "sourceUrl": "https://www.hisnmuslim.com/",
+      "matchingConfidence": "exact",
+      "fileSize": 321812
+    },
+    {
+      "id": "hamad-al-duraihem:cat:45",
+      "audioType": "category_recording",
+      "categoryIds": [
+        "other_37"
+      ],
+      "titleAr": "دعاء طرد الشيطان و وساوسه",
+      "remoteUrl": "https://www.hisnmuslim.com/audio/ar/ar_7esn_AlMoslem_by_Doors_046.mp3",
+      "sourceUrl": "https://www.hisnmuslim.com/",
+      "matchingConfidence": "exact",
+      "fileSize": 261138
+    },
+    {
+      "id": "hamad-al-duraihem:cat:46",
+      "audioType": "category_recording",
+      "categoryIds": [
+        "other_38"
+      ],
+      "titleAr": "الدعاء حينما يقع ما لا يرضاه أو ُ غلب على أمره",
+      "remoteUrl": "https://www.hisnmuslim.com/audio/ar/ar_7esn_AlMoslem_by_Doors_047.mp3",
+      "sourceUrl": "https://www.hisnmuslim.com/",
+      "matchingConfidence": "exact",
+      "fileSize": 238140
+    },
+    {
+      "id": "hamad-al-duraihem:cat:47",
+      "audioType": "category_recording",
+      "categoryIds": [
+        "other_39"
+      ],
+      "titleAr": "ﺗﻬنئة المولود له وجوابه",
+      "remoteUrl": "https://www.hisnmuslim.com/audio/ar/ar_7esn_AlMoslem_by_Doors_048.mp3",
+      "sourceUrl": "https://www.hisnmuslim.com/",
+      "matchingConfidence": "exact",
+      "fileSize": 435086
+    },
+    {
+      "id": "hamad-al-duraihem:cat:49",
+      "audioType": "category_recording",
+      "categoryIds": [
+        "other_41"
+      ],
+      "titleAr": "الدعاء للمريض في عيادته",
+      "remoteUrl": "https://www.hisnmuslim.com/audio/ar/ar_7esn_AlMoslem_by_Doors_050.mp3",
+      "sourceUrl": "https://www.hisnmuslim.com/",
+      "matchingConfidence": "exact",
+      "fileSize": 314318
+    },
+    {
+      "id": "hamad-al-duraihem:cat:50",
+      "audioType": "category_recording",
+      "categoryIds": [
+        "other_42"
+      ],
+      "titleAr": "فضل عيادة المريض",
+      "remoteUrl": "https://www.hisnmuslim.com/audio/ar/ar_7esn_AlMoslem_by_Doors_051.mp3",
+      "sourceUrl": "https://www.hisnmuslim.com/",
+      "matchingConfidence": "exact",
+      "fileSize": 407232
+    },
+    {
+      "id": "hamad-al-duraihem:cat:51",
+      "audioType": "category_recording",
+      "categoryIds": [
+        "other_43"
+      ],
+      "titleAr": "دعاء المريض الذي يئس من حياته",
+      "remoteUrl": "https://www.hisnmuslim.com/audio/ar/ar_7esn_AlMoslem_by_Doors_052.mp3",
+      "sourceUrl": "https://www.hisnmuslim.com/",
+      "matchingConfidence": "exact",
+      "fileSize": 674714
+    },
+    {
+      "id": "hamad-al-duraihem:cat:52",
+      "audioType": "category_recording",
+      "categoryIds": [
+        "other_44"
+      ],
+      "titleAr": "تلقين المحتضر",
+      "remoteUrl": "https://www.hisnmuslim.com/audio/ar/ar_7esn_AlMoslem_by_Doors_053.mp3",
+      "sourceUrl": "https://www.hisnmuslim.com/",
+      "matchingConfidence": "exact",
+      "fileSize": 254778
+    },
+    {
+      "id": "hamad-al-duraihem:cat:53",
+      "audioType": "category_recording",
+      "categoryIds": [
+        "other_45"
+      ],
+      "titleAr": "دعاء من أصيب بمصيبة",
+      "remoteUrl": "https://www.hisnmuslim.com/audio/ar/ar_7esn_AlMoslem_by_Doors_054.mp3",
+      "sourceUrl": "https://www.hisnmuslim.com/",
+      "matchingConfidence": "exact",
+      "fileSize": 306630
+    },
+    {
+      "id": "hamad-al-duraihem:cat:54",
+      "audioType": "category_recording",
+      "categoryIds": [
+        "other_46"
+      ],
+      "titleAr": "الدعاء عند إغماض الميت",
+      "remoteUrl": "https://www.hisnmuslim.com/audio/ar/ar_7esn_AlMoslem_by_Doors_055.mp3",
+      "sourceUrl": "https://www.hisnmuslim.com/",
+      "matchingConfidence": "exact",
+      "fileSize": 402444
+    },
+    {
+      "id": "hamad-al-duraihem:cat:55",
+      "audioType": "category_recording",
+      "categoryIds": [
+        "other_47"
+      ],
+      "titleAr": "الدعاء للميت في الصلاة عليه",
+      "remoteUrl": "https://www.hisnmuslim.com/audio/ar/ar_7esn_AlMoslem_by_Doors_056.mp3",
+      "sourceUrl": "https://www.hisnmuslim.com/",
+      "matchingConfidence": "exact",
+      "fileSize": 1218454
+    },
+    {
+      "id": "hamad-al-duraihem:cat:56",
+      "audioType": "category_recording",
+      "categoryIds": [
+        "other_48"
+      ],
+      "titleAr": "الدعاء للفرط في الصلاة عليه",
+      "remoteUrl": "https://www.hisnmuslim.com/audio/ar/ar_7esn_AlMoslem_by_Doors_057.mp3",
+      "sourceUrl": "https://www.hisnmuslim.com/",
+      "matchingConfidence": "exact",
+      "fileSize": 662998
+    },
+    {
+      "id": "hamad-al-duraihem:cat:57",
+      "audioType": "category_recording",
+      "categoryIds": [
+        "other_49"
+      ],
+      "titleAr": "دعاء التعزية",
+      "remoteUrl": "https://www.hisnmuslim.com/audio/ar/ar_7esn_AlMoslem_by_Doors_058.mp3",
+      "sourceUrl": "https://www.hisnmuslim.com/",
+      "matchingConfidence": "exact",
+      "fileSize": 389368
+    },
+    {
+      "id": "hamad-al-duraihem:cat:58",
+      "audioType": "category_recording",
+      "categoryIds": [
+        "other_50"
+      ],
+      "titleAr": "الدعاء عند إدخال الميت القبر",
+      "remoteUrl": "https://www.hisnmuslim.com/audio/ar/ar_7esn_AlMoslem_by_Doors_059.mp3",
+      "sourceUrl": "https://www.hisnmuslim.com/",
+      "matchingConfidence": "exact",
+      "fileSize": 238872
+    },
+    {
+      "id": "hamad-al-duraihem:cat:59",
+      "audioType": "category_recording",
+      "categoryIds": [
+        "other_51"
+      ],
+      "titleAr": "الدعاء بعد دفن الميت",
+      "remoteUrl": "https://www.hisnmuslim.com/audio/ar/ar_7esn_AlMoslem_by_Doors_060.mp3",
+      "sourceUrl": "https://www.hisnmuslim.com/",
+      "matchingConfidence": "exact",
+      "fileSize": 235016
+    },
+    {
+      "id": "hamad-al-duraihem:cat:60",
+      "audioType": "category_recording",
+      "categoryIds": [
+        "other_52"
+      ],
+      "titleAr": "دعاء زيارة القبور",
+      "remoteUrl": "https://www.hisnmuslim.com/audio/ar/ar_7esn_AlMoslem_by_Doors_061.mp3",
+      "sourceUrl": "https://www.hisnmuslim.com/",
+      "matchingConfidence": "exact",
+      "fileSize": 355202
+    },
+    {
+      "id": "hamad-al-duraihem:cat:61",
+      "audioType": "category_recording",
+      "categoryIds": [
+        "other_53"
+      ],
+      "titleAr": "دعاء الريح",
+      "remoteUrl": "https://www.hisnmuslim.com/audio/ar/ar_7esn_AlMoslem_by_Doors_062.mp3",
+      "sourceUrl": "https://www.hisnmuslim.com/",
+      "matchingConfidence": "exact",
+      "fileSize": 408180
+    },
+    {
+      "id": "hamad-al-duraihem:cat:62",
+      "audioType": "category_recording",
+      "categoryIds": [
+        "other_54"
+      ],
+      "titleAr": "دعاء الرعد",
+      "remoteUrl": "https://www.hisnmuslim.com/audio/ar/ar_7esn_AlMoslem_by_Doors_063.mp3",
+      "sourceUrl": "https://www.hisnmuslim.com/",
+      "matchingConfidence": "exact",
+      "fileSize": 266676
+    },
+    {
+      "id": "hamad-al-duraihem:cat:63",
+      "audioType": "category_recording",
+      "categoryIds": [
+        "other_55"
+      ],
+      "titleAr": "من أدعية الاستسقاء",
+      "remoteUrl": "https://www.hisnmuslim.com/audio/ar/ar_7esn_AlMoslem_by_Doors_064.mp3",
+      "sourceUrl": "https://www.hisnmuslim.com/",
+      "matchingConfidence": "exact",
+      "fileSize": 510148
+    },
+    {
+      "id": "hamad-al-duraihem:cat:64",
+      "audioType": "category_recording",
+      "categoryIds": [
+        "other_56"
+      ],
+      "titleAr": "الدعاء إذا نزل المطر",
+      "remoteUrl": "https://www.hisnmuslim.com/audio/ar/ar_7esn_AlMoslem_by_Doors_065.mp3",
+      "sourceUrl": "https://www.hisnmuslim.com/",
+      "matchingConfidence": "exact",
+      "fileSize": 228296
+    },
+    {
+      "id": "hamad-al-duraihem:cat:65",
+      "audioType": "category_recording",
+      "categoryIds": [
+        "other_57"
+      ],
+      "titleAr": "الذكر بعد نزول المطر",
+      "remoteUrl": "https://www.hisnmuslim.com/audio/ar/ar_7esn_AlMoslem_by_Doors_066.mp3",
+      "sourceUrl": "https://www.hisnmuslim.com/",
+      "matchingConfidence": "exact",
+      "fileSize": 225608
+    },
+    {
+      "id": "hamad-al-duraihem:cat:66",
+      "audioType": "category_recording",
+      "categoryIds": [
+        "other_58"
+      ],
+      "titleAr": "من أدعية الاستصحاء",
+      "remoteUrl": "https://www.hisnmuslim.com/audio/ar/ar_7esn_AlMoslem_by_Doors_067.mp3",
+      "sourceUrl": "https://www.hisnmuslim.com/",
+      "matchingConfidence": "exact",
+      "fileSize": 282820
+    },
+    {
+      "id": "hamad-al-duraihem:cat:67",
+      "audioType": "category_recording",
+      "categoryIds": [
+        "other_59"
+      ],
+      "titleAr": "دعاء رؤية الهلال",
+      "remoteUrl": "https://www.hisnmuslim.com/audio/ar/ar_7esn_AlMoslem_by_Doors_068.mp3",
+      "sourceUrl": "https://www.hisnmuslim.com/",
+      "matchingConfidence": "exact",
+      "fileSize": 340800
+    },
+    {
+      "id": "hamad-al-duraihem:cat:69",
+      "audioType": "category_recording",
+      "categoryIds": [
+        "other_61"
+      ],
+      "titleAr": "الدعاء قبل الطعام",
+      "remoteUrl": "https://www.hisnmuslim.com/audio/ar/ar_7esn_AlMoslem_by_Doors_070.mp3",
+      "sourceUrl": "https://www.hisnmuslim.com/",
+      "matchingConfidence": "exact",
+      "fileSize": 443138
+    },
+    {
+      "id": "hamad-al-duraihem:cat:70",
+      "audioType": "category_recording",
+      "categoryIds": [
+        "other_62"
+      ],
+      "titleAr": "الدعاء عند الفراغ من الطعام",
+      "remoteUrl": "https://www.hisnmuslim.com/audio/ar/ar_7esn_AlMoslem_by_Doors_071.mp3",
+      "sourceUrl": "https://www.hisnmuslim.com/",
+      "matchingConfidence": "exact",
+      "fileSize": 405718
+    },
+    {
+      "id": "hamad-al-duraihem:cat:71",
+      "audioType": "category_recording",
+      "categoryIds": [
+        "other_63"
+      ],
+      "titleAr": "دعاء الضيف لصاحب الطعام",
+      "remoteUrl": "https://www.hisnmuslim.com/audio/ar/ar_7esn_AlMoslem_by_Doors_072.mp3",
+      "sourceUrl": "https://www.hisnmuslim.com/",
+      "matchingConfidence": "exact",
+      "fileSize": 264782
+    },
+    {
+      "id": "hamad-al-duraihem:cat:72",
+      "audioType": "category_recording",
+      "categoryIds": [
+        "other_64"
+      ],
+      "titleAr": "التعريض بالدعاء لطلب الطعام أو الشراب",
+      "remoteUrl": "https://www.hisnmuslim.com/audio/ar/ar_7esn_AlMoslem_by_Doors_073.mp3",
+      "sourceUrl": "https://www.hisnmuslim.com/",
+      "matchingConfidence": "exact",
+      "fileSize": 257118
+    },
+    {
+      "id": "hamad-al-duraihem:cat:73",
+      "audioType": "category_recording",
+      "categoryIds": [
+        "other_65"
+      ],
+      "titleAr": "الدعاء إذا أفطر عند أهل بيت",
+      "remoteUrl": "https://www.hisnmuslim.com/audio/ar/ar_7esn_AlMoslem_by_Doors_074.mp3",
+      "sourceUrl": "https://www.hisnmuslim.com/",
+      "matchingConfidence": "high",
+      "fileSize": 282646
+    },
+    {
+      "id": "hamad-al-duraihem:cat:74",
+      "audioType": "category_recording",
+      "categoryIds": [
+        "other_66"
+      ],
+      "titleAr": "دعاء الصائم إذا حضر الطعام ولم يفطر",
+      "remoteUrl": "https://www.hisnmuslim.com/audio/ar/ar_7esn_AlMoslem_by_Doors_075.mp3",
+      "sourceUrl": "https://www.hisnmuslim.com/",
+      "matchingConfidence": "exact",
+      "fileSize": 319334
+    },
+    {
+      "id": "hamad-al-duraihem:cat:75",
+      "audioType": "category_recording",
+      "categoryIds": [
+        "other_67"
+      ],
+      "titleAr": "ما يقول الصائم إذا سابه أحد",
+      "remoteUrl": "https://www.hisnmuslim.com/audio/ar/ar_7esn_AlMoslem_by_Doors_076.mp3",
+      "sourceUrl": "https://www.hisnmuslim.com/",
+      "matchingConfidence": "exact",
+      "fileSize": 235606
+    },
+    {
+      "id": "hamad-al-duraihem:cat:76",
+      "audioType": "category_recording",
+      "categoryIds": [
+        "other_68"
+      ],
+      "titleAr": "الدعاء عند رؤية باكورة الثمر",
+      "remoteUrl": "https://www.hisnmuslim.com/audio/ar/ar_7esn_AlMoslem_by_Doors_077.mp3",
+      "sourceUrl": "https://www.hisnmuslim.com/",
+      "matchingConfidence": "exact",
+      "fileSize": 327576
+    },
+    {
+      "id": "hamad-al-duraihem:cat:77",
+      "audioType": "category_recording",
+      "categoryIds": [
+        "other_69"
+      ],
+      "titleAr": "دعاء العطاس",
+      "remoteUrl": "https://www.hisnmuslim.com/audio/ar/ar_7esn_AlMoslem_by_Doors_078.mp3",
+      "sourceUrl": "https://www.hisnmuslim.com/",
+      "matchingConfidence": "exact",
+      "fileSize": 335414
+    },
+    {
+      "id": "hamad-al-duraihem:cat:78",
+      "audioType": "category_recording",
+      "categoryIds": [
+        "other_70"
+      ],
+      "titleAr": "ما يقال للكافر إذا عطس فحمد الله",
+      "remoteUrl": "https://www.hisnmuslim.com/audio/ar/ar_7esn_AlMoslem_by_Doors_079.mp3",
+      "sourceUrl": "https://www.hisnmuslim.com/",
+      "matchingConfidence": "exact",
+      "fileSize": 239456
+    },
+    {
+      "id": "hamad-al-duraihem:cat:79",
+      "audioType": "category_recording",
+      "categoryIds": [
+        "other_71"
+      ],
+      "titleAr": "الدعاء للمتزوج",
+      "remoteUrl": "https://www.hisnmuslim.com/audio/ar/ar_7esn_AlMoslem_by_Doors_080.mp3",
+      "sourceUrl": "https://www.hisnmuslim.com/",
+      "matchingConfidence": "exact",
+      "fileSize": 264188
+    },
+    {
+      "id": "hamad-al-duraihem:cat:80",
+      "audioType": "category_recording",
+      "categoryIds": [
+        "other_72"
+      ],
+      "titleAr": "دعاء المتزوج و شراء الدابة",
+      "remoteUrl": "https://www.hisnmuslim.com/audio/ar/ar_7esn_AlMoslem_by_Doors_081.mp3",
+      "sourceUrl": "https://www.hisnmuslim.com/",
+      "matchingConfidence": "exact",
+      "fileSize": 393044
+    },
+    {
+      "id": "hamad-al-duraihem:cat:82",
+      "audioType": "category_recording",
+      "categoryIds": [
+        "other_74"
+      ],
+      "titleAr": "دعاء الغضب",
+      "remoteUrl": "https://www.hisnmuslim.com/audio/ar/ar_7esn_AlMoslem_by_Doors_083.mp3",
+      "sourceUrl": "https://www.hisnmuslim.com/",
+      "matchingConfidence": "exact",
+      "fileSize": 225396
+    },
+    {
+      "id": "hamad-al-duraihem:cat:83",
+      "audioType": "category_recording",
+      "categoryIds": [
+        "other_75"
+      ],
+      "titleAr": "دعاء من رأى مبتلى",
+      "remoteUrl": "https://www.hisnmuslim.com/audio/ar/ar_7esn_AlMoslem_by_Doors_084.mp3",
+      "sourceUrl": "https://www.hisnmuslim.com/",
+      "matchingConfidence": "exact",
+      "fileSize": 275906
+    },
+    {
+      "id": "hamad-al-duraihem:cat:84",
+      "audioType": "category_recording",
+      "categoryIds": [
+        "other_76"
+      ],
+      "titleAr": "ما يقال في اﻟﻤﺠلس",
+      "remoteUrl": "https://www.hisnmuslim.com/audio/ar/ar_7esn_AlMoslem_by_Doors_085.mp3",
+      "sourceUrl": "https://www.hisnmuslim.com/",
+      "matchingConfidence": "exact",
+      "fileSize": 321410
+    },
+    {
+      "id": "hamad-al-duraihem:cat:85",
+      "audioType": "category_recording",
+      "categoryIds": [
+        "other_77"
+      ],
+      "titleAr": "كفارة اﻟﻤﺠلس",
+      "remoteUrl": "https://www.hisnmuslim.com/audio/ar/ar_7esn_AlMoslem_by_Doors_086.mp3",
+      "sourceUrl": "https://www.hisnmuslim.com/",
+      "matchingConfidence": "exact",
+      "fileSize": 271864
+    },
+    {
+      "id": "hamad-al-duraihem:cat:86",
+      "audioType": "category_recording",
+      "categoryIds": [
+        "other_78"
+      ],
+      "titleAr": "الدعاء لمن قال غفر الله لك",
+      "remoteUrl": "https://www.hisnmuslim.com/audio/ar/ar_7esn_AlMoslem_by_Doors_087.mp3",
+      "sourceUrl": "https://www.hisnmuslim.com/",
+      "matchingConfidence": "exact",
+      "fileSize": 210452
+    },
+    {
+      "id": "hamad-al-duraihem:cat:87",
+      "audioType": "category_recording",
+      "categoryIds": [
+        "other_79"
+      ],
+      "titleAr": "الدعاء لمن صنع إليك معروفا",
+      "remoteUrl": "https://www.hisnmuslim.com/audio/ar/ar_7esn_AlMoslem_by_Doors_088.mp3",
+      "sourceUrl": "https://www.hisnmuslim.com/",
+      "matchingConfidence": "exact",
+      "fileSize": 225236
+    },
+    {
+      "id": "hamad-al-duraihem:cat:88",
+      "audioType": "category_recording",
+      "categoryIds": [
+        "other_80"
+      ],
+      "titleAr": "ما يعصم الله به من الدجال",
+      "remoteUrl": "https://www.hisnmuslim.com/audio/ar/ar_7esn_AlMoslem_by_Doors_089.mp3",
+      "sourceUrl": "https://www.hisnmuslim.com/",
+      "matchingConfidence": "exact",
+      "fileSize": 284946
+    },
+    {
+      "id": "hamad-al-duraihem:cat:89",
+      "audioType": "category_recording",
+      "categoryIds": [
+        "other_81"
+      ],
+      "titleAr": "الدعاء لمن قال إني أحبك في الله",
+      "remoteUrl": "https://www.hisnmuslim.com/audio/ar/ar_7esn_AlMoslem_by_Doors_090.mp3",
+      "sourceUrl": "https://www.hisnmuslim.com/",
+      "matchingConfidence": "exact",
+      "fileSize": 232350
+    },
+    {
+      "id": "hamad-al-duraihem:cat:90",
+      "audioType": "category_recording",
+      "categoryIds": [
+        "other_82"
+      ],
+      "titleAr": "الدعاء لمن عرض عليك ماله",
+      "remoteUrl": "https://www.hisnmuslim.com/audio/ar/ar_7esn_AlMoslem_by_Doors_091.mp3",
+      "sourceUrl": "https://www.hisnmuslim.com/",
+      "matchingConfidence": "exact",
+      "fileSize": 226192
+    },
+    {
+      "id": "hamad-al-duraihem:cat:91",
+      "audioType": "category_recording",
+      "categoryIds": [
+        "other_83"
+      ],
+      "titleAr": "الدعاء لمن أقرض عند القضاء",
+      "remoteUrl": "https://www.hisnmuslim.com/audio/ar/ar_7esn_AlMoslem_by_Doors_091.mp3",
+      "sourceUrl": "https://www.hisnmuslim.com/",
+      "matchingConfidence": "exact",
+      "fileSize": 226192
+    },
+    {
+      "id": "hamad-al-duraihem:cat:92",
+      "audioType": "category_recording",
+      "categoryIds": [
+        "other_84"
+      ],
+      "titleAr": "دعاء الخوف من الشرك",
+      "remoteUrl": "https://www.hisnmuslim.com/audio/ar/ar_7esn_AlMoslem_by_Doors_092.mp3",
+      "sourceUrl": "https://www.hisnmuslim.com/",
+      "matchingConfidence": "exact",
+      "fileSize": 266324
+    },
+    {
+      "id": "hamad-al-duraihem:cat:93",
+      "audioType": "category_recording",
+      "categoryIds": [
+        "other_85"
+      ],
+      "titleAr": "الدعاء لمن قال بارك الله فيك",
+      "remoteUrl": "https://www.hisnmuslim.com/audio/ar/ar_7esn_AlMoslem_by_Doors_094.mp3",
+      "sourceUrl": "https://www.hisnmuslim.com/",
+      "matchingConfidence": "exact",
+      "fileSize": 214872
+    },
+    {
+      "id": "hamad-al-duraihem:cat:94",
+      "audioType": "category_recording",
+      "categoryIds": [
+        "other_86"
+      ],
+      "titleAr": "دعاء كراهية الطيرة",
+      "remoteUrl": "https://www.hisnmuslim.com/audio/ar/ar_7esn_AlMoslem_by_Doors_095.mp3",
+      "sourceUrl": "https://www.hisnmuslim.com/",
+      "matchingConfidence": "exact",
+      "fileSize": 272260
+    },
+    {
+      "id": "hamad-al-duraihem:cat:95",
+      "audioType": "category_recording",
+      "categoryIds": [
+        "other_87"
+      ],
+      "titleAr": "دعاء الركوب",
+      "remoteUrl": "https://www.hisnmuslim.com/audio/ar/ar_7esn_AlMoslem_by_Doors_096.mp3",
+      "sourceUrl": "https://www.hisnmuslim.com/",
+      "matchingConfidence": "exact",
+      "fileSize": 515510
+    },
+    {
+      "id": "hamad-al-duraihem:cat:96",
+      "audioType": "category_recording",
+      "categoryIds": [
+        "other_88"
+      ],
+      "titleAr": "دعاء السفر",
+      "remoteUrl": "https://www.hisnmuslim.com/audio/ar/ar_7esn_AlMoslem_by_Doors_097.mp3",
+      "sourceUrl": "https://www.hisnmuslim.com/",
+      "matchingConfidence": "exact",
+      "fileSize": 720564
+    },
+    {
+      "id": "hamad-al-duraihem:cat:97",
+      "audioType": "category_recording",
+      "categoryIds": [
+        "other_89"
+      ],
+      "titleAr": "دعاء دخول القرية أو البلدة",
+      "remoteUrl": "https://www.hisnmuslim.com/audio/ar/ar_7esn_AlMoslem_by_Doors_098.mp3",
+      "sourceUrl": "https://www.hisnmuslim.com/",
+      "matchingConfidence": "exact",
+      "fileSize": 460628
+    },
+    {
+      "id": "hamad-al-duraihem:cat:98",
+      "audioType": "category_recording",
+      "categoryIds": [
+        "other_90"
+      ],
+      "titleAr": "دعاء دخول السوق",
+      "remoteUrl": "https://www.hisnmuslim.com/audio/ar/ar_7esn_AlMoslem_by_Doors_099.mp3",
+      "sourceUrl": "https://www.hisnmuslim.com/",
+      "matchingConfidence": "exact",
+      "fileSize": 350398
+    },
+    {
+      "id": "hamad-al-duraihem:cat:99",
+      "audioType": "category_recording",
+      "categoryIds": [
+        "other_91"
+      ],
+      "titleAr": "الدعاء إذا تعس المركوب",
+      "remoteUrl": "https://www.hisnmuslim.com/audio/ar/ar_7esn_AlMoslem_by_Doors_100.mp3",
+      "sourceUrl": "https://www.hisnmuslim.com/",
+      "matchingConfidence": "exact",
+      "fileSize": 213518
+    },
+    {
+      "id": "hamad-al-duraihem:cat:100",
+      "audioType": "category_recording",
+      "categoryIds": [
+        "other_92"
+      ],
+      "titleAr": "دعاء المسافر للمقيم",
+      "remoteUrl": "https://www.hisnmuslim.com/audio/ar/ar_7esn_AlMoslem_by_Doors_101.mp3",
+      "sourceUrl": "https://www.hisnmuslim.com/",
+      "matchingConfidence": "exact",
+      "fileSize": 238856
+    },
+    {
+      "id": "hamad-al-duraihem:cat:101",
+      "audioType": "category_recording",
+      "categoryIds": [
+        "other_93"
+      ],
+      "titleAr": "دعاء المقيم للمسافر",
+      "remoteUrl": "https://www.hisnmuslim.com/audio/ar/ar_7esn_AlMoslem_by_Doors_102.mp3",
+      "sourceUrl": "https://www.hisnmuslim.com/",
+      "matchingConfidence": "exact",
+      "fileSize": 340424
+    },
+    {
+      "id": "hamad-al-duraihem:cat:102",
+      "audioType": "category_recording",
+      "categoryIds": [
+        "other_94"
+      ],
+      "titleAr": "التكبير و التسبيح في سير السفر",
+      "remoteUrl": "https://www.hisnmuslim.com/audio/ar/ar_7esn_AlMoslem_by_Doors_103.mp3",
+      "sourceUrl": "https://www.hisnmuslim.com/",
+      "matchingConfidence": "exact",
+      "fileSize": 268446
+    },
+    {
+      "id": "hamad-al-duraihem:cat:103",
+      "audioType": "category_recording",
+      "categoryIds": [
+        "other_95"
+      ],
+      "titleAr": "دعاء المسافر إذا أسحر",
+      "remoteUrl": "https://www.hisnmuslim.com/audio/ar/ar_7esn_AlMoslem_by_Doors_104.mp3",
+      "sourceUrl": "https://www.hisnmuslim.com/",
+      "matchingConfidence": "exact",
+      "fileSize": 314892
+    },
+    {
+      "id": "hamad-al-duraihem:cat:104",
+      "audioType": "category_recording",
+      "categoryIds": [
+        "other_96"
+      ],
+      "titleAr": "الدعاء إذا نزل مترلا في سفر أو غيره",
+      "remoteUrl": "https://www.hisnmuslim.com/audio/ar/ar_7esn_AlMoslem_by_Doors_105.mp3",
+      "sourceUrl": "https://www.hisnmuslim.com/",
+      "matchingConfidence": "exact",
+      "fileSize": 256360
+    },
+    {
+      "id": "hamad-al-duraihem:cat:105",
+      "audioType": "category_recording",
+      "categoryIds": [
+        "other_97"
+      ],
+      "titleAr": "ذكر الرجوع من السفر",
+      "remoteUrl": "https://www.hisnmuslim.com/audio/ar/ar_7esn_AlMoslem_by_Doors_106.mp3",
+      "sourceUrl": "https://www.hisnmuslim.com/",
+      "matchingConfidence": "exact",
+      "fileSize": 451016
+    },
+    {
+      "id": "hamad-al-duraihem:cat:106",
+      "audioType": "category_recording",
+      "categoryIds": [
+        "other_98"
+      ],
+      "titleAr": "ما يقول من أتاه أمر يسره أو يكرهه",
+      "remoteUrl": "https://www.hisnmuslim.com/audio/ar/ar_7esn_AlMoslem_by_Doors_107.mp3",
+      "sourceUrl": "https://www.hisnmuslim.com/",
+      "matchingConfidence": "exact",
+      "fileSize": 370020
+    },
+    {
+      "id": "hamad-al-duraihem:cat:107",
+      "audioType": "category_recording",
+      "categoryIds": [
+        "other_99"
+      ],
+      "titleAr": "فضل الصلاة على النبي صلى الله عليه و سلم",
+      "remoteUrl": "https://www.hisnmuslim.com/audio/ar/ar_7esn_AlMoslem_by_Doors_108.mp3",
+      "sourceUrl": "https://www.hisnmuslim.com/",
+      "matchingConfidence": "exact",
+      "fileSize": 677426
+    },
+    {
+      "id": "hamad-al-duraihem:cat:108",
+      "audioType": "category_recording",
+      "categoryIds": [
+        "other_100"
+      ],
+      "titleAr": "إفشاء السلام",
+      "remoteUrl": "https://www.hisnmuslim.com/audio/ar/ar_7esn_AlMoslem_by_Doors_109.mp3",
+      "sourceUrl": "https://www.hisnmuslim.com/",
+      "matchingConfidence": "exact",
+      "fileSize": 740971
+    },
+    {
+      "id": "hamad-al-duraihem:cat:109",
+      "audioType": "category_recording",
+      "categoryIds": [
+        "other_101"
+      ],
+      "titleAr": "كيف يرد السلام على الكافر إذا سلم",
+      "remoteUrl": "https://www.hisnmuslim.com/audio/ar/ar_7esn_AlMoslem_by_Doors_110.mp3",
+      "sourceUrl": "https://www.hisnmuslim.com/",
+      "matchingConfidence": "exact",
+      "fileSize": 238692
+    },
+    {
+      "id": "hamad-al-duraihem:cat:110",
+      "audioType": "category_recording",
+      "categoryIds": [
+        "other_102"
+      ],
+      "titleAr": "الدُّعاءُ عِنْدَ سَمَاعِ صِياحِ الدِّيكِ ونَهِيقِ الْحِمَارِ",
+      "remoteUrl": "https://www.hisnmuslim.com/audio/ar/ar_7esn_AlMoslem_by_Doors_111.mp3",
+      "sourceUrl": "https://www.hisnmuslim.com/",
+      "matchingConfidence": "exact",
+      "fileSize": 346010
+    },
+    {
+      "id": "hamad-al-duraihem:cat:112",
+      "audioType": "category_recording",
+      "categoryIds": [
+        "other_104"
+      ],
+      "titleAr": "الدعاء لمن سببته",
+      "remoteUrl": "https://www.hisnmuslim.com/audio/ar/ar_7esn_AlMoslem_by_Doors_113.mp3",
+      "sourceUrl": "https://www.hisnmuslim.com/",
+      "matchingConfidence": "exact",
+      "fileSize": 292034
+    },
+    {
+      "id": "hamad-al-duraihem:cat:113",
+      "audioType": "category_recording",
+      "categoryIds": [
+        "other_105"
+      ],
+      "titleAr": "ما يقول المسلم إذا مدح المسلم",
+      "remoteUrl": "https://www.hisnmuslim.com/audio/ar/ar_7esn_AlMoslem_by_Doors_114.mp3",
+      "sourceUrl": "https://www.hisnmuslim.com/",
+      "matchingConfidence": "exact",
+      "fileSize": 400540
+    },
+    {
+      "id": "hamad-al-duraihem:cat:114",
+      "audioType": "category_recording",
+      "categoryIds": [
+        "other_106"
+      ],
+      "titleAr": "ما يقول المسلم إذا زكي",
+      "remoteUrl": "https://www.hisnmuslim.com/audio/ar/ar_7esn_AlMoslem_by_Doors_115.mp3",
+      "sourceUrl": "https://www.hisnmuslim.com/",
+      "matchingConfidence": "exact",
+      "fileSize": 305486
+    },
+    {
+      "id": "hamad-al-duraihem:cat:115",
+      "audioType": "category_recording",
+      "categoryIds": [
+        "other_107"
+      ],
+      "titleAr": "كيف يلبي المحرم في الحج أو العمرة ؟",
+      "remoteUrl": "https://www.hisnmuslim.com/audio/ar/ar_7esn_AlMoslem_by_Doors_116.mp3",
+      "sourceUrl": "https://www.hisnmuslim.com/",
+      "matchingConfidence": "exact",
+      "fileSize": 332584
+    },
+    {
+      "id": "hamad-al-duraihem:cat:116",
+      "audioType": "category_recording",
+      "categoryIds": [
+        "other_108"
+      ],
+      "titleAr": "التكبير إذا أتى الركن الأسود",
+      "remoteUrl": "https://www.hisnmuslim.com/audio/ar/ar_7esn_AlMoslem_by_Doors_117.mp3",
+      "sourceUrl": "https://www.hisnmuslim.com/",
+      "matchingConfidence": "exact",
+      "fileSize": 266714
+    },
+    {
+      "id": "hamad-al-duraihem:cat:117",
+      "audioType": "category_recording",
+      "categoryIds": [
+        "other_109"
+      ],
+      "titleAr": "الدعاء بين الركن اليماني والحجر الأسود",
+      "remoteUrl": "https://www.hisnmuslim.com/audio/ar/ar_7esn_AlMoslem_by_Doors_118.mp3",
+      "sourceUrl": "https://www.hisnmuslim.com/",
+      "matchingConfidence": "exact",
+      "fileSize": 288046
+    },
+    {
+      "id": "hamad-al-duraihem:cat:118",
+      "audioType": "category_recording",
+      "categoryIds": [
+        "other_110"
+      ],
+      "titleAr": "دعاء الوقوف على الصفا والمروة",
+      "remoteUrl": "https://www.hisnmuslim.com/audio/ar/ar_7esn_AlMoslem_by_Doors_119.mp3",
+      "sourceUrl": "https://www.hisnmuslim.com/",
+      "matchingConfidence": "exact",
+      "fileSize": 692188
+    },
+    {
+      "id": "hamad-al-duraihem:cat:119",
+      "audioType": "category_recording",
+      "categoryIds": [
+        "other_111"
+      ],
+      "titleAr": "الدعاء يوم عرفة",
+      "remoteUrl": "https://www.hisnmuslim.com/audio/ar/ar_7esn_AlMoslem_by_Doors_120.mp3",
+      "sourceUrl": "https://www.hisnmuslim.com/",
+      "matchingConfidence": "exact",
+      "fileSize": 337728
+    },
+    {
+      "id": "hamad-al-duraihem:cat:120",
+      "audioType": "category_recording",
+      "categoryIds": [
+        "other_112"
+      ],
+      "titleAr": "الذكر عند المشعر الحرام",
+      "remoteUrl": "https://www.hisnmuslim.com/audio/ar/ar_7esn_AlMoslem_by_Doors_121.mp3",
+      "sourceUrl": "https://www.hisnmuslim.com/",
+      "matchingConfidence": "exact",
+      "fileSize": 354448
+    },
+    {
+      "id": "hamad-al-duraihem:cat:121",
+      "audioType": "category_recording",
+      "categoryIds": [
+        "other_113"
+      ],
+      "titleAr": "التكبير عند رمي الجمار مع كل حصاة",
+      "remoteUrl": "https://www.hisnmuslim.com/audio/ar/ar_7esn_AlMoslem_by_Doors_122.mp3",
+      "sourceUrl": "https://www.hisnmuslim.com/",
+      "matchingConfidence": "exact",
+      "fileSize": 400548
+    },
+    {
+      "id": "hamad-al-duraihem:cat:122",
+      "audioType": "category_recording",
+      "categoryIds": [
+        "other_114"
+      ],
+      "titleAr": "دعاء التعجب والأمر السار",
+      "remoteUrl": "https://www.hisnmuslim.com/audio/ar/ar_7esn_AlMoslem_by_Doors_123.mp3",
+      "sourceUrl": "https://www.hisnmuslim.com/",
+      "matchingConfidence": "exact",
+      "fileSize": 242514
+    },
+    {
+      "id": "hamad-al-duraihem:cat:123",
+      "audioType": "category_recording",
+      "categoryIds": [
+        "other_115"
+      ],
+      "titleAr": "ما يفعل من أتاه أمر يسره",
+      "remoteUrl": "https://www.hisnmuslim.com/audio/ar/ar_7esn_AlMoslem_by_Doors_124.mp3",
+      "sourceUrl": "https://www.hisnmuslim.com/",
+      "matchingConfidence": "exact",
+      "fileSize": 285906
+    },
+    {
+      "id": "hamad-al-duraihem:cat:124",
+      "audioType": "category_recording",
+      "categoryIds": [
+        "other_116"
+      ],
+      "titleAr": "ما يقول من أحس وجعا في جسده",
+      "remoteUrl": "https://www.hisnmuslim.com/audio/ar/ar_7esn_AlMoslem_by_Doors_125.mp3",
+      "sourceUrl": "https://www.hisnmuslim.com/",
+      "matchingConfidence": "exact",
+      "fileSize": 317976
+    },
+    {
+      "id": "hamad-al-duraihem:cat:125",
+      "audioType": "category_recording",
+      "categoryIds": [
+        "other_117"
+      ],
+      "titleAr": "دعاء من خشي أن يصيب شيئا بعينه",
+      "remoteUrl": "https://www.hisnmuslim.com/audio/ar/ar_7esn_AlMoslem_by_Doors_126.mp3",
+      "sourceUrl": "https://www.hisnmuslim.com/",
+      "matchingConfidence": "exact",
+      "fileSize": 295710
+    },
+    {
+      "id": "hamad-al-duraihem:cat:126",
+      "audioType": "category_recording",
+      "categoryIds": [
+        "other_118"
+      ],
+      "titleAr": "ما يقال عند الفزع",
+      "remoteUrl": "https://www.hisnmuslim.com/audio/ar/ar_7esn_AlMoslem_by_Doors_127.mp3",
+      "sourceUrl": "https://www.hisnmuslim.com/",
+      "matchingConfidence": "exact",
+      "fileSize": 217540
+    },
+    {
+      "id": "hamad-al-duraihem:cat:127",
+      "audioType": "category_recording",
+      "categoryIds": [
+        "other_119"
+      ],
+      "titleAr": "ما يقول عند الذبح أو النحر",
+      "remoteUrl": "https://www.hisnmuslim.com/audio/ar/ar_7esn_AlMoslem_by_Doors_128.mp3",
+      "sourceUrl": "https://www.hisnmuslim.com/",
+      "matchingConfidence": "exact",
+      "fileSize": 261910
+    },
+    {
+      "id": "hamad-al-duraihem:cat:128",
+      "audioType": "category_recording",
+      "categoryIds": [
+        "other_120"
+      ],
+      "titleAr": "ما يقول لرد كيد مردة الشياطين",
+      "remoteUrl": "https://www.hisnmuslim.com/audio/ar/ar_7esn_AlMoslem_by_Doors_129.mp3",
+      "sourceUrl": "https://www.hisnmuslim.com/",
+      "matchingConfidence": "exact",
+      "fileSize": 502300
+    },
+    {
+      "id": "hamad-al-duraihem:cat:129",
+      "audioType": "category_recording",
+      "categoryIds": [
+        "other_121"
+      ],
+      "titleAr": "الاستغفار و التوبة",
+      "remoteUrl": "https://www.hisnmuslim.com/audio/ar/ar_7esn_AlMoslem_by_Doors_130.mp3",
+      "sourceUrl": "https://www.hisnmuslim.com/",
+      "matchingConfidence": "exact",
+      "fileSize": 856710
+    },
+    {
+      "id": "hamad-al-duraihem:cat:131",
+      "audioType": "category_recording",
+      "categoryIds": [
+        "other_123"
+      ],
+      "titleAr": "كيف كان النبي يسبح؟",
+      "remoteUrl": "https://www.hisnmuslim.com/audio/ar/ar_7esn_AlMoslem_by_Doors_132.mp3",
+      "sourceUrl": "https://www.hisnmuslim.com/",
+      "matchingConfidence": "exact",
+      "fileSize": 287624
+    },
+    {
+      "id": "hamad-al-duraihem:cat:132",
+      "audioType": "category_recording",
+      "categoryIds": [
+        "other_124"
+      ],
+      "titleAr": "من أنواع الخير والآداب الجامعة",
+      "remoteUrl": "https://www.hisnmuslim.com/audio/ar/ar_7esn_AlMoslem_by_Doors_133.mp3",
+      "sourceUrl": "https://www.hisnmuslim.com/",
+      "matchingConfidence": "exact",
+      "fileSize": 1043358
+    }
+  ]
+}

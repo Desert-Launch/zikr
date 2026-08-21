@@ -1,0 +1,19 @@
+{
+  "version": 1,
+  "readerId": "saad-al-ghamdi",
+  "audio": [
+    {
+      "id": "saad-al-ghamdi:cat:20250607_20250607_1005_0",
+      "audioType": "category_recording",
+      "categoryIds": [
+        "morning"
+      ],
+      "titleAr": "أذكار الصباح",
+      "remoteUrl": "https://archive.org/download/20250607_20250607_1005/%D8%A3%D8%B0%D9%83%D8%A7%D8%B1%20%D8%A7%D9%84%D8%B5%D8%A8%D8%A7%D8%AD%20%D9%84%D9%84%D8%B4%D9%8A%D8%AE%20%D8%B3%D8%B9%D8%AF%20%D8%A7%D9%84%D8%BA%D8%A7%D9%85%D8%AF%D9%8A.mp3",
+      "duration": 1129,
+      "fileSize": 45188008,
+      "sourceUrl": "https://archive.org/details/20250607_20250607_1005",
+      "matchingConfidence": "manual"
+    }
+  ]
+}

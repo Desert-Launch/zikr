@@ -12,6 +12,7 @@ import 'package:quran/modules/adhan/presentation/cubits/cb_adhan_settings.dart';
 import 'package:quran/modules/adhan/presentation/cubits/s_adhan_settings.dart';
 import 'package:quran/modules/adhan/presentation/widgets/w_alarm_permission_switch.dart';
 import 'package:quran/modules/adhan/services/adhan_audio_alarms.dart';
+import 'package:quran/modules/azkar/presentation/widgets/w_azkar_preferred_reader_row.dart';
 import 'package:quran/modules/settings/presentation/widgets/w_app_footer.dart';
 import 'package:quran/modules/settings/presentation/widgets/w_profile_card.dart';
 import 'package:quran/modules/settings/presentation/widgets/w_settings_group.dart';
@@ -130,6 +131,21 @@ class _SNSettingsState extends State<SNSettings> {
                         // singleton, so the two entry points can't drift.
                         onTap: () => WSalawatReminderSheet.show(context, Modular.get<CBSalawat>()),
                       ),
+                    ],
+                  ),
+                  gap,
+                  WSettingsSectionLabel('settings_azkar_section'.tr()),
+                  WSettingsGroup(
+                    children: [
+                      WSettingsRow(
+                        icon: Icons.headphones_outlined,
+                        title: 'azkar_audio_downloads_title'.tr(),
+                        subtitle: 'azkar_audio_downloads_subtitle'.tr(),
+                        onTap: () => Modular.to.pushNamed(
+                          AzkarRoutes.fullAudioDownloads(),
+                        ),
+                      ),
+                      const WAzkarPreferredReaderRow(),
                     ],
                   ),
                   gap,

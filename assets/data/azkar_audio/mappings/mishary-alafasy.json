@@ -1,0 +1,32 @@
+{
+  "version": 1,
+  "readerId": "mishary-alafasy",
+  "audio": [
+    {
+      "id": "mishary-alafasy:cat:1434-mishari-alafasy-azkar-sabah-1434-a-h_0",
+      "audioType": "category_recording",
+      "categoryIds": [
+        "morning"
+      ],
+      "titleAr": "أذكار الصباح",
+      "remoteUrl": "https://archive.org/download/1434-mishari-alafasy-azkar-sabah-1434-a-h/%23%D9%85%D8%B4%D8%A7%D8%B1%D9%8A_%D8%B1%D8%A7%D8%B4%D8%AF_%D8%A7%D9%84%D8%B9%D9%81%D8%A7%D8%B3%D9%8A%20%D8%A3%D8%B0%D9%83%D8%A7%D8%B1%20%D8%A7%D9%84%D8%B5%D8%A8%D8%A7%D8%AD%20%D9%84%D8%B9%D8%A7%D9%85%201434%D9%87%D9%80%20-%20Mishari%20Alafasy%20Azkar%20Sabah%201434A%20H.mp3",
+      "duration": 833,
+      "fileSize": 13183273,
+      "sourceUrl": "https://archive.org/details/1434-mishari-alafasy-azkar-sabah-1434-a-h",
+      "matchingConfidence": "manual"
+    },
+    {
+      "id": "mishary-alafasy:cat:1434-mishari-alafasy-azkar-sabah-1434-a-h_1",
+      "audioType": "category_recording",
+      "categoryIds": [
+        "evening"
+      ],
+      "titleAr": "أذكار المساء",
+      "remoteUrl": "https://archive.org/download/1434-mishari-alafasy-azkar-sabah-1434-a-h/%23%D9%85%D8%B4%D8%A7%D8%B1%D9%8A_%D8%B1%D8%A7%D8%B4%D8%AF_%D8%A7%D9%84%D8%B9%D9%81%D8%A7%D8%B3%D9%8A%20%D8%A3%D8%B0%D9%83%D8%A7%D8%B1%20%D8%A7%D9%84%D9%85%D8%B3%D8%A7%D8%A1%20%D9%84%D8%B9%D8%A7%D9%85%201434%D9%87%D9%80%20-%20Mishari%20Alafasy%20Azkar%20Almasa'%201434A%20H.mp3",
+      "duration": 602,
+      "fileSize": 9836778,
+      "sourceUrl": "https://archive.org/details/1434-mishari-alafasy-azkar-sabah-1434-a-h",
+      "matchingConfidence": "manual"
+    }
+  ]
+}

@@ -42,10 +42,25 @@ import 'package:quran/modules/auth/domain/usecases/uc_is_logged_in.dart';
 import 'package:quran/modules/auth/domain/usecases/uc_logout.dart';
 import 'package:quran/modules/auth/presentation/cubits/cb_auth.dart';
 import 'package:quran/modules/azkar/azkar_module.dart';
+import 'package:quran/modules/azkar/data/datasources/local/ds_azkar_audio_files.dart';
 import 'package:quran/modules/azkar/data/datasources/local/ds_local_azkar.dart';
+import 'package:quran/modules/azkar/data/datasources/local/ds_local_azkar_audio.dart';
+import 'package:quran/modules/azkar/data/datasources/remote/ds_azkar_audio_downloader.dart';
+import 'package:quran/modules/azkar/data/repos/r_impl_azkar_audio.dart';
+import 'package:quran/modules/azkar/data/sources/local/box_azkar_audio_download.dart';
+import 'package:quran/modules/azkar/data/sources/local/box_azkar_audio_pref.dart';
 import 'package:quran/modules/azkar/data/sources/local/box_azkar_category_favorite.dart';
 import 'package:quran/modules/azkar/data/sources/local/box_azkar_favorite.dart';
 import 'package:quran/modules/azkar/data/sources/local/box_azkar_progress.dart';
+import 'package:quran/modules/azkar/domain/repos/r_azkar_audio.dart';
+import 'package:quran/modules/azkar/domain/usecases/uc_delete_azkar_audio.dart';
+import 'package:quran/modules/azkar/domain/usecases/uc_download_azkar_pack.dart';
+import 'package:quran/modules/azkar/domain/usecases/uc_get_azkar_audio_stats.dart';
+import 'package:quran/modules/azkar/domain/usecases/uc_get_azkar_readers.dart';
+import 'package:quran/modules/azkar/domain/usecases/uc_resolve_azkar_audio.dart';
+import 'package:quran/modules/azkar/domain/usecases/uc_set_preferred_azkar_reader.dart';
+import 'package:quran/modules/azkar/presentation/cubits/cb_azkar_audio.dart';
+import 'package:quran/modules/azkar/presentation/cubits/cb_azkar_audio_downloads.dart';
 import 'package:quran/modules/home/home_module.dart';
 import 'package:quran/modules/khatma/data/sources/local/box_khatma_completion.dart';
 import 'package:quran/modules/khatma/data/sources/local/box_khatma_day.dart';
@@ -111,6 +126,8 @@ class AppModule extends Module {
     i.addSingleton<BoxAzkarFavorite>(BoxAzkarFavorite.new);
     i.addSingleton<BoxAzkarCategoryFavorite>(BoxAzkarCategoryFavorite.new);
     i.addSingleton<BoxAzkarProgress>(BoxAzkarProgress.new);
+    i.addSingleton<BoxAzkarAudioDownload>(BoxAzkarAudioDownload.new);
+    i.addSingleton<BoxAzkarAudioPref>(BoxAzkarAudioPref.new);
     i.addSingleton<BoxTasbihCounter>(BoxTasbihCounter.new);
     i.addSingleton<BoxTasbihHistory>(BoxTasbihHistory.new);
     i.addSingleton<BoxReminders>(BoxReminders.new);
@@ -120,6 +137,37 @@ class AppModule extends Module {
 
     // Azkar data source
     i.addSingleton<DSLocalAzkar>(DSLocalAzkar.new);
+
+    // Adhkar audio — manifest, filesystem, downloader, repo, use cases.
+    // Registered app-wide (not in AzkarModule) because the player and the
+    // download queue must outlive any single azkar route.
+    i.addSingleton<DSLocalAzkarAudio>(DSLocalAzkarAudio.new);
+    i.addSingleton<DSAzkarAudioFiles>(DSAzkarAudioFiles.new);
+    i.addSingleton<DSAzkarAudioDownloader>(DSAzkarAudioDownloader.new);
+    i.addSingleton<RAzkarAudio>(
+      () => RImplAzkarAudio(
+        manifest: i.get<DSLocalAzkarAudio>(),
+        files: i.get<DSAzkarAudioFiles>(),
+        downloader: i.get<DSAzkarAudioDownloader>(),
+        downloads: i.get<BoxAzkarAudioDownload>(),
+        prefs: i.get<BoxAzkarAudioPref>(),
+        azkar: i.get<DSLocalAzkar>(),
+      ),
+    );
+    i.add<UCGetAzkarReaders>(() => UCGetAzkarReaders(i.get<RAzkarAudio>()));
+    i.add<UCResolveAzkarAudio>(
+      () => UCResolveAzkarAudio(i.get<RAzkarAudio>()),
+    );
+    i.add<UCDownloadAzkarPack>(
+      () => UCDownloadAzkarPack(i.get<RAzkarAudio>()),
+    );
+    i.add<UCGetAzkarAudioStats>(
+      () => UCGetAzkarAudioStats(i.get<RAzkarAudio>()),
+    );
+    i.add<UCDeleteAzkarAudio>(() => UCDeleteAzkarAudio(i.get<RAzkarAudio>()));
+    i.add<UCSetPreferredAzkarReader>(
+      () => UCSetPreferredAzkarReader(i.get<RAzkarAudio>()),
+    );
 
     // Hourly tasbih scheduler — depends on the notifications service below.
     i.addSingleton<DSHourlyTasbih>(
@@ -329,6 +377,27 @@ class AppModule extends Module {
         reminder: i.get<DSSalawatReminder>(),
         hourly: i.get<DSHourlyTasbih>(),
         appSettings: i.get<BoxAppSettings>(),
+      ),
+    );
+    // Adhkar audio player — app-wide so a recitation survives leaving the
+    // counter screen. Lazy: its AudioPlayer is only built on first use.
+    i.addLazySingleton<CBAzkarAudio>(
+      () => CBAzkarAudio(
+        readers: i.get<UCGetAzkarReaders>(),
+        resolve: i.get<UCResolveAzkarAudio>(),
+        preferredReader: i.get<UCSetPreferredAzkarReader>(),
+        manifest: i.get<DSLocalAzkarAudio>(),
+      ),
+    );
+    // Adhkar audio download manager — app-wide so a pack keeps downloading
+    // while the user navigates away from the manager screen.
+    i.addSingleton<CBAzkarAudioDownloads>(
+      () => CBAzkarAudioDownloads(
+        readers: i.get<UCGetAzkarReaders>(),
+        stats: i.get<UCGetAzkarAudioStats>(),
+        download: i.get<UCDownloadAzkarPack>(),
+        delete: i.get<UCDeleteAzkarAudio>(),
+        preferredReader: i.get<UCSetPreferredAzkarReader>(),
       ),
     );
     // Live Quran radio player — app-wide so playback survives leaving the radio

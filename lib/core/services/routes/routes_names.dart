@@ -120,6 +120,12 @@ class AzkarRoutes {
   static const String player = '/player';
   static const String favorites = '/favorites';
 
+  /// إدارة الأصوات — the adhkar audio download manager.
+  static const String audioDownloads = '/audio';
+
+  /// One reader's pack, broken down by category. Takes a `reader` query param.
+  static const String audioReader = '/audio-reader';
+
   static String fullHome() => RoutesNames.azkarBase;
   static String fullOther() => '${RoutesNames.azkarBase}other';
   static String fullCategory(String categoryId) =>
@@ -127,6 +133,9 @@ class AzkarRoutes {
   static String fullPlayer(String categoryId, {int item = 0}) =>
       '${RoutesNames.azkarBase}player?category=$categoryId&item=$item';
   static String fullFavorites() => '${RoutesNames.azkarBase}favorites';
+  static String fullAudioDownloads() => '${RoutesNames.azkarBase}audio';
+  static String fullAudioReader(String readerId) =>
+      '${RoutesNames.azkarBase}audio-reader?reader=$readerId';
 }
 
 class TasbihRoutes {

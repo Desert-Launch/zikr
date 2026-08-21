@@ -23,13 +23,20 @@ class MAzkarItem extends Equatable {
         .where((e) => e.isNotEmpty)
         .join('\n');
     return MAzkarItem(
-      id: '${categoryId}_${json['id']}',
+      id: composeId(categoryId, json['id']),
       textAr: (json['zekr'] as String?)?.trim() ?? '',
       repeat: (json['count'] as num?)?.toInt() ?? 1,
       source: (reference?.isEmpty ?? true) ? null : reference,
       virtueAr: (virtue?.isEmpty ?? true) ? null : virtue,
     );
   }
+
+  /// The single rule that turns a category slug + a raw file id into the app's
+  /// globally-unique dhikr id. Lives here so the build-time audio-mapping tools
+  /// (`tool/azkar_audio/`) compose ids exactly the way the app parses them —
+  /// a drift between the two would silently unmap every recording.
+  static String composeId(String categoryId, Object? rawId) =>
+      '${categoryId}_$rawId';
 
   final String id;
   final String textAr;
