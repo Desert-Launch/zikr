@@ -1,5 +1,6 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_modular/flutter_modular.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
@@ -19,6 +20,7 @@ import 'package:quran/core/services/notifications/notification_box/m_notificatio
 import 'package:quran/core/services/notifications/notifications_service.dart';
 import 'package:quran/core/services/routes/app_module.dart';
 import 'package:quran/core/theme/app_themes.dart';
+import 'package:quran/core/utils/helper/orientation_helper.dart';
 import 'package:quran/modules/auth/data/models/m_auth_token.dart';
 import 'package:quran/modules/auth/data/models/m_user.dart';
 import 'package:quran/modules/auth/presentation/cubits/cb_auth.dart';
@@ -55,10 +57,7 @@ Future<void> main() async {
   AppLogger.init();
   AppLogger.info('Boot start', tag: 'main');
 
-  await SystemChrome.setPreferredOrientations([
-    DeviceOrientation.portraitUp,
-    DeviceOrientation.portraitDown,
-  ]);
+  await OrientationHelper.reapply();
 
   await LocalizeAndTranslate.init(
     supportedLocales: const [Locale('ar'), Locale('en')],
@@ -276,6 +275,11 @@ class _RootState extends State<_Root> with WidgetsBindingObserver {
   @override
   void didChangeAppLifecycleState(AppLifecycleState state) {
     if (state != AppLifecycleState.resumed) return;
+    // Re-assert the orientation the app wants — portrait, or landscape while
+    // the reader or a live broadcast is on screen. The engine can hand the
+    // app back without the preference it last set, and a screen disposed
+    // while hidden never got to restore it.
+    unawaited(OrientationHelper.reapply());
     // Rebuild the advance window on resume so it stays fresh between opens —
     // the reliable path on iOS (and a useful backstop on Android). Throttled.
     final now = DateTime.now();

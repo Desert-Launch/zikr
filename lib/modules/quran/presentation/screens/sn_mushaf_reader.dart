@@ -3,10 +3,10 @@ import 'dart:async';
 import 'package:flutter/foundation.dart'
     show TargetPlatform, defaultTargetPlatform;
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_modular/flutter_modular.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:quran/core/utils/helper/orientation_helper.dart';
 import 'package:quran/core/widgets/w_shared_scaffold.dart';
 import 'package:quran/modules/quran/data/datasources/local/ds_local_quran.dart';
 import 'package:quran/modules/quran/domain/entities/e_reader_scroll_mode.dart';
@@ -112,17 +112,14 @@ class _SNMushafReaderState extends State<SNMushafReader> {
 
   int _resolvedStart = 1;
 
+  late final OrientationOverride _orientation;
+
   @override
   void initState() {
     super.initState();
     // The mushaf reads well in landscape too, so the reader opts out of the
-    // app-wide portrait lock (main.dart) and restores it in dispose.
-    SystemChrome.setPreferredOrientations(const [
-      DeviceOrientation.portraitUp,
-      DeviceOrientation.portraitDown,
-      DeviceOrientation.landscapeLeft,
-      DeviceOrientation.landscapeRight,
-    ]);
+    // app-wide portrait lock for as long as it is on screen.
+    _orientation = OrientationHelper.request(OrientationHelper.free);
     _resolvedStart = widget.initialPage ?? 1;
     _pageController = PageController(
       initialPage: _resolvedStart - 1,
@@ -155,11 +152,8 @@ class _SNMushafReaderState extends State<SNMushafReader> {
 
   @override
   void dispose() {
-    // Restore the app-wide portrait lock (see main.dart).
-    SystemChrome.setPreferredOrientations(const [
-      DeviceOrientation.portraitUp,
-      DeviceOrientation.portraitDown,
-    ]);
+    // Hand the orientation back to whatever wanted it before.
+    OrientationHelper.release(_orientation);
     _pageSettle?.cancel();
     _scrollController.removeListener(_onVerticalScroll);
     _scrollController.dispose();

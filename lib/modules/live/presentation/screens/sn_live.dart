@@ -3,6 +3,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_modular/flutter_modular.dart';
 import 'package:localize_and_translate/localize_and_translate.dart';
+import 'package:quran/core/utils/helper/orientation_helper.dart';
 import 'package:quran/core/widgets/w_localize_rotation.dart';
 import 'package:quran/core/widgets/w_shared_scaffold.dart';
 import 'package:quran/modules/live/domain/entities/e_live_channel.dart';
@@ -62,29 +63,25 @@ class _LiveViewState extends State<_LiveView> {
   bool _usedFallback = false;
   bool _chromeVisible = true;
 
+  late final OrientationOverride _orientation;
+
   @override
   void initState() {
     super.initState();
-    // Live broadcasts read best in landscape; portrait restored in dispose.
-    SystemChrome.setPreferredOrientations(const [
-      DeviceOrientation.landscapeLeft,
-      DeviceOrientation.landscapeRight,
-    ]);
+    // Live broadcasts read best in landscape; released in dispose.
+    _orientation = OrientationHelper.request(OrientationHelper.landscape);
     // The first load is driven by CBLive once it resolves the current id.
     _controller = _buildController();
   }
 
   @override
   void dispose() {
-    // Restore the app-wide portrait lock (see main.dart) and the system bars.
+    // Restore the system bars and hand the orientation back.
     SystemChrome.setEnabledSystemUIMode(
       SystemUiMode.manual,
       overlays: SystemUiOverlay.values,
     );
-    SystemChrome.setPreferredOrientations(const [
-      DeviceOrientation.portraitUp,
-      DeviceOrientation.portraitDown,
-    ]);
+    OrientationHelper.release(_orientation);
     super.dispose();
   }
 
