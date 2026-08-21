@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_modular/flutter_modular.dart';
 import 'package:quran/core/services/routes/routes_names.dart';
+import 'package:quran/core/utils/helper/nav_helper.dart';
 import 'package:quran/core/widgets/w_shared_scaffold.dart';
 import 'package:quran/modules/quran/presentation/cubits/cb_quran_search.dart';
 import 'package:quran/modules/quran/presentation/cubits/cb_surah_list.dart';
@@ -36,45 +37,33 @@ class _SNSurahListState extends State<SNSurahList> {
     super.dispose();
   }
 
-  void _goBack() {
-    if (Modular.to.canPop()) {
-      Modular.to.pop();
-    } else {
-      Modular.to.navigate(RoutesNames.homeBase);
-    }
-  }
+  void _goBack() => NavHelper.back();
 
   void _openPage(int page) =>
       Modular.to.pushNamed(QuranRoutes.readerFromPage(page));
 
   @override
   Widget build(BuildContext context) {
-    return PopScope(
-      canPop: Modular.to.canPop(),
-      onPopInvokedWithResult: (didPop, _) {
-        if (!didPop) Modular.to.navigate(RoutesNames.homeBase);
-      },
-      child: WSharedScaffold(
-        backgroundColor: _canvas,
-        withSafeArea: false,
-        padding: EdgeInsets.zero,
-        body: WQuranIndexContent(
-          cubit: _cubit,
-          searchCubit: _searchCubit,
-          onOpenPage: _openPage,
-          onBookmarks: () => Modular.to.pushNamed(QuranRoutes.fullBookmarks()),
-          leadingSlivers: [
-            SliverToBoxAdapter(
-              child: WQuranHeader(
-                cubit: _cubit,
-                onBack: _goBack,
-                onQueryChanged: _onQueryChanged,
-                onSettings: () =>
-                    Modular.to.pushNamed(QuranRoutes.fullSettings()),
-              ),
+    return WSharedScaffold(
+      backgroundColor: _canvas,
+      withSafeArea: false,
+      padding: EdgeInsets.zero,
+      body: WQuranIndexContent(
+        cubit: _cubit,
+        searchCubit: _searchCubit,
+        onOpenPage: _openPage,
+        onBookmarks: () => Modular.to.pushNamed(QuranRoutes.fullBookmarks()),
+        leadingSlivers: [
+          SliverToBoxAdapter(
+            child: WQuranHeader(
+              cubit: _cubit,
+              onBack: _goBack,
+              onQueryChanged: _onQueryChanged,
+              onSettings: () =>
+                  Modular.to.pushNamed(QuranRoutes.fullSettings()),
             ),
-          ],
-        ),
+          ),
+        ],
       ),
     );
   }

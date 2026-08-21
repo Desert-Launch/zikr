@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:quran/core/extension/build_context.dart';
 import 'package:quran/core/theme/app_colors.dart';
+import 'package:quran/core/utils/helper/nav_helper.dart';
 import 'package:quran/core/widgets/w_loading_overlay.dart';
 
 class WSharedScaffold extends StatefulWidget {
@@ -18,6 +19,7 @@ class WSharedScaffold extends StatefulWidget {
     this.isScreenLoading = false,
     this.loadingMessage,
     this.backgroundColor,
+    this.rootBackToHome = true,
     super.key,
   });
 
@@ -34,6 +36,15 @@ class WSharedScaffold extends StatefulWidget {
   final EdgeInsetsGeometry? padding;
   final Color? backgroundColor;
 
+  /// Whether a system back press on a screen with nothing under it should land
+  /// on Home instead of popping the last route (which shows a black window).
+  ///
+  /// Screens opened straight from a notification while the app was killed are
+  /// the whole stack, so this is on by default. Turn it off on screens that
+  /// register their own [PopScope] with `canPop: false` — they already decide
+  /// what back means, and both handlers would otherwise fire at once.
+  final bool rootBackToHome;
+
   @override
   State<WSharedScaffold> createState() => _WSharedScaffoldState();
 }
@@ -41,6 +52,21 @@ class WSharedScaffold extends StatefulWidget {
 class _WSharedScaffoldState extends State<WSharedScaffold> {
   @override
   Widget build(BuildContext context) {
+    final scaffold = _buildScaffold(context);
+    if (!widget.rootBackToHome) return scaffold;
+    return PopScope(
+      canPop: NavHelper.canPop,
+      onPopInvokedWithResult: (didPop, _) {
+        // Only step in for the case this guard exists for — an empty stack. A
+        // pop blocked by the screen's own PopScope (history still present) is
+        // that screen's business, not ours.
+        if (!didPop && !NavHelper.canPop) NavHelper.goHome();
+      },
+      child: scaffold,
+    );
+  }
+
+  Widget _buildScaffold(BuildContext context) {
     return GestureDetector(
       onTap: () => FocusScope.of(context).unfocus(),
       child: Directionality(

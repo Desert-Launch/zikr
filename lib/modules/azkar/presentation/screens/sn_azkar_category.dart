@@ -3,6 +3,7 @@ import 'package:flutter_modular/flutter_modular.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:localize_and_translate/localize_and_translate.dart';
 import 'package:quran/core/services/routes/routes_names.dart';
+import 'package:quran/core/utils/helper/nav_helper.dart';
 import 'package:quran/core/widgets/w_shared_scaffold.dart';
 import 'package:quran/modules/azkar/data/datasources/local/ds_local_azkar.dart';
 import 'package:quran/modules/azkar/data/models/m_azkar_item.dart';
@@ -55,7 +56,7 @@ class _SNAzkarCategoryState extends State<SNAzkarCategory> {
                   categoryCount: category.items.length,
                   completedToday: completed,
                   favorites: _favorites.all().length,
-                  onBack: Modular.to.pop,
+                  onBack: NavHelper.back,
                 ),
               ),
               SliverPadding(
@@ -65,7 +66,7 @@ class _SNAzkarCategoryState extends State<SNAzkarCategory> {
                   separatorBuilder: (_, __) => SizedBox(height: 10.h),
                   itemBuilder: (_, index) {
                     if (index == 0) {
-                      return WAzkarListTitle(onBack: Modular.to.pop);
+                      return WAzkarListTitle(onBack: NavHelper.back);
                     }
                     final itemIndex = index - 1;
                     final item = category.items[itemIndex];

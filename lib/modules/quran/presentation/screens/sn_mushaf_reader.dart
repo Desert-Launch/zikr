@@ -470,6 +470,10 @@ class _SNMushafReaderState extends State<SNMushafReader> {
       child: PopScope(
         canPop: !_blocksSystemPop,
         child: WSharedScaffold(
+          // The PopScope above suppresses the iOS edge-swipe deliberately —
+          // it must not be turned into a jump to Home. The top bar's back
+          // button goes through NavHelper instead.
+          rootBackToHome: false,
           backgroundColor: readerBackground(_cubit.state.theme),
           padding: EdgeInsets.zero,
           withSafeArea: false,

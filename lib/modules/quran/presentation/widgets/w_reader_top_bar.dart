@@ -6,6 +6,7 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:localize_and_translate/localize_and_translate.dart';
 import 'package:quran/core/services/routes/routes_names.dart';
 import 'package:quran/core/theme/app_colors.dart';
+import 'package:quran/core/utils/helper/nav_helper.dart';
 import 'package:quran/modules/quran/presentation/cubits/cb_mushaf_reader.dart';
 import 'package:quran/modules/quran/presentation/cubits/s_mushaf_reader.dart';
 import 'package:quran/modules/quran/presentation/widgets/mushaf_labels.dart';
@@ -87,7 +88,7 @@ class _Bar extends StatelessWidget {
               children: [
                 BackButton(
                   color: Colors.white,
-                  onPressed: () => Modular.to.pop(),
+                  onPressed: NavHelper.back,
                 ),
                 _BarIcon(
                   tooltip: 'common_search'.tr(),

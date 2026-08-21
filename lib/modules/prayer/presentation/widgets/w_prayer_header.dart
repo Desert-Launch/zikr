@@ -5,6 +5,7 @@ import 'package:localize_and_translate/localize_and_translate.dart';
 import 'package:quran/core/extension/build_context.dart';
 import 'package:quran/core/services/routes/routes_names.dart';
 import 'package:quran/core/theme/app_text_styles.dart';
+import 'package:quran/core/utils/helper/nav_helper.dart';
 import 'package:quran/core/widgets/w_localize_rotation.dart';
 import 'package:quran/modules/prayer/presentation/cubits/s_prayer_times.dart';
 import 'package:quran/modules/prayer/presentation/widgets/w_prayer_outline_circle.dart';
@@ -47,7 +48,7 @@ class WPrayerHeader extends StatelessWidget {
                 Row(
                   children: [
                     IconButton(
-                      onPressed: Modular.to.pop,
+                      onPressed: NavHelper.back,
                       icon: const WLocalizeRotation(
                         reverse: true,
                         child: Icon(Icons.arrow_back_rounded, color: Colors.white),

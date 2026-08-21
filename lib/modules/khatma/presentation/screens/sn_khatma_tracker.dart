@@ -45,6 +45,8 @@ class SNKhatmaTracker extends StatelessWidget {
             return const Scaffold(body: SizedBox.shrink());
           }
           final tracker = WSharedScaffold(
+            // The PopScope below owns back for this screen.
+            rootBackToHome: false,
             backgroundColor: _canvas,
             withSafeArea: false,
             padding: EdgeInsets.zero,

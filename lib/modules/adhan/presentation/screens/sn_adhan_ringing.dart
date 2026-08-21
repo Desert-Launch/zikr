@@ -5,6 +5,7 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:localize_and_translate/localize_and_translate.dart';
 import 'package:quran/core/assets/assets.gen.dart';
 import 'package:quran/core/services/routes/routes_names.dart';
+import 'package:quran/core/utils/helper/nav_helper.dart';
 import 'package:quran/core/widgets/w_shared_scaffold.dart';
 import 'package:quran/modules/adhan/presentation/cubits/cb_adhan_ringing.dart';
 import 'package:quran/modules/adhan/presentation/cubits/s_adhan_ringing.dart';
@@ -49,7 +50,7 @@ class _SNAdhanRingingState extends State<SNAdhanRinging> {
   /// to silence it — every exit route goes through stop().
   Future<void> _dismiss() async {
     await _cubit.stop();
-    if (mounted) Modular.to.pop();
+    if (mounted) NavHelper.back();
   }
 
   Future<void> _openPrayerTimes() async {
@@ -67,6 +68,8 @@ class _SNAdhanRingingState extends State<SNAdhanRinging> {
           if (!didPop) _dismiss();
         },
         child: WSharedScaffold(
+          // The screen's own PopScope above already decides what back means.
+          rootBackToHome: false,
           // Black behind the artwork so any letterboxed edge blends into the
           // scrim rather than flashing a green frame.
           backgroundColor: Colors.black,
@@ -76,7 +79,7 @@ class _SNAdhanRingingState extends State<SNAdhanRinging> {
             // isn't left staring at a silent alarm.
             listenWhen: (prev, next) => !prev.stopped && next.stopped,
             listener: (_, __) {
-              if (mounted) Modular.to.pop();
+              if (mounted) NavHelper.back();
             },
             child: _RingingBody(
               onStop: _dismiss,

@@ -3,6 +3,7 @@ import 'package:flutter_modular/flutter_modular.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:localize_and_translate/localize_and_translate.dart';
 import 'package:quran/core/services/routes/routes_names.dart';
+import 'package:quran/core/utils/helper/nav_helper.dart';
 import 'package:quran/core/widgets/w_empty_state.dart';
 import 'package:quran/core/widgets/w_shared_scaffold.dart';
 import 'package:quran/modules/azkar/data/datasources/local/ds_local_azkar.dart';
@@ -92,7 +93,7 @@ class _SNAzkarOtherState extends State<SNAzkarOther> {
                     child: WAzkarOtherHeader(
                       green: _green,
                       categoryCount: categories.length,
-                      onBack: Modular.to.pop,
+                      onBack: NavHelper.back,
                       onQueryChanged: (q) => setState(() => _query = q),
                     ),
                   ),

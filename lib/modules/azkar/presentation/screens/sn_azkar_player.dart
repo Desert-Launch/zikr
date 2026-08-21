@@ -3,6 +3,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_modular/flutter_modular.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:localize_and_translate/localize_and_translate.dart';
+import 'package:quran/core/utils/helper/nav_helper.dart';
 import 'package:quran/core/widgets/w_shared_scaffold.dart';
 import 'package:quran/modules/azkar/data/sources/local/box_azkar_favorite.dart';
 import 'package:quran/modules/azkar/presentation/cubits/cb_azkar_session.dart';
@@ -83,7 +84,7 @@ class _SNAzkarPlayerState extends State<SNAzkarPlayer> {
                   categoryCount: category.items.length,
                   completedToday: category.items.where((item) => state.isComplete(item)).length,
                   favorites: _favorites.all().length,
-                  onBack: Modular.to.pop,
+                  onBack: NavHelper.back,
                 ),
                 Expanded(
                   child: PageView.builder(

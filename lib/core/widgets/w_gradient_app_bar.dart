@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_modular/flutter_modular.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:quran/core/theme/app_colors.dart';
 import 'package:quran/core/theme/app_text_styles.dart';
+import 'package:quran/core/utils/helper/nav_helper.dart';
 import 'package:quran/core/widgets/w_localize_rotation.dart';
 
 /// Shared green-gradient header used across the app.
@@ -33,7 +33,8 @@ class WGradientAppBar extends StatelessWidget implements PreferredSizeWidget {
   /// Optional trailing icons (rendered on the end/left side in RTL).
   final List<Widget>? actions;
 
-  /// Defaults to `Modular.to.pop()` when omitted.
+  /// Defaults to [NavHelper.back] when omitted — a pop, or Home when this
+  /// screen is the whole stack (opened from a notification on a cold start).
   final VoidCallback? onBack;
   final bool showBack;
   final IconData backIcon;
@@ -68,7 +69,7 @@ class WGradientAppBar extends StatelessWidget implements PreferredSizeWidget {
                   children: [
                     if (showBack)
                       IconButton(
-                        onPressed: onBack ?? Modular.to.pop,
+                        onPressed: onBack ?? NavHelper.back,
                         // The glyph itself has to be mirrored: Flutter icons
                         // don't flip with the layout direction.
                         icon: WLocalizeRotation(

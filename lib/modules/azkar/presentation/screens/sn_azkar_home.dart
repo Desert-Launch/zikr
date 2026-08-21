@@ -4,6 +4,7 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:localize_and_translate/localize_and_translate.dart';
 import 'package:quran/core/extension/build_context.dart';
 import 'package:quran/core/services/routes/routes_names.dart';
+import 'package:quran/core/utils/helper/nav_helper.dart';
 import 'package:quran/core/widgets/w_shared_scaffold.dart';
 import 'package:quran/modules/azkar/data/datasources/local/ds_local_azkar.dart';
 import 'package:quran/modules/azkar/data/models/m_azkar_catalog.dart';
@@ -70,7 +71,7 @@ class _SNAzkarHomeState extends State<SNAzkarHome> {
                   categoryCount: data.catalog.length,
                   completedToday: _completedToday(data.daily),
                   favorites: _favorites.all().length,
-                  onBack: Modular.to.pop,
+                  onBack: NavHelper.back,
                 ),
               ),
               SliverPadding(
