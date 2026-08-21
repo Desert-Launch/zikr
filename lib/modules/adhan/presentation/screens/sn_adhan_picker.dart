@@ -91,7 +91,13 @@ class SNAdhanPicker extends StatelessWidget {
                                       for (final adhan in playerState.allAdhans)
                                         WAdhanAudioRow(
                                           adhan: adhan,
-                                          selected: selectedId == adhan.id,
+                                          // Off and a voice are mutually
+                                          // exclusive: with the prayer
+                                          // disabled the tick belongs to the
+                                          // off row alone, even though the
+                                          // voice id is still remembered for
+                                          // when it's switched back on.
+                                          selected: prayerEnabled && selectedId == adhan.id,
                                           playing:
                                               playerState.currentPreview?.id == adhan.id &&
                                               playerState.status == AdhanPlayerStatus.playing,
