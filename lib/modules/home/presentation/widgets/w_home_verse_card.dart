@@ -82,14 +82,23 @@ class WHomeVerseCard extends StatelessWidget {
       ),
     );
 
-    // The daily card keeps a floor and centres inside it; the static one is
-    // free to be exactly as tall as its (uncapped) ayah.
-    final content = _static
-        ? body
-        : ConstrainedBox(
-            constraints: BoxConstraints(minHeight: _minHeight.h),
-            child: Center(child: body),
-          );
+    // Both variants centre; only the daily one keeps a height floor, the static
+    // one being free to be exactly as tall as its (uncapped) ayah.
+    //
+    // The Center is not decoration on the static path — it is the fix for the
+    // verse sitting against the card's right edge. `body` is a min-size Column,
+    // so it shrink-wraps to its widest line, and as the Stack's only
+    // non-positioned child it was aligned by `Stack.alignment`, which defaults
+    // to `AlignmentDirectional.topStart` — the RIGHT edge under RTL. Any ayah
+    // narrower than the card was pinned there.
+    final content = Center(
+      child: _static
+          ? body
+          : ConstrainedBox(
+              constraints: BoxConstraints(minHeight: _minHeight.h),
+              child: body,
+            ),
+    );
 
     final decorated = DecoratedBox(
       // The shadow lives out here, outside the clip — inside it the ClipRRect
