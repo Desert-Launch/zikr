@@ -227,7 +227,9 @@ class _RootState extends State<_Root> with WidgetsBindingObserver {
     // Guard every route pop: if the stack empties (e.g. backing out of a screen
     // opened straight from a notification), fall back to Home instead of a
     // blank screen.
-    Modular.setObservers([AppModularObserver()]);
+    // [appRouteObserver] rides along so a screen holding an orientation
+    // override hands it back while it is covered by another screen.
+    Modular.setObservers([AppModularObserver(), appRouteObserver]);
     // Load theme + auth state in parallel before the first frame paints.
     Modular.get<CBTheme>().load();
     Modular.get<CBAuth>().bootstrap();

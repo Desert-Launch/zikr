@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:flutter/foundation.dart'
     show TargetPlatform, defaultTargetPlatform;
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_modular/flutter_modular.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
@@ -39,7 +40,13 @@ class SNMushafReader extends StatefulWidget {
 /// Pages in the Madani Mushaf — the item count of both scroll views.
 const int _kPageCount = 604;
 
-class _SNMushafReaderState extends State<SNMushafReader> {
+class _SNMushafReaderState extends State<SNMushafReader> with OrientationOverrideRoute {
+  /// The mushaf reads well in landscape too, so the reader is the one screen
+  /// that opts out of the app-wide portrait lock — for exactly as long as it is
+  /// the screen being read. See [OrientationOverrideRoute].
+  @override
+  List<DeviceOrientation> get orientations => OrientationHelper.free;
+
   late final CBMushafReader _cubit = Modular.get<CBMushafReader>();
 
   /// Shared reader display settings — the pinch gesture reads its on/off
@@ -112,14 +119,9 @@ class _SNMushafReaderState extends State<SNMushafReader> {
 
   int _resolvedStart = 1;
 
-  late final OrientationOverride _orientation;
-
   @override
   void initState() {
     super.initState();
-    // The mushaf reads well in landscape too, so the reader opts out of the
-    // app-wide portrait lock for as long as it is on screen.
-    _orientation = OrientationHelper.request(OrientationHelper.free);
     _resolvedStart = widget.initialPage ?? 1;
     _pageController = PageController(
       initialPage: _resolvedStart - 1,
@@ -152,8 +154,6 @@ class _SNMushafReaderState extends State<SNMushafReader> {
 
   @override
   void dispose() {
-    // Hand the orientation back to whatever wanted it before.
-    OrientationHelper.release(_orientation);
     _pageSettle?.cancel();
     _scrollController.removeListener(_onVerticalScroll);
     _scrollController.dispose();

@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:flutter/services.dart';
+import 'package:flutter/widgets.dart';
 
 /// Single owner of the app's preferred device orientations.
 ///
@@ -14,6 +15,9 @@ import 'package:flutter/services.dart';
 /// So the wanted orientation lives here instead. Screens [request] a set on
 /// entry and [release] it on exit; [reapply] re-asserts whatever is wanted
 /// *right now* — portrait when nothing is overriding it.
+///
+/// Screens should not hold an override by hand — use [OrientationOverrideRoute],
+/// which also hands it back while the screen is covered by another one.
 class OrientationHelper {
   OrientationHelper._();
 
@@ -76,4 +80,79 @@ class OrientationOverride {
   OrientationOverride._(this.orientations);
 
   final List<DeviceOrientation> orientations;
+}
+
+/// Watches pushes and pops so a screen can be told when it stops being — and
+/// becomes again — the one the user is looking at.
+///
+/// Registered alongside the app's other navigator observer in `main()`. Typed
+/// to `PageRoute` on purpose: a bottom sheet or a dialog is a [PopupRoute], and
+/// opening one over the reader should not count as leaving it.
+final RouteObserver<PageRoute<dynamic>> appRouteObserver = RouteObserver<PageRoute<dynamic>>();
+
+/// Holds an [OrientationHelper] override for exactly as long as the screen is
+/// the visible one.
+///
+/// Requesting in `initState` and releasing in `dispose` is not the same thing.
+/// A screen pushed ON TOP of the reader — tafsir, the reciter picker, the
+/// reader's own settings — leaves the reader alive and undisposed, so its
+/// override stayed active and those screens inherited a rotation they never
+/// asked for. This gives the override back when the screen is covered and takes
+/// it again when it is uncovered, so the orientation follows what is actually
+/// on screen.
+mixin OrientationOverrideRoute<T extends StatefulWidget> on State<T> implements RouteAware {
+  /// What this screen wants while it is the visible one — one of
+  /// [OrientationHelper.free], [OrientationHelper.landscape], etc.
+  List<DeviceOrientation> get orientations;
+
+  OrientationOverride? _override;
+
+  void _claim() {
+    if (_override != null) return;
+    _override = OrientationHelper.request(orientations);
+  }
+
+  void _surrender() {
+    final override = _override;
+    if (override == null) return;
+    OrientationHelper.release(override);
+    _override = null;
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    // Not [didPush]: the subscription below is only made once this screen has
+    // been built, by which point its own push has already been announced.
+    _claim();
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    final route = ModalRoute.of(context);
+    if (route is PageRoute) appRouteObserver.subscribe(this, route);
+  }
+
+  @override
+  void dispose() {
+    appRouteObserver.unsubscribe(this);
+    _surrender();
+    super.dispose();
+  }
+
+  /// Already claimed in [initState] — see the note there.
+  @override
+  void didPush() {}
+
+  @override
+  void didPop() => _surrender();
+
+  /// Covered by another screen: still alive, no longer being read.
+  @override
+  void didPushNext() => _surrender();
+
+  /// Uncovered again — whatever was on top of this screen has popped.
+  @override
+  void didPopNext() => _claim();
 }
