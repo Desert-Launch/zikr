@@ -96,30 +96,38 @@ class SNAdhanSettings extends StatelessWidget {
                         ),
 
                         gap,
-                        WAdhanSectionLabel('adhan_alarm_section'.tr()),
+                        // The alarm row below is Android-only, so on iOS this
+                        // group holds nothing but sound and vibration — label
+                        // it for what it actually contains there.
+                        WAdhanSectionLabel(
+                          defaultTargetPlatform == TargetPlatform.iOS
+                              ? 'adhan_alarm_section_ios'.tr()
+                              : 'adhan_alarm_section'.tr(),
+                        ),
                         WAdhanGroup(
                           children: [
-                            WAdhanSettingRow(
-                              icon: Icons.notifications_active_outlined,
-                              title: 'adhan_alarm_fullscreen'.tr(),
-                              subtitle:
-                                  defaultTargetPlatform == TargetPlatform.iOS
-                                  ? 'adhan_alarm_fullscreen_hint_ios'.tr()
-                                  : 'adhan_alarm_fullscreen_hint'.tr(),
-                              trailing: Transform.scale(
-                                scale: .75,
-                                child: Switch(
-                                  value: state.fullScreenAlarm,
-                                  activeTrackColor: _green,
-                                  thumbColor: WidgetStateProperty.all(
-                                    state.fullScreenAlarm
-                                        ? Colors.white
-                                        : Colors.grey.shade400,
+                            // Android only. On iOS the adhan is a plain
+                            // scheduled notification with no native alarm
+                            // behind it, so this toggle would control nothing.
+                            if (defaultTargetPlatform != TargetPlatform.iOS)
+                              WAdhanSettingRow(
+                                icon: Icons.notifications_active_outlined,
+                                title: 'adhan_alarm_fullscreen'.tr(),
+                                subtitle: 'adhan_alarm_fullscreen_hint'.tr(),
+                                trailing: Transform.scale(
+                                  scale: .75,
+                                  child: Switch(
+                                    value: state.fullScreenAlarm,
+                                    activeTrackColor: _green,
+                                    thumbColor: WidgetStateProperty.all(
+                                      state.fullScreenAlarm
+                                          ? Colors.white
+                                          : Colors.grey.shade400,
+                                    ),
+                                    onChanged: cubit.setFullScreenAlarm,
                                   ),
-                                  onChanged: cubit.setFullScreenAlarm,
                                 ),
                               ),
-                            ),
                             // Android raises the system ALARM stream natively
                             // for the length of the adhan (and puts it back);
                             // iOS can only scale in-app playback, so the hint

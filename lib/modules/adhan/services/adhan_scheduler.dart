@@ -34,6 +34,12 @@ import 'package:quran/modules/tasbih/data/datasources/local/ds_salawat_reminder.
 /// window is trimmed to [_iosBudget] there; Android has no such cap.
 /// Re-running [reschedule] overwrites cleanly because notification ids are
 /// deterministic (day-of-year derived).
+///
+/// **iOS is notification-only.** Android pairs each near-window prayer with a
+/// native exact alarm that plays the full adhan from a foreground service; iOS
+/// deliberately does not, and never asks for alarm authorization. Every iOS
+/// prayer is a plain scheduled notification carrying the bundled `.caf` clip —
+/// see [AdhanAudioAlarms] and `ios/Runner/Adhan/AdhanAlarmChannel.swift`.
 class AdhanScheduler {
   AdhanScheduler({
     required NotificationsService notifications,
@@ -80,12 +86,6 @@ class AdhanScheduler {
   /// mode). Re-armed on every app open + after reboot, so a small rolling
   /// window is plenty; days beyond it still get the short-clip notification.
   static const int _audioWindowDays = 3;
-
-  /// Days of iOS native alarms (AlarmKit / critical alert) armed ahead. Longer
-  /// than the Android audio window because iOS can only top up when the app is
-  /// opened — there's no reliable background re-arm — so the window has to
-  /// survive a user who doesn't open the app for a week.
-  static const int _iosAlarmWindowDays = 7;
 
   /// Adhan's slice of iOS's 64 pending-notification budget. Ignored on Android.
   ///
@@ -229,15 +229,6 @@ class AdhanScheduler {
           settings.androidBackgroundFullAdhan &&
           settings.playbackMode == MAdhanSettings.playbackFull;
 
-      // iOS native alarm path (AlarmKit on 26+, critical alert below that).
-      // Unlike Android it REPLACES the Dart notification rather than
-      // accompanying it — the native side posts its own alert, so scheduling
-      // both would double-banner. Requires the UI isolate: the workmanager
-      // background task can't reach the channel, so it keeps the Dart
-      // notification (hence the `armAudioAlarms` gate).
-      final fullIos =
-          Platform.isIOS && settings.fullScreenAlarm && armAudioAlarms;
-
       // Effective Fajr voice (a per-prayer override still wins per day below).
       String? fajrVoiceId;
       if (pref.useFajrSpecific) {
@@ -301,7 +292,6 @@ class AdhanScheduler {
           fajrVoiceId: fajrVoiceId,
           fajrVariants: fajrVariants,
           fullAndroid: fullAndroid,
-          fullIos: fullIos,
           fullScreen: settings.fullScreenAlarm,
           armAudioAlarms: armAudioAlarms,
           dayOffset: dayOffset,
@@ -468,70 +458,45 @@ class AdhanScheduler {
         settings.androidBackgroundFullAdhan &&
         settings.playbackMode == MAdhanSettings.playbackFull;
     final useFullAdhan = fullAndroid && soundId != null && soundId.isNotEmpty;
-    final fullIos = Platform.isIOS && settings.fullScreenAlarm;
 
     final when = DateTime.now().add(after);
 
-    // iOS native alarm replaces the notification (see [_scheduleDay]).
-    final iosNative =
-        fullIos &&
-        soundId != null &&
-        soundId.isNotEmpty &&
-        await _audioAlarms.schedule(
-          id: _testId,
-          when: when,
-          rawRes: soundId,
-          title: 'adhan_test_notif_title'.tr(),
-          body: 'adhan_test_notif_body'.tr(),
-          stopLabel: 'adhan_stop'.tr(),
-          openLabel: 'adhan_alarm_open'.tr(),
-          prayerKey: prayer.key,
-          fullScreen: settings.fullScreenAlarm,
-          volume: settings.adhanVolume,
-          vibrate: settings.vibrate,
-        );
+    final channel = useFullAdhan
+        ? _silentChannel(vibrate: settings.vibrate)
+        : await _resolveChannel(soundId, vibrate: settings.vibrate);
+    final iosSound = _iosClipFor(soundId);
 
-    if (!iosNative) {
-      final channel = useFullAdhan
-          ? _silentChannel(vibrate: settings.vibrate)
-          : await _resolveChannel(soundId, vibrate: settings.vibrate);
-      final iosSound = _iosClipFor(soundId);
+    await _notifications.scheduleAt(
+      id: _testId,
+      when: when,
+      title: 'adhan_test_notif_title'.tr(),
+      body: 'adhan_test_notif_body'.tr(),
+      channel: channel,
+      iosSound: iosSound,
+      alarm: !useFullAdhan,
+      payload: NotificationPayload(type: 'adhan', data: {'prayer': prayer.key}),
+    );
 
-      await _notifications.scheduleAt(
+    if (useFullAdhan) {
+      await _audioAlarms.schedule(
         id: _testId,
         when: when,
-        title: 'adhan_test_notif_title'.tr(),
-        body: 'adhan_test_notif_body'.tr(),
-        channel: channel,
-        iosSound: iosSound,
-        alarm: !useFullAdhan,
-        payload: NotificationPayload(
-          type: 'adhan',
-          data: {'prayer': prayer.key},
-        ),
+        rawRes: '${soundId}_full',
+        title: 'adhan_playing_title'.tr(),
+        body: 'adhan_test_notif_title'.tr(),
+        stopLabel: 'adhan_stop'.tr(),
+        openLabel: 'adhan_alarm_open'.tr(),
+        prayerKey: prayer.key,
+        fullScreen: settings.fullScreenAlarm,
+        volume: settings.adhanVolume,
+        vibrate: settings.vibrate,
       );
-
-      if (useFullAdhan) {
-        await _audioAlarms.schedule(
-          id: _testId,
-          when: when,
-          rawRes: '${soundId}_full',
-          title: 'adhan_playing_title'.tr(),
-          body: 'adhan_test_notif_title'.tr(),
-          stopLabel: 'adhan_stop'.tr(),
-          openLabel: 'adhan_alarm_open'.tr(),
-          prayerKey: prayer.key,
-          fullScreen: settings.fullScreenAlarm,
-          volume: settings.adhanVolume,
-          vibrate: settings.vibrate,
-        );
-      }
     }
     _scheduledTimes[_testId] = when;
 
     AppLogger.info(
       'Test adhan scheduled at $when (voice: ${voiceId ?? 'default'}, '
-      'androidFull: $useFullAdhan, iosNative: $iosNative)',
+      'androidFull: $useFullAdhan)',
       tag: 'AdhanScheduler',
     );
     return when;
@@ -551,7 +516,6 @@ class AdhanScheduler {
     required String? fajrVoiceId,
     required Set<String> fajrVariants,
     required bool fullAndroid,
-    required bool fullIos,
     required bool fullScreen,
     required bool armAudioAlarms,
     required int dayOffset,
@@ -589,76 +553,44 @@ class AdhanScheduler {
       final id = _mainBandStart + doy * 10 + i;
       final prayerName = 'prayer_${prayer.key}'.tr();
 
-      // iOS: hand the prayer to AlarmKit / the critical-alert fallback. It
-      // posts its own alert, so a successful arm means we skip the Dart
-      // notification entirely for this prayer. A false result (no
-      // authorization, unreachable channel) falls through to the normal
-      // notification below, so iOS never ends up silent.
-      final iosNative =
-          fullIos &&
-          soundId != null &&
-          soundId.isNotEmpty &&
-          dayOffset < _iosAlarmWindowDays &&
-          await _audioAlarms.schedule(
-            id: id,
-            when: time,
-            rawRes: soundId,
-            title: 'adhan_notif_title'.tr().replaceFirst(
-              '{{prayer}}',
-              prayerName,
-            ),
-            body: 'adhan_notif_body'.tr(),
-            stopLabel: 'adhan_stop'.tr(),
-            openLabel: 'adhan_alarm_open'.tr(),
-            prayerKey: prayer.key,
-            fullScreen: fullScreen,
-            volume: volume,
-            vibrate: vibrate,
-          );
+      final channel = useFullAdhan
+          ? _silentChannel(vibrate: vibrate)
+          : await _resolveChannel(soundId, vibrate: vibrate);
+      final iosSound = _iosClipFor(soundId);
 
-      if (!iosNative) {
-        final channel = useFullAdhan
-            ? _silentChannel(vibrate: vibrate)
-            : await _resolveChannel(soundId, vibrate: vibrate);
-        final iosSound = _iosClipFor(soundId);
+      await _notifications.scheduleAt(
+        id: id,
+        when: time,
+        title: 'adhan_notif_title'.tr().replaceFirst('{{prayer}}', prayerName),
+        body: 'adhan_notif_body'.tr(),
+        channel: channel,
+        iosSound: iosSound,
+        // A silent full-adhan companion shouldn't raise a full-screen alarm
+        // intent; the service's own notification carries the Stop control.
+        alarm: !useFullAdhan,
+        payload: NotificationPayload(
+          type: 'adhan',
+          data: {'prayer': prayer.key},
+        ),
+      );
 
-        await _notifications.scheduleAt(
+      if (useFullAdhan && armAudioAlarms) {
+        await _audioAlarms.schedule(
           id: id,
           when: time,
-          title: 'adhan_notif_title'.tr().replaceFirst(
+          rawRes: '${soundId}_full',
+          title: 'adhan_playing_title'.tr(),
+          body: 'adhan_notif_title'.tr().replaceFirst(
             '{{prayer}}',
             prayerName,
           ),
-          body: 'adhan_notif_body'.tr(),
-          channel: channel,
-          iosSound: iosSound,
-          // A silent full-adhan companion shouldn't raise a full-screen alarm
-          // intent; the service's own notification carries the Stop control.
-          alarm: !useFullAdhan,
-          payload: NotificationPayload(
-            type: 'adhan',
-            data: {'prayer': prayer.key},
-          ),
+          stopLabel: 'adhan_stop'.tr(),
+          openLabel: 'adhan_alarm_open'.tr(),
+          prayerKey: prayer.key,
+          fullScreen: fullScreen,
+          volume: volume,
+          vibrate: vibrate,
         );
-
-        if (useFullAdhan && armAudioAlarms) {
-          await _audioAlarms.schedule(
-            id: id,
-            when: time,
-            rawRes: '${soundId}_full',
-            title: 'adhan_playing_title'.tr(),
-            body: 'adhan_notif_title'.tr().replaceFirst(
-              '{{prayer}}',
-              prayerName,
-            ),
-            stopLabel: 'adhan_stop'.tr(),
-            openLabel: 'adhan_alarm_open'.tr(),
-            prayerKey: prayer.key,
-            fullScreen: fullScreen,
-            volume: volume,
-            vibrate: vibrate,
-          );
-        }
       }
       _scheduledTimes[id] = time;
       _remaining--;

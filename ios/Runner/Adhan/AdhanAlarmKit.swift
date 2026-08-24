@@ -138,6 +138,22 @@ final class AdhanAlarmKit {
         armed.remove(uuid)
     }
 
+    /// Cancels every adhan alarm AlarmKit is currently holding, including ones
+    /// armed by an earlier build of the app.
+    ///
+    /// [cancelAll] can only reach [armed], which is empty on a fresh launch —
+    /// so it cannot clean up after an app update, which is exactly when a
+    /// leftover alarm hurts. Reading the store and matching on the namespace
+    /// stamp in the id is the only way to find them. Alarms that aren't ours
+    /// are left untouched.
+    func purgeAll() {
+        guard let all = try? AlarmManager.shared.alarms else { return }
+        for alarm in all where AdhanAlarmRequest.isAdhanAlarm(alarm.id) {
+            try? AlarmManager.shared.cancel(id: alarm.id)
+        }
+        armed.removeAll()
+    }
+
     /// Cancels everything armed here except [except] — see the Android
     /// `AdhanAlarmScheduler.cancelAll` for why the exception exists.
     func cancelAll(except: Set<Int> = []) {

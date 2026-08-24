@@ -30,8 +30,7 @@ struct AdhanAlarmRequest {
     /// a whole request just to reach the identifier.
     static func alarmUUID(for id: Int) -> UUID {
         var bytes = [UInt8](repeating: 0, count: 16)
-        let prefix: [UInt8] = [0xAD, 0x4A, 0x4E, 0x00, 0x5A, 0x49, 0x4B, 0x52]
-        for (i, b) in prefix.enumerated() { bytes[i] = b }
+        for (i, b) in uuidNamespace.enumerated() { bytes[i] = b }
         var value = UInt64(bitPattern: Int64(id))
         for i in 0..<8 {
             bytes[15 - i] = UInt8(value & 0xFF)
@@ -47,4 +46,18 @@ struct AdhanAlarmRequest {
 
     /// Filename iOS expects for the notification sound.
     var soundFileName: String { "\(soundName).caf" }
+
+    /// Leading bytes stamped into every id minted by [alarmUUID(for:)].
+    ///
+    /// They exist so an adhan alarm can be recognised from the UUID alone,
+    /// without the originating id — which is what lets a purge sweep alarms
+    /// armed by an EARLIER build of the app, whose ids this process never saw.
+    static let uuidNamespace: [UInt8] = [0xAD, 0x4A, 0x4E, 0x00, 0x5A, 0x49, 0x4B, 0x52]
+
+    /// True when [uuid] carries the [uuidNamespace] stamp, i.e. this feature
+    /// minted it. Anything else in the app's alarm store is left alone.
+    static func isAdhanAlarm(_ uuid: UUID) -> Bool {
+        let b = uuid.uuid
+        return [b.0, b.1, b.2, b.3, b.4, b.5, b.6, b.7] == uuidNamespace
+    }
 }

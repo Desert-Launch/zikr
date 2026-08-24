@@ -264,10 +264,12 @@ class CBAdhanSettings extends Cubit<SAdhanSettings> {
     final s = _adhanSettings.current()..fullScreenAlarm = value;
     await _adhanSettings.save(s);
     emit(state.copyWith(fullScreenAlarm: value));
-    if (value) {
-      // iOS needs an explicit authorization grant before AlarmKit / critical
-      // alerts will deliver anything; Android's equivalent is a settings page,
-      // which the readiness card links to instead.
+    // Android only. iOS runs the adhan as a plain scheduled notification and
+    // never arms a native alarm, so there is no alarm authorization to ask for
+    // — prompting anyway would show an AlarmKit/critical-alert dialog for a
+    // path the app no longer uses. Android's equivalent is a settings page,
+    // which the readiness card links to instead.
+    if (value && !Platform.isIOS) {
       await _audioAlarms.requestAuthorization();
       emit(state.copyWith(alarmPermissions: await _audioAlarms.permissions()));
     }

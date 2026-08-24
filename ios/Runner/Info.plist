@@ -61,9 +61,14 @@
 		<array>
 			<string>com.app.quran.adhanRefresh</string>
 		</array>
-		<!-- Shown in the iOS 26+ AlarmKit authorization prompt
-		     (ios/Runner/Adhan/AdhanAlarmKit.swift). Without it the prompt
-		     never appears and scheduling fails silently. -->
+		<!-- The adhan no longer arms AlarmKit alarms — it is a plain
+		     scheduled notification, and nothing asks for alarm authorization
+		     (see ios/Runner/Adhan/AdhanAlarmChannel.swift). This key is kept
+		     anyway: AdhanAlarmKit.purgeAll() still reads and cancels alarms
+		     armed by earlier builds, and removing the usage description is the
+		     kind of change that can quietly break AlarmKit access for the
+		     already-authorized users the purge exists to clean up after.
+		     Safe to delete once those builds are out of circulation. -->
 		<key>NSAlarmKitUsageDescription</key>
 		<string>يُستخدم المنبّه للتنبيه بدخول وقت الصلاة ورفع الأذان في موعده. Alarms are used to announce the call to prayer at each prayer time you enable.</string>
 		<key>UIStatusBarHidden</key>
