@@ -12,6 +12,7 @@ class WPrayerTile extends StatelessWidget {
     required this.slot,
     required this.isNext,
     required this.notificationEnabled,
+    this.windowStart,
     required this.green,
     required this.gold,
     required this.onNotificationChanged,
@@ -19,6 +20,12 @@ class WPrayerTile extends StatelessWidget {
 
   final PrayerSlot slot;
   final bool isNext;
+
+  /// Time the progress bar starts filling from — the previous salah. Null when
+  /// there are no timings to derive it from, which hides the bar's progress
+  /// rather than guessing. Only read when [isNext].
+  final DateTime? windowStart;
+
   final bool notificationEnabled;
   final Color green;
   final Color gold;
@@ -30,7 +37,7 @@ class WPrayerTile extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final tile = Container(
-      padding: EdgeInsets.symmetric(horizontal: 18.w, vertical: 18.h),
+      padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 14.h),
       decoration: BoxDecoration(
         color: isNext ? null : Colors.white,
         gradient: isNext
@@ -68,7 +75,7 @@ class WPrayerTile extends StatelessWidget {
         Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text(_label(slot.prayer), style: AppTextStyles.ink16W700),
+            Text(_label(slot.prayer), style: AppTextStyles.ink14W500),
             if (!_isPast) ...[
               SizedBox(height: 3.h),
               Text('prayer_upcoming'.tr(), style: AppTextStyles.grey12W400),
@@ -79,7 +86,7 @@ class WPrayerTile extends StatelessWidget {
         Column(
           crossAxisAlignment: CrossAxisAlignment.end,
           children: [
-            Text(_formatTime(slot.time), style: AppTextStyles.ink24W500),
+            Text(_formatTime(slot.time), style: AppTextStyles.ink18W500),
             if (onNotificationChanged != null)
               Row(
                 children: [
@@ -99,7 +106,7 @@ class WPrayerTile extends StatelessWidget {
                   Icon(
                     Icons.notifications_none_rounded,
                     color: green,
-                    size: 24.r,
+                    size: 20.r,
                   ),
                 ],
               ),
@@ -121,7 +128,7 @@ class WPrayerTile extends StatelessWidget {
             Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(_label(slot.prayer), style: AppTextStyles.white16W700),
+                Text(_label(slot.prayer), style: AppTextStyles.white14W500),
                 Text(
                   '${'prayer_after'.tr()} ${_formatDuration(remaining)}',
                   style: AppTextStyles.white12W400,
@@ -132,7 +139,7 @@ class WPrayerTile extends StatelessWidget {
             Column(
               crossAxisAlignment: CrossAxisAlignment.end,
               children: [
-                Text(_formatTime(slot.time), style: AppTextStyles.white24W500),
+                Text(_formatTime(slot.time), style: AppTextStyles.white18W500),
                 Row(
                   children: [
                     Text(
@@ -169,7 +176,7 @@ class WPrayerTile extends StatelessWidget {
                     Icon(
                       Icons.notifications_none_rounded,
                       color: Colors.white,
-                      size: 24.r,
+                      size: 20.r,
                     ),
                   ],
                 ),
@@ -213,12 +220,20 @@ class WPrayerTile extends StatelessWidget {
     );
   }
 
+  /// Fraction of the gap between the previous salah and [target] that has
+  /// elapsed.
+  ///
+  /// This used to measure from midnight, which said nothing about the wait it
+  /// was drawing: the bar jumped to nearly full the moment isha ended, because
+  /// most of the calendar day was spent even though none of the wait for fajr
+  /// was — and once the list rolls into the next day, midnight isn't even on
+  /// the same side of the target.
   double _progressToPrayer(DateTime target) {
-    final now = DateTime.now();
-    final start = DateTime(now.year, now.month, now.day);
+    final start = windowStart;
+    if (start == null || !start.isBefore(target)) return 0;
     final total = target.difference(start).inSeconds;
-    if (total <= 0) return 1;
-    return (now.difference(start).inSeconds / total).clamp(0, 1).toDouble();
+    final elapsed = DateTime.now().difference(start).inSeconds;
+    return (elapsed / total).clamp(0, 1).toDouble();
   }
 
   String _formatDuration(Duration duration) {

@@ -111,31 +111,44 @@ class _SNPrayerTimesState extends State<SNPrayerTimes> with WidgetsBindingObserv
                 else
                   SliverPadding(
                     padding: EdgeInsets.fromLTRB(16.w, 12.h, 16.w, 28.h),
-                    sliver: SliverList.separated(
-                      itemCount: state.slots.length,
-                      separatorBuilder: (_, __) => SizedBox(height: 8.h),
-                      itemBuilder: (_, index) {
-                        final slot = state.slots[index];
-                        return WPrayerTile(
-                          slot: slot,
-                          isNext: state.nextPrayer?.prayer == slot.prayer,
-                          notificationEnabled: _notificationEnabled(slot.prayer),
-                          green: _green,
-                          gold: _gold,
-                          // Every slot gets a switch, sunrise included. It is
-                          // not a salah and gets no adhan, but it does carry an
-                          // alert now, and a row that can be turned on has to
-                          // show that it can.
-                          onNotificationChanged: (value) => _setNotification(slot.prayer, value),
-                        );
-                      },
-                    ),
+                    sliver: _buildList(state),
                   ),
               ],
             ),
           ),
         ),
       ),
+    );
+  }
+
+  /// Renders [SPrayerTimes.displaySlots], NOT `slots`.
+  ///
+  /// `nextPrayer` rolls into the following day once today's isha has gone, so
+  /// listing today's timings against it paired the highlighted tile with a
+  /// prayer that had already happened — late at night the fajr card counted
+  /// down to this morning's fajr and sat at "00:00". `displaySlots` rolls over
+  /// with it, so the highlighted tile always holds the timing being counted to.
+  Widget _buildList(SPrayerTimes state) {
+    final slots = state.displaySlots;
+    final windowStart = state.currentWindowStart;
+    return SliverList.separated(
+      itemCount: slots.length,
+      separatorBuilder: (_, __) => SizedBox(height: 8.h),
+      itemBuilder: (_, index) {
+        final slot = slots[index];
+        return WPrayerTile(
+          slot: slot,
+          isNext: state.nextPrayer?.prayer == slot.prayer,
+          windowStart: windowStart,
+          notificationEnabled: _notificationEnabled(slot.prayer),
+          green: _green,
+          gold: _gold,
+          // Every slot gets a switch, sunrise included. It is not a salah and
+          // gets no adhan, but it does carry an alert now, and a row that can
+          // be turned on has to show that it can.
+          onNotificationChanged: (value) => _setNotification(slot.prayer, value),
+        );
+      },
     );
   }
 

@@ -21,7 +21,7 @@ class WPrayerHeader extends StatelessWidget {
   Widget build(BuildContext context) {
     final now = DateTime.now();
     return Container(
-      height: context.isTablet ? 250.h : 325.h,
+      height: context.isTablet ? 190.h : 258.h,
       padding: EdgeInsets.fromLTRB(18.w, 8.h, 18.w, 16.h),
       decoration: BoxDecoration(
         color: green,
@@ -99,20 +99,29 @@ class WPrayerHeader extends StatelessWidget {
                 SizedBox(height: 14.h),
                 Container(
                   width: double.infinity,
-                  padding: EdgeInsets.symmetric(vertical: 13.h),
+                  padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 10.h),
                   decoration: BoxDecoration(
                     color: Colors.white.withValues(alpha: 0.07),
                     borderRadius: BorderRadius.circular(18.r),
                     border: Border.all(color: Colors.white.withValues(alpha: 0.04)),
                   ),
-                  child: Column(
-                    children: [
-                      Text(_weekday(now), style: AppTextStyles.white14W400),
-                      SizedBox(height: 6.h),
-                      Text(_date(now), style: AppTextStyles.white20W500),
-                      SizedBox(height: 10.h),
-                      Text(_hijriDate(now), style: AppTextStyles.white14W400),
-                    ],
+                  // Weekday · Gregorian · Hijri on a single line. Stacked, the
+                  // three ate a third of the header for information that reads
+                  // fine in a row. Scaled down rather than ellipsed so a long
+                  // Hijri month keeps all three legible instead of truncating
+                  // the date.
+                  child: FittedBox(
+                    fit: BoxFit.scaleDown,
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Text(_weekday(now), style: AppTextStyles.white12W400),
+                        _dot,
+                        Text(_date(now), style: AppTextStyles.white14W500),
+                        _dot,
+                        Text(_hijriDate(now), style: AppTextStyles.white12W400),
+                      ],
+                    ),
                   ),
                 ),
               ],
@@ -122,6 +131,19 @@ class WPrayerHeader extends StatelessWidget {
       ),
     );
   }
+
+  /// Neutral separator between the three date parts. A middle dot rather than
+  /// a slash or dash: it carries no direction, so it sits the same way in RTL
+  /// and LTR.
+  Widget get _dot => Padding(
+    padding: EdgeInsets.symmetric(horizontal: 7.w),
+    child: Text(
+      '\u00B7',
+      style: AppTextStyles.white12W400.copyWith(
+        color: Colors.white.withValues(alpha: 0.45),
+      ),
+    ),
+  );
 
   String _weekday(DateTime date) {
     const ar = ['الاثنين', 'الثلاثاء', 'الأربعاء', 'الخميس', 'الجمعة', 'السبت', 'الأحد'];

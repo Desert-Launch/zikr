@@ -99,6 +99,28 @@ class SPrayerTimes extends Equatable {
     return null;
   }
 
+  /// Where the countdown bar for [nextPrayer] starts filling: the salah whose
+  /// window the user is currently inside.
+  ///
+  /// The bar used to be anchored at midnight, which made it read almost full
+  /// the moment isha ended — most of the calendar day was gone even though
+  /// none of the wait for fajr was. Anchoring on the previous salah makes the
+  /// fraction mean "how much of THIS gap has elapsed".
+  ///
+  /// Before today's fajr there is no past salah, and the window that is open
+  /// began with yesterday's isha — approximated by shifting today's back a
+  /// day, the same one-minute-a-day drift [nextDaySlots] already accepts.
+  DateTime? get currentWindowStart {
+    final salah = currentSalah;
+    if (salah != null) return salah.time;
+    for (final s in slots) {
+      if (s.prayer == EPrayer.isha) {
+        return s.time.subtract(const Duration(days: 1));
+      }
+    }
+    return null;
+  }
+
   /// Returns the salah whose window the user is currently inside (most-recent
   /// past salah). Null before fajr.
   PrayerSlot? get currentSalah {
