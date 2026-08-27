@@ -416,8 +416,9 @@ class _WMushafV4PageState extends State<WMushafV4Page> {
         final sajdahColor = isDark ? const Color(0xFF8AB4F8) : const Color(0xFF1A4F9C);
         final brightness = isDark ? Brightness.dark : Brightness.light;
 
+        // Read from the reader's provider rather than Modular: this rebuilds
+        // during the pop transition, after the module has been disposed.
         return BlocSelector<CBAudioPlayer, SAudioPlayer, ParamAyahRef?>(
-          bloc: Modular.get<CBAudioPlayer>(),
           selector: (s) => s.currentAyah,
           builder: (context, playing) {
             final bigText = isBigTextScale(view.fontScale);

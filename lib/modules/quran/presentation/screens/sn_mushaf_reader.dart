@@ -49,6 +49,13 @@ class _SNMushafReaderState extends State<SNMushafReader> with OrientationOverrid
 
   late final CBMushafReader _cubit = Modular.get<CBMushafReader>();
 
+  /// Resolved once and provided to the subtree below, never fetched from
+  /// Modular inside `build`: this route's module is disposed the moment the pop
+  /// begins, while the outgoing screen still rebuilds for the length of the
+  /// transition — and a `Modular.get` in that rebuild throws
+  /// `BindNotFoundException`.
+  late final CBAudioPlayer _audio = Modular.get<CBAudioPlayer>();
+
   /// Shared reader display settings — the pinch gesture reads its on/off
   /// switch from here and writes the text size back to it.
   late final CBReaderSettings _settings = Modular.get<CBReaderSettings>();
@@ -473,8 +480,11 @@ class _SNMushafReaderState extends State<SNMushafReader> with OrientationOverrid
 
   @override
   Widget build(BuildContext context) {
-    return BlocProvider.value(
-      value: _cubit,
+    return MultiBlocProvider(
+      providers: [
+        BlocProvider.value(value: _cubit),
+        BlocProvider.value(value: _audio),
+      ],
       child: PopScope(
         canPop: !_blocksSystemPop,
         child: WSharedScaffold(
@@ -488,7 +498,6 @@ class _SNMushafReaderState extends State<SNMushafReader> with OrientationOverrid
           body: MultiBlocListener(
             listeners: [
               BlocListener<CBAudioPlayer, SAudioPlayer>(
-                bloc: Modular.get<CBAudioPlayer>(),
                 listenWhen: (a, b) => a.currentAyah?.key != b.currentAyah?.key,
                 listener: (context, audio) {
                   final ayah = audio.currentAyah;

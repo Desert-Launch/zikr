@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:flutter_modular/flutter_modular.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:quran/core/theme/brand_colors.dart';
 import 'package:quran/modules/quran/presentation/cubits/cb_audio_player.dart';
@@ -9,30 +8,31 @@ import 'package:quran/modules/quran/presentation/widgets/w_full_player.dart';
 import 'package:quran/modules/quran/presentation/widgets/w_player_bar.dart';
 
 /// Floating playback bar shown whenever the audio player is active.
+///
+/// Reads [CBAudioPlayer] from the reader's provider rather than from Modular:
+/// it rebuilds during the pop transition, by which time the Qur'an module — and
+/// the bind — are gone.
 class WMiniPlayer extends StatelessWidget {
   const WMiniPlayer({super.key});
 
   @override
   Widget build(BuildContext context) {
-    return BlocProvider.value(
-      value: Modular.get<CBAudioPlayer>(),
-      child: BlocBuilder<CBAudioPlayer, SAudioPlayer>(
-        builder: (context, state) {
-          final isActive =
-              state.currentAyah != null && state.status != PlayerStatus.idle;
-          return AnimatedSlide(
-            offset: Offset(0, isActive ? 0 : 1.2),
+    return BlocBuilder<CBAudioPlayer, SAudioPlayer>(
+      builder: (context, state) {
+        final isActive =
+            state.currentAyah != null && state.status != PlayerStatus.idle;
+        return AnimatedSlide(
+          offset: Offset(0, isActive ? 0 : 1.2),
+          duration: const Duration(milliseconds: 200),
+          child: AnimatedOpacity(
+            opacity: isActive ? 1 : 0,
             duration: const Duration(milliseconds: 200),
-            child: AnimatedOpacity(
-              opacity: isActive ? 1 : 0,
-              duration: const Duration(milliseconds: 200),
-              child: !isActive
-                  ? const SizedBox.shrink()
-                  : _Bar(state: state, cubit: Modular.get<CBAudioPlayer>()),
-            ),
-          );
-        },
-      ),
+            child: !isActive
+                ? const SizedBox.shrink()
+                : _Bar(state: state, cubit: context.read<CBAudioPlayer>()),
+          ),
+        );
+      },
     );
   }
 }
