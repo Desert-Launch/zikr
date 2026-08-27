@@ -16,6 +16,7 @@ class STasbih extends Equatable {
     this.windowEndHour = 22,
     this.ignoreSilent = false,
     this.pauseOnCall = true,
+    this.previewPlaying = false,
   });
 
   final String zekrAr;
@@ -49,6 +50,10 @@ class STasbih extends Equatable {
   /// Hold back app-played salawat feedback while a call/other app owns audio.
   final bool pauseOnCall;
 
+  /// The reminder clip is auditioning right now (settings sheet preview).
+  /// Transient — never persisted.
+  final bool previewPlaying;
+
   bool get isComplete => count >= target;
   double get progress => target == 0 ? 0.0 : (count / target).clamp(0.0, 1.0);
 
@@ -70,6 +75,7 @@ class STasbih extends Equatable {
     int? windowEndHour,
     bool? ignoreSilent,
     bool? pauseOnCall,
+    bool? previewPlaying,
   }) {
     return STasbih(
       zekrAr: zekrAr ?? this.zekrAr,
@@ -87,6 +93,7 @@ class STasbih extends Equatable {
       windowEndHour: windowEndHour ?? this.windowEndHour,
       ignoreSilent: ignoreSilent ?? this.ignoreSilent,
       pauseOnCall: pauseOnCall ?? this.pauseOnCall,
+      previewPlaying: previewPlaying ?? this.previewPlaying,
     );
   }
 
@@ -106,5 +113,6 @@ class STasbih extends Equatable {
     windowEndHour,
     ignoreSilent,
     pauseOnCall,
+    previewPlaying,
   ];
 }

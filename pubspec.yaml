@@ -169,6 +169,10 @@ flutter:
     - assets/data/khatma/
     - assets/data/notifictaions/
     - assets/audio/adhan/
+    # Salawat reminder clip — previewable in the reminder sheet. The Android
+    # notification plays the res/raw copy and iOS the CAF one; this is the
+    # same recording, bundled for in-app playback.
+    - assets/audio/salah_3la_mohamed.mp3
     - assets/images/
     - assets/icons/
     - assets/lang/

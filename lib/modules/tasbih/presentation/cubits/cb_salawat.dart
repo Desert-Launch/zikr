@@ -1,7 +1,14 @@
+import 'dart:async';
+
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:just_audio/just_audio.dart';
+import 'package:just_audio_background/just_audio_background.dart';
 import 'package:localize_and_translate/localize_and_translate.dart';
 import 'package:quran/core/data/sources/local/box_app_settings.dart';
+import 'package:quran/core/services/logging/app_logger.dart';
+import 'package:quran/core/services/media/audio_focus.dart';
 import 'package:quran/core/services/media/call_interruption.dart';
+import 'package:quran/core/services/media/media_artwork.dart';
 import 'package:quran/core/services/notifications/notification_window.dart';
 import 'package:quran/core/utils/helper/haptics_helper.dart';
 import 'package:quran/modules/tasbih/data/datasources/local/ds_hourly_tasbih.dart';
@@ -42,6 +49,16 @@ class CBSalawat extends Cubit<STasbih> {
   final DSHourlyTasbih _hourly;
   final BoxAppSettings _appSettings;
   final _uuid = const Uuid();
+
+  /// The reminder clip, previewable from the settings sheet. Same recording the
+  /// notification uses (`res/raw/salah_3la_mohamed.mp3` on Android, its CAF copy
+  /// on iOS), so the preview is what the reminder will actually sound like.
+  static const String previewAsset = 'assets/audio/salah_3la_mohamed.mp3';
+
+  /// Built on first preview, not in the constructor — this cubit is an eager
+  /// app-wide singleton, and most sessions never press play.
+  AudioPlayer? _preview;
+  StreamSubscription<PlayerState>? _previewSub;
 
   void _hydrate() {
     final c = _counter.current(BoxTasbihCounter.salawatKey);
@@ -172,6 +189,83 @@ class CBSalawat extends Cubit<STasbih> {
     );
     await _reschedule();
     await _hourly.rescheduleFromSettings();
+  }
+
+  /// Plays the reminder clip once, or stops it if it is already playing, so the
+  /// user can hear the reminder before committing to it.
+  ///
+  /// Deliberately the in-app player rather than a test notification: the clip is
+  /// what is being auditioned, and posting a real notification to preview it
+  /// would also have to survive the channel's silent/alarm routing (see
+  /// [setIgnoreSilent]) — a different question from "what does it sound like".
+  Future<void> togglePreview() async {
+    if (state.previewPlaying) {
+      await stopPreview();
+      return;
+    }
+    try {
+      final player = _preview ??= AudioPlayer();
+      if (_previewSub == null) {
+        // Registered on first use so the adhan/radio/Qur'an players can stop
+        // this preview when they claim the shared background slot.
+        AudioFocus.instance.register(this, stopPreview);
+        _previewSub = player.playerStateStream.listen((s) {
+          if (s.processingState == ProcessingState.completed) {
+            unawaited(stopPreview());
+          }
+        });
+      }
+      // `just_audio_background` allows one platform-active player app-wide, so
+      // free the slot before loading. Every source must carry a MediaItem tag.
+      await AudioFocus.instance.take(this);
+      await player.setAudioSource(
+        AudioSource.asset(
+          previewAsset,
+          tag: MediaItem(
+            id: 'salawat_reminder_preview',
+            album: 'salawat_reminder_title'.tr(),
+            title: 'salawat_preview_sound'.tr(),
+            artUri: MediaArtwork.uri,
+          ),
+        ),
+      );
+      await player.seek(Duration.zero);
+      if (isClosed) return;
+      emit(state.copyWith(previewPlaying: true));
+      // Completes when the clip finishes; the stream listener above is what
+      // actually clears the flag, since a stop also completes this future.
+      await player.play();
+    } catch (e, st) {
+      AppLogger.error(
+        'Salawat preview play',
+        error: e,
+        stackTrace: st,
+        tag: 'CBSalawat',
+      );
+      if (!isClosed) emit(state.copyWith(previewPlaying: false));
+    }
+  }
+
+  /// Stops the preview and hands the shared media slot back. Safe to call when
+  /// nothing is playing — the sheet calls it unconditionally on close.
+  Future<void> stopPreview() async {
+    try {
+      await _preview?.stop();
+    } catch (e) {
+      AppLogger.warning('Salawat preview stop failed: $e', tag: 'CBSalawat');
+    }
+    AudioFocus.instance.release(this);
+    if (!isClosed && state.previewPlaying) {
+      emit(state.copyWith(previewPlaying: false));
+    }
+  }
+
+  @override
+  Future<void> close() {
+    AudioFocus.instance.unregister(this);
+    _previewSub?.cancel();
+    _preview?.dispose();
+    return super.close();
   }
 
   Future<void> _reschedule() async {

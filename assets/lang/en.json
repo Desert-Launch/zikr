@@ -517,6 +517,8 @@
   "salawat_reminder_subtitle": "Set how often and when you're reminded",
   "salawat_reminder_enable": "Enable reminder",
   "salawat_reminder_enable_hint": "Notification with a salawat chime",
+  "salawat_preview_sound": "Preview reminder sound",
+  "salawat_preview_sound_hint": "Hear the chime before turning the reminder on",
   "salawat_reminder_frequency": "How often",
   "salawat_reminder_every_1h": "Every hour",
   "salawat_reminder_every_2h": "Every 2 hours",

@@ -517,6 +517,8 @@
   "salawat_reminder_subtitle": "اضبط عدد مرات التذكير ووقته",
   "salawat_reminder_enable": "تفعيل التذكير",
   "salawat_reminder_enable_hint": "إشعار بنغمة الصلاة على النبي ﷺ",
+  "salawat_preview_sound": "سماع نغمة التذكير",
+  "salawat_preview_sound_hint": "جرّب النغمة قبل تفعيل التذكير",
   "salawat_reminder_frequency": "عدد مرات التذكير",
   "salawat_reminder_every_1h": "كل ساعة",
   "salawat_reminder_every_2h": "كل ساعتين",
