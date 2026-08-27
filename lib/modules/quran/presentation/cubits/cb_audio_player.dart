@@ -23,17 +23,29 @@ import 'package:quran/modules/quran/presentation/cubits/s_audio_player.dart';
 
 /// App-wide audio player. Singleton (registered via Modular.addSingleton).
 ///
-/// Plays **one ayah at a time**, offline-first: each ayah resolves to a local
-/// file when it is already on disk, otherwise it streams directly from the CDN
-/// so playback starts immediately without waiting for a download. On completion
-/// we advance to the next ayah in [SAudioPlayer.queue] — re-resolving it the
-/// same way — and prefetch its file in the background so a later replay is
-/// local. We deliberately avoid a growing `ConcatenatingAudioSource` — appending
-/// to one while it plays under just_audio_background makes the auto-advanced
-/// item silent until a manual pause/resume re-issues `play()`.
+/// Plays a whole **unit** — the block [SAudioPlayer.queue] holds under the
+/// active repeat mode — as one [ConcatenatingAudioSource]. The platform
+/// (ExoPlayer / AVQueuePlayer) then moves between ayat itself, which is the
+/// only way the seam stays inaudible: driving each ayah from Dart meant a
+/// platform round trip plus a fresh prepare on every `completed` event, and
+/// that gap is heard between every two ayat.
 ///
-/// Ayah 1 of a surah is preceded by the basmalah, played as a lead-in that
-/// belongs to no queue entry — see [_shouldLeadWithBasmalah].
+/// Consequences of the platform owning the transition:
+/// - the current ayah is read from `currentIndexStream`, not set by us;
+/// - `completed` marks the end of the whole playlist, not of one ayah, so
+///   sleep-timer boundaries are judged on index changes instead;
+/// - a finite repeat is laid out as N copies of the unit and an infinite one
+///   runs under [LoopMode.all], so repeat seams are gapless too.
+///
+/// Still offline-first: every entry resolves to a local file when it is on
+/// disk, otherwise to a CDN URL streamed in place, and ayat are downloaded in
+/// the background so a later replay is local. The playlist is built once per
+/// unit and never appended to while it plays — under just_audio_background that
+/// leaves the auto-advanced item silent until a manual pause/resume.
+///
+/// Ayah 1 of a surah is preceded by the basmalah, an entry that carries the
+/// following ayah's index so the reader keeps highlighting it — see
+/// [_shouldLeadWithBasmalah].
 class CBAudioPlayer extends Cubit<SAudioPlayer> {
   CBAudioPlayer({
     required RQuran quran,
@@ -70,6 +82,11 @@ class CBAudioPlayer extends Cubit<SAudioPlayer> {
   /// Surah metadata for the active queue (for media-notification titles).
   MSurah? _activeSurah;
 
+  /// Ceiling on how many clips one playlist may hold. A repeat count that would
+  /// exceed it is played out over several playlists instead — the seam between
+  /// them is the only one that is not gapless.
+  static const int _maxPlaylistItems = 600;
+
   /// Bumped on every new play session (playFrom/playRange/stop) so stale async
   /// ensure/advance callbacks from a previous session become no-ops.
   int _playToken = 0;
@@ -83,22 +100,24 @@ class CBAudioPlayer extends Cubit<SAudioPlayer> {
   Timer? _sleepTimer;
 
   /// When set, playback stops at the next ayah/surah boundary (checked in
-  /// [_onTrackCompleted]). Null when no boundary sleep mode is armed.
+  /// [_onPlaylistIndexChanged]). Null when no boundary sleep mode is armed.
   ESleepTimer? _stopAtBoundary;
 
-  /// Set while the basmalah lead-in is playing: the ayah it precedes, held
-  /// until that clip completes. See [_shouldLeadWithBasmalah].
-  _PendingAyah? _pendingAfterBasmalah;
+  /// The playlist currently handed to the platform, one entry per audio clip:
+  /// every ayah of the unit plus any basmalah lead-in, repeated once per
+  /// laid-out pass. Maps a platform index back to an ayah.
+  List<_Track> _tracks = const [];
 
-  /// True during the swap from the finished lead-in to its ayah. The lead-in's
-  /// `completed` state lingers until the next source is loaded, so a repeat of
-  /// that event would otherwise be read as the ayah finishing and skip it.
-  bool _handingOverFromBasmalah = false;
+  /// Index into [_tracks] the platform is playing, to tell which entry a change
+  /// has just left behind.
+  int? _trackIndex;
+
 
   /// Last seen processing state, to log only on transitions.
   ProcessingState? _lastProcessingState;
 
   StreamSubscription<PlayerState>? _stateSub;
+  StreamSubscription<int?>? _idxSub;
   StreamSubscription<Duration>? _posSub;
   StreamSubscription<Duration?>? _durSub;
   StreamSubscription<PlaybackEvent>? _errSub;
@@ -115,8 +134,8 @@ class CBAudioPlayer extends Cubit<SAudioPlayer> {
   }
 
   /// Loads persisted playback preferences (speed, repeat mode/count, …) into
-  /// state. The player speed itself is (re)applied per ayah in [_playAt], so no
-  /// source needs to be loaded at construction time.
+  /// state. The player speed itself is applied per playlist in [_startQueue],
+  /// so no source needs to be loaded at construction time.
   Future<void> _hydratePrefs() async {
     final res = await _getPrefs();
     res.fold((_) {}, (opts) => emit(state.copyWith(options: opts)));
@@ -136,9 +155,10 @@ class CBAudioPlayer extends Cubit<SAudioPlayer> {
           tag: 'CBAudioPlayer',
         );
       }
-      // End of the current ayah → advance manually (or finish the queue).
+      // The platform advances between ayat by itself, so `completed` now marks
+      // the end of the whole playlist rather than of one ayah.
       if (ps.processingState == ProcessingState.completed) {
-        _onTrackCompleted();
+        _onPlaylistCompleted();
         return;
       }
       final PlayerStatus next;
@@ -156,6 +176,8 @@ class CBAudioPlayer extends Cubit<SAudioPlayer> {
       }
       emit(state.copyWith(status: next));
     });
+
+    _idxSub = _player.currentIndexStream.listen(_onPlaylistIndexChanged);
 
     _posSub = _player.positionStream.listen(
       (p) => emit(state.copyWith(position: p)),
@@ -229,17 +251,9 @@ class CBAudioPlayer extends Cubit<SAudioPlayer> {
       'Audio playback error: ${error.message}',
       tag: 'CBAudioPlayer',
     );
-    // The basmalah lead-in failed mid-flight — skip it and play the ayah it was
-    // introducing, rather than dropping the ayah entirely.
-    final pending = _pendingAfterBasmalah;
-    if (pending != null) {
-      _pendingAfterBasmalah = null;
-      if (pending.token == _playToken) await _playPending(pending);
-      return;
-    }
-    final idx = state.queueIndex;
-    if (idx != null && idx + 1 < state.queue.length) {
-      unawaited(_playAt(idx + 1, _playToken));
+    final idx = _trackIndex;
+    if (idx != null && idx + 1 < _tracks.length) {
+      unawaited(_player.seekToNext());
     } else {
       emit(state.copyWith(status: PlayerStatus.error, error: error.message));
     }
@@ -302,7 +316,13 @@ class CBAudioPlayer extends Cubit<SAudioPlayer> {
         'alafasy';
   }
 
-  /// Replaces the queue and starts playing from its first ayah.
+  /// Replaces the queue and starts playing it as a single gapless playlist.
+  ///
+  /// Every ayah of the unit (plus any basmalah lead-in) is handed to the
+  /// platform in one [ConcatenatingAudioSource], so ExoPlayer / AVQueuePlayer
+  /// performs the ayah→ayah transition itself with no gap. Driving each ayah
+  /// from Dart — load, then play, on every `completed` event — cost a round trip
+  /// through the platform channel and a fresh prepare, which is audible.
   Future<void> _startQueue(
     List<ParamAyahRef> queue,
     MSurah? surah,
@@ -316,44 +336,24 @@ class CBAudioPlayer extends Cubit<SAudioPlayer> {
     _activeReciterId = reciterId;
     _playToken++;
     _completedPasses = 0;
+    // Forget where the outgoing playlist stood: its index must not be compared
+    // against the incoming one, or the switch reads as a wrap or a boundary.
+    _trackIndex = null;
     final token = _playToken;
-    emit(state.copyWith(queue: queue, reciterId: reciterId, clearError: true));
-    await _playAt(0, token);
-  }
-
-  /// Resolves the ayah at [index] and plays it, preceded by the basmalah when
-  /// it opens a surah. [token] guards against a superseded play session.
-  Future<void> _playAt(int index, int token) async {
-    if (token != _playToken) return;
-    final queue = state.queue;
-    if (index < 0 || index >= queue.length) {
-      emit(state.copyWith(status: PlayerStatus.completed));
-      return;
-    }
-    _pendingAfterBasmalah = null;
-    final ref = queue[index];
-    final reciterId = _activeReciterId ?? 'alafasy';
     emit(
       state.copyWith(
-        queueIndex: index,
-        currentAyah: ref,
+        queue: queue,
+        reciterId: reciterId,
+        queueIndex: 0,
+        currentAyah: queue.first,
         status: PlayerStatus.loading,
         clearError: true,
       ),
     );
 
-    // Resolve a playable source without blocking on a download: the local file
-    // when the ayah is on disk, otherwise the CDN URL to stream immediately.
-    final res = await _resolve(ref, reciterId);
+    final pass = await _buildPass(queue, reciterId);
     if (token != _playToken) return;
-    final source = res.fold<EAyahAudioSource?>((failure) {
-      AppLogger.warning(
-        'Resolve ayah ${ref.key} failed: ${failure.message}',
-        tag: 'CBAudioPlayer',
-      );
-      return null;
-    }, (s) => s);
-    if (source == null) {
+    if (pass.isEmpty) {
       emit(
         state.copyWith(
           status: PlayerStatus.error,
@@ -363,92 +363,128 @@ class CBAudioPlayer extends Cubit<SAudioPlayer> {
       return;
     }
 
-    // A surah opens with the basmalah, which is not one of its own ayat. Play
-    // it as a lead-in first; [_onTrackCompleted] then hands over to the ayah.
-    if (_shouldLeadWithBasmalah(ref)) {
-      final lead = await _resolveBasmalah(reciterId);
-      if (token != _playToken) return;
-      if (lead != null) {
-        _pendingAfterBasmalah = _PendingAyah(
-          index: index,
-          ref: ref,
-          source: source,
-          token: token,
-        );
-        final started = await _play(
-          _basmalahSource(_activeSurah, ref, lead.uri, isLocal: lead.isLocal),
-          label: 'basmalah before ${ref.key}',
-          isLocal: lead.isLocal,
-          token: token,
-        );
-        // Couldn't play the lead-in — fall through to the ayah itself rather
-        // than leaving the surah silent.
-        if (started) return;
-        _pendingAfterBasmalah = null;
-      }
-    }
+    // A finite repeat is laid out as N copies of the unit rather than replayed
+    // on each `completed`, so the seam between passes is gapless too. An
+    // infinite repeat cannot be laid out, so it loops the playlist instead —
+    // also gapless, and [_onPassCompleted] counts the passes.
+    final repeating = state.options.repeatMode != RepeatMode.off;
+    final target = state.options.repeatCount;
+    final passes = (repeating && target > 0)
+        ? _passesThatFit(pass.length, target)
+        : 1;
+    _tracks = [
+      for (var i = 0; i < passes; i++)
+        for (final t in pass) t.onPass(i),
+    ];
 
-    final ok = await _play(
-      _ayahSource(_activeSurah, ref, source.uri, isLocal: source.isLocal),
-      label: 'ayah ${ref.key} idx=$index',
-      isLocal: source.isLocal,
-      token: token,
-    );
-    if (!ok) {
-      if (token == _playToken) {
-        emit(
-          state.copyWith(
-            status: PlayerStatus.error,
-            error: 'quran_audio_offline_error'.tr(),
-          ),
-        );
-      }
-      return;
-    }
-
-    // Prefetch the next ayah's file so auto-advance stays near-gapless.
-    unawaited(_prefetch(index + 1, token));
-  }
-
-  /// Claims the audio slot and plays [audioSource]. Returns false when the
-  /// session was superseded or playback could not start; the caller decides
-  /// whether that warrants an error state.
-  Future<bool> _play(
-    AudioSource audioSource, {
-    required String label,
-    required bool isLocal,
-    required int token,
-  }) async {
-    if (token != _playToken) return false;
     try {
       // Free the shared just_audio_background slot from any other domain player
-      // (radio/adhan/preview) before claiming it. Checked against the token
-      // first: a superseded session must not stop whoever now holds the slot.
+      // (radio/adhan/preview) before claiming it.
       await AudioFocus.instance.take(this);
-      if (token != _playToken) return false;
-      await _player.setAudioSource(audioSource);
-      if (token != _playToken) return false;
+      if (token != _playToken) return;
+      await _player.setLoopMode(
+        repeating && target == 0 ? LoopMode.all : LoopMode.off,
+      );
+      await _player.setAudioSource(
+        ConcatenatingAudioSource(
+          children: [for (final t in _tracks) t.source],
+        ),
+      );
+      if (token != _playToken) return;
       await _player.setSpeed(state.options.speed);
-      // All looping is handled manually in _onUnitCompleted so every track
-      // fires `completed`. LoopMode.one would suppress that event and break
-      // finite repeat counts.
-      await _player.setLoopMode(LoopMode.off);
       await _player.play();
       AppLogger.info(
-        'playing $label ${isLocal ? "local" : "stream"}',
+        'playlist ${_tracks.length} item(s), $passes pass(es), '
+        'from ${queue.first.key}',
         tag: 'CBAudioPlayer',
       );
-      return true;
     } catch (e, st) {
-      if (token != _playToken) return false;
+      if (token != _playToken) return;
       AppLogger.error(
-        'play failed ($label)',
+        'startQueue failed',
         error: e,
         stackTrace: st,
         tag: 'CBAudioPlayer',
       );
-      return false;
+      emit(
+        state.copyWith(
+          status: PlayerStatus.error,
+          error: 'quran_audio_offline_error'.tr(),
+        ),
+      );
     }
+  }
+
+  /// Resolves one pass of [queue] into playlist entries, in parallel — each
+  /// resolve is a file-exists check or a URL build, so the whole surah costs
+  /// about as much as a single ayah did.
+  ///
+  /// Ayat that cannot be resolved are dropped rather than failing the unit; an
+  /// empty result means nothing at all was playable.
+  Future<List<_Track>> _buildPass(
+    List<ParamAyahRef> queue,
+    String reciterId,
+  ) async {
+    final resolved = await Future.wait([
+      for (final ref in queue) _resolve(ref, reciterId),
+    ]);
+    final basmalahIndexes = <int>[
+      for (var i = 0; i < queue.length; i++)
+        if (_shouldLeadWithBasmalah(queue[i])) i,
+    ];
+    // One resolve for the lead-in: it is the same clip wherever it appears.
+    final lead = basmalahIndexes.isEmpty
+        ? null
+        : await _resolveBasmalah(reciterId);
+
+    final tracks = <_Track>[];
+    for (var i = 0; i < queue.length; i++) {
+      final ref = queue[i];
+      if (lead != null && basmalahIndexes.contains(i)) {
+        tracks.add(
+          _Track(
+            queueIndex: i,
+            ref: ref,
+            isBasmalah: true,
+            source: _basmalahSource(
+              _activeSurah,
+              ref,
+              lead.uri,
+              isLocal: lead.isLocal,
+            ),
+          ),
+        );
+      }
+      final source = resolved[i].fold<EAyahAudioSource?>((failure) {
+        AppLogger.warning(
+          'Resolve ayah ${ref.key} failed: ${failure.message}',
+          tag: 'CBAudioPlayer',
+        );
+        return null;
+      }, (s) => s);
+      if (source == null) continue;
+      tracks.add(
+        _Track(
+          queueIndex: i,
+          ref: ref,
+          source: _ayahSource(
+            _activeSurah,
+            ref,
+            source.uri,
+            isLocal: source.isLocal,
+          ),
+        ),
+      );
+    }
+    return tracks;
+  }
+
+  /// How many copies of a [passLength]-item unit to lay out for a [target]-pass
+  /// repeat. Capped so a long surah repeated many times does not build an
+  /// enormous playlist; the remaining passes are replayed on completion.
+  int _passesThatFit(int passLength, int target) {
+    final fits = _maxPlaylistItems ~/ passLength;
+    return fits < 1 ? 1 : (fits < target ? fits : target);
   }
 
   /// True when [ref] should be preceded by the basmalah: it is the opening ayah
@@ -467,8 +503,8 @@ class CBAudioPlayer extends Cubit<SAudioPlayer> {
   /// Resolves the basmalah clip for [reciterId]. It is Al-Fatiha 1:1, so this
   /// is the ordinary ayah resolver — local file when downloaded (which
   /// `BasmalahBootstrap` arranges for every reciter on first launch), otherwise
-  /// streamed. Null when it cannot be resolved at all; the caller then plays the
-  /// ayah without a lead-in.
+  /// streamed. Null when it cannot be resolved at all; the unit then plays
+  /// without a lead-in.
   Future<EAyahAudioSource?> _resolveBasmalah(String reciterId) async {
     const basmalah = ParamAyahRef(surah: 1, ayah: 1);
     final res = await _resolve(basmalah, reciterId);
@@ -481,92 +517,93 @@ class CBAudioPlayer extends Cubit<SAudioPlayer> {
     }, (s) => s);
   }
 
-  /// Best-effort background download of the ayah at [index] (skips if already on
-  /// disk). Not done while repeating a single ayah.
-  Future<void> _prefetch(int index, int token) async {
-    if (token != _playToken) return;
-    if (state.options.repeatMode == RepeatMode.singleAyah) return;
-    final queue = state.queue;
-    if (index < 0 || index >= queue.length) return;
-    await _ensure(queue[index], _activeReciterId ?? 'alafasy');
-  }
+  /// The platform moved to playlist entry [index]. Updates the current ayah,
+  /// honours an armed boundary sleep, and counts a repeat pass when the
+  /// playlist loops back on itself.
+  void _onPlaylistIndexChanged(int? index) {
+    if (index == null || index < 0 || index >= _tracks.length) return;
+    final previous = _trackIndex;
+    _trackIndex = index;
+    if (previous == index) return;
 
-  /// Plays the ayah that was held back while the basmalah led in.
-  Future<void> _playPending(_PendingAyah pending) async {
-    // Set synchronously, before the first await, so it is already up when a
-    // repeated `completed` event for the lead-in arrives.
-    _handingOverFromBasmalah = true;
-    final bool ok;
-    try {
-      ok = await _play(
-        _ayahSource(
-          _activeSurah,
-          pending.ref,
-          pending.source.uri,
-          isLocal: pending.source.isLocal,
-        ),
-        label: 'ayah ${pending.ref.key} idx=${pending.index} (after basmalah)',
-        isLocal: pending.source.isLocal,
-        token: pending.token,
-      );
-    } finally {
-      _handingOverFromBasmalah = false;
-    }
-    if (!ok) {
-      if (pending.token == _playToken) {
-        emit(
-          state.copyWith(
-            status: PlayerStatus.error,
-            error: 'quran_audio_offline_error'.tr(),
-          ),
-        );
-      }
-      return;
-    }
-    unawaited(_prefetch(pending.index + 1, pending.token));
-  }
+    final track = _tracks[index];
 
-  /// Reached the end of the current ayah. Advances within the unit, loops the
-  /// unit, advances to the next unit, or finishes — per the active repeat mode.
-  void _onTrackCompleted() {
-    // The basmalah lead-in just finished — play the ayah it precedes. Nothing
-    // else in the completion path applies: the lead-in is not a queue entry, so
-    // it advances nothing and counts towards no repeat pass.
-    if (_handingOverFromBasmalah) return;
-    final pending = _pendingAfterBasmalah;
-    if (pending != null) {
-      _pendingAfterBasmalah = null;
-      if (pending.token == _playToken) unawaited(_playPending(pending));
-      return;
-    }
-    final idx = state.queueIndex;
-    AppLogger.info(
-      'onTrackCompleted idx=$idx queue=${state.queue.length} '
-      'repeat=${state.options.repeatMode.name}',
-      tag: 'CBAudioPlayer',
-    );
-    if (idx == null) {
-      emit(state.copyWith(status: PlayerStatus.completed));
-      return;
-    }
-    // Sleep timer (boundary modes) wins over repeat: stop at this ayah/surah.
-    if (_stopAtBoundary != null) {
-      final stopNow =
-          _stopAtBoundary == ESleepTimer.endOfAyah ||
-          (_stopAtBoundary == ESleepTimer.endOfSurah &&
-              _isCurrentAyahSurahEnd());
-      if (stopNow) {
+    // The entry we just left has finished. A boundary sleep is checked here
+    // rather than on `completed`, which now only fires at the end of the whole
+    // playlist.
+    if (previous != null && previous < _tracks.length) {
+      final done = _tracks[previous];
+      if (_stopAtBoundary != null && _shouldStopAfter(done)) {
         _stopAtBoundary = null;
         unawaited(stop());
         return;
       }
+      // Either the next laid-out copy of the unit, or an infinite repeat
+      // looping the playlist — one full pass just finished.
+      if (track.pass != done.pass || index < previous) {
+        if (_onPassCompleted()) return;
+      }
     }
-    // Still inside the current block → play its next ayah.
-    if (idx + 1 < state.queue.length) {
-      unawaited(_playAt(idx + 1, _playToken));
+
+    emit(
+      state.copyWith(queueIndex: track.queueIndex, currentAyah: track.ref),
+    );
+    unawaited(_prefetch(track.queueIndex + 1));
+  }
+
+  /// True when playback should stop now that [done] has finished, under the
+  /// armed sleep mode. The basmalah lead-in is not an ayah, so it never ends a
+  /// boundary.
+  bool _shouldStopAfter(_Track done) {
+    if (done.isBasmalah) return false;
+    if (_stopAtBoundary == ESleepTimer.endOfAyah) return true;
+    if (_stopAtBoundary != ESleepTimer.endOfSurah) return false;
+    final total = _activeSurah?.totalAyah;
+    return total != null && done.ref.ayah >= total;
+  }
+
+  /// One pass of the repeat unit finished inside the running playlist. Returns
+  /// true when that exhausted the repeat count and playback ended here, so the
+  /// caller stops handling the index change.
+  ///
+  /// Checked per pass rather than per playlist so lowering the count mid-repeat
+  /// takes effect at the next seam instead of after the laid-out copies.
+  bool _onPassCompleted() {
+    _completedPasses++;
+    final target = state.options.repeatCount;
+    if (target == 0 || _completedPasses < target) return false;
+    if (state.options.afterRepeat == EAfterRepeat.continueNext) {
+      unawaited(_advanceAfterRepeat());
+    } else {
+      unawaited(stop());
+    }
+    return true;
+  }
+
+  /// Best-effort background download of the ayah at [queueIndex] so a later
+  /// replay is local. It does not affect the playlist already handed to the
+  /// platform — that one keeps streaming whatever it started with.
+  Future<void> _prefetch(int queueIndex) async {
+    if (state.options.repeatMode == RepeatMode.singleAyah) return;
+    final queue = state.queue;
+    if (queueIndex < 0 || queueIndex >= queue.length) return;
+    await _ensure(queue[queueIndex], _activeReciterId ?? 'alafasy');
+  }
+
+  /// The playlist ran out. With repeat off that is the end of the unit; with a
+  /// finite repeat it means every laid-out pass has played.
+  void _onPlaylistCompleted() {
+    AppLogger.info(
+      'playlist completed passes=$_completedPasses '
+      'repeat=${state.options.repeatMode.name}',
+      tag: 'CBAudioPlayer',
+    );
+    // A boundary sleep armed for the final ayah has nothing left to wait for.
+    if (_stopAtBoundary != null) {
+      _stopAtBoundary = null;
+      unawaited(stop());
       return;
     }
-    // End of the queue (singleAyah always lands here — its queue is length 1).
     if (state.options.repeatMode == RepeatMode.off) {
       unawaited(_advanceToNextSurahOrStop());
       return;
@@ -574,14 +611,14 @@ class CBAudioPlayer extends Cubit<SAudioPlayer> {
     _onUnitCompleted();
   }
 
-  /// One full pass of the repeat unit (ayah / range / surah) just finished.
-  /// Replays it until [EPlaybackOptions.repeatCount] passes are done (0 means
-  /// infinite), then stops or advances per [EPlaybackOptions.afterRepeat].
+  /// The playlist's final pass finished. Replays the unit while passes remain
+  /// (a repeat count too large to lay out in one playlist), then stops or
+  /// advances per [EPlaybackOptions.afterRepeat].
   void _onUnitCompleted() {
     _completedPasses++;
     final target = state.options.repeatCount;
     if (target == 0 || _completedPasses < target) {
-      unawaited(_playAt(0, _playToken)); // replay the unit from its start
+      unawaited(_replayUnit());
       return;
     }
     if (state.options.afterRepeat == EAfterRepeat.continueNext) {
@@ -590,6 +627,25 @@ class CBAudioPlayer extends Cubit<SAudioPlayer> {
       emit(state.copyWith(status: PlayerStatus.completed));
     }
   }
+
+  /// Restarts the playlist from its first entry, keeping the pass tally.
+  Future<void> _replayUnit() async {
+    try {
+      // Deliberate restart, not a lap of the playlist: forget the cursor so the
+      // jump back to entry 0 is not counted as another pass.
+      _trackIndex = null;
+      await _player.seek(Duration.zero, index: 0);
+      await _player.play();
+    } catch (e, st) {
+      AppLogger.error(
+        'replayUnit failed',
+        error: e,
+        stackTrace: st,
+        tag: 'CBAudioPlayer',
+      );
+    }
+  }
+
 
   /// Repeat-off reached the end of the surah → roll into the next surah (when
   /// [EPlaybackOptions.autoAdvanceSurah]) or finish at the end of the Qur'an.
@@ -792,7 +848,8 @@ class CBAudioPlayer extends Cubit<SAudioPlayer> {
   Future<void> resume() => _player.play();
   Future<void> stop() async {
     _playToken++; // invalidate any in-flight ensure/advance
-    _pendingAfterBasmalah = null;
+    _tracks = const [];
+    _trackIndex = null;
     _sleepTimer?.cancel();
     _sleepTimer = null;
     _stopAtBoundary = null;
@@ -810,22 +867,25 @@ class CBAudioPlayer extends Cubit<SAudioPlayer> {
   }
 
   Future<void> next() async {
-    final idx = state.queueIndex;
-    if (idx != null && idx + 1 < state.queue.length) {
-      await _playAt(idx + 1, _playToken);
-    }
+    final idx = _trackIndex;
+    if (idx == null || idx + 1 >= _tracks.length) return;
+    // A jump the user asked for is not an entry running out: forget the cursor
+    // so it counts no repeat pass and ends no sleep-timer boundary.
+    _trackIndex = null;
+    await _player.seekToNext();
   }
 
   Future<void> previous() async {
-    final idx = state.queueIndex;
+    final idx = _trackIndex;
     if (idx == null) return;
     // Restart the current ayah if we're well into it, otherwise step back.
     if (idx == 0 || state.position > const Duration(seconds: 3)) {
       await _player.seek(Duration.zero);
       if (!_player.playing) await _player.play();
-    } else {
-      await _playAt(idx - 1, _playToken);
+      return;
     }
+    _trackIndex = null; // see [next]
+    await _player.seekToPrevious();
   }
 
   Future<void> seekTo(Duration position) => _player.seek(position);
@@ -882,7 +942,7 @@ class CBAudioPlayer extends Cubit<SAudioPlayer> {
 
   /// Arms, changes, or clears the sleep timer. Timed options start a countdown
   /// that fades out and stops; boundary options stop at the next ayah / surah
-  /// boundary (handled in [_onTrackCompleted]) and beat an active repeat.
+  /// boundary (handled in [_onPlaylistIndexChanged]) and beat an active repeat.
   Future<void> setSleepTimer(ESleepTimer timer) async {
     _sleepTimer?.cancel();
     _sleepTimer = null;
@@ -919,13 +979,6 @@ class CBAudioPlayer extends Cubit<SAudioPlayer> {
     await _player.setVolume(1);
   }
 
-  /// True when the current ayah is the last of its surah.
-  bool _isCurrentAyahSurahEnd() {
-    final cur = state.currentAyah;
-    final total = _activeSurah?.totalAyah;
-    return cur != null && total != null && cur.ayah >= total;
-  }
-
   Stream<ParamAyahRef?> get currentAyahStream =>
       stream.map((s) => s.currentAyah).distinct((a, b) => a?.key == b?.key);
 
@@ -937,6 +990,7 @@ class CBAudioPlayer extends Cubit<SAudioPlayer> {
     await _posSub?.cancel();
     await _durSub?.cancel();
     await _errSub?.cancel();
+    await _idxSub?.cancel();
     await _noisySub?.cancel();
     await _interruptSub?.cancel();
     _sleepTimer?.cancel();
@@ -946,19 +1000,37 @@ class CBAudioPlayer extends Cubit<SAudioPlayer> {
   }
 }
 
-/// An ayah resolved and ready to play, parked while the basmalah leads in.
-class _PendingAyah {
-  const _PendingAyah({
-    required this.index,
+/// One clip in the playlist handed to the platform.
+class _Track {
+  const _Track({
+    required this.queueIndex,
     required this.ref,
     required this.source,
-    required this.token,
+    this.pass = 0,
+    this.isBasmalah = false,
   });
 
-  final int index;
-  final ParamAyahRef ref;
-  final EAyahAudioSource source;
+  _Track onPass(int pass) => _Track(
+    queueIndex: queueIndex,
+    ref: ref,
+    source: source,
+    pass: pass,
+    isBasmalah: isBasmalah,
+  );
 
-  /// The play session that queued it; a stale token means it was superseded.
-  final int token;
+  /// Which laid-out copy of the repeat unit this clip belongs to. A change
+  /// between two adjacent entries marks one full pass of the unit.
+  final int pass;
+
+  /// Index into `SAudioPlayer.queue` of the ayah this clip belongs to. A
+  /// basmalah lead-in carries the index of the ayah it introduces, so the
+  /// reader highlights that ayah while the lead-in plays.
+  final int queueIndex;
+
+  final ParamAyahRef ref;
+  final AudioSource source;
+
+  /// True for a basmalah lead-in — an entry that is not an ayah of its own, so
+  /// it ends no sleep-timer boundary.
+  final bool isBasmalah;
 }
