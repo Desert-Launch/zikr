@@ -6,6 +6,7 @@ import 'package:flutter_modular/flutter_modular.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:localize_and_translate/localize_and_translate.dart';
 import 'package:quran/core/assets/assets.gen.dart';
+import 'package:quran/core/extension/build_context.dart';
 import 'package:quran/core/services/routes/routes_names.dart';
 import 'package:quran/core/widgets/w_shared_scaffold.dart';
 import 'package:quran/modules/home/presentation/widgets/w_home_feature_card.dart';
@@ -65,7 +66,7 @@ class _SNHomeState extends State<SNHome> {
               ),
               SliverPadding(
                 padding: EdgeInsets.fromLTRB(16.w, 12.h, 16.w, 24.h),
-                sliver: SliverList.list(children: _buildGrid()),
+                sliver: SliverList.list(children: _buildGrid(context)),
               ),
             ],
           ),
@@ -74,16 +75,38 @@ class _SNHomeState extends State<SNHome> {
     );
   }
 
-  List<Widget> _buildGrid() {
+  List<Widget> _buildGrid(BuildContext context) {
+    // Four tiles across on a tablet instead of two. The design width doubles to
+    // 780 there (see `ScreenUtilInit` in main), so a two-up row makes each tile
+    // nearly 370pt wide — a banner with a small icon marooned in it — and pushes
+    // most of the grid below the fold. The wide features stay full-width; those
+    // are deliberately banners.
+    final perRow = context.isTablet ? 4 : 2;
+
     Widget gap() => SizedBox(height: 10.h);
 
-    Widget row(WHomeFeatureCard a, WHomeFeatureCard b) => Row(
-      children: [
-        Expanded(child: a),
-        SizedBox(width: 10.w),
-        Expanded(child: b),
-      ],
-    );
+    // Lays [cards] out `perRow` to a line, gap-separated. A trailing short line
+    // is padded with empty slots so its tiles keep the width they'd have in a
+    // full row instead of stretching to fill it.
+    List<Widget> grid(List<WHomeFeatureCard> cards) {
+      final rows = <Widget>[];
+      for (var i = 0; i < cards.length; i += perRow) {
+        final end = i + perRow;
+        final slice = cards.sublist(i, end > cards.length ? cards.length : end);
+        final children = <Widget>[];
+        for (var slot = 0; slot < perRow; slot++) {
+          if (slot > 0) children.add(SizedBox(width: 10.w));
+          children.add(
+            Expanded(
+              child: slot < slice.length ? slice[slot] : const SizedBox(),
+            ),
+          );
+        }
+        if (rows.isNotEmpty) rows.add(gap());
+        rows.add(Row(children: children));
+      }
+      return rows;
+    }
 
     return [
       // Continue-reading CTA
@@ -94,7 +117,7 @@ class _SNHomeState extends State<SNHome> {
         route: KhatmaRoutes.fullHome(),
       ),
       gap(),
-      row(
+      ...grid([
         WHomeFeatureCard(
           icon: Assets.icons.bookClose.path,
           title: 'home_mushaf'.tr(),
@@ -111,9 +134,6 @@ class _SNHomeState extends State<SNHome> {
           color: _gold,
           route: RoutesNames.prayerBase,
         ),
-      ),
-      gap(),
-      row(
         WHomeFeatureCard(
           icon: Assets.icons.hand.path,
           title: 'home_azkar'.tr(),
@@ -128,24 +148,21 @@ class _SNHomeState extends State<SNHome> {
           color: _gold,
           route: RoutesNames.qiblaBase,
         ),
-      ),
-      // gap(),
-      // row(
-      //   WHomeFeatureCard(
-      //     icon: Assets.icons.bookOpen.path,
-      //     title: 'home_tahfeez'.tr(),
-      //     subtitle: 'home_tahfeez_hint'.tr(),
-      //     color: _gold,
-      //     route: RoutesNames.quranBase,
-      //   ),
-      //   WHomeFeatureCard(
-      //     icon: Assets.icons.microphone.path,
-      //     title: 'home_tasmee'.tr(),
-      //     subtitle: 'home_tasmee_hint'.tr(),
-      //     color: _green,
-      //     route: QuranRoutes.fullReciterPicker(),
-      //   ),
-      // ),
+        // WHomeFeatureCard(
+        //   icon: Assets.icons.bookOpen.path,
+        //   title: 'home_tahfeez'.tr(),
+        //   subtitle: 'home_tahfeez_hint'.tr(),
+        //   color: _gold,
+        //   route: RoutesNames.quranBase,
+        // ),
+        // WHomeFeatureCard(
+        //   icon: Assets.icons.microphone.path,
+        //   title: 'home_tasmee'.tr(),
+        //   subtitle: 'home_tasmee_hint'.tr(),
+        //   color: _green,
+        //   route: QuranRoutes.fullReciterPicker(),
+        // ),
+      ]),
       gap(),
       WHomeWideFeature(
         icon: Assets.icons.circle.path,
@@ -163,7 +180,7 @@ class _SNHomeState extends State<SNHome> {
         route: RoutesNames.qiblaBase,
       ),
       gap(),
-      row(
+      ...grid([
         WHomeFeatureCard(
           icon: Assets.icons.tv.path,
           title: 'home_live'.tr(),
@@ -178,9 +195,6 @@ class _SNHomeState extends State<SNHome> {
           color: _gold,
           route: RadioRoutes.fullHome(),
         ),
-      ),
-      gap(),
-      row(
         WHomeFeatureCard(
           icon: Assets.icons.bell.path,
           title: 'home_reminders'.tr(),
@@ -195,7 +209,7 @@ class _SNHomeState extends State<SNHome> {
           color: _gold,
           route: RoutesNames.adhanBase,
         ),
-      ),
+      ]),
       gap(),
       WHomeWideFeature(
         icon: Assets.icons.heart.path,

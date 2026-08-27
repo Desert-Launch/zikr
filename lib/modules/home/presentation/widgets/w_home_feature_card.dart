@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_modular/flutter_modular.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:quran/core/extension/build_context.dart';
 import 'package:quran/core/theme/app_text_styles.dart';
 import 'package:quran/modules/home/presentation/widgets/w_home_icon_box.dart';
 
@@ -41,7 +42,11 @@ class WHomeFeatureCard extends StatelessWidget {
       borderRadius: BorderRadius.circular(16.r),
       onTap: _handleTap,
       child: Container(
-        height: 150.h,
+        // Four of these share a row on tablet, so a tile is roughly a quarter
+        // of the width there. `150.h` stretches to ~228px against that — a
+        // narrow tower. A fixed logical height keeps the tile near-square, the
+        // same trick the settings rows use to survive the taller design grid.
+        height: context.isTablet ? 176 : 150.h,
         padding: EdgeInsets.all(14.r),
         decoration: BoxDecoration(
           color: Colors.white,
