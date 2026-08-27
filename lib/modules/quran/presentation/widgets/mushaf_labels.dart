@@ -8,10 +8,16 @@ import 'package:quran/modules/quran/domain/entities/rub_starts.dart';
 /// running head printed at the top of the page itself, so the two can never
 /// word the same division differently.
 String mushafHizbLabel(int page) {
-  const prefixes = ['الحزب', 'ربع الحزب', 'نصف الحزب', 'ثلاثة أرباع الحزب'];
   final rub = RubStarts.numberForPage(page);
-  return '${prefixes[RubStarts.quarterOf(rub) - 1]} '
-      '${arabicDigits(RubStarts.hizbOf(rub))}';
+  return mushafRubLabel(RubStarts.hizbOf(rub), RubStarts.quarterOf(rub));
+}
+
+/// How the mushaf names [quarter] (1..4) of [hizb] (1..60): `الحزب 23` at the
+/// hizb's own start, then `ربع الحزب 23`, `نصف الحزب 23` and
+/// `ثلاثة أرباع الحزب 23`.
+String mushafRubLabel(int hizb, int quarter) {
+  const prefixes = ['الحزب', 'ربع الحزب', 'نصف الحزب', 'ثلاثة أرباع الحزب'];
+  return '${prefixes[quarter - 1]} ${arabicDigits(hizb)}';
 }
 
 /// [value] in Arabic-Indic digits (٠١٢٣٤٥٦٧٨٩).

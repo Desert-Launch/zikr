@@ -334,9 +334,19 @@ class CBMushafReader extends Cubit<SMushafReader> {
   }
 
   /// Opens/closes the slide-down search panel. Opening keeps the chrome up so
-  /// the panel stays anchored beneath the visible top bar.
+  /// the panel stays anchored beneath the visible top bar, and drops any ayah
+  /// selection: the action sheet that selection raises is pinned to the bottom
+  /// of the same screen and would sit on top of the results list.
   void toggleSearch() {
-    emit(state.copyWith(searchOpen: !state.searchOpen, chromeVisible: true));
+    final opening = !state.searchOpen;
+    emit(
+      state.copyWith(
+        searchOpen: opening,
+        chromeVisible: true,
+        clearSelected: opening,
+        multiSelection: opening ? const {} : state.multiSelection,
+      ),
+    );
     _scheduleChromeHide();
   }
 

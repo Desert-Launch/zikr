@@ -7,6 +7,7 @@ import 'package:quran/modules/quran/data/models/m_surah.dart';
 import 'package:quran/modules/quran/domain/entities/e_daily_verse.dart';
 import 'package:quran/modules/quran/domain/entities/e_hizb_entry.dart';
 import 'package:quran/modules/quran/domain/entities/e_juz_entry.dart';
+import 'package:quran/modules/quran/domain/entities/e_number_search.dart';
 import 'package:quran/modules/quran/domain/entities/e_quran_font_mode.dart';
 import 'package:quran/modules/quran/domain/entities/param_ayah_ref.dart';
 import 'package:quran/modules/quran/domain/entities/rub_starts.dart';
@@ -115,6 +116,61 @@ class RImplQuran implements RQuran {
       return Right(hits);
     } catch (e, st) {
       ErrorHelper.printDebugError(name: 'RImplQuran.search', error: e, stackTrace: st);
+      return Left(Failure.unexpectedFailure(message: e.toString()));
+    }
+  }
+
+  @override
+  Future<Either<Failure, ENumberSearch>> numberLookup(int number) async {
+    if (number < 1) {
+      return Left(Failure.validationFailure(message: 'Number must be positive'));
+    }
+    try {
+      final surahs = await _local.loadSurahs();
+
+      // As a page: name the surah the page opens in — the last one that starts
+      // on or before it.
+      MSurah? pageSurah;
+      final page = number <= 604 ? number : null;
+      if (page != null) {
+        for (final s in surahs) {
+          if (s.pageStart > 0 && s.pageStart <= page) pageSurah = s;
+        }
+      }
+
+      // As a surah.
+      MSurah? surah;
+      for (final s in surahs) {
+        if (s.number == number) surah = s;
+      }
+
+      // As a hizb: its four arba', each with the verse it opens on.
+      final rubs = <ENumberRub>[];
+      if (number <= RubStarts.count ~/ RubStarts.perHizb) {
+        final first = (number - 1) * RubStarts.perHizb;
+        for (var q = 0; q < RubStarts.perHizb; q++) {
+          final row = RubStarts.rows[first + q];
+          final ref = ParamAyahRef(surah: row[0], ayah: row[1]);
+          rubs.add(ENumberRub(
+            hizb: number,
+            quarter: q + 1,
+            ref: ref,
+            page: row[2],
+            text: await _local.fullAyahText(ref),
+          ));
+        }
+      }
+
+      return Right(ENumberSearch(
+        number: number,
+        page: page,
+        pageSurahArabic: pageSurah?.arabic ?? '',
+        pageSurahName: pageSurah?.name ?? '',
+        surah: surah,
+        rubs: rubs,
+      ));
+    } catch (e, st) {
+      ErrorHelper.printDebugError(name: 'RImplQuran.numberLookup', error: e, stackTrace: st);
       return Left(Failure.unexpectedFailure(message: e.toString()));
     }
   }

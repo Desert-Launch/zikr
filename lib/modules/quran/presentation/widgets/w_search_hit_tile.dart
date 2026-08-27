@@ -5,8 +5,13 @@ import 'package:localize_and_translate/localize_and_translate.dart';
 import 'package:quran/core/services/routes/routes_names.dart';
 import 'package:quran/core/theme/brand_colors.dart';
 import 'package:quran/modules/quran/domain/usecases/uc_search_quran.dart';
+import 'package:quran/modules/quran/presentation/widgets/mushaf_labels.dart';
 import 'package:quran/modules/quran/presentation/widgets/w_highlighted_ayah.dart';
+import 'package:quran/modules/quran/presentation/widgets/w_search_card.dart';
+import 'package:quran/modules/quran/presentation/widgets/w_search_page_pill.dart';
 
+/// One text-search hit: where the verse is, then the verse itself with the
+/// matched words picked out.
 class WSearchHitTile extends StatelessWidget {
   const WSearchHitTile({super.key, required this.hit, required this.query, this.onTap});
   final SearchHit hit;
@@ -22,71 +27,67 @@ class WSearchHitTile extends StatelessWidget {
     final tap = onTap;
     final isRtl = Directionality.of(context) == TextDirection.rtl;
 
-    final ayahLabel = 'search_ayah'.tr().replaceFirst('{{ayah}}', _digits(hit.ref.ayah, isRtl));
-    final pageLabel = 'search_page'.tr().replaceFirst('{{page}}', _digits(hit.page, isRtl));
-
     return Directionality(
       textDirection: isRtl ? TextDirection.rtl : TextDirection.ltr,
-      child: InkWell(
-        onTap: tap ?? () => Modular.to.pushNamed(QuranRoutes.readerFromAyah(hit.ref.surah, hit.ref.ayah)),
-        child: Container(
-          decoration: BoxDecoration(
-            color: brand.surface,
-            borderRadius: BorderRadius.circular(12.r),
-            boxShadow: [
-              BoxShadow(color: brand.onSurface.withValues(alpha: 0.05), blurRadius: 8.r, offset: Offset(0, 4.h)),
-            ],
-          ),
-          padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 14.h),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Row(
-                mainAxisAlignment: MainAxisAlignment.end,
-                children: [
-                  Flexible(
-                    child: Text(
-                      _surahTitle(isRtl),
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                      style: TextStyle(
-                        fontSize: 14.sp,
-                        fontWeight: FontWeight.w700,
-                        color: brand.onSurface,
-                        height: 1.2,
+      child: WSearchCard(
+        onTap: tap ??
+            () => Modular.to.pushNamed(
+                  QuranRoutes.readerFromAyah(hit.ref.surah, hit.ref.ayah),
+                ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            // Where it is: surah then ayah on the reading side, page opposite.
+            Row(
+              children: [
+                // Grouped so the surah name may claim every pixel the chip and
+                // the pill leave behind, rather than splitting the slack with
+                // a spacer.
+                Expanded(
+                  child: Row(
+                    children: [
+                      Flexible(
+                        child: Text(
+                          _surahTitle(isRtl),
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          style: TextStyle(
+                            fontSize: 14.sp,
+                            fontWeight: FontWeight.w700,
+                            color: brand.onSurface,
+                            height: 1.2,
+                          ),
+                        ),
                       ),
-                    ),
+                      SizedBox(width: 8.w),
+                      _AyahChip(ayah: hit.ref.ayah, isRtl: isRtl),
+                    ],
                   ),
-                  SizedBox(width: 8.w),
-                  _Dot(color: brand.muted),
-                  SizedBox(width: 8.w),
-                  Text(
-                    ayahLabel,
-                    style: TextStyle(fontSize: 12.sp, color: brand.muted, fontWeight: FontWeight.w500),
+                ),
+                SizedBox(width: 8.w),
+                WSearchPagePill(page: hit.page),
+              ],
+            ),
+            SizedBox(height: 10.h),
+            // The verse itself — highlighted match, always RTL, behind a quote
+            // rule on the reading edge. The trailing ayah-end number is dropped;
+            // it's already shown in the header.
+            Container(
+              decoration: BoxDecoration(
+                border: BorderDirectional(
+                  start: BorderSide(
+                    color: brand.primary.withValues(alpha: 0.3),
+                    width: 2.5.w,
                   ),
-                ],
+                ),
               ),
-              SizedBox(height: 10.h),
-              // The verse itself — highlighted match, always RTL. The trailing
-              // ayah-end number is dropped; it's already shown in the header.
-              Directionality(
+              padding: EdgeInsetsDirectional.only(start: 10.w),
+              child: Directionality(
                 textDirection: TextDirection.rtl,
                 child: WHighlightedAyah(text: _verseText, query: query),
               ),
-              SizedBox(height: 10.h),
-              // Footer meta: page reference.
-              Row(
-                children: [
-                  Icon(Icons.menu_book_outlined, size: 13.r, color: brand.muted),
-                  SizedBox(width: 4.w),
-                  Text(
-                    pageLabel,
-                    style: TextStyle(fontSize: 11.sp, color: brand.muted, fontWeight: FontWeight.w500),
-                  ),
-                ],
-              ),
-            ],
-          ),
+            ),
+          ],
         ),
       ),
     );
@@ -107,31 +108,36 @@ class WSearchHitTile extends StatelessWidget {
     if (!isRtl) return ar.isNotEmpty ? ar : (en.isNotEmpty ? en : fallback);
     return en.isNotEmpty ? en : (ar.isNotEmpty ? ar : fallback);
   }
-
-  static const _arabicDigits = ['٠', '١', '٢', '٣', '٤', '٥', '٦', '٧', '٨', '٩'];
-
-  /// Renders [n] with Arabic-Indic digits when showing the RTL/Arabic UI.
-  String _digits(int n, bool toArabic) {
-    if (!toArabic) return '$n';
-    return '$n'.split('').map((c) {
-      final d = int.tryParse(c);
-      return d == null ? c : _arabicDigits[d];
-    }).join();
-  }
 }
 
-/// Small separator dot between the surah name and the ayah label.
-class _Dot extends StatelessWidget {
-  const _Dot({required this.color});
+/// The verse number, set in a soft chip so it reads as a label rather than as
+/// part of the surah name next to it.
+class _AyahChip extends StatelessWidget {
+  const _AyahChip({required this.ayah, required this.isRtl});
 
-  final Color color;
+  final int ayah;
+  final bool isRtl;
 
   @override
   Widget build(BuildContext context) {
+    final brand = context.brand;
+    final label = 'search_ayah'
+        .tr()
+        .replaceFirst('{{ayah}}', isRtl ? arabicDigits(ayah) : '$ayah');
     return Container(
-      width: 3.r,
-      height: 3.r,
-      decoration: BoxDecoration(color: color.withValues(alpha: 0.6), shape: BoxShape.circle),
+      decoration: BoxDecoration(
+        color: brand.surfaceMuted,
+        borderRadius: BorderRadius.circular(20.r),
+      ),
+      padding: EdgeInsets.symmetric(horizontal: 8.w, vertical: 3.h),
+      child: Text(
+        label,
+        style: TextStyle(
+          fontSize: 11.sp,
+          fontWeight: FontWeight.w600,
+          color: brand.muted,
+        ),
+      ),
     );
   }
 }

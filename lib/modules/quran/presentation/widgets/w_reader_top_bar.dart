@@ -30,6 +30,7 @@ class WReaderTopBar extends StatelessWidget {
         surahName: s.surahName,
         juz: s.juz,
         page: s.currentPage,
+        searchOpen: s.searchOpen,
       ),
       builder: (context, vm) {
         return IgnorePointer(
@@ -60,10 +61,19 @@ class _Bar extends StatelessWidget {
   Widget build(BuildContext context) {
     return Material(
       color: Colors.transparent,
-      child: Container(
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 220),
+        curve: Curves.easeOutCubic,
         decoration: BoxDecoration(
           color: AppColorsLight.primary,
-          borderRadius: BorderRadius.vertical(bottom: Radius.circular(28.r)),
+          // Squared off while the search panel is down. The bar's curved
+          // corners are cut out of a bar that floats over the page, so with a
+          // flat-topped panel butted underneath they left two crescents of
+          // mushaf showing between the two. Flat meets flat, and the bar and
+          // the panel read as one sheet with the rounding at its foot.
+          borderRadius: BorderRadius.vertical(
+            bottom: Radius.circular(vm.searchOpen ? 0 : 28.r),
+          ),
           boxShadow: [
             BoxShadow(
               color: Colors.black.withValues(alpha: 0.18),
@@ -205,12 +215,14 @@ class _TopBarVM {
     required this.surahName,
     required this.juz,
     required this.page,
+    required this.searchOpen,
   });
 
   final bool visible;
   final String surahName;
   final int juz;
   final int page;
+  final bool searchOpen;
 
   @override
   bool operator ==(Object other) =>
@@ -218,8 +230,9 @@ class _TopBarVM {
       other.visible == visible &&
       other.surahName == surahName &&
       other.juz == juz &&
-      other.page == page;
+      other.page == page &&
+      other.searchOpen == searchOpen;
 
   @override
-  int get hashCode => Object.hash(visible, surahName, juz, page);
+  int get hashCode => Object.hash(visible, surahName, juz, page, searchOpen);
 }

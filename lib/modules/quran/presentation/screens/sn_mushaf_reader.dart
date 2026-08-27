@@ -274,11 +274,12 @@ class _SNMushafReaderState extends State<SNMushafReader> with OrientationOverrid
 
   /// Jumps the open reader to a search hit instead of pushing a new screen:
   /// closes the panel, lands on the hit's page and highlights the verse.
-  void _openSearchHit(ParamAyahRef ref, int page) {
+  void _openSearchHit(ParamAyahRef? ref, int page) {
     _cubit.closeSearch();
     _seekToPage(page);
     _cubit.openPage(page);
-    _cubit.highlightAyah(ref);
+    // A numeric hit that names a page alone carries no verse to highlight.
+    if (ref != null) _cubit.highlightAyah(ref);
   }
 
   /// Jumps the open reader to [page] — used by the index popup and the
@@ -599,7 +600,12 @@ class _SNMushafReaderState extends State<SNMushafReader> with OrientationOverrid
                     mainAxisSize: MainAxisSize.min,
                     children: [
                       WReaderTopBar(onOpenPage: _jumpToPage),
-                      WReaderSearchPanel(onHitTap: _openSearchHit),
+                      // Loose flex: the panel may grow only into what the top
+                      // bar left behind, so a short screen shrinks the results
+                      // list instead of overflowing the column.
+                      Flexible(
+                        child: WReaderSearchPanel(onHitTap: _openSearchHit),
+                      ),
                     ],
                   ),
                 ),
@@ -612,15 +618,19 @@ class _SNMushafReaderState extends State<SNMushafReader> with OrientationOverrid
                       // The action sheet hosts its own player bar. Show the
                       // standalone mini player only when there's no selection and
                       // the chrome is visible — so tapping the screen (which hides
-                      // the chrome + sheet) hides the player with it.
+                      // the chrome + sheet) hides the player with it. Search hides
+                      // it too: the panel now runs to the bottom of the screen and
+                      // the player would sit on the last result.
                       BlocBuilder<CBMushafReader, SMushafReader>(
                         buildWhen: (a, b) =>
                             (a.selectedAyah == null) !=
                                 (b.selectedAyah == null) ||
-                            a.chromeVisible != b.chromeVisible,
+                            a.chromeVisible != b.chromeVisible ||
+                            a.searchOpen != b.searchOpen,
                         builder: (_, s) {
-                          final showMini =
-                              s.chromeVisible && s.selectedAyah == null;
+                          final showMini = s.chromeVisible &&
+                              s.selectedAyah == null &&
+                              !s.searchOpen;
                           return showMini
                               ? const WMiniPlayer()
                               : const SizedBox.shrink();

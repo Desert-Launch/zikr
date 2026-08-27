@@ -77,6 +77,7 @@ import 'package:quran/modules/quran/domain/usecases/uc_resolve_ayah_source.dart'
 import 'package:quran/modules/quran/domain/usecases/uc_save_bookmark.dart';
 import 'package:quran/modules/quran/domain/usecases/uc_save_last_read.dart';
 import 'package:quran/modules/quran/domain/usecases/uc_save_playback_prefs.dart';
+import 'package:quran/modules/quran/domain/usecases/uc_number_lookup.dart';
 import 'package:quran/modules/quran/domain/usecases/uc_search_quran.dart';
 import 'package:quran/modules/quran/domain/usecases/uc_set_active_reciter.dart';
 import 'package:quran/modules/quran/domain/usecases/uc_set_font_bold.dart';
@@ -192,6 +193,7 @@ class QuranModule extends Module {
     i.add<UCGetQpcV4Page>(() => UCGetQpcV4Page(i.get<RQuranV4>()));
     i.add<UCGetTajweedTokens>(() => UCGetTajweedTokens(i.get<RTajweed>()));
     i.add<UCSearchQuran>(() => UCSearchQuran(i.get<RQuran>()));
+    i.add<UCNumberLookup>(() => UCNumberLookup(i.get<RQuran>()));
     i.add<UCResolveAudioUrl>(() => UCResolveAudioUrl(i.get<RAudio>()));
     i.add<UCPlayAyah>(UCPlayAyah.new);
     i.add<UCPlayRange>(UCPlayRange.new);
@@ -320,7 +322,9 @@ class QuranModule extends Module {
     i.add<CBBookmarks>(
       () => CBBookmarks(i.get<UCGetBookmarks>(), i.get<UCSaveBookmark>()),
     );
-    i.add<CBQuranSearch>(() => CBQuranSearch(i.get<UCSearchQuran>()));
+    i.add<CBQuranSearch>(
+      () => CBQuranSearch(i.get<UCSearchQuran>(), i.get<UCNumberLookup>()),
+    );
     i.add<CBReciterDownloads>(
       () => CBReciterDownloads(
         reciters: i.get<UCGetReciters>(),

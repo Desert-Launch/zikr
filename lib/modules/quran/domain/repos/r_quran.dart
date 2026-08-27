@@ -4,6 +4,7 @@ import 'package:quran/modules/quran/data/models/m_page_layout.dart';
 import 'package:quran/modules/quran/data/models/m_surah.dart';
 import 'package:quran/modules/quran/domain/entities/e_daily_verse.dart';
 import 'package:quran/modules/quran/domain/entities/e_juz_entry.dart';
+import 'package:quran/modules/quran/domain/entities/e_number_search.dart';
 import 'package:quran/modules/quran/domain/entities/e_quran_font_mode.dart';
 import 'package:quran/modules/quran/domain/entities/param_ayah_ref.dart';
 
@@ -60,4 +61,7 @@ abstract class RQuran {
   /// Diacritics-tolerant Uthmani text search across all 6236 ayat.
   /// Returns hits in canonical order (surah, ayah), capped at [limit].
   Future<Either<Failure, List<QuranSearchHit>>> search(String query, {int limit});
+
+  /// Resolves a purely numeric query into the page, surah and hizb it names.
+  Future<Either<Failure, ENumberSearch>> numberLookup(int number);
 }

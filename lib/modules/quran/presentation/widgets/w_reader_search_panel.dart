@@ -19,7 +19,8 @@ class WReaderSearchPanel extends StatefulWidget {
   const WReaderSearchPanel({super.key, required this.onHitTap});
 
   /// Called with the tapped ayah and its page so the reader can jump there.
-  final void Function(ParamAyahRef ref, int page) onHitTap;
+  /// The ayah is null for a hit that names a page rather than a verse.
+  final void Function(ParamAyahRef? ref, int page) onHitTap;
 
   @override
   State<WReaderSearchPanel> createState() => _WReaderSearchPanelState();
@@ -82,17 +83,33 @@ class _Panel extends StatelessWidget {
 
   final TextEditingController controller;
   final FocusNode focus;
-  final void Function(ParamAyahRef ref, int page) onHitTap;
+  final void Function(ParamAyahRef? ref, int page) onHitTap;
 
   @override
   Widget build(BuildContext context) {
     final cubit = BlocProvider.of<CBQuranSearch>(context);
+    // Rounded only while the panel floats above the keyboard. With the keyboard
+    // dismissed the panel runs to the foot of the screen, and a curved corner
+    // there leaves the same crescent of mushaf showing that the top bar's own
+    // corners used to leave at the seam.
+    final floating = MediaQuery.viewInsetsOf(context).bottom > 0;
     return Material(
       color: context.brand.surface,
       elevation: 6,
-      borderRadius: BorderRadius.vertical(bottom: Radius.circular(20.r)),
+      borderRadius: BorderRadius.vertical(
+        bottom: Radius.circular(floating ? 20.r : 0),
+      ),
       child: Padding(
-        padding: EdgeInsets.fromLTRB(16.w, 12.h, 16.w, 8.h),
+        // The reader's scaffold draws under the system bars, so a panel that
+        // now reaches the bottom of the screen has to keep the home indicator
+        // clear itself. `paddingOf` already nets off the keyboard inset, so
+        // this collapses to nothing while the keyboard is up.
+        padding: EdgeInsets.fromLTRB(
+          16.w,
+          12.h,
+          16.w,
+          8.h + MediaQuery.paddingOf(context).bottom,
+        ),
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
@@ -136,10 +153,13 @@ class _Panel extends StatelessWidget {
               ),
             ),
             SizedBox(height: 8.h),
-            SizedBox(
-              height: 0.5.sh,
+            // Takes everything the top bar left behind. The scaffold resizes
+            // around the keyboard, so this is half a screen while typing and
+            // the rest of the reader once the keyboard is dismissed.
+            Flexible(
               child: WSearchResults(
                 onHitTap: (hit) => onHitTap(hit.ref, hit.page),
+                onJump: onHitTap,
               ),
             ),
           ],
