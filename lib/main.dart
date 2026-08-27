@@ -43,6 +43,7 @@ import 'package:quran/modules/quran/data/models/m_last_read.dart';
 import 'package:quran/modules/quran/data/models/m_reciter_pref.dart';
 import 'package:quran/modules/quran/data/sources/local/quran_hive_registrar.dart';
 import 'package:quran/modules/quran/presentation/cubits/cb_reader_settings.dart';
+import 'package:quran/modules/quran/services/basmalah_bootstrap.dart';
 import 'package:quran/modules/radio/presentation/widgets/w_radio_peek_tab.dart';
 import 'package:quran/modules/reminders/data/models/m_reminder.dart';
 import 'package:quran/modules/reminders/presentation/cubits/cb_reminders.dart';
@@ -183,6 +184,14 @@ Future<void> _bootNotifications() async {
   await _bootStep(
     'companion notifications',
     Modular.get<AdhanScheduler>().reconcileCompanionNotifications,
+  );
+  // Fetch the basmalah (Al-Fatiha 1:1) for every reciter once, so the lead-in
+  // before ayah 1 of any surah is instant and works offline whichever reciter
+  // the user picks. ~1 MB total, skipped entirely once it's on disk. Detached
+  // deliberately: nothing below depends on it, and the first launch must not
+  // wait on 15 downloads before the adhan window is rebuilt.
+  unawaited(
+    _bootStep('basmalah prefetch', Modular.get<BasmalahBootstrap>().run),
   );
   await _bootStep('adhan bootstrap', Modular.get<AdhanBootstrap>().run);
   // Rebuild the rolling adhan window on every cold start so scheduling never

@@ -1,28 +1,17 @@
-import 'dart:convert';
-
 import 'package:dartz/dartz.dart';
-import 'package:flutter/services.dart' show rootBundle;
 import 'package:quran/core/errors/failure.dart';
 import 'package:quran/core/utils/helper/error_helper.dart';
+import 'package:quran/modules/quran/data/datasources/local/ds_local_reciters.dart';
 import 'package:quran/modules/quran/data/datasources/local/ds_local_settings.dart';
 import 'package:quran/modules/quran/data/models/m_reciter.dart';
 import 'package:quran/modules/quran/domain/repos/r_reciter.dart';
 
 class RImplReciter implements RReciter {
-  RImplReciter(this._settings);
+  RImplReciter(this._settings, this._catalog);
   final DSLocalSettings _settings;
+  final DSLocalReciters _catalog;
 
-  List<MReciter>? _cache;
-
-  Future<List<MReciter>> _loadCache() async {
-    if (_cache != null) return _cache!;
-    final raw = await rootBundle.loadString('assets/data/reciters.json');
-    final list = (jsonDecode(raw) as List<dynamic>)
-        .map((e) => MReciter.fromJson(Map<String, dynamic>.from(e as Map)))
-        .toList(growable: false);
-    _cache = list;
-    return list;
-  }
+  Future<List<MReciter>> _loadCache() => _catalog.all();
 
   @override
   Future<Either<Failure, List<MReciter>>> getReciters() async {

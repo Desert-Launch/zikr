@@ -5,6 +5,7 @@ import 'package:quran/modules/quran/data/datasources/local/ds_local_bookmarks.da
 import 'package:quran/modules/quran/data/datasources/local/ds_local_playback_prefs.dart';
 import 'package:quran/modules/quran/data/datasources/local/ds_local_quran.dart';
 import 'package:quran/modules/quran/data/datasources/local/ds_local_reader_settings.dart';
+import 'package:quran/modules/quran/data/datasources/local/ds_local_reciters.dart';
 import 'package:quran/modules/quran/data/datasources/local/ds_local_settings.dart';
 import 'package:quran/modules/quran/data/datasources/local/ds_local_tajweed.dart';
 import 'package:quran/modules/quran/data/datasources/local/ds_local_tafsir.dart';
@@ -129,6 +130,7 @@ class QuranModule extends Module {
     i.addSingleton<DSLocalSettings>(
       () => DSLocalSettings(i.get<BoxReciterPref>()),
     );
+    i.addSingleton<DSLocalReciters>(DSLocalReciters.new);
     i.addSingleton<DSLocalReaderSettings>(
       () => DSLocalReaderSettings(i.get<BoxReaderSettings>()),
     );
@@ -150,7 +152,9 @@ class QuranModule extends Module {
     i.addSingleton<RQuran>(() => RImplQuran(i.get<DSLocalQuran>()));
     i.addSingleton<RQuranV4>(() => RImplQuranV4(i.get<DSQpcV4Data>()));
     i.addSingleton<RTajweed>(() => RImplTajweed(i.get<DSLocalTajweed>()));
-    i.addSingleton<RReciter>(() => RImplReciter(i.get<DSLocalSettings>()));
+    i.addSingleton<RReciter>(
+      () => RImplReciter(i.get<DSLocalSettings>(), i.get<DSLocalReciters>()),
+    );
     i.addSingleton<RAudio>(
       () => RImplAudio(
         i.get<DSLocalAudioFiles>(),

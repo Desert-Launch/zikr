@@ -68,11 +68,16 @@ import 'package:quran/modules/prayer/domain/usecases/uc_get_prayer_times.dart';
 import 'package:quran/modules/prayer/prayer_module.dart';
 import 'package:quran/modules/prayer/presentation/cubits/cb_prayer_times.dart';
 import 'package:quran/modules/qibla/qibla_module.dart';
+import 'package:quran/modules/quran/data/datasources/local/ds_local_audio_files.dart';
 import 'package:quran/modules/quran/data/datasources/local/ds_local_quran.dart';
+import 'package:quran/modules/quran/data/datasources/local/ds_local_reciters.dart';
+import 'package:quran/modules/quran/data/datasources/remote/ds_audio_downloader.dart';
+import 'package:quran/modules/quran/data/datasources/remote/ds_remote_audio.dart';
 import 'package:quran/modules/quran/data/repos/r_impl_quran.dart';
 import 'package:quran/modules/quran/domain/usecases/uc_get_daily_verse.dart';
 import 'package:quran/modules/quran/presentation/cubits/cb_daily_verse.dart';
 import 'package:quran/modules/quran/quran_module.dart';
+import 'package:quran/modules/quran/services/basmalah_bootstrap.dart';
 import 'package:quran/modules/radio/presentation/cubits/cb_radio_player.dart';
 import 'package:quran/modules/radio/radio_module.dart';
 import 'package:quran/modules/reminders/data/sources/local/box_reminders.dart';
@@ -242,6 +247,19 @@ class AppModule extends Module {
         initNotifications: i.get<InitNotificationsService>(),
         hourlyZekr: i.get<DSHourlyTasbih>(),
         salawat: i.get<DSSalawatReminder>(),
+      ),
+    );
+    // Owns its own datasource instances rather than QuranModule's: this runs as
+    // a boot step in main(), long before the Quran route module is mounted and
+    // its binds become resolvable. All four are stateless caches over the
+    // bundled catalogue, the audio directory and a pure URL builder, so a
+    // second instance costs nothing and shares the same files on disk.
+    i.addSingleton<BasmalahBootstrap>(
+      () => BasmalahBootstrap(
+        catalog: DSLocalReciters(),
+        files: DSLocalAudioFiles(),
+        remote: DSRemoteAudio(),
+        downloader: DSAudioDownloader(),
       ),
     );
     i.addSingleton<AdhanBootstrap>(

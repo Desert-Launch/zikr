@@ -31,6 +31,9 @@ import 'package:quran/modules/quran/presentation/cubits/s_audio_player.dart';
 /// local. We deliberately avoid a growing `ConcatenatingAudioSource` — appending
 /// to one while it plays under just_audio_background makes the auto-advanced
 /// item silent until a manual pause/resume re-issues `play()`.
+///
+/// Ayah 1 of a surah is preceded by the basmalah, played as a lead-in that
+/// belongs to no queue entry — see [_shouldLeadWithBasmalah].
 class CBAudioPlayer extends Cubit<SAudioPlayer> {
   CBAudioPlayer({
     required RQuran quran,
@@ -82,6 +85,15 @@ class CBAudioPlayer extends Cubit<SAudioPlayer> {
   /// When set, playback stops at the next ayah/surah boundary (checked in
   /// [_onTrackCompleted]). Null when no boundary sleep mode is armed.
   ESleepTimer? _stopAtBoundary;
+
+  /// Set while the basmalah lead-in is playing: the ayah it precedes, held
+  /// until that clip completes. See [_shouldLeadWithBasmalah].
+  _PendingAyah? _pendingAfterBasmalah;
+
+  /// True during the swap from the finished lead-in to its ayah. The lead-in's
+  /// `completed` state lingers until the next source is loaded, so a repeat of
+  /// that event would otherwise be read as the ayah finishing and skip it.
+  bool _handingOverFromBasmalah = false;
 
   /// Last seen processing state, to log only on transitions.
   ProcessingState? _lastProcessingState;
@@ -217,6 +229,14 @@ class CBAudioPlayer extends Cubit<SAudioPlayer> {
       'Audio playback error: ${error.message}',
       tag: 'CBAudioPlayer',
     );
+    // The basmalah lead-in failed mid-flight — skip it and play the ayah it was
+    // introducing, rather than dropping the ayah entirely.
+    final pending = _pendingAfterBasmalah;
+    if (pending != null) {
+      _pendingAfterBasmalah = null;
+      if (pending.token == _playToken) await _playPending(pending);
+      return;
+    }
     final idx = state.queueIndex;
     if (idx != null && idx + 1 < state.queue.length) {
       unawaited(_playAt(idx + 1, _playToken));
@@ -253,6 +273,29 @@ class CBAudioPlayer extends Cubit<SAudioPlayer> {
     );
   }
 
+  /// Audio source for the basmalah lead-in that precedes [ref] (ayah 1 of
+  /// [surah]). Carries its own notification metadata so the media controls read
+  /// as the basmalah rather than as the ayah that follows it.
+  AudioSource _basmalahSource(
+    MSurah? surah,
+    ParamAyahRef ref,
+    String uri, {
+    required bool isLocal,
+  }) {
+    final tag = MediaItem(
+      id: 'basmalah_${ref.surah}',
+      album:
+          'القرآن الكريم${_activeReciterName != null ? ' - $_activeReciterName' : ''}',
+      title: '${surah?.arabic ?? ''} - بسم الله الرحمن الرحيم',
+      artist: _activeReciterName ?? '',
+      artUri: MediaArtwork.uri,
+    );
+    return AudioSource.uri(
+      isLocal ? Uri.file(uri) : Uri.parse(uri),
+      tag: tag,
+    );
+  }
+
   Future<String> _resolveReciterId() async {
     return _activeReciterId ??
         (await _reciters.active()).fold<String?>((_) => null, (r) => r.id) ??
@@ -278,8 +321,8 @@ class CBAudioPlayer extends Cubit<SAudioPlayer> {
     await _playAt(0, token);
   }
 
-  /// Ensures the ayah at [index] is on disk, sets it as the single audio source
-  /// and plays it. [token] guards against a superseded play session.
+  /// Resolves the ayah at [index] and plays it, preceded by the basmalah when
+  /// it opens a surah. [token] guards against a superseded play session.
   Future<void> _playAt(int index, int token) async {
     if (token != _playToken) return;
     final queue = state.queue;
@@ -287,6 +330,7 @@ class CBAudioPlayer extends Cubit<SAudioPlayer> {
       emit(state.copyWith(status: PlayerStatus.completed));
       return;
     }
+    _pendingAfterBasmalah = null;
     final ref = queue[index];
     final reciterId = _activeReciterId ?? 'alafasy';
     emit(
@@ -319,20 +363,71 @@ class CBAudioPlayer extends Cubit<SAudioPlayer> {
       return;
     }
 
+    // A surah opens with the basmalah, which is not one of its own ayat. Play
+    // it as a lead-in first; [_onTrackCompleted] then hands over to the ayah.
+    if (_shouldLeadWithBasmalah(ref)) {
+      final lead = await _resolveBasmalah(reciterId);
+      if (token != _playToken) return;
+      if (lead != null) {
+        _pendingAfterBasmalah = _PendingAyah(
+          index: index,
+          ref: ref,
+          source: source,
+          token: token,
+        );
+        final started = await _play(
+          _basmalahSource(_activeSurah, ref, lead.uri, isLocal: lead.isLocal),
+          label: 'basmalah before ${ref.key}',
+          isLocal: lead.isLocal,
+          token: token,
+        );
+        // Couldn't play the lead-in — fall through to the ayah itself rather
+        // than leaving the surah silent.
+        if (started) return;
+        _pendingAfterBasmalah = null;
+      }
+    }
+
+    final ok = await _play(
+      _ayahSource(_activeSurah, ref, source.uri, isLocal: source.isLocal),
+      label: 'ayah ${ref.key} idx=$index',
+      isLocal: source.isLocal,
+      token: token,
+    );
+    if (!ok) {
+      if (token == _playToken) {
+        emit(
+          state.copyWith(
+            status: PlayerStatus.error,
+            error: 'quran_audio_offline_error'.tr(),
+          ),
+        );
+      }
+      return;
+    }
+
+    // Prefetch the next ayah's file so auto-advance stays near-gapless.
+    unawaited(_prefetch(index + 1, token));
+  }
+
+  /// Claims the audio slot and plays [audioSource]. Returns false when the
+  /// session was superseded or playback could not start; the caller decides
+  /// whether that warrants an error state.
+  Future<bool> _play(
+    AudioSource audioSource, {
+    required String label,
+    required bool isLocal,
+    required int token,
+  }) async {
+    if (token != _playToken) return false;
     try {
       // Free the shared just_audio_background slot from any other domain player
-      // (radio/adhan/preview) before claiming it for this ayah.
+      // (radio/adhan/preview) before claiming it. Checked against the token
+      // first: a superseded session must not stop whoever now holds the slot.
       await AudioFocus.instance.take(this);
-      if (token != _playToken) return;
-      await _player.setAudioSource(
-        _ayahSource(
-          _activeSurah,
-          ref,
-          source.uri,
-          isLocal: source.isLocal,
-        ),
-      );
-      if (token != _playToken) return;
+      if (token != _playToken) return false;
+      await _player.setAudioSource(audioSource);
+      if (token != _playToken) return false;
       await _player.setSpeed(state.options.speed);
       // All looping is handled manually in _onUnitCompleted so every track
       // fires `completed`. LoopMode.one would suppress that event and break
@@ -340,24 +435,50 @@ class CBAudioPlayer extends Cubit<SAudioPlayer> {
       await _player.setLoopMode(LoopMode.off);
       await _player.play();
       AppLogger.info(
-        'playing ayah ${ref.key} idx=$index '
-        '${source.isLocal ? "local" : "stream"}',
+        'playing $label ${isLocal ? "local" : "stream"}',
         tag: 'CBAudioPlayer',
       );
+      return true;
     } catch (e, st) {
-      if (token != _playToken) return;
+      if (token != _playToken) return false;
       AppLogger.error(
-        'playAt failed',
+        'play failed ($label)',
         error: e,
         stackTrace: st,
         tag: 'CBAudioPlayer',
       );
-      emit(state.copyWith(status: PlayerStatus.error, error: e.toString()));
-      return;
+      return false;
     }
+  }
 
-    // Prefetch the next ayah's file so auto-advance stays near-gapless.
-    unawaited(_prefetch(index + 1, token));
+  /// True when [ref] should be preceded by the basmalah: it is the opening ayah
+  /// of a surah that starts with one.
+  ///
+  /// Excluded: Al-Fatiha, whose ayah 1 *is* the basmalah (it would play twice),
+  /// and At-Tawbah, which has no basmalah. Also skipped while repeating a single
+  /// ayah — that mode is for memorisation, and re-hearing the basmalah on every
+  /// pass gets in the way.
+  bool _shouldLeadWithBasmalah(ParamAyahRef ref) =>
+      ref.ayah == 1 &&
+      ref.surah != 1 &&
+      ref.surah != 9 &&
+      state.options.repeatMode != RepeatMode.singleAyah;
+
+  /// Resolves the basmalah clip for [reciterId]. It is Al-Fatiha 1:1, so this
+  /// is the ordinary ayah resolver — local file when downloaded (which
+  /// `BasmalahBootstrap` arranges for every reciter on first launch), otherwise
+  /// streamed. Null when it cannot be resolved at all; the caller then plays the
+  /// ayah without a lead-in.
+  Future<EAyahAudioSource?> _resolveBasmalah(String reciterId) async {
+    const basmalah = ParamAyahRef(surah: 1, ayah: 1);
+    final res = await _resolve(basmalah, reciterId);
+    return res.fold<EAyahAudioSource?>((failure) {
+      AppLogger.warning(
+        'Resolve basmalah failed: ${failure.message}',
+        tag: 'CBAudioPlayer',
+      );
+      return null;
+    }, (s) => s);
   }
 
   /// Best-effort background download of the ayah at [index] (skips if already on
@@ -370,9 +491,54 @@ class CBAudioPlayer extends Cubit<SAudioPlayer> {
     await _ensure(queue[index], _activeReciterId ?? 'alafasy');
   }
 
+  /// Plays the ayah that was held back while the basmalah led in.
+  Future<void> _playPending(_PendingAyah pending) async {
+    // Set synchronously, before the first await, so it is already up when a
+    // repeated `completed` event for the lead-in arrives.
+    _handingOverFromBasmalah = true;
+    final bool ok;
+    try {
+      ok = await _play(
+        _ayahSource(
+          _activeSurah,
+          pending.ref,
+          pending.source.uri,
+          isLocal: pending.source.isLocal,
+        ),
+        label: 'ayah ${pending.ref.key} idx=${pending.index} (after basmalah)',
+        isLocal: pending.source.isLocal,
+        token: pending.token,
+      );
+    } finally {
+      _handingOverFromBasmalah = false;
+    }
+    if (!ok) {
+      if (pending.token == _playToken) {
+        emit(
+          state.copyWith(
+            status: PlayerStatus.error,
+            error: 'quran_audio_offline_error'.tr(),
+          ),
+        );
+      }
+      return;
+    }
+    unawaited(_prefetch(pending.index + 1, pending.token));
+  }
+
   /// Reached the end of the current ayah. Advances within the unit, loops the
   /// unit, advances to the next unit, or finishes — per the active repeat mode.
   void _onTrackCompleted() {
+    // The basmalah lead-in just finished — play the ayah it precedes. Nothing
+    // else in the completion path applies: the lead-in is not a queue entry, so
+    // it advances nothing and counts towards no repeat pass.
+    if (_handingOverFromBasmalah) return;
+    final pending = _pendingAfterBasmalah;
+    if (pending != null) {
+      _pendingAfterBasmalah = null;
+      if (pending.token == _playToken) unawaited(_playPending(pending));
+      return;
+    }
     final idx = state.queueIndex;
     AppLogger.info(
       'onTrackCompleted idx=$idx queue=${state.queue.length} '
@@ -626,6 +792,7 @@ class CBAudioPlayer extends Cubit<SAudioPlayer> {
   Future<void> resume() => _player.play();
   Future<void> stop() async {
     _playToken++; // invalidate any in-flight ensure/advance
+    _pendingAfterBasmalah = null;
     _sleepTimer?.cancel();
     _sleepTimer = null;
     _stopAtBoundary = null;
@@ -777,4 +944,21 @@ class CBAudioPlayer extends Cubit<SAudioPlayer> {
     await _player.dispose();
     return super.close();
   }
+}
+
+/// An ayah resolved and ready to play, parked while the basmalah leads in.
+class _PendingAyah {
+  const _PendingAyah({
+    required this.index,
+    required this.ref,
+    required this.source,
+    required this.token,
+  });
+
+  final int index;
+  final ParamAyahRef ref;
+  final EAyahAudioSource source;
+
+  /// The play session that queued it; a stale token means it was superseded.
+  final int token;
 }
