@@ -47,7 +47,9 @@ class NotificationRouter {
         if (surah is int && ayah is int) {
           Modular.to.pushNamed(QuranRoutes.readerFromAyah(surah, ayah));
         } else {
-          Modular.to.navigate(RoutesNames.quranBase);
+          // The gate, not the index: a Quran notification with no ayah of its
+          // own reopens the page the user left off on.
+          Modular.to.navigate(QuranRoutes.fullEntry());
         }
       case 'khatma':
         Modular.to.navigate(KhatmaRoutes.fullTracker());

@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import 'package:flutter/widgets.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:quran/modules/quran/data/datasources/local/ds_local_quran.dart';
 import 'package:quran/modules/quran/data/datasources/local/ds_qpc_v4_font_loader.dart';
@@ -36,6 +37,11 @@ class CBMushafReader extends Cubit<SMushafReader> {
       ) {
     _watchBookmarks();
     _watchSettings();
+    _lifecycle = AppLifecycleListener(
+      onHide: _flushLastRead,
+      onPause: _flushLastRead,
+      onDetach: _flushLastRead,
+    );
   }
 
   final UCGetQpcV4Page _getPage;
@@ -50,6 +56,13 @@ class CBMushafReader extends Cubit<SMushafReader> {
   /// Page waiting on [_saveDebounce] — kept out of the timer closure so [close]
   /// can still flush it after the timer is cancelled.
   int? _pendingLastReadPage;
+
+  /// Flushes the pending page when the app leaves the foreground. Without this
+  /// the only two writes are the 5s debounce and [close], and neither one runs
+  /// when the user simply walks away from an open reader: the route is never
+  /// popped, and a suspended app's timers are frozen — so a page turn made in
+  /// the last few seconds is lost outright if the OS then kills the app.
+  AppLifecycleListener? _lifecycle;
   Timer? _chromeTimer;
   StreamSubscription<List<MBookmark>>? _bookmarkSub;
   StreamSubscription<SReaderSettings>? _settingsSub;
@@ -402,6 +415,7 @@ class CBMushafReader extends Cubit<SMushafReader> {
   @override
   Future<void> close() {
     _flushLastRead();
+    _lifecycle?.dispose();
     _chromeTimer?.cancel();
     _bookmarkSub?.cancel();
     _settingsSub?.cancel();
