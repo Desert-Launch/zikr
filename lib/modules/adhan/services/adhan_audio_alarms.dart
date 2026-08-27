@@ -67,11 +67,7 @@ class AdhanAlarmPermissions extends Equatable {
 
   /// True when nothing stands between a scheduled alarm and the user.
   bool get allGranted =>
-      canScheduleExact &&
-      canUseFullScreenIntent &&
-      canDrawOverlays &&
-      !isBatteryOptimized &&
-      !hasOemAutostartManager;
+      canScheduleExact && canUseFullScreenIntent && canDrawOverlays && !isBatteryOptimized && !hasOemAutostartManager;
 
   @override
   List<Object?> get props => [
@@ -99,9 +95,7 @@ class AdhanAlarmPermissions extends Equatable {
 /// MainActivity-registered channel doesn't exist, so a [MissingPluginException]
 /// is swallowed and the caller keeps the notification-sound fallback.
 class AdhanAudioAlarms {
-  static const MethodChannel _channel = MethodChannel(
-    'com.zikr.mapp/adhan_alarm',
-  );
+  static const MethodChannel _channel = MethodChannel('com.zikr.mapp/adhan_alarm');
 
   /// Arms an alarm at [when] that plays the `res/raw/<rawRes>` clip
   /// (Android) or the bundled `<rawRes>.caf` (iOS).
@@ -163,10 +157,7 @@ class AdhanAudioAlarms {
       // notification sound for this window.
       return false;
     } catch (e) {
-      AppLogger.warning(
-        'Adhan alarm schedule failed (id=$id): $e',
-        tag: 'AdhanAudioAlarms',
-      );
+      AppLogger.warning('Adhan alarm schedule failed (id=$id): $e', tag: 'AdhanAudioAlarms');
       return false;
     }
   }
@@ -179,10 +170,7 @@ class AdhanAudioAlarms {
     } on MissingPluginException {
       // ignore — see [schedule].
     } catch (e) {
-      AppLogger.warning(
-        'Adhan alarm cancel failed (id=$id): $e',
-        tag: 'AdhanAudioAlarms',
-      );
+      AppLogger.warning('Adhan alarm cancel failed (id=$id): $e', tag: 'AdhanAudioAlarms');
     }
   }
 
@@ -202,10 +190,7 @@ class AdhanAudioAlarms {
     } on MissingPluginException {
       // ignore — see [schedule].
     } catch (e) {
-      AppLogger.warning(
-        'Adhan alarm cancelAll failed: $e',
-        tag: 'AdhanAudioAlarms',
-      );
+      AppLogger.warning('Adhan alarm cancelAll failed: $e', tag: 'AdhanAudioAlarms');
     }
   }
 
@@ -214,9 +199,7 @@ class AdhanAudioAlarms {
   /// spurious warnings.
   Future<AdhanAlarmPermissions> permissions() async {
     try {
-      final raw = await _channel.invokeMapMethod<String, dynamic>(
-        'permissions',
-      );
+      final raw = await _channel.invokeMapMethod<String, dynamic>('permissions');
       if (raw == null) return const AdhanAlarmPermissions();
       return AdhanAlarmPermissions(
         canScheduleExact: raw['canScheduleExact'] as bool? ?? true,
@@ -228,10 +211,7 @@ class AdhanAudioAlarms {
     } on MissingPluginException {
       return const AdhanAlarmPermissions();
     } catch (e) {
-      AppLogger.warning(
-        'Adhan alarm permission read failed: $e',
-        tag: 'AdhanAudioAlarms',
-      );
+      AppLogger.warning('Adhan alarm permission read failed: $e', tag: 'AdhanAudioAlarms');
       return const AdhanAlarmPermissions();
     }
   }
@@ -250,10 +230,7 @@ class AdhanAudioAlarms {
     } on MissingPluginException {
       return false;
     } catch (e) {
-      AppLogger.warning(
-        'Adhan alarm authorization request failed: $e',
-        tag: 'AdhanAudioAlarms',
-      );
+      AppLogger.warning('Adhan alarm authorization request failed: $e', tag: 'AdhanAudioAlarms');
       return false;
     }
   }
@@ -263,17 +240,12 @@ class AdhanAudioAlarms {
   /// can fall back to showing manual instructions.
   Future<bool> openOsSettings(AdhanOsSetting which) async {
     try {
-      final opened = await _channel.invokeMethod<bool>('openOsSettings', {
-        'which': which.name,
-      });
+      final opened = await _channel.invokeMethod<bool>('openOsSettings', {'which': which.name});
       return opened ?? false;
     } on MissingPluginException {
       return false;
     } catch (e) {
-      AppLogger.warning(
-        'Adhan alarm openOsSettings(${which.name}) failed: $e',
-        tag: 'AdhanAudioAlarms',
-      );
+      AppLogger.warning('Adhan alarm openOsSettings(${which.name}) failed: $e', tag: 'AdhanAudioAlarms');
       return false;
     }
   }
