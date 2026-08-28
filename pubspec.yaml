@@ -103,6 +103,9 @@ dependencies:
   adhan: ^2.0.0+1
   sensors_plus: ^7.1.0
 
+  # Keeps the display on while the mushaf is open (see ScreenAwakeHelper).
+  wakelock_plus: ^1.3.3
+
 dev_dependencies:
   flutter_test:
     sdk: flutter

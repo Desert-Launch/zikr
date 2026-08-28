@@ -8,6 +8,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_modular/flutter_modular.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:quran/core/utils/helper/orientation_helper.dart';
+import 'package:quran/core/utils/helper/screen_awake_helper.dart';
 import 'package:quran/core/widgets/w_shared_scaffold.dart';
 import 'package:quran/modules/quran/data/datasources/local/ds_local_quran.dart';
 import 'package:quran/modules/quran/domain/entities/e_reader_scroll_mode.dart';
@@ -46,6 +47,25 @@ class _SNMushafReaderState extends State<SNMushafReader> with OrientationOverrid
   /// the screen being read. See [OrientationOverrideRoute].
   @override
   List<DeviceOrientation> get orientations => OrientationHelper.free;
+
+  /// Holds the display awake while the mushaf is the screen being read: a page
+  /// takes longer to read than any sensible screen timeout, and the display
+  /// dimming mid-page is the one interruption the reader cannot avoid without
+  /// putting a hand on the glass.
+  ///
+  /// Claimed and given back on the same beats as the orientation override, so
+  /// a screen opened on top of the reader (tafsir, settings, the reciter
+  /// picker) does not inherit a display that never sleeps.
+  ScreenAwakeHold? _awake;
+
+  void _claimAwake() => _awake ??= ScreenAwakeHelper.request();
+
+  void _surrenderAwake() {
+    final hold = _awake;
+    if (hold == null) return;
+    ScreenAwakeHelper.release(hold);
+    _awake = null;
+  }
 
   late final CBMushafReader _cubit = Modular.get<CBMushafReader>();
 
@@ -136,7 +156,26 @@ class _SNMushafReaderState extends State<SNMushafReader> with OrientationOverrid
     );
     _anchorPage = _resolvedStart;
     _scrollController.addListener(_onVerticalScroll);
+    _claimAwake();
     _resolveInitial();
+  }
+
+  @override
+  void didPushNext() {
+    super.didPushNext();
+    _surrenderAwake();
+  }
+
+  @override
+  void didPopNext() {
+    super.didPopNext();
+    _claimAwake();
+  }
+
+  @override
+  void didPop() {
+    super.didPop();
+    _surrenderAwake();
   }
 
   Future<void> _resolveInitial() async {
@@ -161,6 +200,7 @@ class _SNMushafReaderState extends State<SNMushafReader> with OrientationOverrid
 
   @override
   void dispose() {
+    _surrenderAwake();
     _pageSettle?.cancel();
     _scrollController.removeListener(_onVerticalScroll);
     _scrollController.dispose();
