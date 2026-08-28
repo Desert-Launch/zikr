@@ -89,6 +89,7 @@ class CBAdhanSettings extends Cubit<SAdhanSettings> {
         manufacturer: manufacturer,
         vibrate: s.vibrate,
         adhanVolume: s.adhanVolume,
+        duaAfterAdhan: s.duaAfterAdhan,
         preNotifyMinutesPerPrayer: _readPreNotify(p, s),
         selectedVoiceNameAr: voiceName,
         voiceIdPerPrayer: Map<String, String>.of(
@@ -304,6 +305,19 @@ class CBAdhanSettings extends Cubit<SAdhanSettings> {
     final s = _adhanSettings.current()..vibrate = value;
     await _adhanSettings.save(s);
     emit(state.copyWith(vibrate: value));
+    _scheduleSoon();
+  }
+
+  /// Toggles the du'a played after the adhan (Android full-adhan path only).
+  ///
+  /// The reschedule is not optional: the flag is baked into each armed alarm
+  /// because the alarm fires into a receiver with no Flutter isolate to ask, so
+  /// without rebuilding the window a flip would only reach prayers armed later
+  /// — the user would turn it off and still hear the du'a for days.
+  Future<void> setDuaAfterAdhan(bool value) async {
+    final s = _adhanSettings.current()..duaAfterAdhan = value;
+    await _adhanSettings.save(s);
+    emit(state.copyWith(duaAfterAdhan: value));
     _scheduleSoon();
   }
 

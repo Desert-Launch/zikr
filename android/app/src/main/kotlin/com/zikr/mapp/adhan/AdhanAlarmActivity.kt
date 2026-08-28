@@ -8,6 +8,7 @@ import android.content.Intent
 import android.content.IntentFilter
 import android.os.Build
 import android.os.Bundle
+import android.view.View
 import android.view.WindowManager
 import android.widget.ImageView
 import android.widget.TextView
@@ -26,6 +27,11 @@ import java.util.Locale
  * [AdhanPlaybackService.ACTION_FINISHED] — i.e. when the adhan completes or is
  * stopped from the notification instead.
  *
+ * Between those two points sits the du'a phase: when the adhan itself finishes
+ * the service broadcasts [AdhanPlaybackService.ACTION_DUA] instead of
+ * finishing, and this screen stays up with the du'a promoted from a footnote to
+ * the focus of the layout until the clip has played.
+ *
  * Deliberately plain-framework (`android.app.Activity` + a static XML layout)
  * rather than Flutter: at fire time from a cold process, spinning up a
  * FlutterEngine costs seconds the user is staring at a black screen, and it can
@@ -38,6 +44,13 @@ class AdhanAlarmActivity : Activity() {
     private val finishReceiver = object : BroadcastReceiver() {
         override fun onReceive(context: Context?, intent: Intent?) {
             finishAndRemoveTask()
+        }
+    }
+
+    /** Switches this screen to the du'a once the adhan itself has finished. */
+    private val duaReceiver = object : BroadcastReceiver() {
+        override fun onReceive(context: Context?, intent: Intent?) {
+            showDua()
         }
     }
 
@@ -74,12 +87,43 @@ class AdhanAlarmActivity : Activity() {
         // Android 14 requires an explicit export flag for runtime receivers.
         // Kept on the platform API rather than ContextCompat so the build
         // doesn't depend on a particular androidx.core version.
-        val filter = IntentFilter(AdhanPlaybackService.ACTION_FINISHED)
+        register(finishReceiver, AdhanPlaybackService.ACTION_FINISHED)
+        register(duaReceiver, AdhanPlaybackService.ACTION_DUA)
+
+        // Opened after the du'a already began — a late notification tap, or the
+        // status-bar alarm icon — so the ACTION_DUA broadcast is long gone and
+        // only the service's own phase can say what is playing.
+        if (AdhanPlaybackService.phase == AdhanPlaybackService.PHASE_DUA) showDua()
+    }
+
+    private fun register(receiver: BroadcastReceiver, action: String) {
+        val filter = IntentFilter(action)
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-            registerReceiver(finishReceiver, filter, Context.RECEIVER_NOT_EXPORTED)
+            registerReceiver(receiver, filter, Context.RECEIVER_NOT_EXPORTED)
         } else {
-            registerReceiver(finishReceiver, filter)
+            registerReceiver(receiver, filter)
         }
+    }
+
+    /**
+     * Moves the screen from "the adhan is calling" to "say the du'a": the
+     * prayer heading becomes the du'a heading, the per-prayer body drops away,
+     * and the du'a text appears for the first time.
+     *
+     * The du'a is deliberately absent until this point — while the adhan is
+     * still being called, text for a supplication said *after* it is the wrong
+     * instruction to be showing. Its size and spacing live in the layout rather
+     * than here, since the du'a phase is the only state that view is ever seen
+     * in.
+     *
+     * Nothing else changes. Both controls keep working exactly as before, so
+     * Stop still cuts the audio and closes the screen mid-du'a.
+     */
+    private fun showDua() {
+        findViewById<TextView>(R.id.adhan_alarm_title).text =
+            getString(R.string.adhan_alarm_dua_title)
+        findViewById<TextView>(R.id.adhan_alarm_body).visibility = View.GONE
+        findViewById<TextView>(R.id.adhan_alarm_dua).visibility = View.VISIBLE
     }
 
     /**
@@ -162,10 +206,12 @@ class AdhanAlarmActivity : Activity() {
     }
 
     override fun onDestroy() {
-        try {
-            unregisterReceiver(finishReceiver)
-        } catch (e: IllegalArgumentException) {
-            // Already unregistered — nothing to undo.
+        for (receiver in arrayOf(finishReceiver, duaReceiver)) {
+            try {
+                unregisterReceiver(receiver)
+            } catch (e: IllegalArgumentException) {
+                // Already unregistered — nothing to undo.
+            }
         }
         super.onDestroy()
     }

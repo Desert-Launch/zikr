@@ -286,6 +286,7 @@ class AdhanScheduler {
           notify: notify,
           vibrate: settings.vibrate,
           volume: settings.adhanVolume,
+          duaAfter: settings.duaAfterAdhan,
           voiceIdPerPrayer: prayer.adhanIdPerPrayer ?? const {},
           preNotifyPerPrayer: prayer.preNotifyMinutesPerPrayer ?? const {},
           defaultVoiceId: pref.defaultAdhanId,
@@ -490,6 +491,7 @@ class AdhanScheduler {
         fullScreen: settings.fullScreenAlarm,
         volume: settings.adhanVolume,
         vibrate: settings.vibrate,
+        duaAfter: settings.duaAfterAdhan,
       );
     }
     _scheduledTimes[_testId] = when;
@@ -510,6 +512,7 @@ class AdhanScheduler {
     // record here was how a dead parameter survived a refactor unnoticed.
     required bool vibrate,
     required int volume,
+    required bool duaAfter,
     required Map<String, String> voiceIdPerPrayer,
     required Map<String, int> preNotifyPerPrayer,
     required String? defaultVoiceId,
@@ -590,6 +593,7 @@ class AdhanScheduler {
           fullScreen: fullScreen,
           volume: volume,
           vibrate: vibrate,
+          duaAfter: duaAfter,
         );
       }
       _scheduledTimes[id] = time;

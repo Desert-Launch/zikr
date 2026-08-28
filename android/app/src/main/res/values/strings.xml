@@ -8,5 +8,11 @@
   centred block reads as verse lines instead of ragged wrapping.
 -->
 <resources>
+    <!--
+      Heading shown in place of the prayer name once the adhan has finished and
+      the du'a clip is playing. Fixed Arabic for the same reason as the du'a
+      itself: it is the name of a specific supplication, not UI chrome.
+    -->
+    <string name="adhan_alarm_dua_title">دعاء ما بعد الأذان</string>
     <string name="adhan_alarm_dua">«اللَّهُمَّ رَبَّ هذه الدَّعوةِ التَّامَّةِ،\nوالصَّلاةِ القَائمَةِ،\nآتِ مُحمَّدًا الوسيلَةَ والفَضيلَةَ،\nوابعثْهُ مَقامًا محمودًا الذِي وعدتَهُ»</string>
 </resources>

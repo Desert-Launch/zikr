@@ -13,6 +13,7 @@ class SAdhanSettings extends Equatable {
     this.manufacturer = '',
     this.vibrate = false,
     this.adhanVolume = 100,
+    this.duaAfterAdhan = true,
     this.preNotifyMinutesPerPrayer = const {},
     this.selectedVoiceNameAr = '',
     this.voiceIdPerPrayer = const {},
@@ -54,6 +55,10 @@ class SAdhanSettings extends Equatable {
   /// the system ALARM stream, iOS can only scale in-app playback.
   final int adhanVolume;
 
+  /// Play the du'a after the adhan and hold the full-screen alarm open for it.
+  /// Android-only. See [MAdhanSettings.duaAfterAdhan].
+  final bool duaAfterAdhan;
+
   /// Per-prayer pre-notify offset in minutes, keyed by prayer key. Missing
   /// key = off.
   final Map<String, int> preNotifyMinutesPerPrayer;
@@ -89,6 +94,7 @@ class SAdhanSettings extends Equatable {
     AdhanAlarmPermissions? alarmPermissions,
     String? manufacturer,
     bool? vibrate,
+    bool? duaAfterAdhan,
     int? adhanVolume,
     Map<String, int>? preNotifyMinutesPerPrayer,
     String? selectedVoiceNameAr,
@@ -113,6 +119,7 @@ class SAdhanSettings extends Equatable {
       alarmPermissions: alarmPermissions ?? this.alarmPermissions,
       manufacturer: manufacturer ?? this.manufacturer,
       vibrate: vibrate ?? this.vibrate,
+      duaAfterAdhan: duaAfterAdhan ?? this.duaAfterAdhan,
       adhanVolume: adhanVolume ?? this.adhanVolume,
       preNotifyMinutesPerPrayer:
           preNotifyMinutesPerPrayer ?? this.preNotifyMinutesPerPrayer,
@@ -140,6 +147,7 @@ class SAdhanSettings extends Equatable {
     alarmPermissions,
     manufacturer,
     vibrate,
+    duaAfterAdhan,
     adhanVolume,
     preNotifyMinutesPerPrayer,
     selectedVoiceNameAr,

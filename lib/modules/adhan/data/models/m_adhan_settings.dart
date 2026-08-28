@@ -20,6 +20,7 @@ class MAdhanSettings extends HiveObject {
     this.alarmDefaultsApplied = false,
     this.vibrate = false,
     this.adhanVolume = 100,
+    this.duaAfterAdhan = true,
   });
 
   /// Notification sound is a short bundled clip (works while killed).
@@ -105,4 +106,22 @@ class MAdhanSettings extends HiveObject {
   /// Defaults to 100 — the loudest, which is what a call to prayer wants.
   @HiveField(9)
   int adhanVolume;
+
+  /// Play the post-adhan du'a straight after the adhan finishes.
+  ///
+  /// Android only, and only on the full-adhan background path: the native
+  /// playback service chains `res/raw/doaa_after_azan.mp3` onto the end of the
+  /// adhan and holds the full-screen alarm open for its ~17 seconds, instead of
+  /// dismissing the moment the adhan stops. Like [adhanVolume] and [vibrate],
+  /// the value is baked into each armed alarm rather than read at fire time —
+  /// the alarm wakes a receiver with no Flutter isolate to ask — so a change
+  /// only reaches prayers armed afterwards, which is why the setter reschedules.
+  ///
+  /// iOS ignores it: that path caps at a 28-second notification sound with no
+  /// way to chain a second clip after it.
+  ///
+  /// Defaults to on, and legacy records written before the field existed decode
+  /// to the same default.
+  @HiveField(10)
+  bool duaAfterAdhan;
 }

@@ -113,6 +113,11 @@ class AdhanAudioAlarms {
   /// of the adhan and restores it afterwards; iOS ignores it (Apple caps the
   /// notification path at system volume).
   ///
+  /// [duaAfter] chains the post-adhan du'a clip onto the end of the adhan and
+  /// holds the full-screen alarm open until it finishes. It travels with the
+  /// alarm for the same reason [volume] does. Android only — iOS caps that path
+  /// at a single notification sound with nothing to chain onto.
+  ///
   /// [vibrate] buzzes for the length of the adhan and travels with the alarm for
   /// the same reason [volume] does. It has to live here rather than on the
   /// companion notification's channel: on this path that notification is
@@ -136,6 +141,7 @@ class AdhanAudioAlarms {
     bool fullScreen = true,
     int volume = 100,
     bool vibrate = false,
+    bool duaAfter = true,
   }) async {
     try {
       final armed = await _channel.invokeMethod<bool>('schedule', {
@@ -150,6 +156,7 @@ class AdhanAudioAlarms {
         'fullScreen': fullScreen,
         'volume': volume.clamp(0, 100),
         'vibrate': vibrate,
+        'duaAfter': duaAfter,
       });
       return armed ?? false;
     } on MissingPluginException {

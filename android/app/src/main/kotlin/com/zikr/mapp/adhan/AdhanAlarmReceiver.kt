@@ -36,6 +36,10 @@ class AdhanAlarmReceiver : BroadcastReceiver() {
                 AdhanAlarmScheduler.EXTRA_VIBRATE,
                 intent.getBooleanExtra(AdhanAlarmScheduler.EXTRA_VIBRATE, false),
             )
+            putExtra(
+                AdhanAlarmScheduler.EXTRA_DUA,
+                intent.getBooleanExtra(AdhanAlarmScheduler.EXTRA_DUA, true),
+            )
         }
         // Starting an FGS from an exact-alarm broadcast is an allowed background
         // start (the "alarms & timers" exemption) on Android 12+.

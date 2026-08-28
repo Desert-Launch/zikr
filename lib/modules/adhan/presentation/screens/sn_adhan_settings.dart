@@ -164,6 +164,30 @@ class SNAdhanSettings extends StatelessWidget {
                                 ),
                               ),
                             ),
+                            // Android only, and only meaningful on the native
+                            // full-adhan path: the playback service chains the
+                            // du'a clip onto the end of the adhan and holds the
+                            // full-screen alarm open for it. iOS caps that path
+                            // at one notification sound with nothing to chain.
+                            if (defaultTargetPlatform != TargetPlatform.iOS)
+                              WAdhanSettingRow(
+                                icon: Icons.volunteer_activism_outlined,
+                                title: 'adhan_dua_after'.tr(),
+                                subtitle: 'adhan_dua_after_hint'.tr(),
+                                trailing: Transform.scale(
+                                  scale: .75,
+                                  child: Switch(
+                                    value: state.duaAfterAdhan,
+                                    activeTrackColor: _green,
+                                    thumbColor: WidgetStateProperty.all(
+                                      state.duaAfterAdhan
+                                          ? Colors.white
+                                          : Colors.grey.shade400,
+                                    ),
+                                    onChanged: cubit.setDuaAfterAdhan,
+                                  ),
+                                ),
+                              ),
                             // The OS grants the toggle above depends on. Each
                             // flip deep-links to its settings page — Android
                             // exposes no in-app way to change either.

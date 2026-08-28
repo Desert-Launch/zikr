@@ -418,6 +418,8 @@
   "adhan_vibrate": "Vibration",
   "adhan_vibrate_hint": "Vibrate the device with the adhan alert",
   "adhan_vibrate_hint_ios": "In-app only — notification vibration follows your system settings",
+  "adhan_dua_after": "Du'a after the adhan",
+  "adhan_dua_after_hint": "Plays the du'a once the adhan ends, keeping the alarm screen up",
   "adhan_permission_denied": "Notifications are turned off.",
   "adhan_permission_fix": "Enable",
   "adhan_notif_title": "It's time for {{prayer}} prayer",

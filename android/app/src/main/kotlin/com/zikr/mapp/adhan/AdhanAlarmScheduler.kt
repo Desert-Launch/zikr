@@ -50,6 +50,16 @@ object AdhanAlarmScheduler {
      */
     const val EXTRA_VIBRATE = "vibrate"
 
+    /**
+     * Whether to follow the adhan with the post-adhan du'a clip, baked in for
+     * the same reason as [EXTRA_VOLUME] and [EXTRA_VIBRATE].
+     *
+     * Alarms armed before this field existed carry no value for it and default
+     * to true wherever they are read back — the du'a is on by default, and a
+     * reboot re-arming yesterday's alarms shouldn't silently opt them out.
+     */
+    const val EXTRA_DUA = "dua"
+
     /** Used when an alarm predates [EXTRA_VOLUME] — full alarm volume. */
     const val DEFAULT_VOLUME = 100
 
@@ -73,11 +83,12 @@ object AdhanAlarmScheduler {
         fullScreen: Boolean,
         volume: Int = DEFAULT_VOLUME,
         vibrate: Boolean = false,
+        dua: Boolean = true,
     ) {
         val am = context.getSystemService(Context.ALARM_SERVICE) as AlarmManager
         val pi = receiverPendingIntent(
             context, id, rawRes, title, body, stopLabel, openLabel, prayerKey, fullScreen,
-            volume, vibrate,
+            volume, vibrate, dua,
         )
         try {
             // setAlarmClock is the strongest guarantee Android offers: it is
@@ -96,7 +107,7 @@ object AdhanAlarmScheduler {
         }
         persist(
             context, id, triggerAtMillis, rawRes, title, body, stopLabel,
-            openLabel, prayerKey, fullScreen, volume, vibrate,
+            openLabel, prayerKey, fullScreen, volume, vibrate, dua,
         )
     }
 
@@ -157,6 +168,7 @@ object AdhanAlarmScheduler {
                 o.optBoolean("fullScreen", true),
                 o.optInt("volume", DEFAULT_VOLUME),
                 o.optBoolean("vibrate", false),
+                o.optBoolean("dua", true),
             )
         }
     }
@@ -181,6 +193,7 @@ object AdhanAlarmScheduler {
         fullScreen: Boolean,
         volume: Int,
         vibrate: Boolean,
+        dua: Boolean,
     ): PendingIntent = PendingIntent.getBroadcast(
         context,
         id,
@@ -199,6 +212,7 @@ object AdhanAlarmScheduler {
             putExtra(EXTRA_FULLSCREEN, fullScreen)
             putExtra(EXTRA_VOLUME, volume)
             putExtra(EXTRA_VIBRATE, vibrate)
+            putExtra(EXTRA_DUA, dua)
         },
         pendingIntentFlags(),
     )
@@ -274,6 +288,7 @@ object AdhanAlarmScheduler {
         fullScreen: Boolean,
         volume: Int,
         vibrate: Boolean,
+        dua: Boolean,
     ) {
         val out = withoutId(read(context), id)
         out.put(
@@ -289,6 +304,7 @@ object AdhanAlarmScheduler {
                 put("fullScreen", fullScreen)
                 put("volume", volume)
                 put("vibrate", vibrate)
+                put("dua", dua)
             },
         )
         write(context, out)

@@ -30,13 +30,16 @@ class MAdhanSettingsAdapter extends TypeAdapter<MAdhanSettings> {
       // the off default rather than throwing.
       vibrate: fields[8] == null ? false : fields[8] as bool,
       adhanVolume: fields[9] == null ? 100 : (fields[9] as num).toInt(),
+      // Absent on every record written before field 10 existed — those decode
+      // to the on default, matching the constructor.
+      duaAfterAdhan: fields[10] == null ? true : fields[10] as bool,
     );
   }
 
   @override
   void write(BinaryWriter writer, MAdhanSettings obj) {
     writer
-      ..writeByte(9)
+      ..writeByte(10)
       ..writeByte(0)
       ..write(obj.enabled)
       ..writeByte(1)
@@ -54,7 +57,9 @@ class MAdhanSettingsAdapter extends TypeAdapter<MAdhanSettings> {
       ..writeByte(8)
       ..write(obj.vibrate)
       ..writeByte(9)
-      ..write(obj.adhanVolume);
+      ..write(obj.adhanVolume)
+      ..writeByte(10)
+      ..write(obj.duaAfterAdhan);
   }
 
   @override

@@ -5,8 +5,9 @@
   while the device is locked.
 
   Every per-prayer string arrives as an intent extra already localized by Dart.
-  The only literal is the post-adhan du'a (@string/adhan_alarm_dua), which is a
-  fixed Arabic text identical for every prayer and every app language.
+  The only literals are the post-adhan du'a (@string/adhan_alarm_dua) and its
+  heading (@string/adhan_alarm_dua_title) — fixed Arabic texts identical for
+  every prayer and every app language, and both shown only in the du'a phase.
   layoutDirection=locale keeps the rest correct in Arabic RTL.
 
   Background is the shared adhan artwork (res/drawable-nodpi/adhan_alarm_bg.jpg —
@@ -138,20 +139,28 @@
             <!-- The du'a said after the adhan. Below the controls so it never
                  pushes Stop off a small screen, centred as a block of verse
                  lines (the string carries its own line breaks) and RTL-forced
-                 so it stays right-to-left even if the device locale is not. -->
+                 so it stays right-to-left even if the device locale is not.
+
+                 GONE until the adhan has actually finished: while the call to
+                 prayer is still being made, a du'a that is only said afterwards
+                 is the wrong instruction to be showing. AdhanAlarmActivity's
+                 showDua() reveals it when the du'a clip starts, which is why the
+                 styling here needs no adhan-phase variant — this view is only
+                 ever seen in the du'a phase, so it is sized to be read at a
+                 glance from across a room rather than skimmed as a footnote. -->
             <TextView
                 android:id="@+id/adhan_alarm_dua"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="34dp"
-                android:alpha="0.9"
                 android:gravity="center"
-                android:lineSpacingExtra="8dp"
+                android:lineSpacingExtra="10dp"
                 android:text="@string/adhan_alarm_dua"
                 android:textAlignment="center"
                 android:textColor="#FFFFFF"
                 android:textDirection="rtl"
-                android:textSize="16sp" />
+                android:textSize="24sp"
+                android:visibility="gone" />
 
         </LinearLayout>
 

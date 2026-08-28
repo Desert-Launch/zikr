@@ -418,6 +418,8 @@
   "adhan_vibrate": "الاهتزاز",
   "adhan_vibrate_hint": "اهتزاز الجهاز مع تنبيه الأذان",
   "adhan_vibrate_hint_ios": "الاهتزاز داخل التطبيق فقط؛ اهتزاز الإشعارات يتبع إعدادات النظام",
+  "adhan_dua_after": "دعاء ما بعد الأذان",
+  "adhan_dua_after_hint": "يُشغَّل الدعاء بعد انتهاء الأذان مع بقاء شاشة التنبيه ظاهرة",
   "adhan_permission_denied": "تنبيهات الإشعارات غير مفعّلة.",
   "adhan_permission_fix": "تفعيل",
   "adhan_notif_title": "حان الآن موعد صلاة {{prayer}}",
