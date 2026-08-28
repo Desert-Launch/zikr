@@ -28,6 +28,18 @@ class DSLocalTafsir {
 
   bool isDownloaded(String bookId) => _box.box.containsKey(BoxTafsir.bookKey(bookId));
 
+  /// Id of the book the viewer opens on, or null while the reader has not
+  /// picked one (or picked one they later deleted).
+  String? selectedId() {
+    final id = _box.box.get(BoxTafsir.selectedKey);
+    if (id == null || id.isEmpty) return null;
+    // A book deleted after being picked must not keep steering the viewer.
+    return isDownloaded(id) ? id : null;
+  }
+
+  Future<void> setSelected(String bookId) =>
+      _box.box.put(BoxTafsir.selectedKey, bookId);
+
   /// Whether the default book's one-time seed has already run.
   bool isDefaultSeeded() => _box.box.containsKey(BoxTafsir.defaultSeededKey);
 
@@ -46,6 +58,9 @@ class DSLocalTafsir {
 
   Future<void> deleteBook(String bookId) async {
     await _box.box.delete(BoxTafsir.bookKey(bookId));
+    if (_box.box.get(BoxTafsir.selectedKey) == bookId) {
+      await _box.box.delete(BoxTafsir.selectedKey);
+    }
     _cache.remove(bookId);
     final ids = downloadedIds().toSet()..remove(bookId);
     await _box.box.put(BoxTafsir.registryKey, jsonEncode(ids.toList()));

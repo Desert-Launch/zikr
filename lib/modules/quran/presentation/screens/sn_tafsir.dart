@@ -31,7 +31,8 @@ class _SNTafsirState extends State<SNTafsir> {
 
   Future<void> _openLibrary() async {
     await Modular.to.pushNamed(QuranRoutes.fullTafsirLibrary());
-    // Coming back may have added or removed books — refresh.
+    // Coming back may have added, removed or picked a book — refresh. The pick
+    // is persisted, so reloading is enough to land on the right tab.
     _cubit.load(widget.ayah);
   }
 
@@ -94,19 +95,28 @@ class _TafsirTabs extends StatelessWidget {
   const _TafsirTabs({required this.state});
   final STafsir state;
 
-  /// Where the viewer opens: the default book when the reader has it, the
-  /// first tab otherwise. Catalogue order already puts it first today, but the
-  /// tab the reader lands on shouldn't quietly change if that order is edited.
+  /// Where the viewer opens: the book picked in the library, the default book
+  /// when nothing is picked, and the first tab when neither is present.
+  /// Catalogue order already puts the default first today, but the tab the
+  /// reader lands on shouldn't quietly change if that order is edited.
   int get _initialIndex {
-    final i = state.entries
+    final wanted = state.selectedBookId ?? TafsirCatalog.defaultBookId;
+    final i = state.entries.indexWhere((e) => e.book.id == wanted);
+    if (i >= 0) return i;
+    final fallback = state.entries
         .indexWhere((e) => e.book.id == TafsirCatalog.defaultBookId);
-    return i < 0 ? 0 : i;
+    return fallback < 0 ? 0 : fallback;
   }
 
   @override
   Widget build(BuildContext context) {
     final entries = state.entries;
     return DefaultTabController(
+      // Rebuilt (rather than kept) when the picked book or the set of books
+      // changes: DefaultTabController holds its index across a length change,
+      // which would otherwise leave the reader on the old tab after they pick
+      // or download a book.
+      key: ValueKey('${state.selectedBookId}_${entries.length}'),
       length: entries.length,
       initialIndex: _initialIndex,
       child: Column(

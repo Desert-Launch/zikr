@@ -53,6 +53,7 @@ import 'package:quran/modules/quran/domain/usecases/uc_get_all_surahs_status.dar
 import 'package:quran/modules/quran/domain/usecases/uc_get_ayah_tafsir.dart';
 import 'package:quran/modules/quran/domain/usecases/uc_get_bookmarks.dart';
 import 'package:quran/modules/quran/domain/usecases/uc_get_downloaded_tafsirs.dart';
+import 'package:quran/modules/quran/domain/usecases/uc_get_selected_tafsir.dart';
 import 'package:quran/modules/quran/domain/usecases/uc_get_font_bold.dart';
 import 'package:quran/modules/quran/domain/usecases/uc_get_font_mode.dart';
 import 'package:quran/modules/quran/domain/usecases/uc_get_font_scale.dart';
@@ -79,6 +80,7 @@ import 'package:quran/modules/quran/domain/usecases/uc_save_last_read.dart';
 import 'package:quran/modules/quran/domain/usecases/uc_save_playback_prefs.dart';
 import 'package:quran/modules/quran/domain/usecases/uc_number_lookup.dart';
 import 'package:quran/modules/quran/domain/usecases/uc_search_quran.dart';
+import 'package:quran/modules/quran/domain/usecases/uc_select_tafsir.dart';
 import 'package:quran/modules/quran/domain/usecases/uc_set_active_reciter.dart';
 import 'package:quran/modules/quran/domain/usecases/uc_set_font_bold.dart';
 import 'package:quran/modules/quran/domain/usecases/uc_set_font_mode.dart';
@@ -258,6 +260,8 @@ class QuranModule extends Module {
     i.add<UCDownloadTafsir>(() => UCDownloadTafsir(i.get<RTafsir>()));
     i.add<UCDeleteTafsir>(() => UCDeleteTafsir(i.get<RTafsir>()));
     i.add<UCGetAyahTafsir>(() => UCGetAyahTafsir(i.get<RTafsir>()));
+    i.add<UCGetSelectedTafsir>(() => UCGetSelectedTafsir(i.get<RTafsir>()));
+    i.add<UCSelectTafsir>(() => UCSelectTafsir(i.get<RTafsir>()));
 
     // App-wide cubits (singletons survive navigation).
     i.addSingleton<CBAudioPlayer>(
@@ -344,7 +348,11 @@ class QuranModule extends Module {
       ),
     );
     i.add<CBTafsir>(
-      () => CBTafsir(i.get<UCGetAyahTafsir>(), i.get<UCGetDownloadedTafsirs>()),
+      () => CBTafsir(
+        i.get<UCGetAyahTafsir>(),
+        i.get<UCGetDownloadedTafsirs>(),
+        i.get<UCGetSelectedTafsir>(),
+      ),
     );
     i.add<CBTafsirLibrary>(
       () => CBTafsirLibrary(
@@ -352,6 +360,8 @@ class QuranModule extends Module {
         downloaded: i.get<UCGetDownloadedTafsirs>(),
         download: i.get<UCDownloadTafsir>(),
         delete: i.get<UCDeleteTafsir>(),
+        selected: i.get<UCGetSelectedTafsir>(),
+        select: i.get<UCSelectTafsir>(),
       ),
     );
   }

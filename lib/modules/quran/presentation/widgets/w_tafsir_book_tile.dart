@@ -7,64 +7,92 @@ import 'package:quran/modules/quran/domain/entities/e_tafsir_book.dart';
 
 /// One catalogue row: book name + language, with a download / progress / delete
 /// affordance on the trailing side.
+///
+/// A downloaded row is tappable — tapping picks the book as the one the
+/// per-ayah viewer opens on, and the selected row is outlined and check-marked.
 class WTafsirBookTile extends StatelessWidget {
   const WTafsirBookTile({
     required this.book,
     required this.isDownloaded,
     required this.isDownloading,
+    required this.isSelected,
     required this.progress,
     required this.onDownload,
     required this.onDelete,
+    required this.onSelect,
     super.key,
   });
 
   final ETafsirBook book;
   final bool isDownloaded;
   final bool isDownloading;
+
+  /// Whether this is the book the per-ayah viewer opens on.
+  final bool isSelected;
   final double progress;
   final VoidCallback onDownload;
   final VoidCallback onDelete;
+
+  /// Tapping a downloaded row picks it; a row still to download taps into
+  /// [onDownload] instead, so the whole row always does the useful thing.
+  final VoidCallback onSelect;
 
   @override
   Widget build(BuildContext context) {
     return Material(
       color: context.brand.surface,
       borderRadius: BorderRadius.circular(14.r),
-      child: Padding(
-        padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 10.h),
-        child: Row(
-          children: [
-            Container(
-              width: 42.r,
-              height: 42.r,
-              alignment: Alignment.center,
-              decoration: BoxDecoration(
-                color: context.brand.primary.withValues(alpha: 0.1),
-                borderRadius: BorderRadius.circular(11.r),
-              ),
-              child: Icon(Icons.menu_book_rounded, size: 22.r, color: context.brand.primary),
+      child: InkWell(
+        borderRadius: BorderRadius.circular(14.r),
+        onTap: isDownloading ? null : (isDownloaded ? onSelect : onDownload),
+        child: Ink(
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(14.r),
+            border: Border.all(
+              color: isSelected ? context.brand.primary : Colors.transparent,
+              width: 1.5,
             ),
-            SizedBox(width: 12.w),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    book.name,
-                    style: TextStyle(
-                      fontSize: 14.sp,
-                      fontWeight: FontWeight.w600,
-                      color: context.brand.onSurface,
-                    ),
+          ),
+          child: Padding(
+            padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 10.h),
+            child: Row(
+              children: [
+                Container(
+                  width: 42.r,
+                  height: 42.r,
+                  alignment: Alignment.center,
+                  decoration: BoxDecoration(
+                    color: context.brand.primary.withValues(alpha: 0.1),
+                    borderRadius: BorderRadius.circular(11.r),
                   ),
-                  SizedBox(height: 3.h),
-                  Text(book.language, style: AppTextStyles.grey12W500),
-                ],
-              ),
+                  child: Icon(Icons.menu_book_rounded, size: 22.r, color: context.brand.primary),
+                ),
+                SizedBox(width: 12.w),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        book.name,
+                        style: TextStyle(
+                          fontSize: 14.sp,
+                          fontWeight: FontWeight.w600,
+                          color: context.brand.onSurface,
+                        ),
+                      ),
+                      SizedBox(height: 3.h),
+                      Text(
+                        isSelected ? '${book.language} · ${'tafsir_selected'.tr()}' : book.language,
+                        style: AppTextStyles.grey12W500,
+                      ),
+                    ],
+                  ),
+                ),
+                SizedBox(width: 8.w),
+                _trailing(context),
+              ],
             ),
-            SizedBox(width: 8.w),
-            _trailing(context),
-          ],
+          ),
         ),
       ),
     );
@@ -92,10 +120,17 @@ class WTafsirBookTile extends StatelessWidget {
       );
     }
     if (isDownloaded) {
-      return IconButton(
-        tooltip: 'tafsir_delete'.tr(),
-        icon: Icon(Icons.delete_outline_rounded, color: context.brand.error),
-        onPressed: onDelete,
+      return Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          if (isSelected)
+            Icon(Icons.check_circle_rounded, size: 20.r, color: context.brand.primary),
+          IconButton(
+            tooltip: 'tafsir_delete'.tr(),
+            icon: Icon(Icons.delete_outline_rounded, color: context.brand.error),
+            onPressed: onDelete,
+          ),
+        ],
       );
     }
     return IconButton(

@@ -62,6 +62,27 @@ class RImplTafsir implements RTafsir {
   }
 
   @override
+  Future<Either<Failure, String?>> selectedBookId() async {
+    try {
+      return Right(_local.selectedId());
+    } catch (e, st) {
+      ErrorHelper.printDebugError(name: 'RImplTafsir.selectedBookId', error: e, stackTrace: st);
+      return Left(Failure.cacheFailure(message: e.toString()));
+    }
+  }
+
+  @override
+  Future<Either<Failure, void>> selectBook(String bookId) async {
+    try {
+      await _local.setSelected(bookId);
+      return const Right(null);
+    } catch (e, st) {
+      ErrorHelper.printDebugError(name: 'RImplTafsir.selectBook', error: e, stackTrace: st);
+      return Left(Failure.cacheFailure(message: e.toString()));
+    }
+  }
+
+  @override
   Future<Either<Failure, void>> delete(ETafsirBook book) async {
     try {
       await _local.deleteBook(book.id);

@@ -10,6 +10,7 @@ class STafsir extends Equatable {
     this.ref,
     this.entries = const [],
     this.hasBooks = true,
+    this.selectedBookId,
     this.error,
   });
 
@@ -20,6 +21,10 @@ class STafsir extends Equatable {
   /// Whether the user has any tafsir book downloaded at all. When false the
   /// screen invites them to the library instead of showing an empty result.
   final bool hasBooks;
+
+  /// Book the viewer opens on — the one picked in the library. Null falls back
+  /// to [TafsirCatalog.defaultBookId].
+  final String? selectedBookId;
   final String? error;
 
   STafsir copyWith({
@@ -27,6 +32,8 @@ class STafsir extends Equatable {
     ParamAyahRef? ref,
     List<ETafsirEntry>? entries,
     bool? hasBooks,
+    String? selectedBookId,
+    bool clearSelectedBook = false,
     String? error,
     bool clearError = false,
   }) {
@@ -35,10 +42,13 @@ class STafsir extends Equatable {
       ref: ref ?? this.ref,
       entries: entries ?? this.entries,
       hasBooks: hasBooks ?? this.hasBooks,
+      selectedBookId:
+          clearSelectedBook ? null : (selectedBookId ?? this.selectedBookId),
       error: clearError ? null : (error ?? this.error),
     );
   }
 
   @override
-  List<Object?> get props => [status, ref, entries, hasBooks, error];
+  List<Object?> get props =>
+      [status, ref, entries, hasBooks, selectedBookId, error];
 }

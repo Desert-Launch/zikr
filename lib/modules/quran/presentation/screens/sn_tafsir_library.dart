@@ -14,6 +14,10 @@ import 'package:quran/modules/quran/presentation/cubits/s_tafsir_library.dart';
 import 'package:quran/modules/quran/presentation/widgets/w_tafsir_book_tile.dart';
 
 /// Browse the tafsir catalogue and download / delete books, grouped by language.
+///
+/// Picking a downloaded book — or finishing a download, which picks it too —
+/// closes the library and hands the chosen id back, so the screen that opened
+/// it (the per-ayah viewer) comes back showing that book.
 class SNTafsirLibrary extends StatefulWidget {
   const SNTafsirLibrary({super.key});
 
@@ -41,8 +45,17 @@ class _SNTafsirLibraryState extends State<SNTafsirLibrary> {
             ),
             Expanded(
               child: BlocConsumer<CBTafsirLibrary, STafsirLibrary>(
-                listenWhen: (prev, curr) => curr.error != null && prev.error != curr.error,
+                listenWhen: (prev, curr) =>
+                    (curr.error != null && prev.error != curr.error) ||
+                    (curr.justDownloadedId != null &&
+                        prev.justDownloadedId != curr.justDownloadedId),
                 listener: (context, state) {
+                  final downloaded = state.justDownloadedId;
+                  if (downloaded != null) {
+                    _cubit.acknowledgeDownload();
+                    _onDownloaded(downloaded);
+                    return;
+                  }
                   AppAlert.error('${'common_error'.tr()}: ${state.error}');
                 },
                 builder: (context, state) {
@@ -85,9 +98,11 @@ class _SNTafsirLibraryState extends State<SNTafsirLibrary> {
                 book: book,
                 isDownloaded: state.isDownloaded(book.id),
                 isDownloading: state.isDownloading(book.id),
+                isSelected: state.isSelected(book.id),
                 progress: state.progressFor(book.id),
                 onDownload: () => _cubit.downloadBook(book),
                 onDelete: () => _confirmDelete(book),
+                onSelect: () => _select(book),
               ),
               SizedBox(height: 10.h),
             ],
@@ -95,6 +110,33 @@ class _SNTafsirLibraryState extends State<SNTafsirLibrary> {
         );
       },
     );
+  }
+
+  /// A download finished: say so, then leave with the book that just arrived —
+  /// it is already the selected one.
+  void _onDownloaded(String bookId) {
+    final book = TafsirCatalog.byId(bookId);
+    AppAlert.success(
+      'tafsir_download_success'.tr().replaceFirst('{{book}}', book?.name ?? ''),
+    );
+    _closeWith(bookId);
+  }
+
+  /// Picks [book] for the viewer and returns to it.
+  Future<void> _select(ETafsirBook book) async {
+    await _cubit.selectBook(book);
+    _closeWith(book.id);
+  }
+
+  /// Pops back, handing [bookId] to whoever pushed this screen. Skipped while a
+  /// dialog sits on top — the pop would close that instead of the library.
+  void _closeWith(String bookId) {
+    if (!mounted) return;
+    final route = ModalRoute.of(context);
+    if (route == null || !route.isCurrent || !Navigator.of(context).canPop()) {
+      return;
+    }
+    Navigator.of(context).pop(bookId);
   }
 
   Future<void> _confirmDelete(ETafsirBook book) async {

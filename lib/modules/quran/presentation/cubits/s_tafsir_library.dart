@@ -9,6 +9,8 @@ class STafsirLibrary extends Equatable {
     this.books = const [],
     this.downloaded = const {},
     this.progress = const {},
+    this.selectedId,
+    this.justDownloadedId,
     this.error,
   });
 
@@ -20,9 +22,19 @@ class STafsirLibrary extends Equatable {
 
   /// bookId -> 0.0–1.0 while a download is in flight (absent when idle).
   final Map<String, double> progress;
+
+  /// Book the per-ayah viewer opens on. Null until the reader picks one, when
+  /// the viewer falls back to the catalogue default.
+  final String? selectedId;
+
+  /// One-shot signal: a download just finished for this book. The screen turns
+  /// it into a success toast and leaves the library; it is cleared as soon as
+  /// anything else happens here.
+  final String? justDownloadedId;
   final String? error;
 
   bool isDownloaded(String id) => downloaded.contains(id);
+  bool isSelected(String id) => selectedId == id;
   bool isDownloading(String id) => progress.containsKey(id);
   double progressFor(String id) => progress[id] ?? 0;
 
@@ -31,6 +43,10 @@ class STafsirLibrary extends Equatable {
     List<ETafsirBook>? books,
     Set<String>? downloaded,
     Map<String, double>? progress,
+    String? selectedId,
+    bool clearSelected = false,
+    String? justDownloadedId,
+    bool clearJustDownloaded = false,
     String? error,
     bool clearError = false,
   }) {
@@ -39,10 +55,21 @@ class STafsirLibrary extends Equatable {
       books: books ?? this.books,
       downloaded: downloaded ?? this.downloaded,
       progress: progress ?? this.progress,
+      selectedId: clearSelected ? null : (selectedId ?? this.selectedId),
+      justDownloadedId:
+          clearJustDownloaded ? null : (justDownloadedId ?? this.justDownloadedId),
       error: clearError ? null : (error ?? this.error),
     );
   }
 
   @override
-  List<Object?> get props => [status, books, downloaded, progress, error];
+  List<Object?> get props => [
+        status,
+        books,
+        downloaded,
+        progress,
+        selectedId,
+        justDownloadedId,
+        error,
+      ];
 }

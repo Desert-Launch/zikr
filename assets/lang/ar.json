@@ -51,6 +51,8 @@
   "tafsir_no_books": "لم تُضِف أي كتاب تفسير بعد. تصفّح المكتبة لتنزيل كتاب.",
   "tafsir_empty_for_ayah": "لا يوجد تفسير لهذه الآية في كتبك المحمّلة.",
   "tafsir_browse_library": "تصفّح المكتبة",
+  "tafsir_selected": "المختار",
+  "tafsir_download_success": "تم تنزيل \"{{book}}\" بنجاح",
   "tafsir_download": "تنزيل",
   "tafsir_delete": "حذف",
   "tafsir_delete_confirm": "هل تريد إزالة \"{{book}}\" من جهازك؟",

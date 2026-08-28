@@ -51,6 +51,8 @@
   "tafsir_no_books": "You haven't added any tafsir books yet. Browse the library to download one.",
   "tafsir_empty_for_ayah": "None of your tafsir books have commentary for this ayah.",
   "tafsir_browse_library": "Browse library",
+  "tafsir_selected": "Selected",
+  "tafsir_download_success": "\"{{book}}\" downloaded successfully",
   "tafsir_download": "Download",
   "tafsir_delete": "Delete",
   "tafsir_delete_confirm": "Remove \"{{book}}\" from your device?",

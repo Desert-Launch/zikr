@@ -19,6 +19,14 @@ abstract class RTafsir {
     void Function(double progress)? onProgress,
   });
 
+  /// Id of the book the per-ayah viewer opens on, or null when the reader has
+  /// not picked one — the viewer then falls back to
+  /// [TafsirCatalog.defaultBookId].
+  Future<Either<Failure, String?>> selectedBookId();
+
+  /// Makes [bookId] the book the viewer opens on.
+  Future<Either<Failure, void>> selectBook(String bookId);
+
   /// Removes a previously downloaded book from local storage.
   Future<Either<Failure, void>> delete(ETafsirBook book);
 
