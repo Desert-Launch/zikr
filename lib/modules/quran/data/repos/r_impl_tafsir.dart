@@ -73,6 +73,29 @@ class RImplTafsir implements RTafsir {
   }
 
   @override
+  Future<Either<Failure, bool>> seedDefaultBook() async {
+    try {
+      // The marker, not the book's presence, is what ends the seed: a reader
+      // who deleted the default book from the library meant it, and must not
+      // find it back on the next cold start.
+      if (_local.isDefaultSeeded()) return const Right(false);
+
+      final book = TafsirCatalog.defaultBook;
+      final alreadyHad = _local.isDownloaded(book.id);
+      final res = await download(book);
+      // Left on a failed fetch, and the marker stays unset — a first launch
+      // spent offline simply seeds on the next one.
+      if (res.isLeft()) return res.map((_) => false);
+
+      await _local.markDefaultSeeded();
+      return Right(!alreadyHad);
+    } catch (e, st) {
+      ErrorHelper.printDebugError(name: 'RImplTafsir.seedDefaultBook', error: e, stackTrace: st);
+      return Left(Failure.unexpectedFailure(message: e.toString()));
+    }
+  }
+
+  @override
   Future<Either<Failure, List<ETafsirEntry>>> getForAyah(ParamAyahRef ref) async {
     try {
       final downloaded = _local.downloadedIds().toSet();

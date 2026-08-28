@@ -22,6 +22,12 @@ abstract class RTafsir {
   /// Removes a previously downloaded book from local storage.
   Future<Either<Failure, void>> delete(ETafsirBook book);
 
+  /// Fetches [TafsirCatalog.defaultBook] once, so a fresh install has a tafsir
+  /// to show without a trip to the library. Resolves to whether this call
+  /// actually downloaded anything: false when the seed already ran, when the
+  /// book was there already, or when it was deleted on purpose.
+  Future<Either<Failure, bool>> seedDefaultBook();
+
   /// All downloaded books' commentary for [ref], in catalogue order.
   Future<Either<Failure, List<ETafsirEntry>>> getForAyah(ParamAyahRef ref);
 }

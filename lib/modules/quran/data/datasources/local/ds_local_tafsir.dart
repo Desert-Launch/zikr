@@ -28,6 +28,14 @@ class DSLocalTafsir {
 
   bool isDownloaded(String bookId) => _box.box.containsKey(BoxTafsir.bookKey(bookId));
 
+  /// Whether the default book's one-time seed has already run.
+  bool isDefaultSeeded() => _box.box.containsKey(BoxTafsir.defaultSeededKey);
+
+  /// Records that the seed is done, so it is never attempted again — including
+  /// after the reader deletes the book from the library.
+  Future<void> markDefaultSeeded() =>
+      _box.box.put(BoxTafsir.defaultSeededKey, '1');
+
   /// Persists [jsonString] (a decoded book map) and registers [bookId].
   Future<void> saveBook(String bookId, String jsonString) async {
     await _box.box.put(BoxTafsir.bookKey(bookId), jsonString);

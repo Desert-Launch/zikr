@@ -46,6 +46,14 @@ class TafsirCatalog {
 
   static const String _root = 'quranic_universal_library/compressed_tafsir_v2';
 
+  /// The book every reader starts with. Fetched once on first launch so tafsir
+  /// works out of the box, and opened first in the per-ayah viewer.
+  ///
+  /// Al-Muyassar is the choice because it is the short, plain-Arabic reading
+  /// the app's Arabic-first audience expects, and the smallest of the Arabic
+  /// books to put over a first-launch connection.
+  static const String defaultBookId = 'ar-muyassar';
+
   static const List<ETafsirBook> books = [
     // ---- Arabic ----
     ETafsirBook(
@@ -201,6 +209,10 @@ class TafsirCatalog {
       fullPath: '$_root/Bengali/Tafsir_Abu_Bakr_Zakaria.json.txt',
     ),
   ];
+
+  /// The book seeded on first launch — see [defaultBookId]. Falls back to the
+  /// head of the catalogue so a mistyped id can never leave this null.
+  static ETafsirBook get defaultBook => byId(defaultBookId) ?? books.first;
 
   /// Fast id lookup (e.g. to hydrate a downloaded-book id back to its metadata).
   static ETafsirBook? byId(String id) {

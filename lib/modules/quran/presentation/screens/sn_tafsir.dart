@@ -8,6 +8,7 @@ import 'package:quran/core/theme/app_text_styles.dart';
 import 'package:quran/core/theme/brand_colors.dart';
 import 'package:quran/core/widgets/w_gradient_app_bar.dart';
 import 'package:quran/core/widgets/w_shared_scaffold.dart';
+import 'package:quran/modules/quran/domain/entities/e_tafsir_book.dart';
 import 'package:quran/modules/quran/domain/entities/param_ayah_ref.dart';
 import 'package:quran/modules/quran/presentation/cubits/cb_tafsir.dart';
 import 'package:quran/modules/quran/presentation/cubits/s_surah_list.dart' show LoadStatus;
@@ -93,11 +94,21 @@ class _TafsirTabs extends StatelessWidget {
   const _TafsirTabs({required this.state});
   final STafsir state;
 
+  /// Where the viewer opens: the default book when the reader has it, the
+  /// first tab otherwise. Catalogue order already puts it first today, but the
+  /// tab the reader lands on shouldn't quietly change if that order is edited.
+  int get _initialIndex {
+    final i = state.entries
+        .indexWhere((e) => e.book.id == TafsirCatalog.defaultBookId);
+    return i < 0 ? 0 : i;
+  }
+
   @override
   Widget build(BuildContext context) {
     final entries = state.entries;
     return DefaultTabController(
       length: entries.length,
+      initialIndex: _initialIndex,
       child: Column(
         children: [
           if (entries.length > 1)

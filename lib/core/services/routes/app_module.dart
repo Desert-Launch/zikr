@@ -47,10 +47,10 @@ import 'package:quran/modules/azkar/data/sources/local/box_azkar_category_favori
 import 'package:quran/modules/azkar/data/sources/local/box_azkar_favorite.dart';
 import 'package:quran/modules/azkar/data/sources/local/box_azkar_progress.dart';
 import 'package:quran/modules/home/home_module.dart';
+import 'package:quran/modules/khatma/data/datasources/local/ds_local_khatma.dart';
 import 'package:quran/modules/khatma/data/sources/local/box_khatma_completion.dart';
 import 'package:quran/modules/khatma/data/sources/local/box_khatma_day.dart';
 import 'package:quran/modules/khatma/data/sources/local/box_khatma_plan.dart';
-import 'package:quran/modules/khatma/data/datasources/local/ds_local_khatma.dart';
 import 'package:quran/modules/khatma/khatma_module.dart';
 import 'package:quran/modules/khatma/presentation/cubits/cb_khatma.dart';
 import 'package:quran/modules/legal/legal_module.dart';
@@ -71,13 +71,18 @@ import 'package:quran/modules/qibla/qibla_module.dart';
 import 'package:quran/modules/quran/data/datasources/local/ds_local_audio_files.dart';
 import 'package:quran/modules/quran/data/datasources/local/ds_local_quran.dart';
 import 'package:quran/modules/quran/data/datasources/local/ds_local_reciters.dart';
+import 'package:quran/modules/quran/data/datasources/local/ds_local_tafsir.dart';
 import 'package:quran/modules/quran/data/datasources/remote/ds_audio_downloader.dart';
 import 'package:quran/modules/quran/data/datasources/remote/ds_remote_audio.dart';
+import 'package:quran/modules/quran/data/datasources/remote/ds_remote_tafsir.dart';
 import 'package:quran/modules/quran/data/repos/r_impl_quran.dart';
+import 'package:quran/modules/quran/data/repos/r_impl_tafsir.dart';
+import 'package:quran/modules/quran/data/sources/local/box_tafsir.dart';
 import 'package:quran/modules/quran/domain/usecases/uc_get_daily_verse.dart';
 import 'package:quran/modules/quran/presentation/cubits/cb_daily_verse.dart';
 import 'package:quran/modules/quran/quran_module.dart';
 import 'package:quran/modules/quran/services/basmalah_bootstrap.dart';
+import 'package:quran/modules/quran/services/tafsir_bootstrap.dart';
 import 'package:quran/modules/radio/presentation/cubits/cb_radio_player.dart';
 import 'package:quran/modules/radio/radio_module.dart';
 import 'package:quran/modules/reminders/data/sources/local/box_reminders.dart';
@@ -262,6 +267,16 @@ class AppModule extends Module {
         downloader: DSAudioDownloader(),
       ),
     );
+    // Same reasoning as BasmalahBootstrap: this runs as a boot step long before
+    // QuranModule is mounted, so it owns its instances. The Hive box is shared
+    // by name, so what it writes here is exactly what the module reads later.
+    i.addSingleton<TafsirBootstrap>(() {
+      final box = BoxTafsir();
+      return TafsirBootstrap(
+        repo: RImplTafsir(DSLocalTafsir(box), DSRemoteTafsir()),
+        box: box,
+      );
+    });
     i.addSingleton<AdhanBootstrap>(
       () => AdhanBootstrap(
         repo: i.get<RAdhan>(),

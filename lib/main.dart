@@ -44,6 +44,7 @@ import 'package:quran/modules/quran/data/models/m_reciter_pref.dart';
 import 'package:quran/modules/quran/data/sources/local/quran_hive_registrar.dart';
 import 'package:quran/modules/quran/presentation/cubits/cb_reader_settings.dart';
 import 'package:quran/modules/quran/services/basmalah_bootstrap.dart';
+import 'package:quran/modules/quran/services/tafsir_bootstrap.dart';
 import 'package:quran/modules/radio/presentation/widgets/w_radio_peek_tab.dart';
 import 'package:quran/modules/reminders/data/models/m_reminder.dart';
 import 'package:quran/modules/reminders/presentation/cubits/cb_reminders.dart';
@@ -192,6 +193,13 @@ Future<void> _bootNotifications() async {
   // wait on 15 downloads before the adhan window is rebuilt.
   unawaited(
     _bootStep('basmalah prefetch', Modular.get<BasmalahBootstrap>().run),
+  );
+  // Seed the default tafsir (التفسير الميسّر) once, so the first tap on
+  // "tafsir" in the reader shows a commentary instead of an invitation to go
+  // download one. Detached for the same reason as the basmalah above, and a
+  // no-op on every launch after the first.
+  unawaited(
+    _bootStep('tafsir seed', Modular.get<TafsirBootstrap>().run),
   );
   await _bootStep('adhan bootstrap', Modular.get<AdhanBootstrap>().run);
   // Rebuild the rolling adhan window on every cold start so scheduling never
