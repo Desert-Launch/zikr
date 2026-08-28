@@ -144,6 +144,25 @@ class RImplQuran implements RQuran {
         if (s.number == number) surah = s;
       }
 
+      // As a juz': the verse it opens on. A juz' is two ahzab, so juz' n starts
+      // at rub' (n-1) * 8 — the same row the juz' index reads.
+      ENumberJuz? juz;
+      if (number <= 30) {
+        final row = RubStarts.rows[(number - 1) * RubStarts.perHizb * 2];
+        final ref = ParamAyahRef(surah: row[0], ayah: row[1]);
+        var startSurahArabic = '';
+        for (final s in surahs) {
+          if (s.number == row[0]) startSurahArabic = s.arabic;
+        }
+        juz = ENumberJuz(
+          number: number,
+          ref: ref,
+          page: row[2],
+          text: await _local.fullAyahText(ref),
+          surahArabic: startSurahArabic,
+        );
+      }
+
       // As a hizb: its four arba', each with the verse it opens on.
       final rubs = <ENumberRub>[];
       if (number <= RubStarts.count ~/ RubStarts.perHizb) {
@@ -167,6 +186,7 @@ class RImplQuran implements RQuran {
         pageSurahArabic: pageSurah?.arabic ?? '',
         pageSurahName: pageSurah?.name ?? '',
         surah: surah,
+        juz: juz,
         rubs: rubs,
       ));
     } catch (e, st) {

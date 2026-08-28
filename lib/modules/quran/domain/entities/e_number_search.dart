@@ -33,10 +33,40 @@ class ENumberRub extends Equatable {
   List<Object?> get props => [hizb, quarter, ref, page];
 }
 
-/// What a purely numeric query resolves to. Every section is independent: `50`
-/// is at once a page, a surah and a hizb, so all three are offered and the
-/// reader decides. Sections the number is out of range for come back null/empty
-/// (e.g. `200` is a page but neither a surah nor a hizb).
+/// The juz' a numeric query names: where it begins and the verse printed
+/// there, so the reader recognises it without opening the mushaf.
+class ENumberJuz extends Equatable {
+  const ENumberJuz({
+    required this.number,
+    required this.ref,
+    required this.page,
+    required this.text,
+    this.surahArabic = '',
+  });
+
+  /// Juz' number, 1..30.
+  final int number;
+
+  /// Ayah the juz' begins at.
+  final ParamAyahRef ref;
+
+  /// Madani-mushaf page (1..604) the juz' begins on.
+  final int page;
+
+  /// Uthmani text of [ref] — the verse the juz' opens with.
+  final String text;
+
+  /// Arabic-script name of the surah [ref] falls in, e.g. "التوبة".
+  final String surahArabic;
+
+  @override
+  List<Object?> get props => [number, ref, page];
+}
+
+/// What a purely numeric query resolves to. Every section is independent: `20`
+/// is at once a page, a surah, a juz' and a hizb, so all of them are offered
+/// and the reader decides. Sections the number is out of range for come back
+/// null/empty (e.g. `200` is a page but none of the rest).
 class ENumberSearch extends Equatable {
   const ENumberSearch({
     required this.number,
@@ -44,6 +74,7 @@ class ENumberSearch extends Equatable {
     this.pageSurahArabic = '',
     this.pageSurahName = '',
     this.surah,
+    this.juz,
     this.rubs = const [],
   });
 
@@ -62,11 +93,15 @@ class ENumberSearch extends Equatable {
   /// [number] read as a surah, when it is 1..114.
   final MSurah? surah;
 
+  /// [number] read as a juz', when it is 1..30 — its opening verse.
+  final ENumberJuz? juz;
+
   /// The four arba' of hizb [number], when it is 1..60. Empty otherwise.
   final List<ENumberRub> rubs;
 
-  bool get isEmpty => page == null && surah == null && rubs.isEmpty;
+  bool get isEmpty =>
+      page == null && surah == null && juz == null && rubs.isEmpty;
 
   @override
-  List<Object?> get props => [number, page, surah?.number, rubs];
+  List<Object?> get props => [number, page, surah?.number, juz, rubs];
 }

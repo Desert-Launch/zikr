@@ -7,6 +7,7 @@ import 'package:localize_and_translate/localize_and_translate.dart';
 import 'package:quran/core/services/routes/routes_names.dart';
 import 'package:quran/core/theme/app_colors.dart';
 import 'package:quran/core/utils/helper/nav_helper.dart';
+import 'package:quran/modules/quran/domain/entities/param_ayah_ref.dart';
 import 'package:quran/modules/quran/presentation/cubits/cb_mushaf_reader.dart';
 import 'package:quran/modules/quran/presentation/cubits/s_mushaf_reader.dart';
 import 'package:quran/modules/quran/presentation/widgets/mushaf_labels.dart';
@@ -17,10 +18,14 @@ import 'package:quran/modules/quran/presentation/widgets/w_quran_index_sheet.dar
 /// the cubit's auto-hide timer. Carries the back button plus the current surah
 /// name, juz'/page, and the hizb with the rub' of it reached.
 class WReaderTopBar extends StatelessWidget {
-  const WReaderTopBar({super.key, required this.onOpenPage});
+  const WReaderTopBar({super.key, required this.onOpenPage, this.onOpenAyah});
 
   /// Target page chosen from the index popup — the reader jumps in place.
   final ValueChanged<int> onOpenPage;
+
+  /// Target of a search result picked in the index popup: a verse to highlight
+  /// as well as the page it sits on.
+  final void Function(ParamAyahRef? ref, int page)? onOpenAyah;
 
   @override
   Widget build(BuildContext context) {
@@ -42,7 +47,11 @@ class WReaderTopBar extends StatelessWidget {
             child: AnimatedOpacity(
               opacity: vm.visible ? 1 : 0,
               duration: const Duration(milliseconds: 200),
-              child: _Bar(vm: vm, onOpenPage: onOpenPage),
+              child: _Bar(
+                vm: vm,
+                onOpenPage: onOpenPage,
+                onOpenAyah: onOpenAyah,
+              ),
             ),
           ),
         );
@@ -52,9 +61,10 @@ class WReaderTopBar extends StatelessWidget {
 }
 
 class _Bar extends StatelessWidget {
-  const _Bar({required this.vm, required this.onOpenPage});
+  const _Bar({required this.vm, required this.onOpenPage, this.onOpenAyah});
   final _TopBarVM vm;
   final ValueChanged<int> onOpenPage;
+  final void Function(ParamAyahRef? ref, int page)? onOpenAyah;
 
 
   @override
@@ -110,7 +120,11 @@ class _Bar extends StatelessWidget {
                 Expanded(
                   child: InkWell(
                     onTap: () =>
-                        WQuranIndexSheet.show(context, onOpenPage: onOpenPage),
+                        WQuranIndexSheet.show(
+                          context,
+                          onOpenPage: onOpenPage,
+                          onOpenAyah: onOpenAyah,
+                        ),
                     // Plain Column, NOT another Expanded. Expanded is a
                     // ParentDataWidget: it only means anything as a direct
                     // child of a Flex, and this slot belongs to an InkWell.
@@ -165,7 +179,11 @@ class _Bar extends StatelessWidget {
                   tooltip: 'reader_index'.tr(),
                   icon: Icons.format_list_bulleted_rounded,
                   onPressed: () =>
-                      WQuranIndexSheet.show(context, onOpenPage: onOpenPage),
+                      WQuranIndexSheet.show(
+                        context,
+                        onOpenPage: onOpenPage,
+                        onOpenAyah: onOpenAyah,
+                      ),
                 ),
                 _BarIcon(
                   tooltip: 'quran_settings_title'.tr(),

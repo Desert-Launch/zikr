@@ -327,7 +327,11 @@ class QuranModule extends Module {
       () => CBBookmarks(i.get<UCGetBookmarks>(), i.get<UCSaveBookmark>()),
     );
     i.add<CBQuranSearch>(
-      () => CBQuranSearch(i.get<UCSearchQuran>(), i.get<UCNumberLookup>()),
+      () => CBQuranSearch(
+        i.get<UCSearchQuran>(),
+        i.get<UCNumberLookup>(),
+        i.get<UCGetSurahList>(),
+      ),
     );
     i.add<CBReciterDownloads>(
       () => CBReciterDownloads(

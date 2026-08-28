@@ -599,7 +599,10 @@ class _SNMushafReaderState extends State<SNMushafReader> with OrientationOverrid
                   child: Column(
                     mainAxisSize: MainAxisSize.min,
                     children: [
-                      WReaderTopBar(onOpenPage: _jumpToPage),
+                      WReaderTopBar(
+                        onOpenPage: _jumpToPage,
+                        onOpenAyah: _openSearchHit,
+                      ),
                       // Loose flex: the panel may grow only into what the top
                       // bar left behind, so a short screen shrinks the results
                       // list instead of overflowing the column.

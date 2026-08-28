@@ -5,17 +5,23 @@ import 'package:localize_and_translate/localize_and_translate.dart';
 import 'package:quran/modules/quran/presentation/cubits/cb_quran_search.dart';
 import 'package:quran/modules/quran/presentation/cubits/cb_surah_list.dart';
 import 'package:quran/modules/quran/presentation/cubits/s_quran_search.dart';
+import 'package:quran/modules/quran/domain/entities/param_ayah_ref.dart';
 import 'package:quran/modules/quran/presentation/cubits/s_surah_list.dart';
 import 'package:quran/modules/quran/presentation/widgets/w_juz_card.dart';
 import 'package:quran/modules/quran/presentation/widgets/w_page_card.dart';
 import 'package:quran/modules/quran/presentation/widgets/w_quran_index_mode_bar.dart';
 import 'package:quran/modules/quran/presentation/widgets/w_quran_summary_cards.dart';
-import 'package:quran/modules/quran/presentation/widgets/w_search_hit_tile.dart';
+import 'package:quran/modules/quran/presentation/widgets/w_search_results.dart';
 import 'package:quran/modules/quran/presentation/widgets/w_surah_card.dart';
 import 'package:quran/modules/quran/presentation/widgets/w_surah_filter_bar.dart';
 
 /// The Quran index body — mode tabs (surahs / juz' / pages), the surah filter
-/// row, the browsable list for the active mode and the ayah search results.
+/// row and the browsable list for the active mode.
+///
+/// A non-empty query replaces the whole body with [WSearchResults], the same
+/// list the reader's search panel shows: surahs, verses, and — for a number —
+/// the page, surah and arba' it names. So one box searches the mushaf the same
+/// way wherever it is typed in.
 ///
 /// Single source of truth for the index: the standalone [SNSurahList] screen and
 /// the reader's index popup ([WQuranIndexSheet]) both render this, differing
@@ -31,6 +37,7 @@ class WQuranIndexContent extends StatelessWidget {
     this.showSummary = true,
     this.onBookmarks,
     this.controller,
+    this.onOpenAyah,
   });
 
   final CBSurahList cubit;
@@ -49,6 +56,11 @@ class WQuranIndexContent extends StatelessWidget {
   final bool showSummary;
   final VoidCallback? onBookmarks;
   final ScrollController? controller;
+
+  /// Where a search result goes. Left null the results push a fresh reader —
+  /// which is what the standalone index screen wants; the reader's index popup
+  /// passes a handler that closes itself and jumps in place instead.
+  final void Function(ParamAyahRef? ref, int page)? onOpenAyah;
 
   static const Color green = Color(0xFF007A58);
   static const Color gold = Color(0xFFD6A72C);
@@ -79,10 +91,20 @@ class WQuranIndexContent extends StatelessWidget {
   }
 
   List<Widget> _indexSlivers(SSurahList state, SQuranSearch search) {
-    final searching =
-        state.mode == QuranIndexMode.surah && state.query.trim().length >= 2;
-    final ayahNoResults =
-        search.status == LoadStatus.success && search.results.isEmpty;
+    // Searching takes over the whole body: the index bars and cards belong to
+    // browsing, and the results list is the reader's, verbatim.
+    if (search.query.trim().isNotEmpty) {
+      final open = onOpenAyah;
+      return [
+        SliverFillRemaining(
+          hasScrollBody: true,
+          child: WSearchResults(
+            onHitTap: open == null ? null : (hit) => open(hit.ref, hit.page),
+            onJump: open,
+          ),
+        ),
+      ];
+    }
 
     return [
       SliverToBoxAdapter(
@@ -104,28 +126,7 @@ class WQuranIndexContent extends StatelessWidget {
         )
       else ...[
         if (showSummary) _summarySliver(state),
-        if (state.mode == QuranIndexMode.surah) ...[
-          // Surah-name matches.
-          if (state.visible.isNotEmpty) ...[
-            if (searching)
-              _sectionLabel(
-                'surah_list_results_surahs'.tr(),
-                state.visible.length,
-              ),
-            _surahSliver(state),
-          ],
-          // Ayah (verse) matches.
-          if (searching) ..._ayahSlivers(search),
-          // Nothing matched either index.
-          if (searching && state.visible.isEmpty && ayahNoResults)
-            SliverToBoxAdapter(
-              child: Padding(
-                padding: EdgeInsets.symmetric(vertical: 48.h),
-                child: Center(child: Text('search_no_results'.tr())),
-              ),
-            ),
-        ] else
-          _modeSliver(state),
+        _modeSliver(state),
       ],
     ];
   }
@@ -181,7 +182,7 @@ class WQuranIndexContent extends StatelessWidget {
     }
   }
 
-  /// The matching surahs as a sliver list.
+  /// The surah index as a sliver list, under the active filters.
   Widget _surahSliver(SSurahList state) {
     return SliverPadding(
       padding: EdgeInsets.fromLTRB(16.w, 4.h, 16.w, 28.h),
@@ -199,61 +200,5 @@ class WQuranIndexContent extends StatelessWidget {
         },
       ),
     );
-  }
-
-  /// A small section heading with a result count, separating surah and ayah
-  /// results while a query is active.
-  Widget _sectionLabel(String text, int count) {
-    return SliverToBoxAdapter(
-      child: Padding(
-        padding: EdgeInsets.fromLTRB(20.w, 12.h, 20.w, 2.h),
-        child: Row(
-          children: [
-            Text(
-              text,
-              style: TextStyle(
-                fontSize: 13.sp,
-                fontWeight: FontWeight.w700,
-                color: green,
-              ),
-            ),
-            SizedBox(width: 6.w),
-            Text(
-              '($count)',
-              style: TextStyle(fontSize: 12.sp, color: Colors.black45),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  /// The ayah (verse) full-text results, reusing the shared search hit tiles.
-  List<Widget> _ayahSlivers(SQuranSearch search) {
-    if (search.status == LoadStatus.loading) {
-      return [
-        SliverToBoxAdapter(
-          child: Padding(
-            padding: EdgeInsets.symmetric(vertical: 24.h),
-            child: const Center(child: CircularProgressIndicator()),
-          ),
-        ),
-      ];
-    }
-    if (search.results.isEmpty) return const [];
-    return [
-      _sectionLabel('surah_list_results_ayat'.tr(), search.results.length),
-      SliverPadding(
-        padding: EdgeInsets.fromLTRB(16.w, 4.h, 16.w, 28.h),
-        sliver: SliverList.separated(
-          itemCount: search.results.length,
-          separatorBuilder: (_, __) => SizedBox(height: 8.h),
-          itemBuilder: (_, i) => WSearchHitTile(
-            hit: search.results[i],
-            query: search.query.trim(),
-          ),
-        ),
-      ),
-    ];
   }
 }

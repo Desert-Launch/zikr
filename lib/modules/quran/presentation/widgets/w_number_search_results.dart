@@ -9,12 +9,14 @@ import 'package:quran/modules/quran/domain/entities/e_number_search.dart';
 import 'package:quran/modules/quran/domain/entities/param_ayah_ref.dart';
 import 'package:quran/modules/quran/presentation/widgets/mushaf_labels.dart';
 import 'package:quran/modules/quran/presentation/widgets/w_search_card.dart';
+import 'package:quran/modules/quran/presentation/widgets/w_search_meta_row.dart';
 import 'package:quran/modules/quran/presentation/widgets/w_search_page_pill.dart';
 import 'package:quran/modules/quran/presentation/widgets/w_search_section_header.dart';
 
 /// Results for a purely numeric query: the number read as a page, as a surah,
-/// and as a hizb — the last broken into its four arba', each showing the verse
-/// it opens on. Sections the number is out of range for are simply absent.
+/// as a juz', and as a hizb — the last broken into its four arba'. The juz' and
+/// every rub' show the verse they open on. Sections the number is out of range
+/// for are simply absent.
 class WNumberSearchResults extends StatelessWidget {
   const WNumberSearchResults({super.key, required this.numbers, this.onJump});
 
@@ -28,6 +30,7 @@ class WNumberSearchResults extends StatelessWidget {
   Widget build(BuildContext context) {
     final page = numbers.page;
     final surah = numbers.surah;
+    final juz = numbers.juz;
     final isRtl = Directionality.of(context) == TextDirection.rtl;
     final number = isRtl ? arabicDigits(numbers.number) : '${numbers.number}';
 
@@ -36,7 +39,7 @@ class WNumberSearchResults extends StatelessWidget {
       children: [
         if (page != null) ...[
           WSearchSectionHeader(title: 'search_section_pages'.tr()),
-          _MetaRow(
+          WSearchMetaRow(
             icon: Icons.description_outlined,
             title: 'search_page_number'.tr().replaceFirst('{{page}}', number),
             subtitle: numbers.pageSurahArabic.isNotEmpty
@@ -47,7 +50,7 @@ class WNumberSearchResults extends StatelessWidget {
         ],
         if (surah != null) ...[
           WSearchSectionHeader(title: 'search_section_surahs'.tr()),
-          _MetaRow(
+          WSearchMetaRow(
             icon: Icons.auto_stories_outlined,
             leadingBadge: number,
             title: surah.arabic.isNotEmpty ? surah.arabic : surah.name,
@@ -59,12 +62,29 @@ class WNumberSearchResults extends StatelessWidget {
             ),
           ),
         ],
+        if (juz != null) ...[
+          WSearchSectionHeader(title: 'search_section_juz'.tr()),
+          _VerseTile(
+            title: juz.surahArabic.isEmpty
+                ? 'search_juz_number'.tr().replaceFirst('{{juz}}', number)
+                : '${'search_juz_number'.tr().replaceFirst('{{juz}}', number)}'
+                      ' · ${juz.surahArabic}',
+            page: juz.page,
+            text: juz.text,
+            onTap: () => _open(juz.ref, juz.page),
+          ),
+        ],
         if (numbers.rubs.isNotEmpty) ...[
           WSearchSectionHeader(title: 'search_section_arba'.tr()),
           for (final rub in numbers.rubs)
             Padding(
               padding: EdgeInsets.only(bottom: 10.h),
-              child: _RubTile(rub: rub, onTap: () => _open(rub.ref, rub.page)),
+              child: _VerseTile(
+                title: mushafRubLabel(rub.hizb, rub.quarter),
+                page: rub.page,
+                text: rub.text,
+                onTap: () => _open(rub.ref, rub.page),
+              ),
             ),
         ],
       ],
@@ -88,97 +108,19 @@ class WNumberSearchResults extends StatelessWidget {
   }
 }
 
-/// A one-line result: an icon or number badge, a bold title with a muted
-/// second line, and the page it lands on.
-class _MetaRow extends StatelessWidget {
-  const _MetaRow({
-    required this.icon,
+/// A division of the mushaf that opens on a known verse — a juz' or one rub' of
+/// a hizb: its name, the page it starts on, and the verse printed there.
+class _VerseTile extends StatelessWidget {
+  const _VerseTile({
     required this.title,
-    required this.subtitle,
+    required this.page,
+    required this.text,
     required this.onTap,
-    this.leadingBadge,
-    this.page,
   });
 
-  final IconData icon;
   final String title;
-  final String subtitle;
-  final VoidCallback onTap;
-
-  /// Shown instead of [icon] when the row is itself numbered (a surah).
-  final String? leadingBadge;
-  final int? page;
-
-  @override
-  Widget build(BuildContext context) {
-    final brand = context.brand;
-    final badge = leadingBadge;
-    final page = this.page;
-    return WSearchCard(
-      onTap: onTap,
-      highlight: true,
-      child: Row(
-        children: [
-          Container(
-            width: 34.r,
-            height: 34.r,
-            alignment: Alignment.center,
-            decoration: BoxDecoration(
-              color: brand.primary.withValues(alpha: 0.1),
-              borderRadius: BorderRadius.circular(10.r),
-            ),
-            child: badge != null
-                ? Text(
-                    badge,
-                    style: TextStyle(
-                      fontSize: 13.sp,
-                      fontWeight: FontWeight.w700,
-                      color: brand.primary,
-                    ),
-                  )
-                : Icon(icon, size: 18.r, color: brand.primary),
-          ),
-          SizedBox(width: 12.w),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  title,
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                  style: TextStyle(
-                    fontSize: 15.sp,
-                    fontWeight: FontWeight.w700,
-                    color: brand.onSurface,
-                  ),
-                ),
-                if (subtitle.isNotEmpty) ...[
-                  SizedBox(height: 2.h),
-                  Text(
-                    subtitle,
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                    style: TextStyle(fontSize: 12.sp, color: brand.muted),
-                  ),
-                ],
-              ],
-            ),
-          ),
-          SizedBox(width: 8.w),
-          if (page != null) WSearchPagePill(page: page),
-        ],
-      ),
-    );
-  }
-}
-
-/// One rub' of the hizb: its mushaf name, the page it starts on, and the verse
-/// printed at the ۞ mark.
-class _RubTile extends StatelessWidget {
-  const _RubTile({required this.rub, required this.onTap});
-
-  final ENumberRub rub;
+  final int page;
+  final String text;
   final VoidCallback onTap;
 
   @override
@@ -198,7 +140,7 @@ class _RubTile extends StatelessWidget {
               SizedBox(width: 6.w),
               Expanded(
                 child: Text(
-                  mushafRubLabel(rub.hizb, rub.quarter),
+                  title,
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
                   style: TextStyle(
@@ -209,7 +151,7 @@ class _RubTile extends StatelessWidget {
                 ),
               ),
               SizedBox(width: 8.w),
-              WSearchPagePill(page: rub.page),
+              WSearchPagePill(page: page),
             ],
           ),
           SizedBox(height: 10.h),
@@ -226,7 +168,7 @@ class _RubTile extends StatelessWidget {
             child: Directionality(
               textDirection: TextDirection.rtl,
               child: Text(
-                rub.text,
+                text,
                 maxLines: 3,
                 overflow: TextOverflow.ellipsis,
                 style: GoogleFonts.amiri(

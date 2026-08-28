@@ -3,6 +3,7 @@ import 'package:flutter_modular/flutter_modular.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:quran/core/theme/brand_colors.dart';
 import 'package:quran/core/widgets/w_search_field.dart';
+import 'package:quran/modules/quran/domain/entities/param_ayah_ref.dart';
 import 'package:quran/modules/quran/presentation/cubits/cb_quran_search.dart';
 import 'package:quran/modules/quran/presentation/cubits/cb_surah_list.dart';
 import 'package:quran/modules/quran/presentation/widgets/w_quran_index_content.dart';
@@ -14,21 +15,34 @@ import 'package:quran/modules/quran/presentation/widgets/w_quran_index_content.d
 /// screen, not a copy. Picking an entry pops the sheet and reports the target
 /// page, which the reader jumps to in place.
 class WQuranIndexSheet extends StatefulWidget {
-  const WQuranIndexSheet({super.key, required this.onOpenPage});
+  const WQuranIndexSheet({
+    super.key,
+    required this.onOpenPage,
+    this.onOpenAyah,
+  });
 
   /// Called after the sheet closes, with the chosen Mushaf page.
   final ValueChanged<int> onOpenPage;
+
+  /// Called after the sheet closes for a search result, which names a verse as
+  /// well as a page so the reader can highlight it. Falls back to
+  /// [onOpenPage] when absent.
+  final void Function(ParamAyahRef? ref, int page)? onOpenAyah;
 
   /// Opens the sheet over the current route.
   static Future<void> show(
     BuildContext context, {
     required ValueChanged<int> onOpenPage,
+    void Function(ParamAyahRef? ref, int page)? onOpenAyah,
   }) {
     return showModalBottomSheet<void>(
       context: context,
       isScrollControlled: true,
       backgroundColor: Colors.transparent,
-      builder: (_) => WQuranIndexSheet(onOpenPage: onOpenPage),
+      builder: (_) => WQuranIndexSheet(
+        onOpenPage: onOpenPage,
+        onOpenAyah: onOpenAyah,
+      ),
     );
   }
 
@@ -49,15 +63,20 @@ class _WQuranIndexSheetState extends State<WQuranIndexSheet> {
     super.dispose();
   }
 
-  /// Fans the query out to both the surah-name filter and the ayah search —
-  /// same behaviour as the index screen's header.
-  void _onQueryChanged(String query) {
-    _cubit.setQuery(query);
-    _searchCubit.setQuery(query);
-  }
-
   void _open(int page) {
     Navigator.of(context).pop();
+    widget.onOpenPage(page);
+  }
+
+  /// A search result was tapped: close the sheet, then hand the reader the
+  /// verse (and its page) to jump to.
+  void _openAyah(ParamAyahRef? ref, int page) {
+    Navigator.of(context).pop();
+    final open = widget.onOpenAyah;
+    if (open != null) {
+      open(ref, page);
+      return;
+    }
     widget.onOpenPage(page);
   }
 
@@ -81,9 +100,10 @@ class _WQuranIndexSheetState extends State<WQuranIndexSheet> {
             controller: controller,
             showSummary: false,
             onOpenPage: _open,
+            onOpenAyah: _openAyah,
             leadingSlivers: [
               SliverToBoxAdapter(
-                child: _Header(onQueryChanged: _onQueryChanged),
+                child: _Header(onQueryChanged: _searchCubit.setQuery),
               ),
             ],
           ),

@@ -22,14 +22,9 @@ class _SNSurahListState extends State<SNSurahList> {
   static const _canvas = Color(0xFFF8F7F4);
 
   late final CBSurahList _cubit = Modular.get<CBSurahList>()..loadInitial();
-  // Reused ayah full-text search, so one box searches both surahs and verses.
+  // The reader's own search, so the box here searches surahs, verses, pages
+  // and arba' exactly as the one in the mushaf does.
   late final CBQuranSearch _searchCubit = Modular.get<CBQuranSearch>();
-
-  /// Fans the search box out to both the surah-name filter and the ayah search.
-  void _onQueryChanged(String q) {
-    _cubit.setQuery(q);
-    _searchCubit.setQuery(q);
-  }
 
   @override
   void dispose() {
@@ -58,7 +53,7 @@ class _SNSurahListState extends State<SNSurahList> {
             child: WQuranHeader(
               cubit: _cubit,
               onBack: _goBack,
-              onQueryChanged: _onQueryChanged,
+              onQueryChanged: _searchCubit.setQuery,
               onSettings: () =>
                   Modular.to.pushNamed(QuranRoutes.fullSettings()),
             ),
