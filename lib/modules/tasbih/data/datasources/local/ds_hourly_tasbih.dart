@@ -4,6 +4,7 @@ import 'package:flutter/services.dart' show rootBundle;
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:localize_and_translate/localize_and_translate.dart';
 import 'package:quran/core/data/sources/local/box_app_settings.dart';
+import 'package:quran/core/extension/string_extensions.dart';
 import 'package:quran/core/services/logging/app_logger.dart';
 import 'package:quran/core/services/notifications/notification_channels.dart';
 import 'package:quran/core/services/notifications/notification_payload.dart';
@@ -44,8 +45,7 @@ class DSHourlyTasbih {
   final BoxTasbihCounter _counter;
   final BoxAppSettings _appSettings;
 
-  static const _assetPath =
-      'assets/data/notifictaions/hourly_notifications.json';
+  static const _assetPath = 'assets/data/notifictaions/hourly_notifications.json';
 
   static const _baseId = 5000;
 
@@ -122,7 +122,7 @@ class DSHourlyTasbih {
         id: _baseId + hour,
         hour: hour,
         minute: minute,
-        title: 'تذكير الساعة',
+        title: "zikr_allah".translated,
         body: _bodyOf(row, hour),
         channel: await _channelFor(slug, row),
         // iOS has no channels: the sound rides on the notification itself, and
@@ -143,18 +143,12 @@ class DSHourlyTasbih {
   /// a bundled clip, otherwise the silent one. Creates the channel on demand —
   /// they're deliberately absent from the boot set, so an install that never
   /// enables the audio never grows ten entries in its notification settings.
-  Future<AndroidNotificationChannel> _channelFor(
-    String? slug,
-    Map<String, String>? row,
-  ) async {
+  Future<AndroidNotificationChannel> _channelFor(String? slug, Map<String, String>? row) async {
     if (slug == null) return AppNotificationChannels.hourly;
     // Labelled with the zekr itself so the ten are tellable apart in Android's
     // per-channel settings, where each can be silenced on its own.
     final label = row?['ar'] ?? '';
-    final channel = AppNotificationChannels.hourlyZikr(
-      soundSlug: slug,
-      name: label.isEmpty ? slug : label,
-    );
+    final channel = AppNotificationChannels.hourlyZikr(soundSlug: slug, name: label.isEmpty ? slug : label);
     await _notifications.createChannel(channel);
     return channel;
   }
@@ -190,9 +184,7 @@ class DSHourlyTasbih {
     for (final row in _azkar ?? const <Map<String, String>>[]) {
       final slug = row['sound'] ?? '';
       if (slug.isEmpty) continue;
-      await _notifications.deleteChannel(
-        AppNotificationChannels.hourlyZikrChannelId(slug),
-      );
+      await _notifications.deleteChannel(AppNotificationChannels.hourlyZikrChannelId(slug));
     }
   }
 
@@ -260,11 +252,7 @@ class DSHourlyTasbih {
   /// First preferred minute in [hour] that clears every reserved time. Compared
   /// in absolute minutes-of-day, so a prayer at 12:55 correctly blocks 13:00.
   int _minuteForHour(int hour, List<int> reserved) =>
-      NotificationSlots.pickMinute(
-        hour: hour,
-        reserved: reserved,
-        candidates: _minuteCandidates,
-      );
+      NotificationSlots.pickMinute(hour: hour, reserved: reserved, candidates: _minuteCandidates);
 
   /// The zekr rotated onto [hour], or null when the JSON couldn't be read (the
   /// caller then falls back to [_phrases], which carry no audio).
@@ -295,10 +283,7 @@ class DSHourlyTasbih {
             },
       ];
     } catch (e) {
-      AppLogger.warning(
-        'Failed to load $_assetPath — using fallback phrases ($e)',
-        tag: 'HourlyZekr',
-      );
+      AppLogger.warning('Failed to load $_assetPath — using fallback phrases ($e)', tag: 'HourlyZekr');
       _azkar = const [];
     }
   }
