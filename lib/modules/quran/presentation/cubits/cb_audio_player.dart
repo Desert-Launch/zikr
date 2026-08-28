@@ -259,9 +259,48 @@ class CBAudioPlayer extends Cubit<SAudioPlayer> {
     }
   }
 
+  /// Switches the active reciter.
+  ///
+  /// When a unit is already loaded it is rebuilt in the new voice and the
+  /// current ayah restarts from its beginning, so the change is heard at once
+  /// rather than at the next ayah. Playback that was paused stays paused — the
+  /// new voice is simply what `resume` will play.
   Future<void> setReciter(String reciterId) async {
+    if (_activeReciterId == reciterId) return;
     _activeReciterId = reciterId;
+    await _applyReciterName(reciterId);
     emit(state.copyWith(reciterId: reciterId));
+
+    // Nothing loaded (idle/completed/error) → the id alone is enough; the next
+    // play session resolves against it.
+    const restartable = <PlayerStatus>{
+      PlayerStatus.playing,
+      PlayerStatus.paused,
+      PlayerStatus.loading,
+      PlayerStatus.buffering,
+    };
+    final queue = state.queue;
+    if (queue.isEmpty || !restartable.contains(state.status)) return;
+
+    await _startQueue(
+      queue,
+      _activeSurah,
+      reciterId,
+      startQueueIndex: state.queueIndex ?? 0,
+      autoPlay: state.status != PlayerStatus.paused,
+    );
+  }
+
+  /// Caches [reciterId]'s display name for the media-notification metadata.
+  Future<void> _applyReciterName(String reciterId) async {
+    final res = await _reciters();
+    res.fold((_) {}, (list) {
+      for (final r in list) {
+        if (r.id != reciterId) continue;
+        _activeReciterName = r.arabic.isNotEmpty ? r.arabic : r.name;
+        return;
+      }
+    });
   }
 
   /// Builds an audio source (with media-notification metadata) for an ayah.
@@ -323,15 +362,25 @@ class CBAudioPlayer extends Cubit<SAudioPlayer> {
   /// performs the ayah→ayah transition itself with no gap. Driving each ayah
   /// from Dart — load, then play, on every `completed` event — cost a round trip
   /// through the platform channel and a fresh prepare, which is audible.
+  ///
+  /// [startQueueIndex] starts the playlist on an ayah other than the first —
+  /// used when the unit is rebuilt under the running session (a reciter switch)
+  /// and playback should carry on where it stood. [autoPlay] false loads the
+  /// playlist without starting it, so a paused session stays paused.
   Future<void> _startQueue(
     List<ParamAyahRef> queue,
     MSurah? surah,
-    String reciterId,
-  ) async {
+    String reciterId, {
+    int startQueueIndex = 0,
+    bool autoPlay = true,
+  }) async {
     if (queue.isEmpty) {
       emit(state.copyWith(status: PlayerStatus.idle));
       return;
     }
+    final start = (startQueueIndex > 0 && startQueueIndex < queue.length)
+        ? startQueueIndex
+        : 0;
     _activeSurah = surah;
     _activeReciterId = reciterId;
     _playToken++;
@@ -344,8 +393,8 @@ class CBAudioPlayer extends Cubit<SAudioPlayer> {
       state.copyWith(
         queue: queue,
         reciterId: reciterId,
-        queueIndex: 0,
-        currentAyah: queue.first,
+        queueIndex: start,
+        currentAyah: queue[start],
         status: PlayerStatus.loading,
         clearError: true,
       ),
@@ -389,13 +438,14 @@ class CBAudioPlayer extends Cubit<SAudioPlayer> {
         ConcatenatingAudioSource(
           children: [for (final t in _tracks) t.source],
         ),
+        initialIndex: _trackIndexOf(start),
       );
       if (token != _playToken) return;
       await _player.setSpeed(state.options.speed);
-      await _player.play();
+      if (autoPlay) await _player.play();
       AppLogger.info(
         'playlist ${_tracks.length} item(s), $passes pass(es), '
-        'from ${queue.first.key}',
+        'from ${queue[start].key}',
         tag: 'CBAudioPlayer',
       );
     } catch (e, st) {
@@ -413,6 +463,17 @@ class CBAudioPlayer extends Cubit<SAudioPlayer> {
         ),
       );
     }
+  }
+
+  /// Where in [_tracks] the ayah at [queueIndex] begins. Its basmalah lead-in
+  /// is skipped when the playlist does not start at its first ayah: a rebuild
+  /// mid-unit should resume on the ayah itself, not re-open with the basmalah.
+  int _trackIndexOf(int queueIndex) {
+    if (queueIndex <= 0) return 0;
+    final i = _tracks.indexWhere(
+      (t) => t.queueIndex == queueIndex && !t.isBasmalah,
+    );
+    return i < 0 ? 0 : i;
   }
 
   /// Resolves one pass of [queue] into playlist entries, in parallel — each

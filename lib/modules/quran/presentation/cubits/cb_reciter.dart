@@ -51,12 +51,17 @@ class CBReciter extends Cubit<SReciter> {
     );
   }
 
+  /// Persists [id] as the active reciter and hands it to the player, which
+  /// rebuilds a running session in the new voice right away.
   Future<void> setActiveReciter(String id) async {
+    if (state.activeId == id) return;
     final r = await _setActive(id);
-    r.fold((_) {}, (_) {
-      emit(state.copyWith(activeId: id));
-      _audioPlayer.setReciter(id);
-    });
+    if (r.isLeft()) return;
+    emit(state.copyWith(activeId: id));
+    // A running preview holds the shared media slot; free it first so the
+    // player's rebuild is not fighting it for the platform.
+    if (state.previewingId != null) await stopPreview();
+    await _audioPlayer.setReciter(id);
   }
 
   Future<void> previewAyah(String reciterId) async {
