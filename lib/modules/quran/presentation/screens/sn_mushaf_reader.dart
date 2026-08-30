@@ -1,8 +1,12 @@
 import 'dart:async';
+import 'dart:math' as math;
 
 import 'package:flutter/foundation.dart'
     show TargetPlatform, defaultTargetPlatform;
 import 'package:flutter/material.dart';
+// RenderAbstractViewport — how far a mounted line is from the edge of whatever
+// scroll view holds it; material.dart does not re-export the rendering layer.
+import 'package:flutter/rendering.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_modular/flutter_modular.dart';
@@ -25,6 +29,7 @@ import 'package:quran/modules/quran/presentation/widgets/w_ayah_action_sheet.dar
 import 'package:quran/modules/quran/presentation/widgets/w_mini_player.dart';
 import 'package:quran/modules/quran/presentation/widgets/w_mushaf_v4_page.dart';
 import 'package:quran/modules/quran/presentation/widgets/w_pinch_font_zoom.dart';
+import 'package:quran/modules/quran/presentation/widgets/w_playing_ayah_anchor.dart';
 import 'package:quran/modules/quran/presentation/widgets/w_reader_search_panel.dart';
 import 'package:quran/modules/quran/presentation/widgets/w_reader_top_bar.dart';
 
@@ -123,6 +128,11 @@ class _SNMushafReaderState extends State<SNMushafReader> with OrientationOverrid
   /// Height of one screen in the vertical list — the floor every page is laid
   /// out against. 0 until the list has been laid out once.
   double _pageExtent = 0;
+
+  /// Orientation the pages were last built for. A rotation re-lays the mushaf
+  /// out at a new measure, so wherever the reader was scrolled to is gone — and
+  /// a recitation in progress has to be put back on screen.
+  Orientation? _builtOrientation;
 
   /// Debounce behind [_onVerticalScroll]: the page under the reading line is
   /// recomputed every scroll frame, but *opening* it is not free — it emits new
@@ -368,47 +378,102 @@ class _SNMushafReaderState extends State<SNMushafReader> with OrientationOverrid
     _cubit.highlightAyah(ref);
   }
 
-  Future<void> _scrollToPlayingPage(ParamAyahRef ref) async {
+  /// How long the reader takes to move onto the verse being recited. Short
+  /// enough to land well before the ayah is over, long enough to read as a
+  /// glide rather than a jump.
+  static const Duration _followDuration = Duration(milliseconds: 260);
+  static const Curve _followCurve = Curves.easeOutCubic;
+
+  /// Where the verse is parked once the reader has moved: a third of the way
+  /// down, so the lines it runs into are on screen with it.
+  static const double _followAlignment = 0.33;
+
+  /// Follows the recitation onto [ref] — the page it is on, then the verse
+  /// itself.
+  ///
+  /// Landing on the page is not enough: a landscape page is a screen and a half
+  /// tall, so the verse being recited is regularly below the fold on the page
+  /// the reader is already looking at.
+  Future<void> _scrollToPlayingAyah(ParamAyahRef ref) async {
     final page = await Modular.get<DSLocalQuran>().pageOfAyah(
       ref.surah,
       ref.ayah,
     );
     if (!mounted) return;
-    const duration = Duration(milliseconds: 300);
-    if (_isVertical) {
-      // Already the page being read — don't fight a reader who has scrolled a
-      // little way into it while the recitation runs.
-      if (_cubit.state.currentPage == page) return;
-      // Still mounted just off-screen: glide to it rather than re-anchoring,
-      // which would be a hard cut for what is usually a one-page advance.
-      final probe = _probeBox(page);
-      final viewport = _verticalViewportKey.currentContext?.findRenderObject();
-      if (probe != null &&
-          viewport is RenderBox &&
-          _scrollController.hasClients) {
-        final position = _scrollController.position;
-        final target =
-            (position.pixels +
-                    probe.localToGlobal(Offset.zero, ancestor: viewport).dy)
-                .clamp(position.minScrollExtent, position.maxScrollExtent);
-        _scrollController.animateTo(
-          target,
-          duration: duration,
-          curve: Curves.easeOut,
+
+    if (_cubit.state.currentPage != page) {
+      if (_isVertical) {
+        // A page that is mounted just off-screen needs no move of its own: the
+        // reveal below scrolls straight onto the verse, which is a shorter
+        // journey than the top of its page and lands where the reader is
+        // actually going. Only a page too far away to be built is re-anchored.
+        if (_probeBox(page) == null) _seekToPage(page);
+      } else if (_pageController.hasClients &&
+          _pageController.page?.round() != page - 1) {
+        await _pageController.animateToPage(
+          page - 1,
+          duration: _followDuration,
+          curve: _followCurve,
         );
-        return;
+        if (!mounted) return;
       }
-      _seekToPage(page);
-      return;
     }
-    if (_pageController.hasClients &&
-        _pageController.page?.round() != page - 1) {
-      _pageController.animateToPage(
-        page - 1,
-        duration: duration,
-        curve: Curves.easeOut,
-      );
+    _revealPlayingAyah(ref, page);
+  }
+
+  /// Brings the line [ref] begins on into view, retrying while it is still
+  /// being built — a page reached a moment ago has no anchor registered until
+  /// its lines mount.
+  void _revealPlayingAyah(ParamAyahRef ref, int page, {int attempt = 0}) {
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted) return;
+      // The recitation moved on while we were waiting — that later ayah has a
+      // reveal of its own in flight.
+      if (_audio.state.currentAyah?.key != ref.key) return;
+      if (_scrollAyahIntoView(ref, page) || attempt >= 4) return;
+      Future<void>.delayed(const Duration(milliseconds: 80), () {
+        if (mounted) _revealPlayingAyah(ref, page, attempt: attempt + 1);
+      });
+    });
+  }
+
+  /// Scrolls whichever view holds the verse — the continuous list, or the open
+  /// page's own scroll view in paged mode — so [ref] is comfortably on screen.
+  ///
+  /// Returns false only when the line is not mounted yet, so the caller knows
+  /// to try again. A verse already well inside the viewport is left alone
+  /// rather than re-centred: the reader may have scrolled a little way ahead,
+  /// and every ayah yanking the page back is worse than not moving at all.
+  bool _scrollAyahIntoView(ParamAyahRef ref, int page) {
+    final anchor = PlayingAyahAnchors.contextFor(page: page, ayahKey: ref.key);
+    if (anchor == null) return false;
+    final box = anchor.findRenderObject();
+    if (box is! RenderBox || !box.hasSize) return false;
+    final scrollable = Scrollable.maybeOf(anchor);
+    final viewport = RenderAbstractViewport.maybeOf(box);
+    if (scrollable == null || viewport == null) return false;
+
+    final position = scrollable.position;
+    if (!position.hasPixels || !position.hasViewportDimension) return false;
+
+    // The offsets that would put the line flush with each edge of the
+    // viewport; between them it is on screen.
+    final atLeading = viewport.getOffsetToReveal(box, 0).offset;
+    final atTrailing = viewport.getOffsetToReveal(box, 1).offset;
+    final low = math.min(atLeading, atTrailing);
+    final high = math.max(atLeading, atTrailing);
+    final margin = math.min(position.viewportDimension * 0.12, (high - low) / 3);
+    if (position.pixels >= low + margin && position.pixels <= high - margin) {
+      return true;
     }
+
+    final target = viewport
+        .getOffsetToReveal(box, _followAlignment)
+        .offset
+        .clamp(position.minScrollExtent, position.maxScrollExtent);
+    if ((target - position.pixels).abs() < 1) return true;
+    position.animateTo(target, duration: _followDuration, curve: _followCurve);
+    return true;
   }
 
   /// The reader's scroll view for [mode].
@@ -429,6 +494,19 @@ class _SNMushafReaderState extends State<SNMushafReader> with OrientationOverrid
       WidgetsBinding.instance.addPostFrameCallback((_) {
         if (mounted) _seekToPage(page);
       });
+    }
+
+    // Paged mode's per-page scroll view starts at the top after a rotation, so
+    // a recitation in progress has to be put back on screen by hand. Continuous
+    // mode re-seats itself in the LayoutBuilder below, which follows the verse
+    // there for the same reason.
+    final orientation = MediaQuery.orientationOf(context);
+    final rotated =
+        _builtOrientation != null && orientation != _builtOrientation;
+    _builtOrientation = orientation;
+    if (rotated && !mode.isVertical) {
+      final ayah = _audio.state.currentAyah;
+      if (ayah != null) unawaited(_scrollToPlayingAyah(ayah));
     }
 
     if (!mode.isVertical) {
@@ -463,9 +541,14 @@ class _SNMushafReaderState extends State<SNMushafReader> with OrientationOverrid
           final page = _cubit.state.currentPage;
           _pageExtent = extent;
           // First layout, or a resize/rotation: land back on the current page
-          // rather than wherever the old offset now points.
+          // rather than wherever the old offset now points — then, if something
+          // is being recited, on the verse itself, which after a rotation is
+          // rarely where the page happens to open.
           WidgetsBinding.instance.addPostFrameCallback((_) {
-            if (mounted) _seekToPage(page);
+            if (!mounted) return;
+            _seekToPage(page);
+            final ayah = _audio.state.currentAyah;
+            if (ayah != null) unawaited(_scrollToPlayingAyah(ayah));
           });
         }
         return NotificationListener<ScrollEndNotification>(
@@ -569,7 +652,7 @@ class _SNMushafReaderState extends State<SNMushafReader> with OrientationOverrid
                 listenWhen: (a, b) => a.currentAyah?.key != b.currentAyah?.key,
                 listener: (context, audio) {
                   final ayah = audio.currentAyah;
-                  if (ayah != null) _scrollToPlayingPage(ayah);
+                  if (ayah != null) _scrollToPlayingAyah(ayah);
                 },
               ),
               // Verses picked in the bookmarks sheet / colour picker land here —

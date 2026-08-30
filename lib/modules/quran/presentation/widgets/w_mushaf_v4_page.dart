@@ -17,6 +17,7 @@ import 'package:quran/modules/quran/presentation/cubits/cb_mushaf_reader.dart';
 import 'package:quran/modules/quran/presentation/cubits/s_audio_player.dart';
 import 'package:quran/modules/quran/presentation/cubits/s_mushaf_reader.dart';
 import 'package:quran/modules/quran/presentation/widgets/w_ayah_highlight_text.dart';
+import 'package:quran/modules/quran/presentation/widgets/w_playing_ayah_anchor.dart';
 import 'package:quran/modules/quran/presentation/widgets/w_bookmark_color_picker.dart';
 import 'package:quran/modules/quran/presentation/widgets/w_mushaf_line.dart';
 import 'package:quran/modules/quran/presentation/widgets/w_mushaf_page_footer.dart';
@@ -644,24 +645,53 @@ class _WMushafV4PageState extends State<WMushafV4Page> {
     final widgets = <Widget>[];
     final run = <MQpcV4LineBlock>[];
 
+    // The first line that carries the verse being recited is marked, so the
+    // reader can scroll to the verse itself rather than to the top of the page
+    // it sits on — which in landscape can be a screen and a half away.
+    var anchored = false;
+    bool carriesPlaying(MQpcV4LineBlock block) {
+      final ref = playing;
+      if (ref == null || anchored) return false;
+      return block.segments.any(
+        (seg) => seg.surah == ref.surah && seg.ayah == ref.ayah,
+      );
+    }
+
+    /// Marks [child] as where the recitation is, the first time a line on this
+    /// page carries the verse.
+    Widget withAnchor(bool carries, Widget child) {
+      final ref = playing;
+      if (!carries || ref == null) return child;
+      anchored = true;
+      return WPlayingAyahAnchor(
+        page: widget.layout.page,
+        ayahKey: ref.key,
+        child: child,
+      );
+    }
+
     void flushRun() {
       if (run.isEmpty) return;
+      final carries = run.any(carriesPlaying);
       widgets.add(
-        WMushafPageReflow(
-          blocks: List<MQpcV4LineBlock>.of(run),
-          baseSize: baseSize,
-          maxWidth: textWidth,
-          selected: selected,
-          playing: playing,
-          bookmarks: bookmarks,
-          fontFamily: fontFamily,
-          baseColor: baseColor,
-          markerColor: markerColor,
-          brightness: brightness,
-          fontScale: fontScale,
-          bold: bold,
-          onSelect: cubit.selectAyah,
-          onLongPress: (ref) => toggleAyahBookmark(context, ref, cubit),
+        withAnchor(
+          carries,
+          WMushafPageReflow(
+            blocks: List<MQpcV4LineBlock>.of(run),
+            baseSize: baseSize,
+            maxWidth: textWidth,
+            selected: selected,
+            playing: playing,
+            bookmarks: bookmarks,
+            fontFamily: fontFamily,
+            baseColor: baseColor,
+            markerColor: markerColor,
+            brightness: brightness,
+            fontScale: fontScale,
+            bold: bold,
+            onSelect: cubit.selectAyah,
+            onLongPress: (ref) => toggleAyahBookmark(context, ref, cubit),
+          ),
         ),
       );
       run.clear();
@@ -720,23 +750,27 @@ class _WMushafV4PageState extends State<WMushafV4Page> {
           if (bigText) {
             run.add(block);
           } else {
+            final carries = carriesPlaying(block);
             widgets.add(
-              WMushafLine(
-                block: block,
-                baseSize: baseSize,
-                maxWidth: textWidth,
-                selected: selected,
-                playing: playing,
-                bookmarks: bookmarks,
-                fontFamily: fontFamily,
-                baseColor: baseColor,
-                markerColor: markerColor,
-                brightness: brightness,
-                fontScale: fontScale,
-                bold: bold,
-                lineHeightBoost: lineHeightBoost,
-                onSelect: cubit.selectAyah,
-                onLongPress: (ref) => toggleAyahBookmark(context, ref, cubit),
+              withAnchor(
+                carries,
+                WMushafLine(
+                  block: block,
+                  baseSize: baseSize,
+                  maxWidth: textWidth,
+                  selected: selected,
+                  playing: playing,
+                  bookmarks: bookmarks,
+                  fontFamily: fontFamily,
+                  baseColor: baseColor,
+                  markerColor: markerColor,
+                  brightness: brightness,
+                  fontScale: fontScale,
+                  bold: bold,
+                  lineHeightBoost: lineHeightBoost,
+                  onSelect: cubit.selectAyah,
+                  onLongPress: (ref) => toggleAyahBookmark(context, ref, cubit),
+                ),
               ),
             );
           }
