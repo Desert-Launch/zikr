@@ -195,17 +195,45 @@ class _SheetBody extends StatelessWidget {
     );
   }
 
+  /// The trailing end-of-ayah marker: the ornament (U+06DD) and/or the
+  /// Arabic-Indic verse number the mushaf prints after the last word. The
+  /// reference label already names the ayah, so it would read twice.
+  static final RegExp _ayahEndMarker = RegExp(
+    r'[\u0660-\u0669\u06F0-\u06F9\u06DD\s]+$',
+  );
+
   /// Readable Arabic text of the ayah for copy/share. The rendered page uses
   /// QPC-V4 glyph fonts (PUA codepoints, not readable), so the plain text is
   /// pulled from the bundled Uthmani ayah index instead.
   Future<String> _plainText() async {
     try {
-      final text = await Modular.get<DSLocalQuran>().fullAyahText(ref);
+      final raw = await Modular.get<DSLocalQuran>().fullAyahText(ref);
+      final text = raw.replaceFirst(_ayahEndMarker, '').trimRight();
       if (text.isNotEmpty) return text;
     } catch (_) {
       // Fall through to the reference label.
     }
     return '${ref.surah}:${ref.ayah}';
+  }
+
+  /// Localized reference appended to copied/shared text, e.g.
+  /// `سورة البقرة · آية 102` / `Surah Al-Baqarah · Ayah 102`. Falls back to the
+  /// surah number when the bundled index can't be read.
+  Future<String> _refLabel() async {
+    final isArabic = LocalizeAndTranslate.getLanguageCode() == 'ar';
+    var name = '${ref.surah}';
+    try {
+      final surahs = await Modular.get<DSLocalQuran>().loadSurahs();
+      for (final s in surahs) {
+        if (s.number != ref.surah) continue;
+        final picked = isArabic ? s.arabic : s.name;
+        if (picked.isNotEmpty) name = picked;
+        break;
+      }
+    } catch (_) {
+      // Best-effort — the number alone still identifies the verse.
+    }
+    return '${'quran_surah_label'.tr()} $name · ${'quran_ayah_label'.tr()} ${ref.ayah}';
   }
 
   void _openTafsir(BuildContext context) {
@@ -224,9 +252,8 @@ class _SheetBody extends StatelessWidget {
 
   Future<void> _copy(BuildContext context) async {
     final text = await _plainText();
-    await Clipboard.setData(
-      ClipboardData(text: '$text\n(${ref.surah}:${ref.ayah})'),
-    );
+    final label = await _refLabel();
+    await Clipboard.setData(ClipboardData(text: '$text\n$label'));
     AppAlert.success('reader_copy'.tr());
     if (!context.mounted) return;
     BlocProvider.of<CBMushafReader>(context).clearSelection();
@@ -234,6 +261,7 @@ class _SheetBody extends StatelessWidget {
 
   Future<void> _share(BuildContext context) async {
     final text = await _plainText();
+    final label = await _refLabel();
     if (!context.mounted) return;
     final box = context.findRenderObject() as RenderBox?;
     final screenSize = MediaQuery.sizeOf(context);
@@ -241,10 +269,7 @@ class _SheetBody extends StatelessWidget {
         box != null && box.hasSize && box.size.width > 0 && box.size.height > 0
         ? box.localToGlobal(Offset.zero) & box.size
         : Rect.fromLTWH(screenSize.width / 2, screenSize.height / 2, 1, 1);
-    await Share.share(
-      '$text\n— سورة ${ref.surah}، آية ${ref.ayah}',
-      sharePositionOrigin: origin,
-    );
+    await Share.share('$text\n$label', sharePositionOrigin: origin);
   }
 }
 
