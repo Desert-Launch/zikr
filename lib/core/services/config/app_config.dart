@@ -21,4 +21,16 @@ class AppConfig {
   /// Connect/receive timeouts (in milliseconds). Tuned for mobile networks.
   static const int connectTimeoutMs = 15000;
   static const int receiveTimeoutMs = 20000;
+
+  /// How a shared ayah signs itself. The badge is printed on the share card and
+  /// appended to shared text whenever the reader leaves it on, so it is the one
+  /// place the app speaks in its own name outside the app.
+  static const String shareAppNameAr = 'ذِكر';
+  static const String shareAppNameEn = 'Zikr';
+
+  /// Where the badge sends whoever receives the share.
+  ///
+  /// TODO: point at the real landing page once it ships — this is a
+  /// placeholder, and it goes out on every shared verse.
+  static const String shareAppUrl = 'https://zikr.app';
 }

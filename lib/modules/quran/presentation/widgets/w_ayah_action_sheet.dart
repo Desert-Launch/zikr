@@ -14,10 +14,10 @@ import 'package:quran/modules/quran/presentation/cubits/cb_audio_player.dart';
 import 'package:quran/modules/quran/presentation/cubits/cb_mushaf_reader.dart';
 import 'package:quran/modules/quran/presentation/cubits/s_audio_player.dart';
 import 'package:quran/modules/quran/presentation/cubits/s_mushaf_reader.dart';
+import 'package:quran/modules/quran/presentation/widgets/w_ayah_share_sheet.dart';
 import 'package:quran/modules/quran/presentation/widgets/w_bookmark_color_picker.dart';
 import 'package:quran/modules/quran/presentation/widgets/w_full_player.dart';
 import 'package:quran/modules/quran/presentation/widgets/w_player_bar.dart';
-import 'package:share_plus/share_plus.dart';
 
 class WAyahActionSheet extends StatelessWidget {
   const WAyahActionSheet({super.key});
@@ -259,17 +259,14 @@ class _SheetBody extends StatelessWidget {
     BlocProvider.of<CBMushafReader>(context).clearSelection();
   }
 
+  /// Hands over to the share sheet, which is where the verse is actually
+  /// composed — format, range, commentary and badge. The selection is only
+  /// cleared once that sheet is done, so the reader comes back to the verse
+  /// they were on rather than a page with nothing highlighted.
   Future<void> _share(BuildContext context) async {
-    final text = await _plainText();
-    final label = await _refLabel();
+    await WAyahShareSheet.show(context, ref);
     if (!context.mounted) return;
-    final box = context.findRenderObject() as RenderBox?;
-    final screenSize = MediaQuery.sizeOf(context);
-    final origin =
-        box != null && box.hasSize && box.size.width > 0 && box.size.height > 0
-        ? box.localToGlobal(Offset.zero) & box.size
-        : Rect.fromLTWH(screenSize.width / 2, screenSize.height / 2, 1, 1);
-    await Share.share('$text\n$label', sharePositionOrigin: origin);
+    BlocProvider.of<CBMushafReader>(context).clearSelection();
   }
 }
 

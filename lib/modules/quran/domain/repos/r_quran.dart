@@ -2,6 +2,7 @@ import 'package:dartz/dartz.dart';
 import 'package:quran/core/errors/failure.dart';
 import 'package:quran/modules/quran/data/models/m_page_layout.dart';
 import 'package:quran/modules/quran/data/models/m_surah.dart';
+import 'package:quran/modules/quran/domain/entities/e_ayah_text.dart';
 import 'package:quran/modules/quran/domain/entities/e_daily_verse.dart';
 import 'package:quran/modules/quran/domain/entities/e_juz_entry.dart';
 import 'package:quran/modules/quran/domain/entities/e_number_search.dart';
@@ -37,6 +38,15 @@ abstract class RQuran {
 
   /// Returns the page number where the given ayah lives.
   Future<Either<Failure, int>> pageOfAyah(ParamAyahRef ref);
+
+  /// Plain Uthmani text for the run of verses [from]..[to] in [surah], in
+  /// order. Used wherever verses leave the app — the reader's own page is drawn
+  /// from glyph fonts nobody else can read.
+  Future<Either<Failure, List<EAyahText>>> ayahRangeText(
+    int surah,
+    int from,
+    int to,
+  );
 
   /// Returns all ayah refs in [surah] in document order.
   Future<Either<Failure, List<ParamAyahRef>>> ayatOfSurah(int surah);

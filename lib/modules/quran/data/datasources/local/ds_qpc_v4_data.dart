@@ -130,6 +130,41 @@ class DSQpcV4Data {
     return MQpcV4Page(page: page, blocks: _buildBlocks(lines));
   }
 
+  /// The Mushaf's own glyph runs for verses [from]..[to] of [surah], in reading
+  /// order, each tagged with the page whose font can render it.
+  ///
+  /// Glyph runs are Private Use codepoints that mean something different in
+  /// every page font, so the page a run came from travels with it — a range
+  /// that crosses a page break is drawn in two families, not one.
+  ///
+  /// Walks forward from [startPage] and stops at the first page past the range,
+  /// the same way [DSLocalQuran.ayahRangeText] does.
+  Future<List<({int page, MQpcV4Segment segment})>> segmentsForRange({
+    required int surah,
+    required int from,
+    required int to,
+    required int startPage,
+  }) async {
+    final runs = <({int page, MQpcV4Segment segment})>[];
+    var collected = false;
+    for (var page = startPage; page <= 604; page++) {
+      final layout = await loadPage(page);
+      var contributed = false;
+      for (final block in layout.blocks) {
+        if (block is! MQpcV4LineBlock) continue;
+        for (final segment in block.segments) {
+          if (segment.surah != surah) continue;
+          if (segment.ayah < from || segment.ayah > to) continue;
+          runs.add((page: page, segment: segment));
+          contributed = true;
+        }
+      }
+      if (contributed) collected = true;
+      if (collected && !contributed) break;
+    }
+    return runs;
+  }
+
   // --- Page rendering (ported from QpcV4PageRenderer) -----------------------
 
   int _ayahKey(int surah, int ayah) => surah * 1000 + ayah;

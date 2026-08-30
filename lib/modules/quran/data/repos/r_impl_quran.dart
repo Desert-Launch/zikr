@@ -4,6 +4,8 @@ import 'package:quran/core/utils/helper/error_helper.dart';
 import 'package:quran/modules/quran/data/datasources/local/ds_local_quran.dart';
 import 'package:quran/modules/quran/data/models/m_page_layout.dart';
 import 'package:quran/modules/quran/data/models/m_surah.dart';
+import 'package:quran/modules/quran/domain/entities/ayah_counts.dart';
+import 'package:quran/modules/quran/domain/entities/e_ayah_text.dart';
 import 'package:quran/modules/quran/domain/entities/e_daily_verse.dart';
 import 'package:quran/modules/quran/domain/entities/e_hizb_entry.dart';
 import 'package:quran/modules/quran/domain/entities/e_juz_entry.dart';
@@ -54,6 +56,33 @@ class RImplQuran implements RQuran {
       return Right(await _local.loadPageForMode(page, mode));
     } catch (e, st) {
       ErrorHelper.printDebugError(name: 'RImplQuran.getPage', error: e, stackTrace: st);
+      return Left(Failure.cacheFailure(message: e.toString()));
+    }
+  }
+
+  @override
+  Future<Either<Failure, List<EAyahText>>> ayahRangeText(
+    int surah,
+    int from,
+    int to,
+  ) async {
+    if (surah < 1 || surah > AyahCounts.surahCount) {
+      return Left(Failure.validationFailure(message: 'Surah must be 1..114'));
+    }
+    final total = AyahCounts.forSurah(surah);
+    if (from < 1 || to < 1 || from > total || to > total) {
+      return Left(
+        Failure.validationFailure(message: 'Ayah must be 1..$total'),
+      );
+    }
+    try {
+      return Right(await _local.ayahRangeText(surah, from, to));
+    } catch (e, st) {
+      ErrorHelper.printDebugError(
+        name: 'RImplQuran.ayahRangeText',
+        error: e,
+        stackTrace: st,
+      );
       return Left(Failure.cacheFailure(message: e.toString()));
     }
   }

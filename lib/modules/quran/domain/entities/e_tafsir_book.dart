@@ -214,6 +214,19 @@ class TafsirCatalog {
   /// head of the catalogue so a mistyped id can never leave this null.
   static ETafsirBook get defaultBook => byId(defaultBookId) ?? books.first;
 
+  /// [byId], or a nameless stand-in for an id that has fallen out of the
+  /// catalogue since it was downloaded. Such a book can still be listed,
+  /// detached and shared — it just has no name of its own left to print.
+  static ETafsirBook byIdOrPlaceholder(String id) =>
+      byId(id) ??
+      ETafsirBook(
+        id: id,
+        language: '',
+        languageCode: 'ar',
+        name: id,
+        fullPath: '',
+      );
+
   /// Fast id lookup (e.g. to hydrate a downloaded-book id back to its metadata).
   static ETafsirBook? byId(String id) {
     for (final b in books) {

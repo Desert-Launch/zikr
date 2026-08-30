@@ -4,6 +4,7 @@ import 'dart:convert';
 import 'package:flutter/services.dart' show rootBundle;
 import 'package:quran/modules/quran/data/models/m_page_layout.dart';
 import 'package:quran/modules/quran/data/models/m_surah.dart';
+import 'package:quran/modules/quran/domain/entities/e_ayah_text.dart';
 import 'package:quran/modules/quran/domain/entities/e_quran_font_mode.dart';
 import 'package:quran/modules/quran/domain/entities/param_ayah_ref.dart';
 
@@ -117,6 +118,46 @@ class DSLocalQuran {
     return words.join(' ');
   }
 
+  /// Uthmani text for every ayah from [from] to [to] of [surah], in order,
+  /// with the trailing rosette taken off each one.
+  ///
+  /// Walks the mushaf forward once rather than calling [fullAyahText] per
+  /// verse: that would re-run [pageOfAyah] for each, and [pageOfAyah] scans
+  /// from the surah's first page every time — so sharing ten verses out of the
+  /// middle of Al-Baqarah would re-read the same forty pages ten times over.
+  Future<List<EAyahText>> ayahRangeText(int surah, int from, int to) async {
+    final first = from <= to ? from : to;
+    final last = from <= to ? to : from;
+    final words = <int, List<String>>{for (var a = first; a <= last; a++) a: []};
+    var collected = false;
+
+    for (var page = await pageOfAyah(surah, first); page <= 604; page++) {
+      final layout = await loadPage(page);
+      var contributed = false;
+      for (final line in layout.lines) {
+        for (final word in line.words) {
+          if (word.surah != surah) continue;
+          final bucket = words[word.ayah];
+          if (bucket == null) continue;
+          bucket.add(word.word);
+          contributed = true;
+        }
+      }
+      if (contributed) collected = true;
+      // The last verse of the range is complete once a page that had been
+      // feeding it stops — anything past that belongs to the next passage.
+      if (collected && !contributed) break;
+    }
+
+    return [
+      for (var ayah = first; ayah <= last; ayah++)
+        EAyahText(
+          ref: ParamAyahRef(surah: surah, ayah: ayah),
+          text: _stripAyahEndMark((words[ayah] ?? const []).join(' ')),
+        ),
+    ];
+  }
+
   /// Picks a single ayah deterministically for the calendar [day] and returns
   /// it together with its surah. The same day always yields the same verse, and
   /// consecutive days are spread across the whole mushaf via a hash so the
@@ -182,6 +223,11 @@ class DSLocalQuran {
 
     return (ref: ref, surah: chosen, text: text);
   }
+
+  /// [_stripAyahNumbers] plus the end-of-ayah ornament (U+06DD) the rosette is
+  /// drawn from, which the number would otherwise leave behind on its own.
+  static String _stripAyahEndMark(String input) =>
+      _stripAyahNumbers(input).replaceFirst(RegExp(r'[\u06DD\s]+$'), '');
 
   /// Removes the trailing Arabic-Indic ayah-number glyph (and any stray digits)
   /// from Uthmani verse text — the number is shown separately in the caption.

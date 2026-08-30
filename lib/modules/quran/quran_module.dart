@@ -44,6 +44,7 @@ import 'package:quran/modules/quran/domain/entities/param_ayah_ref.dart';
 import 'package:quran/modules/quran/domain/services/download_notifier.dart';
 import 'package:quran/modules/quran/domain/usecases/uc_delete_reciter_downloads.dart';
 import 'package:quran/modules/quran/domain/usecases/uc_delete_surah_download.dart';
+import 'package:quran/modules/quran/domain/usecases/uc_build_ayah_share.dart';
 import 'package:quran/modules/quran/domain/usecases/uc_delete_tafsir.dart';
 import 'package:quran/modules/quran/domain/usecases/uc_download_all_surahs.dart';
 import 'package:quran/modules/quran/domain/usecases/uc_download_surah.dart';
@@ -92,6 +93,7 @@ import 'package:quran/modules/quran/domain/usecases/uc_set_reader_scroll_mode.da
 import 'package:quran/modules/quran/domain/usecases/uc_set_reader_theme.dart';
 import 'package:quran/modules/quran/domain/usecases/uc_set_reader_theme_mode.dart';
 import 'package:quran/modules/quran/presentation/cubits/cb_audio_player.dart';
+import 'package:quran/modules/quran/presentation/cubits/cb_ayah_share.dart';
 import 'package:quran/modules/quran/presentation/cubits/cb_bookmarks.dart';
 import 'package:quran/modules/quran/presentation/cubits/cb_mushaf_reader.dart';
 import 'package:quran/modules/quran/presentation/cubits/cb_quran_entry.dart';
@@ -155,7 +157,9 @@ class QuranModule extends Module {
 
     // Repositories (interface → impl)
     i.addSingleton<RQuran>(() => RImplQuran(i.get<DSLocalQuran>()));
-    i.addSingleton<RQuranV4>(() => RImplQuranV4(i.get<DSQpcV4Data>()));
+    i.addSingleton<RQuranV4>(
+      () => RImplQuranV4(i.get<DSQpcV4Data>(), i.get<DSQpcV4FontLoader>()),
+    );
     i.addSingleton<RTajweed>(() => RImplTajweed(i.get<DSLocalTajweed>()));
     i.addSingleton<RReciter>(
       () => RImplReciter(i.get<DSLocalSettings>(), i.get<DSLocalReciters>()),
@@ -268,6 +272,13 @@ class QuranModule extends Module {
     i.add<UCDownloadTafsir>(() => UCDownloadTafsir(i.get<RTafsir>()));
     i.add<UCDeleteTafsir>(() => UCDeleteTafsir(i.get<RTafsir>()));
     i.add<UCGetAyahTafsir>(() => UCGetAyahTafsir(i.get<RTafsir>()));
+    i.add<UCBuildAyahShare>(
+      () => UCBuildAyahShare(
+        i.get<RQuran>(),
+        i.get<RTafsir>(),
+        i.get<RQuranV4>(),
+      ),
+    );
     i.add<UCGetSelectedTafsir>(() => UCGetSelectedTafsir(i.get<RTafsir>()));
     i.add<UCSelectTafsir>(() => UCSelectTafsir(i.get<RTafsir>()));
 
@@ -361,6 +372,14 @@ class QuranModule extends Module {
         repo: i.get<RAudioDownloads>(),
       ),
     );
+    i.add<CBAyahShare>(
+      () => CBAyahShare(
+        i.get<UCBuildAyahShare>(),
+        i.get<UCGetDownloadedTafsirs>(),
+        i.get<UCDownloadTafsir>(),
+      ),
+    );
+
     i.add<CBTafsir>(
       () => CBTafsir(
         i.get<UCGetAyahTafsir>(),
