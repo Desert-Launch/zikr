@@ -330,6 +330,7 @@
   "settings_notifications": "الإشعارات",
   "settings_notifications_hint": "إدارة التنبيهات والتذكيرات",
   "settings_quran_section": "إعدادات المصحف",
+  "settings_quran_hint": "الخط والمظهر وطريقة التصفح والقرّاء والتفاسير",
   "settings_mushaf_type": "نوع المصحف",
   "settings_mushaf_type_hint": "اختر طريقة عرض المصحف",
   "settings_mushaf_madani": "عثماني",

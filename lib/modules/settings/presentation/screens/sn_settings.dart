@@ -88,6 +88,18 @@ class _SNSettingsState extends State<SNSettings> {
                     ],
                   ),
                   gap,
+                  WSettingsSectionLabel('settings_quran_section'.tr()),
+                  WSettingsGroup(
+                    children: [
+                      WSettingsRow(
+                        icon: Icons.menu_book_rounded,
+                        title: 'quran_settings_title'.tr(),
+                        subtitle: 'settings_quran_hint'.tr(),
+                        onTap: () => Modular.to.pushNamed(QuranRoutes.fullSettings()),
+                      ),
+                    ],
+                  ),
+                  gap,
                   WSettingsSectionLabel('settings_adhan_section'.tr()),
                   WSettingsGroup(
                     children: [

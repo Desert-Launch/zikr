@@ -330,6 +330,7 @@
   "settings_notifications": "Notifications",
   "settings_notifications_hint": "Manage alerts and reminders",
   "settings_quran_section": "Mushaf settings",
+  "settings_quran_hint": "Font, reader theme, scrolling, reciters and tafsir",
   "settings_mushaf_type": "Mushaf type",
   "settings_mushaf_type_hint": "Choose the Mushaf display",
   "settings_mushaf_madani": "Uthmani",
