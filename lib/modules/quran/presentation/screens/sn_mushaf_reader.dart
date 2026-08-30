@@ -27,6 +27,7 @@ import 'package:quran/modules/quran/presentation/cubits/s_surah_list.dart'
     show LoadStatus;
 import 'package:quran/modules/quran/presentation/widgets/w_ayah_action_sheet.dart';
 import 'package:quran/modules/quran/presentation/widgets/w_mini_player.dart';
+import 'package:quran/modules/quran/presentation/widgets/w_mushaf_page_divider.dart';
 import 'package:quran/modules/quran/presentation/widgets/w_mushaf_v4_page.dart';
 import 'package:quran/modules/quran/presentation/widgets/w_pinch_font_zoom.dart';
 import 'package:quran/modules/quran/presentation/widgets/w_playing_ayah_anchor.dart';
@@ -606,7 +607,16 @@ class _SNMushafReaderState extends State<SNMushafReader> with OrientationOverrid
     onMount: _registerProbe,
     onUnmount: _unregisterProbe,
     child: RepaintBoundary(
-      child: _PageLoader(pageNumber: page, continuousHeight: extent),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          _PageLoader(pageNumber: page, continuousHeight: extent),
+          // The seam belongs to the page above it, so the top of a page stays
+          // at the offset the re-anchoring in [_seekToPage] assumes. The last
+          // page of the Mushaf has nothing after it to be separated from.
+          if (page < _kPageCount) const WMushafPageDivider(),
+        ],
+      ),
     ),
   );
 
