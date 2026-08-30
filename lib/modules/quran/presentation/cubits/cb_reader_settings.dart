@@ -7,6 +7,7 @@ import 'package:quran/modules/quran/domain/entities/e_reader_theme_mode.dart';
 import 'package:quran/modules/quran/domain/usecases/uc_get_font_bold.dart';
 import 'package:quran/modules/quran/domain/usecases/uc_get_font_mode.dart';
 import 'package:quran/modules/quran/domain/usecases/uc_get_font_scale.dart';
+import 'package:quran/modules/quran/domain/usecases/uc_get_keep_screen_on.dart';
 import 'package:quran/modules/quran/domain/usecases/uc_get_pinch_zoom.dart';
 import 'package:quran/modules/quran/domain/usecases/uc_get_reader_scroll_mode.dart';
 import 'package:quran/modules/quran/domain/usecases/uc_get_reader_theme.dart';
@@ -14,6 +15,7 @@ import 'package:quran/modules/quran/domain/usecases/uc_get_reader_theme_mode.dar
 import 'package:quran/modules/quran/domain/usecases/uc_set_font_bold.dart';
 import 'package:quran/modules/quran/domain/usecases/uc_set_font_mode.dart';
 import 'package:quran/modules/quran/domain/usecases/uc_set_font_scale.dart';
+import 'package:quran/modules/quran/domain/usecases/uc_set_keep_screen_on.dart';
 import 'package:quran/modules/quran/domain/usecases/uc_set_pinch_zoom.dart';
 import 'package:quran/modules/quran/domain/usecases/uc_set_reader_scroll_mode.dart';
 import 'package:quran/modules/quran/domain/usecases/uc_set_reader_theme.dart';
@@ -43,6 +45,8 @@ class CBReaderSettings extends Cubit<SReaderSettings> {
     this._setPinchZoom,
     this._getScrollMode,
     this._setScrollMode,
+    this._getKeepScreenOn,
+    this._setKeepScreenOn,
   ) : super(const SReaderSettings()) {
     load();
   }
@@ -61,6 +65,8 @@ class CBReaderSettings extends Cubit<SReaderSettings> {
   final UCSetPinchZoom _setPinchZoom;
   final UCGetReaderScrollMode _getScrollMode;
   final UCSetReaderScrollMode _setScrollMode;
+  final UCGetKeepScreenOn _getKeepScreenOn;
+  final UCSetKeepScreenOn _setKeepScreenOn;
 
   /// Allowed text-size range; mirrors the data layer's clamp.
   ///
@@ -111,6 +117,8 @@ class CBReaderSettings extends Cubit<SReaderSettings> {
     pinch.fold((_) {}, (p) => emit(state.copyWith(pinchZoom: p)));
     final scrollMode = await _getScrollMode();
     scrollMode.fold((_) {}, (m) => emit(state.copyWith(scrollMode: m)));
+    final awake = await _getKeepScreenOn();
+    awake.fold((_) {}, (a) => emit(state.copyWith(keepScreenOn: a)));
   }
 
   Future<void> setFontMode(EQuranFontMode mode) async {
@@ -199,6 +207,15 @@ class CBReaderSettings extends Cubit<SReaderSettings> {
     if (bold == state.bold) return;
     emit(state.copyWith(bold: bold));
     await _setFontBold(bold);
+  }
+
+  /// Turns the "keep the display on" hold the open Mushaf takes on or off. An
+  /// open reader picks this up live — it drops the hold the moment this goes
+  /// off, without waiting for the screen to be closed and reopened.
+  Future<void> setKeepScreenOn(bool enabled) async {
+    if (enabled == state.keepScreenOn) return;
+    emit(state.copyWith(keepScreenOn: enabled));
+    await _setKeepScreenOn(enabled);
   }
 
   /// Switches the reader between sideways paging and one continuous column.

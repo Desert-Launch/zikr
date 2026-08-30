@@ -10,6 +10,7 @@ import 'package:quran/core/widgets/w_gradient_app_bar.dart';
 import 'package:quran/core/widgets/w_localize_rotation.dart';
 import 'package:quran/core/widgets/w_shared_scaffold.dart';
 import 'package:quran/modules/quran/presentation/widgets/w_font_mode_picker.dart';
+import 'package:quran/modules/quran/presentation/widgets/w_keep_screen_on_switch.dart';
 import 'package:quran/modules/quran/presentation/widgets/w_reader_scroll_mode_picker.dart';
 import 'package:quran/modules/quran/presentation/widgets/w_reader_theme_picker.dart';
 import 'package:quran/modules/quran/presentation/widgets/w_text_size_slider.dart';
@@ -78,6 +79,10 @@ class SNQuranSettings extends StatelessWidget {
                   _SectionLabel('quran_settings_scroll_mode'.tr()),
                   SizedBox(height: 8.h),
                   const WReaderScrollModePicker(),
+                  SizedBox(height: 22.h),
+                  _SectionLabel('quran_settings_screen'.tr()),
+                  SizedBox(height: 8.h),
+                  const WKeepScreenOnSwitch(),
                 ],
               ),
             ),

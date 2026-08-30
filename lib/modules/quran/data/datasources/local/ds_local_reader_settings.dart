@@ -69,6 +69,15 @@ class DSLocalReaderSettings {
   Future<void> setPinchZoom(bool enabled) =>
       _box.box.put(BoxReaderSettings.pinchZoomKey, enabled.toString());
 
+  /// Defaults to ON — the reader has held the display awake since the feature
+  /// shipped, so an install with no stored choice keeps that behaviour. Only an
+  /// explicit `'false'` hands the screen back to the device timeout.
+  bool getKeepScreenOn() =>
+      _box.box.get(BoxReaderSettings.keepScreenOnKey) != 'false';
+
+  Future<void> setKeepScreenOn(bool enabled) =>
+      _box.box.put(BoxReaderSettings.keepScreenOnKey, enabled.toString());
+
   bool getFontBold() => _box.box.get(BoxReaderSettings.fontBoldKey) == 'true';
 
   Future<void> setFontBold(bool bold) =>

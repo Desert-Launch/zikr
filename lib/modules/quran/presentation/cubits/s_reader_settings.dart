@@ -15,6 +15,7 @@ class SReaderSettings extends Equatable {
     this.fontScale = 1.0,
     this.bold = false,
     this.pinchZoom = true,
+    this.keepScreenOn = true,
     this.scrollMode = EReaderScrollMode.horizontal,
   });
 
@@ -39,6 +40,11 @@ class SReaderSettings extends Equatable {
   /// readers who keep triggering the gesture by accident.
   final bool pinchZoom;
 
+  /// Whether the display is held awake while the Mushaf is open. On by
+  /// default — a page takes longer to read than the device's screen timeout.
+  /// Turning it off hands the screen back to that timeout.
+  final bool keepScreenOn;
+
   /// Whether the reader turns pages sideways or scrolls the Mushaf as one
   /// continuous column.
   final EReaderScrollMode scrollMode;
@@ -50,6 +56,7 @@ class SReaderSettings extends Equatable {
     double? fontScale,
     bool? bold,
     bool? pinchZoom,
+    bool? keepScreenOn,
     EReaderScrollMode? scrollMode,
   }) => SReaderSettings(
     fontMode: fontMode ?? this.fontMode,
@@ -58,6 +65,7 @@ class SReaderSettings extends Equatable {
     fontScale: fontScale ?? this.fontScale,
     bold: bold ?? this.bold,
     pinchZoom: pinchZoom ?? this.pinchZoom,
+    keepScreenOn: keepScreenOn ?? this.keepScreenOn,
     scrollMode: scrollMode ?? this.scrollMode,
   );
 
@@ -69,6 +77,7 @@ class SReaderSettings extends Equatable {
     fontScale,
     bold,
     pinchZoom,
+    keepScreenOn,
     scrollMode,
   ];
 }

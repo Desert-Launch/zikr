@@ -57,6 +57,7 @@ import 'package:quran/modules/quran/domain/usecases/uc_get_selected_tafsir.dart'
 import 'package:quran/modules/quran/domain/usecases/uc_get_font_bold.dart';
 import 'package:quran/modules/quran/domain/usecases/uc_get_font_mode.dart';
 import 'package:quran/modules/quran/domain/usecases/uc_get_font_scale.dart';
+import 'package:quran/modules/quran/domain/usecases/uc_get_keep_screen_on.dart';
 import 'package:quran/modules/quran/domain/usecases/uc_get_juz_index.dart';
 import 'package:quran/modules/quran/domain/usecases/uc_get_page_layout.dart';
 import 'package:quran/modules/quran/domain/usecases/uc_get_pinch_zoom.dart';
@@ -85,6 +86,7 @@ import 'package:quran/modules/quran/domain/usecases/uc_set_active_reciter.dart';
 import 'package:quran/modules/quran/domain/usecases/uc_set_font_bold.dart';
 import 'package:quran/modules/quran/domain/usecases/uc_set_font_mode.dart';
 import 'package:quran/modules/quran/domain/usecases/uc_set_font_scale.dart';
+import 'package:quran/modules/quran/domain/usecases/uc_set_keep_screen_on.dart';
 import 'package:quran/modules/quran/domain/usecases/uc_set_pinch_zoom.dart';
 import 'package:quran/modules/quran/domain/usecases/uc_set_reader_scroll_mode.dart';
 import 'package:quran/modules/quran/domain/usecases/uc_set_reader_theme.dart';
@@ -239,6 +241,12 @@ class QuranModule extends Module {
     i.add<UCSetFontScale>(() => UCSetFontScale(i.get<RReaderSettings>()));
     i.add<UCGetFontBold>(() => UCGetFontBold(i.get<RReaderSettings>()));
     i.add<UCSetFontBold>(() => UCSetFontBold(i.get<RReaderSettings>()));
+    i.add<UCGetKeepScreenOn>(
+      () => UCGetKeepScreenOn(i.get<RReaderSettings>()),
+    );
+    i.add<UCSetKeepScreenOn>(
+      () => UCSetKeepScreenOn(i.get<RReaderSettings>()),
+    );
     i.add<UCGetPinchZoom>(() => UCGetPinchZoom(i.get<RReaderSettings>()));
     i.add<UCSetPinchZoom>(() => UCSetPinchZoom(i.get<RReaderSettings>()));
     i.add<UCGetReaderScrollMode>(
@@ -300,6 +308,8 @@ class QuranModule extends Module {
         i.get<UCSetPinchZoom>(),
         i.get<UCGetReaderScrollMode>(),
         i.get<UCSetReaderScrollMode>(),
+        i.get<UCGetKeepScreenOn>(),
+        i.get<UCSetKeepScreenOn>(),
       ),
     );
 

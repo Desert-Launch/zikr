@@ -24,5 +24,8 @@ class BoxReaderSettings extends HiveBoxBase<String> {
   /// Whether a two-finger pinch on the Mushaf changes the text size.
   static const String pinchZoomKey = 'pinch_zoom';
   static const String fontBoldKey = 'font_bold';
+
+  /// Whether the display is held awake while the Mushaf is open.
+  static const String keepScreenOnKey = 'keep_screen_on';
   static const String scrollModeKey = 'scroll_mode';
 }

@@ -158,6 +158,35 @@ class RImplReaderSettings implements RReaderSettings {
   }
 
   @override
+  Future<Either<Failure, bool>> getKeepScreenOn() async {
+    try {
+      return Right(_local.getKeepScreenOn());
+    } catch (e, st) {
+      ErrorHelper.printDebugError(
+        name: 'RImplReaderSettings.getKeepScreenOn',
+        error: e,
+        stackTrace: st,
+      );
+      return Left(Failure.cacheFailure(message: e.toString()));
+    }
+  }
+
+  @override
+  Future<Either<Failure, void>> setKeepScreenOn(bool enabled) async {
+    try {
+      await _local.setKeepScreenOn(enabled);
+      return const Right(null);
+    } catch (e, st) {
+      ErrorHelper.printDebugError(
+        name: 'RImplReaderSettings.setKeepScreenOn',
+        error: e,
+        stackTrace: st,
+      );
+      return Left(Failure.cacheFailure(message: e.toString()));
+    }
+  }
+
+  @override
   Future<Either<Failure, bool>> getFontBold() async {
     try {
       return Right(_local.getFontBold());

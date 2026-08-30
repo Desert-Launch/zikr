@@ -21,6 +21,9 @@ abstract class RReaderSettings {
   Future<Either<Failure, double>> getFontScale();
   Future<Either<Failure, void>> setFontScale(double scale);
 
+  Future<Either<Failure, bool>> getKeepScreenOn();
+  Future<Either<Failure, void>> setKeepScreenOn(bool enabled);
+
   Future<Either<Failure, bool>> getFontBold();
   Future<Either<Failure, void>> setFontBold(bool bold);
 

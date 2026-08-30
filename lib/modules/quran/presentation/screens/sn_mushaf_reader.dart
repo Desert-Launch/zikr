@@ -58,7 +58,20 @@ class _SNMushafReaderState extends State<SNMushafReader> with OrientationOverrid
   /// picker) does not inherit a display that never sleeps.
   ScreenAwakeHold? _awake;
 
-  void _claimAwake() => _awake ??= ScreenAwakeHelper.request();
+  /// Whether the reader is the route being looked at. A hold is only worth
+  /// taking while it is — see [didPushNext].
+  bool _onTop = true;
+
+  /// Live "keep the display on" preference, so flipping the switch in Quran
+  /// settings reaches a reader that is already open.
+  StreamSubscription<bool>? _awakeSub;
+
+  /// Honours the reader's own `keepScreenOn` setting: with it off, the display
+  /// follows the device's timeout like every other screen.
+  void _claimAwake() {
+    if (!_settings.state.keepScreenOn) return;
+    _awake ??= ScreenAwakeHelper.request();
+  }
 
   void _surrenderAwake() {
     final hold = _awake;
@@ -157,24 +170,37 @@ class _SNMushafReaderState extends State<SNMushafReader> with OrientationOverrid
     _anchorPage = _resolvedStart;
     _scrollController.addListener(_onVerticalScroll);
     _claimAwake();
+    _awakeSub = _settings.stream
+        .map((s) => s.keepScreenOn)
+        .distinct()
+        .listen((enabled) {
+          if (enabled && _onTop) {
+            _claimAwake();
+          } else {
+            _surrenderAwake();
+          }
+        });
     _resolveInitial();
   }
 
   @override
   void didPushNext() {
     super.didPushNext();
+    _onTop = false;
     _surrenderAwake();
   }
 
   @override
   void didPopNext() {
     super.didPopNext();
+    _onTop = true;
     _claimAwake();
   }
 
   @override
   void didPop() {
     super.didPop();
+    _onTop = false;
     _surrenderAwake();
   }
 
@@ -200,6 +226,7 @@ class _SNMushafReaderState extends State<SNMushafReader> with OrientationOverrid
 
   @override
   void dispose() {
+    _awakeSub?.cancel();
     _surrenderAwake();
     _pageSettle?.cancel();
     _scrollController.removeListener(_onVerticalScroll);
