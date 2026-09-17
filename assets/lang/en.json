@@ -138,6 +138,7 @@
   "quran_audio_offline_error": "Could not download the ayah — please check your internet connection",
   "reciter_style_murattal": "Murattal",
   "reciter_style_mujawwad": "Mujawwad",
+  "reciter_style_muallim": "Mu'allim (Teacher)",
   "bookmarks_title": "Bookmarks",
   "bookmarks_subtitle": "Your saved verses",
   "bookmarks_empty": "No bookmarks yet",

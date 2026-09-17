@@ -19,8 +19,7 @@ class WReciterCard extends StatelessWidget {
   Widget build(BuildContext context) {
     final brand = context.brand;
     final s = stats;
-    final styleLabel = (reciter.style == ReciterStyle.mujawwad ? 'reciter_style_mujawwad' : 'reciter_style_murattal')
-        .tr();
+    final styleLabel = reciter.style.labelKey.tr();
     final done = s?.downloadedSurahs ?? 0;
     final totalSurahs = s?.totalSurahs ?? 114;
     final parts = <String>[

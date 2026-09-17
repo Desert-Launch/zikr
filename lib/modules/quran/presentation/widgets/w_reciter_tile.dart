@@ -71,13 +71,15 @@ class WReciterTile extends StatelessWidget {
                         Container(
                           padding: EdgeInsets.symmetric(horizontal: 6.w, vertical: 2.h),
                           decoration: BoxDecoration(
-                            color: reciter.style == ReciterStyle.mujawwad
-                                ? AppColorsLight.primary.withAlpha(30)
-                                : AppColors.surfaceLightGreen,
+                            color: switch (reciter.style) {
+                              ReciterStyle.mujawwad => AppColorsLight.primary.withAlpha(30),
+                              ReciterStyle.muallim => AppColorsLight.accent.withAlpha(40),
+                              ReciterStyle.murattal => AppColors.surfaceLightGreen,
+                            },
                             borderRadius: BorderRadius.circular(6.r),
                           ),
                           child: Text(
-                            reciter.style == ReciterStyle.mujawwad ? 'مجود' : 'مرتل',
+                            reciter.style.labelKey.tr(),
                             style: TextStyle(fontSize: 10.sp, color: context.brand.muted),
                           ),
                         ),

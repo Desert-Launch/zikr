@@ -46,6 +46,15 @@
     "estimatedSizeMb": 700
   },
   {
+    "id": "husary_muallim",
+    "name": "Mahmoud Khalil Al-Husary (Teacher)",
+    "arabic": "محمود خليل الحصري (معلم)",
+    "style": "muallim",
+    "folder": "Husary_Muallim_128kbps",
+    "bitrate": 128,
+    "estimatedSizeMb": 1024
+  },
+  {
     "id": "minshawi_murattal",
     "name": "Muhammad Siddiq Al-Minshawi",
     "arabic": "محمد صديق المنشاوي",
@@ -62,6 +71,15 @@
     "folder": "Minshawy_Mujawwad_64kbps",
     "bitrate": 64,
     "estimatedSizeMb": 1500
+  },
+  {
+    "id": "minshawi_muallim",
+    "name": "Mohamed Siddiq Al-Minshawi (Teacher)",
+    "arabic": "محمد صديق المنشاوي (معلم)",
+    "style": "muallim",
+    "folder": "Minshawy_Teacher_128kbps",
+    "bitrate": 128,
+    "estimatedSizeMb": 1024
   },
   {
     "id": "mustafa_ismail",
