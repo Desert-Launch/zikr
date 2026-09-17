@@ -14,23 +14,23 @@ class WHomePrayerChip extends StatelessWidget {
     return Column(
       children: [
         Container(
-          width: 42.r,
-          height: 42.r,
+          width: 46.r,
+          height: 46.r,
           alignment: Alignment.center,
           decoration: BoxDecoration(shape: BoxShape.circle, color: style.color.withValues(alpha: 0.16)),
-          child: Text(style.emoji, style: TextStyle(fontSize: 20.sp)),
+          child: Text(style.emoji, style: TextStyle(fontSize: 22.sp)),
         ),
         SizedBox(height: 8.h),
         Text(
           label,
           maxLines: 1,
           overflow: TextOverflow.ellipsis,
-          style: TextStyle(fontSize: 11.sp, color: Colors.grey[700]),
+          style: TextStyle(fontSize: 12.sp, color: Colors.grey[700]),
         ),
         SizedBox(height: 2.h),
         Text(
           time,
-          style: TextStyle(fontSize: 12.sp, fontWeight: FontWeight.w800, color: const Color(0xFF252525)),
+          style: TextStyle(fontSize: 13.sp, fontWeight: FontWeight.w800, color: const Color(0xFF252525)),
         ),
       ],
     );

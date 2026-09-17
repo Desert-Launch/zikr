@@ -2,7 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter_modular/flutter_modular.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:localize_and_translate/localize_and_translate.dart';
+import 'package:quran/core/assets/assets.gen.dart';
 import 'package:quran/core/services/routes/routes_names.dart';
+import 'package:quran/core/utils/helper/date_labels.dart';
 import 'package:quran/core/utils/helper/time_format.dart';
 import 'package:quran/modules/home/presentation/widgets/w_home_prayer_chip.dart';
 import 'package:quran/modules/prayer/domain/entities/e_next_prayer.dart';
@@ -28,14 +30,90 @@ String _prayerLabel(EPrayer prayer) => switch (prayer) {
   EPrayer.isha => 'prayer_isha'.tr(),
 };
 
+const _ink = Color(0xFF252525);
+const _hairline = Color(0xFFEDEAE3);
+const _gold = Color(0xFFD6A72C);
+
+/// The white card chrome shared by the real card and its placeholder, so the
+/// two are the same size and the home layout doesn't shift when data lands.
+class _PrayerCardShell extends StatelessWidget {
+  const _PrayerCardShell({required this.children});
+
+  final List<Widget> children;
+
+  @override
+  Widget build(BuildContext context) {
+    return InkWell(
+      borderRadius: BorderRadius.circular(18.r),
+      onTap: () => Modular.to.pushNamed(RoutesNames.prayerBase),
+      child: Container(
+        padding: EdgeInsets.fromLTRB(18.w, 14.h, 18.w, 16.h),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(18.r),
+          boxShadow: const [BoxShadow(color: Color(0x12000000), blurRadius: 16, offset: Offset(0, 6))],
+        ),
+        child: Column(children: children),
+      ),
+    );
+  }
+}
+
+/// Weekday + Gregorian date on the leading edge, Hijri on the trailing edge.
+class _DateRow extends StatelessWidget {
+  const _DateRow();
+
+  @override
+  Widget build(BuildContext context) {
+    final now = DateTime.now();
+    final style = TextStyle(color: Colors.grey[600], fontSize: 12.sp, fontWeight: FontWeight.w500);
+    return Row(
+      children: [
+        Expanded(
+          child: Text(
+            '${DateLabels.weekday(now)} · ${DateLabels.gregorian(now)}',
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+            style: style,
+          ),
+        ),
+        SizedBox(width: 12.w),
+        Text(DateLabels.hijri(now), maxLines: 1, overflow: TextOverflow.ellipsis, style: style),
+      ],
+    );
+  }
+}
+
+/// The ذِكر emblem: the launcher artwork (beaded ring + wordmark on green)
+/// clipped to a circle inside a thin gold ring.
+class _ZikrBadge extends StatelessWidget {
+  const _ZikrBadge();
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      width: 58.r,
+      height: 58.r,
+      padding: EdgeInsets.all(2.r),
+      decoration: BoxDecoration(
+        shape: BoxShape.circle,
+        border: Border.all(color: _gold, width: 1.5.r),
+      ),
+      child: ClipOval(child: Assets.images.appIcon.image(fit: BoxFit.cover)),
+    );
+  }
+}
+
+Widget _divider() => Container(height: 1, color: _hairline);
+
 /// The prayer card before any timings exist — while the location fix and the
 /// timings fetch are still in flight, or after they failed with nothing cached
 /// to fall back on.
 ///
-/// Keeps the real card's shell (same padding, divider and chip row) so the home
-/// layout doesn't shift when the data lands; only the head row swaps between a
-/// spinner and a retry hint. Tapping opens the prayer screen, which owns the
-/// full error copy and the retry control.
+/// Keeps the real card's shell (same date row, dividers, bar and chip row) so
+/// the home layout doesn't shift when the data lands; only the head row swaps
+/// the timing for a spinner or a retry hint. Tapping opens the prayer screen,
+/// which owns the full error copy and the retry control.
 class _PrayerCardPlaceholder extends StatelessWidget {
   const _PrayerCardPlaceholder({required this.status, required this.green});
 
@@ -49,107 +127,92 @@ class _PrayerCardPlaceholder extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return InkWell(
-      borderRadius: BorderRadius.circular(18.r),
-      onTap: () => Modular.to.pushNamed(RoutesNames.prayerBase),
-      child: Container(
-        padding: EdgeInsets.fromLTRB(18.w, 18.h, 18.w, 16.h),
-        decoration: BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.circular(18.r),
-          boxShadow: const [BoxShadow(color: Color(0x12000000), blurRadius: 16, offset: Offset(0, 6))],
-        ),
-        child: Column(
+    return _PrayerCardShell(
+      children: [
+        const _DateRow(),
+        SizedBox(height: 12.h),
+        _divider(),
+        SizedBox(height: 14.h),
+        Row(
           children: [
-            Row(
-              children: [
-                CircleAvatar(
-                  radius: 24.r,
-                  backgroundColor: green,
-                  child: _loading
-                      ? SizedBox(
-                          width: 20.r,
-                          height: 20.r,
-                          child: CircularProgressIndicator(strokeWidth: 2.5.r, color: Colors.white),
-                        )
-                      : Icon(Icons.location_off_rounded, color: Colors.white, size: 24.r),
-                ),
-                SizedBox(width: 12.w),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        'prayer_next_label'.tr(),
-                        style: TextStyle(color: Colors.grey[600], fontSize: 10.sp),
-                      ),
-                      SizedBox(height: 4.h),
-                      Text(
-                        _loading ? 'home_prayer_loading'.tr() : 'home_prayer_unavailable'.tr(),
-                        maxLines: 2,
-                        overflow: TextOverflow.ellipsis,
-                        style: TextStyle(
-                          color: const Color(0xFF252525),
-                          fontSize: 15.sp,
-                          fontWeight: FontWeight.w700,
-                          height: 1.3,
-                        ),
-                      ),
-                    ],
+            const _ZikrBadge(),
+            SizedBox(width: 12.w),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    'prayer_next_label'.tr(),
+                    style: TextStyle(color: Colors.grey[600], fontSize: 12.sp),
                   ),
-                ),
-              ],
-            ),
-            SizedBox(height: 18.h),
-            // Empty track — the real card's progress bar with nothing elapsed.
-            ClipRRect(
-              borderRadius: BorderRadius.circular(6.r),
-              child: SizedBox(
-                height: 8.h,
-                child: const ColoredBox(color: Color(0xFFEDEAE3)),
+                  SizedBox(height: 2.h),
+                  Text(
+                    _loading ? 'home_prayer_loading'.tr() : 'home_prayer_unavailable'.tr(),
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis,
+                    style: TextStyle(color: _ink, fontSize: 15.sp, fontWeight: FontWeight.w700, height: 1.3),
+                  ),
+                ],
               ),
             ),
-            SizedBox(height: 18.h),
-            Container(height: 1, color: const Color(0xFFEDEAE3)),
-            SizedBox(height: 16.h),
-            Row(
-              children: EPrayer.values
-                  .map(
-                    (p) => Expanded(
-                      child: WHomePrayerChip(label: _prayerLabel(p), time: '--:--', style: _prayerStyle(p)),
-                    ),
+            SizedBox(width: 12.w),
+            _loading
+                ? SizedBox(
+                    width: 22.r,
+                    height: 22.r,
+                    child: CircularProgressIndicator(strokeWidth: 2.5.r, color: green),
                   )
-                  .toList(),
-            ),
+                : Icon(Icons.location_off_rounded, color: Colors.grey[500], size: 24.r),
           ],
         ),
-      ),
+        SizedBox(height: 16.h),
+        // Empty track — the real card's progress bar with nothing elapsed.
+        ClipRRect(
+          borderRadius: BorderRadius.circular(6.r),
+          child: SizedBox(height: 8.h, child: const ColoredBox(color: _hairline)),
+        ),
+        SizedBox(height: 16.h),
+        _divider(),
+        SizedBox(height: 14.h),
+        Row(
+          // Five chips like the real card, which lists everything but the
+          // featured next salah.
+          children: EPrayer.values
+              .where((p) => p.isSalah)
+              .map(
+                (p) => Expanded(
+                  child: WHomePrayerChip(label: _prayerLabel(p), time: '--:--', style: _prayerStyle(p)),
+                ),
+              )
+              .toList(),
+        ),
+      ],
     );
   }
 }
 
-/// Home prayer card: next prayer, countdown, progress bar, and the chip row.
+/// Home prayer card: today's dates, the next prayer with its countdown, the
+/// window progress bar, and the remaining prayers as a chip row.
 class WHomePrayerCard extends StatelessWidget {
   const WHomePrayerCard({super.key, required this.state, required this.green});
 
   final SPrayerTimes state;
   final Color green;
 
-  static const _gold = Color(0xFFD6A72C);
-
   @override
   Widget build(BuildContext context) {
     // Nothing to show yet: the first launch has no cached timings, so the card
-    // would otherwise render "now" as the next prayer and six `--:--` chips —
-    // indistinguishable from real data. Show the fetch in progress instead.
+    // would otherwise render "now" as the next prayer and a row of `--:--`
+    // chips — indistinguishable from real data. Show the fetch in progress.
     if (!state.hasTimes) {
       return _PrayerCardPlaceholder(status: state.status, green: green);
     }
 
     final next = state.nextPrayer;
     // Today's timings until the last salah has gone, then tomorrow's — a spent
-    // day is not useful to look at. (The empty case returned above.)
-    final slots = state.displaySlots;
+    // day is not useful to look at. (The empty case returned above.) The next
+    // salah is featured in the head row, so the chip row lists the others.
+    final slots = state.displaySlots.where((s) => s.prayer != next?.prayer).toList(growable: false);
 
     final caption = StringBuffer('prayer_next_label'.tr());
     if (state.cityName.isNotEmpty) {
@@ -165,110 +228,99 @@ class WHomePrayerCard extends StatelessWidget {
         ..write('home_prayer_tomorrow'.tr());
     }
 
-    return InkWell(
-      borderRadius: BorderRadius.circular(18.r),
-      onTap: () => Modular.to.pushNamed(RoutesNames.prayerBase),
-      child: Container(
-        padding: EdgeInsets.fromLTRB(18.w, 18.h, 18.w, 16.h),
-        decoration: BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.circular(18.r),
-          boxShadow: const [BoxShadow(color: Color(0x12000000), blurRadius: 16, offset: Offset(0, 6))],
-        ),
-        child: Column(
+    final remaining = _remaining(next);
+
+    return _PrayerCardShell(
+      children: [
+        const _DateRow(),
+        SizedBox(height: 12.h),
+        _divider(),
+        SizedBox(height: 14.h),
+        Row(
           children: [
-            Row(
-              crossAxisAlignment: CrossAxisAlignment.center,
-              children: [
-                CircleAvatar(
-                  radius: 24.r,
-                  backgroundColor: green,
-                  child: Icon(Icons.access_time_rounded, color: Colors.white, size: 24.r),
-                ),
-                SizedBox(width: 12.w),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
+            const _ZikrBadge(),
+            SizedBox(width: 12.w),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  // Caption and countdown share a line, the prayer name and its
+                  // time share the next — each pair sits on one baseline.
+                  Row(
+                    crossAxisAlignment: CrossAxisAlignment.baseline,
+                    textBaseline: TextBaseline.alphabetic,
                     children: [
-                      Text(
-                        caption.toString(),
-                        maxLines: 2,
-                        overflow: TextOverflow.ellipsis,
-                        style: TextStyle(color: Colors.grey[600], fontSize: 10.sp),
+                      Expanded(
+                        child: Text(
+                          caption.toString(),
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          style: TextStyle(color: Colors.grey[600], fontSize: 12.sp),
+                        ),
                       ),
-                      SizedBox(height: 4.h),
-                      FittedBox(
-                        fit: BoxFit.scaleDown,
+                      if (remaining.isNotEmpty) ...[
+                        SizedBox(width: 8.w),
+                        Container(
+                          width: 6.r,
+                          height: 6.r,
+                          decoration: BoxDecoration(color: green, shape: BoxShape.circle),
+                        ),
+                        SizedBox(width: 6.w),
+                        Text(
+                          remaining,
+                          style: TextStyle(color: Colors.grey[600], fontSize: 12.sp),
+                        ),
+                      ],
+                    ],
+                  ),
+                  Row(
+                    crossAxisAlignment: CrossAxisAlignment.baseline,
+                    textBaseline: TextBaseline.alphabetic,
+                    children: [
+                      Expanded(
                         child: Text(
                           next == null
                               ? 'prayer_title'.tr()
                               : 'home_next_prayer'.tr().replaceFirst('{{name}}', _prayerLabel(next.prayer)),
                           maxLines: 1,
                           overflow: TextOverflow.ellipsis,
-                          style: TextStyle(
-                            color: const Color(0xFF252525),
-                            fontSize: 20.sp,
-                            fontWeight: FontWeight.w800,
-                          ),
+                          style: TextStyle(color: _ink, fontSize: 24.sp, fontWeight: FontWeight.w800),
                         ),
+                      ),
+                      SizedBox(width: 8.w),
+                      // The NEXT prayer's time — never the clock. Falling back
+                      // to `now` put the current time here in the same green as
+                      // a real timing, which read as "the next prayer is now".
+                      Text(
+                        next == null ? '--:--' : TimeFormat.h12Plain(next.time),
+                        style: TextStyle(color: green, fontSize: 30.sp, fontWeight: FontWeight.w800),
                       ),
                     ],
                   ),
-                ),
-                SizedBox(width: 12.w),
-                Column(
-                  crossAxisAlignment: CrossAxisAlignment.end,
-                  children: [
-                    // The NEXT prayer's time — never the clock. Falling back to
-                    // `now` put the current time here in the same green as a
-                    // real timing, which read as "the next prayer is now".
-                    Text(
-                      next == null ? '--:--' : TimeFormat.h12Plain(next.time),
-                      style: TextStyle(color: green, fontSize: 28.sp, fontWeight: FontWeight.w800, height: 1.0),
-                    ),
-                    if (_remaining(next).isNotEmpty) ...[
-                      SizedBox(height: 6.h),
-                      Row(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          Container(
-                            width: 6.r,
-                            height: 6.r,
-                            decoration: BoxDecoration(color: green, shape: BoxShape.circle),
-                          ),
-                          SizedBox(width: 6.w),
-                          Text(
-                            _remaining(next),
-                            style: TextStyle(color: Colors.grey[600], fontSize: 8.sp),
-                          ),
-                        ],
-                      ),
-                    ],
-                  ],
-                ),
-              ],
-            ),
-            SizedBox(height: 18.h),
-            _buildProgressBar(),
-            SizedBox(height: 18.h),
-            Container(height: 1, color: const Color(0xFFEDEAE3)),
-            SizedBox(height: 16.h),
-            Row(
-              children: slots
-                  .map(
-                    (slot) => Expanded(
-                      child: WHomePrayerChip(
-                        label: _prayerLabel(slot.prayer),
-                        time: TimeFormat.h12Plain(slot.time),
-                        style: _prayerStyle(slot.prayer),
-                      ),
-                    ),
-                  )
-                  .toList(),
+                ],
+              ),
             ),
           ],
         ),
-      ),
+        SizedBox(height: 16.h),
+        _buildProgressBar(),
+        SizedBox(height: 16.h),
+        _divider(),
+        SizedBox(height: 14.h),
+        Row(
+          children: slots
+              .map(
+                (slot) => Expanded(
+                  child: WHomePrayerChip(
+                    label: _prayerLabel(slot.prayer),
+                    time: TimeFormat.h12Plain(slot.time),
+                    style: _prayerStyle(slot.prayer),
+                  ),
+                ),
+              )
+              .toList(),
+        ),
+      ],
     );
   }
 
@@ -280,6 +332,10 @@ class WHomePrayerCard extends StatelessWidget {
     final m = diff.inMinutes % 60;
     if (h <= 0) {
       return 'home_remaining_m'.tr().replaceFirst('{{m}}', '$m');
+    }
+    // Arabic says "ساعة", not "1 ساعة", for a single hour.
+    if (h == 1) {
+      return 'home_remaining_1hm'.tr().replaceFirst('{{m}}', '$m');
     }
     return 'home_remaining_hm'.tr().replaceFirst('{{h}}', '$h').replaceFirst('{{m}}', '$m');
   }
@@ -310,7 +366,7 @@ class WHomePrayerCard extends StatelessWidget {
             ),
             Expanded(
               flex: 1000 - filled,
-              child: const ColoredBox(color: Color(0xFFEDEAE3)),
+              child: const ColoredBox(color: _hairline),
             ),
           ],
         ),

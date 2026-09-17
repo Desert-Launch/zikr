@@ -24,7 +24,7 @@ class WHomeHeaderBanner extends StatelessWidget {
   Widget build(BuildContext context) {
     final topInset = MediaQuery.of(context).padding.top;
     final cardsTop = topInset + 62.h;
-    final headerHeight = cardsTop + 320.h;
+    final headerHeight = cardsTop + 360.h;
 
     // Composed leading-first (title, then the action buttons), so it reads
     // title-right/icons-left in Arabic and mirrors on its own in English —
