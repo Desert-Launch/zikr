@@ -51,8 +51,8 @@ class WHomeHeaderBanner extends StatelessWidget {
         ),
         Positioned(
           top: topInset + 8.h,
-          left: 18.w,
-          right: 18.w,
+          left: 12.w,
+          right: 12.w,
           child: SizedBox(
             height: 42.h,
             child: Row(
@@ -87,7 +87,7 @@ class WHomeHeaderBanner extends StatelessWidget {
           ),
         ),
         Padding(
-          padding: EdgeInsets.fromLTRB(20.w, cardsTop, 20.w, 0),
+          padding: EdgeInsets.fromLTRB(12.w, cardsTop, 12.w, 0),
           child: Column(
             children: [
               BlocBuilder<CBPrayerTimes, SPrayerTimes>(

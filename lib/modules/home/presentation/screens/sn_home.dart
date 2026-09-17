@@ -65,7 +65,7 @@ class _SNHomeState extends State<SNHome> {
                 child: WHomeHeaderBanner(green: _green, gold: _gold),
               ),
               SliverPadding(
-                padding: EdgeInsets.fromLTRB(16.w, 12.h, 16.w, 24.h),
+                padding: EdgeInsets.fromLTRB(12.w, 12.h, 12.w, 24.h),
                 sliver: SliverList.list(children: _buildGrid(context)),
               ),
             ],

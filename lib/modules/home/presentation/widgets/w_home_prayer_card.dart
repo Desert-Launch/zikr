@@ -245,32 +245,42 @@ class WHomePrayerCard extends StatelessWidget {
                 children: [
                   // Caption and countdown share a line, the prayer name and its
                   // time share the next — each pair sits on one baseline.
-                  Row(
-                    crossAxisAlignment: CrossAxisAlignment.baseline,
-                    textBaseline: TextBaseline.alphabetic,
-                    children: [
-                      Expanded(
-                        child: Text(
+                  //
+                  // The caption line never truncates. On a phone the city and
+                  // the "tomorrow" tag push it past the column, and an ellipsis
+                  // ate exactly the part that says whose timing this is — so
+                  // the whole line scales down together, caption and countdown
+                  // at one size, until it fits. On a tablet it fits at full
+                  // size and the box is a no-op.
+                  FittedBox(
+                    fit: BoxFit.scaleDown,
+                    alignment: AlignmentDirectional.centerStart,
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      crossAxisAlignment: CrossAxisAlignment.baseline,
+                      textBaseline: TextBaseline.alphabetic,
+                      children: [
+                        Text(
                           caption.toString(),
                           maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
                           style: TextStyle(color: Colors.grey[600], fontSize: 12.sp),
                         ),
-                      ),
-                      if (remaining.isNotEmpty) ...[
-                        SizedBox(width: 8.w),
-                        Container(
-                          width: 6.r,
-                          height: 6.r,
-                          decoration: BoxDecoration(color: green, shape: BoxShape.circle),
-                        ),
-                        SizedBox(width: 6.w),
-                        Text(
-                          remaining,
-                          style: TextStyle(color: Colors.grey[600], fontSize: 12.sp),
-                        ),
+                        if (remaining.isNotEmpty) ...[
+                          SizedBox(width: 8.w),
+                          Container(
+                            width: 6.r,
+                            height: 6.r,
+                            decoration: BoxDecoration(color: green, shape: BoxShape.circle),
+                          ),
+                          SizedBox(width: 6.w),
+                          Text(
+                            remaining,
+                            maxLines: 1,
+                            style: TextStyle(color: Colors.grey[600], fontSize: 12.sp),
+                          ),
+                        ],
                       ],
-                    ],
+                    ),
                   ),
                   Row(
                     crossAxisAlignment: CrossAxisAlignment.baseline,
