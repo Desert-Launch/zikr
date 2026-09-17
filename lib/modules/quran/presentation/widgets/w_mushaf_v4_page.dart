@@ -11,6 +11,7 @@ import 'package:quran/modules/quran/data/models/m_qpc_v4_page.dart';
 import 'package:quran/modules/quran/data/models/m_surah.dart';
 import 'package:quran/modules/quran/domain/entities/e_quran_font_mode.dart';
 import 'package:quran/modules/quran/domain/entities/e_reader_theme.dart';
+import 'package:quran/modules/quran/domain/entities/param_ayah_range.dart';
 import 'package:quran/modules/quran/domain/entities/param_ayah_ref.dart';
 import 'package:quran/modules/quran/presentation/cubits/cb_audio_player.dart';
 import 'package:quran/modules/quran/presentation/cubits/cb_mushaf_reader.dart';
@@ -390,6 +391,7 @@ class _WMushafV4PageState extends State<WMushafV4Page> {
         double fontScale,
         bool bold,
         Map<String, String?> bookmarks,
+        ParamAyahRange? wirdRange,
       })
     >(
       selector: (s) => (
@@ -399,6 +401,7 @@ class _WMushafV4PageState extends State<WMushafV4Page> {
         fontScale: s.fontScale,
         bold: s.bold,
         bookmarks: s.bookmarks,
+        wirdRange: s.wirdRange,
       ),
       builder: (context, view) {
         final isDark = view.theme == ReaderTheme.dark;
@@ -491,6 +494,7 @@ class _WMushafV4PageState extends State<WMushafV4Page> {
                   selected: view.selected,
                   playing: playing,
                   bookmarks: view.bookmarks,
+                  wirdRange: view.wirdRange,
                   fontFamily: fontFamily,
                   baseColor: baseColor,
                   markerColor: markerColor,
@@ -634,6 +638,7 @@ class _WMushafV4PageState extends State<WMushafV4Page> {
     required ParamAyahRef? selected,
     required ParamAyahRef? playing,
     required Map<String, String?> bookmarks,
+    required ParamAyahRange? wirdRange,
     required String fontFamily,
     required Color baseColor,
     required Color markerColor,
@@ -693,6 +698,7 @@ class _WMushafV4PageState extends State<WMushafV4Page> {
             selected: selected,
             playing: playing,
             bookmarks: bookmarks,
+            wirdRange: wirdRange,
             fontFamily: fontFamily,
             baseColor: baseColor,
             markerColor: markerColor,
@@ -771,6 +777,7 @@ class _WMushafV4PageState extends State<WMushafV4Page> {
                   selected: selected,
                   playing: playing,
                   bookmarks: bookmarks,
+                  wirdRange: wirdRange,
                   fontFamily: fontFamily,
                   baseColor: baseColor,
                   markerColor: markerColor,

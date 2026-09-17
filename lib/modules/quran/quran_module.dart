@@ -40,6 +40,7 @@ import 'package:quran/modules/quran/domain/repos/r_reader_settings.dart';
 import 'package:quran/modules/quran/domain/repos/r_reciter.dart';
 import 'package:quran/modules/quran/domain/repos/r_tafsir.dart';
 import 'package:quran/modules/quran/domain/repos/r_tajweed.dart';
+import 'package:quran/modules/quran/domain/entities/param_ayah_range.dart';
 import 'package:quran/modules/quran/domain/entities/param_ayah_ref.dart';
 import 'package:quran/modules/quran/domain/services/download_notifier.dart';
 import 'package:quran/modules/quran/domain/usecases/uc_delete_reciter_downloads.dart';
@@ -427,6 +428,7 @@ class QuranModule extends Module {
           initialAyah: (surah != null && ayah != null)
               ? (surah: surah, ayah: ayah)
               : null,
+          wirdRange: ParamAyahRange.tryParse(params['from'], params['to']),
         );
       },
     );

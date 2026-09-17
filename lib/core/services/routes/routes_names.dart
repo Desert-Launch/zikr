@@ -1,3 +1,6 @@
+import 'package:quran/modules/quran/domain/entities/param_ayah_range.dart';
+import 'package:quran/modules/quran/domain/entities/param_ayah_ref.dart';
+
 /// Centralised, type-safe route names for the whole app.
 ///
 /// Every route literal lives here — UI code calls `Modular.to.navigate(...)`,
@@ -113,6 +116,17 @@ class QuranRoutes {
       '${RoutesNames.quranBase}reader?page=$page';
   static String readerFromAyah(int surah, int ayah) =>
       '${RoutesNames.quranBase}reader?surah=$surah&ayah=$ayah';
+
+  /// Opens the reader on a wird: lands on [focus] (the wird's first ayah
+  /// unless told otherwise) and keeps both ends of [range] tinted so the
+  /// reader can see where the wird starts and where it stops.
+  static String readerForRange(ParamAyahRange range, {ParamAyahRef? focus}) {
+    final at = focus ?? range.start;
+    return '${RoutesNames.quranBase}reader'
+        '?surah=${at.surah}&ayah=${at.ayah}'
+        '&from=${range.start.key}&to=${range.end.key}';
+  }
+
   static String fullReciterPicker() => '${RoutesNames.quranBase}reciter';
   static String fullSettings() => '${RoutesNames.quranBase}settings';
   static String fullReciterDownloads() =>

@@ -16,6 +16,7 @@ import 'package:quran/core/utils/helper/screen_awake_helper.dart';
 import 'package:quran/core/widgets/w_shared_scaffold.dart';
 import 'package:quran/modules/quran/data/datasources/local/ds_local_quran.dart';
 import 'package:quran/modules/quran/domain/entities/e_reader_scroll_mode.dart';
+import 'package:quran/modules/quran/domain/entities/param_ayah_range.dart';
 import 'package:quran/modules/quran/domain/entities/param_ayah_ref.dart';
 import 'package:quran/modules/quran/presentation/cubits/cb_audio_player.dart';
 import 'package:quran/modules/quran/presentation/cubits/cb_mushaf_reader.dart';
@@ -35,10 +36,19 @@ import 'package:quran/modules/quran/presentation/widgets/w_reader_search_panel.d
 import 'package:quran/modules/quran/presentation/widgets/w_reader_top_bar.dart';
 
 class SNMushafReader extends StatefulWidget {
-  const SNMushafReader({super.key, this.initialPage, this.initialAyah});
+  const SNMushafReader({
+    super.key,
+    this.initialPage,
+    this.initialAyah,
+    this.wirdRange,
+  });
 
   final int? initialPage;
   final ({int surah, int ayah})? initialAyah;
+
+  /// The khatma wird this reader was opened for, if any. Its two ends stay
+  /// tinted so the reader knows where the wird starts and where to stop.
+  final ParamAyahRange? wirdRange;
 
   @override
   State<SNMushafReader> createState() => _SNMushafReaderState();
@@ -218,6 +228,8 @@ class _SNMushafReaderState extends State<SNMushafReader> with OrientationOverrid
   Future<void> _resolveInitial() async {
     int target = widget.initialPage ?? 1;
     final initialAyah = widget.initialAyah;
+    final wirdRange = widget.wirdRange;
+    if (wirdRange != null) _cubit.markWirdRange(wirdRange);
     if (initialAyah != null) {
       target = await Modular.get<DSLocalQuran>().pageOfAyah(
         initialAyah.surah,

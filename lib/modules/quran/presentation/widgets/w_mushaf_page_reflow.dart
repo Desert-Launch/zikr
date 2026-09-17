@@ -2,6 +2,7 @@ import 'package:flutter/foundation.dart' show listEquals;
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:quran/modules/quran/data/models/m_qpc_v4_page.dart';
+import 'package:quran/modules/quran/domain/entities/param_ayah_range.dart';
 import 'package:quran/modules/quran/domain/entities/param_ayah_ref.dart';
 import 'package:quran/modules/quran/presentation/widgets/w_ayah_highlight_text.dart';
 import 'package:quran/modules/quran/presentation/widgets/w_mushaf_line.dart';
@@ -105,6 +106,7 @@ class WMushafPageReflow extends StatefulWidget {
     required this.bold,
     required this.onSelect,
     required this.onLongPress,
+    this.wirdRange,
   });
 
   /// The run's printed lines, in reading order. Their boundaries are dissolved.
@@ -123,6 +125,9 @@ class WMushafPageReflow extends StatefulWidget {
   final ParamAyahRef? selected;
   final ParamAyahRef? playing;
   final Map<String, String?> bookmarks;
+
+  /// The khatma wird being read, if any; its first and last ayah are tinted.
+  final ParamAyahRange? wirdRange;
   final String fontFamily;
   final Color baseColor;
   final Color markerColor;
@@ -238,6 +243,7 @@ class _WMushafPageReflowState extends State<WMushafPageReflow> {
       final tint = ayahTint(
         isSelected: widget.selected?.key == range.ref.key,
         isPlaying: widget.playing?.key == range.ref.key,
+        isWirdBound: widget.wirdRange?.isBound(range.ref) ?? false,
         bookmarkHex: widget.bookmarks[range.ref.key],
         hasBookmark: widget.bookmarks.containsKey(range.ref.key),
         brightness: widget.brightness,

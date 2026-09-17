@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:quran/core/theme/app_colors.dart';
 import 'package:quran/modules/quran/data/models/m_qpc_v4_page.dart';
+import 'package:quran/modules/quran/domain/entities/param_ayah_range.dart';
 import 'package:quran/modules/quran/domain/entities/param_ayah_ref.dart';
 import 'package:quran/modules/quran/presentation/widgets/w_ayah_highlight_text.dart';
 import 'package:quran/modules/quran/presentation/widgets/w_bookmark_color_picker.dart';
@@ -48,6 +49,7 @@ class WMushafLine extends StatefulWidget {
     required this.onSelect,
     required this.onLongPress,
     this.lineHeightBoost = 0,
+    this.wirdRange,
   });
 
   final MQpcV4LineBlock block;
@@ -66,6 +68,9 @@ class WMushafLine extends StatefulWidget {
   final ParamAyahRef? selected;
   final ParamAyahRef? playing;
   final Map<String, String?> bookmarks;
+
+  /// The khatma wird being read, if any; its first and last ayah are tinted.
+  final ParamAyahRange? wirdRange;
   final String fontFamily;
   final Color baseColor;
   final Color markerColor;
@@ -294,6 +299,7 @@ class _WMushafLineState extends State<WMushafLine> {
       final tint = ayahTint(
         isSelected: widget.selected?.key == range.ref.key,
         isPlaying: widget.playing?.key == range.ref.key,
+        isWirdBound: widget.wirdRange?.isBound(range.ref) ?? false,
         bookmarkHex: widget.bookmarks[range.ref.key],
         hasBookmark: widget.bookmarks.containsKey(range.ref.key),
         brightness: widget.brightness,
@@ -516,12 +522,16 @@ class _SpanCache {
 /// now-playing → saved bookmark colour. `null` when none apply, so a bookmarked
 /// verse always carries its own colour whenever it isn't momentarily selected
 /// or being recited.
+/// The fill behind an ayah, by what it currently is to the reader. A tap
+/// selection wins over playback, playback over a wird's end-points, and those
+/// over a saved bookmark — the more transient the state, the higher it sits.
 Color? ayahTint({
   required bool isSelected,
   required bool isPlaying,
   required String? bookmarkHex,
   required bool hasBookmark,
   required Brightness brightness,
+  bool isWirdBound = false,
 }) {
   if (isSelected) {
     return brightness == Brightness.dark
@@ -529,9 +539,17 @@ Color? ayahTint({
         : AppColors.surfaceLightGreen;
   }
   if (isPlaying) return AppColors.accentGoldAmber.withValues(alpha: 0.15);
+  if (isWirdBound) return wirdBoundTint(brightness);
   if (hasBookmark) return bookmarkHighlightFromHex(bookmarkHex);
   return null;
 }
+
+/// Tint on the first and last ayah of the wird being read — the blue the page
+/// already uses for its sajdah marks, so it reads as a landmark rather than a
+/// selection.
+Color wirdBoundTint(Brightness brightness) => brightness == Brightness.dark
+    ? const Color(0xFF8AB4F8).withValues(alpha: 0.22)
+    : const Color(0xFF1A4F9C).withValues(alpha: 0.14);
 
 String arabicAyahDigits(int value) {
   const digits = '٠١٢٣٤٥٦٧٨٩';

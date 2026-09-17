@@ -37,7 +37,11 @@ class WKhatmaPlanCard extends StatelessWidget {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(isArabic ? plan.nameAr : plan.nameEn, style: AppTextStyles.ink16W400),
-                  Text(isArabic ? plan.quartersPerDayAr : plan.quartersPerDayEn, style: AppTextStyles.grey12W400),
+                  Text(
+                    '${'khatma_daily_wird'.tr()}: '
+                    '${isArabic ? plan.quartersPerDayAr : plan.quartersPerDayEn}',
+                    style: AppTextStyles.grey12W400,
+                  ),
                 ],
               ),
             ),

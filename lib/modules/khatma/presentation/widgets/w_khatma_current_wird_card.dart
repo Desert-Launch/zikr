@@ -19,6 +19,7 @@ class WKhatmaCurrentWirdCard extends StatelessWidget {
     final isArabic = LocalizeAndTranslate.getLanguageCode() == 'ar';
     final startSurah = isArabic ? wird.startSurahAr : wird.startSurahEn;
     final endSurah = isArabic ? wird.endSurahAr : wird.endSurahEn;
+    final range = wirdRangeOf(wird);
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -53,6 +54,7 @@ class WKhatmaCurrentWirdCard extends StatelessWidget {
                   pageNumber: wird.startPageNumber,
                   surahNumber: wird.startSurahNumber,
                   ayahNumber: wird.startAyahNumber,
+                  wirdRange: range,
                 ),
               ),
               const Divider(height: 1, color: _border),
@@ -64,6 +66,7 @@ class WKhatmaCurrentWirdCard extends StatelessWidget {
                   pageNumber: wird.endPageNumber,
                   surahNumber: wird.endSurahNumber,
                   ayahNumber: wird.endAyahNumber,
+                  wirdRange: range,
                 ),
               ),
             ],

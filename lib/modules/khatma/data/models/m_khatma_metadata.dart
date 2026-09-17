@@ -80,6 +80,8 @@ class MKhatmaWird extends Equatable {
       endSurahAr: json['end_surah_ar'] as String? ?? '',
       startPageNumber: json['start_page_number'] as int? ?? 1,
       endPageNumber: json['end_page_number'] as int? ?? 1,
+      startSurahNumber: json['start_surah_number'] as int? ?? 0,
+      endSurahNumber: json['end_surah_number'] as int? ?? 0,
     );
   }
 
@@ -95,10 +97,15 @@ class MKhatmaWird extends Equatable {
   final int startPageNumber;
   final int endPageNumber;
 
-  /// Quran surah numbers (1-114) for the range bounds. Resolved from the
-  /// canonical surah list after parsing; 0 when unresolved.
+  /// Quran surah numbers (1-114) for the range bounds. Generated plans carry
+  /// them in the JSON; older hand-made ones are resolved from the canonical
+  /// surah list after parsing. 0 when unresolved.
   final int startSurahNumber;
   final int endSurahNumber;
+
+  /// Whether both bounds resolved to a surah, so the wird can be opened at its
+  /// exact ayahs rather than by page.
+  bool get hasSurahNumbers => startSurahNumber > 0 && endSurahNumber > 0;
 
   int get pageCount => endPageNumber - startPageNumber + 1;
 

@@ -1,0 +1,72 @@
+{
+  "day_1": {
+    "start_ayah_number": 1,
+    "end_ayah_number": 81,
+    "start_ayah_text": "بِسْمِ ٱللَّهِ ٱلرَّحْمَـٰنِ ٱلرَّحِيمِ",
+    "end_ayah_text": "وَلَوْ كَانُوا۟ يُؤْمِنُونَ بِٱللَّهِ وَٱلنَّبِىِّ وَمَآ أُنزِلَ إِلَيْهِ مَا ٱتَّخَذُوهُمْ أَوْلِيَآءَ وَلَـٰكِنَّ كَثِيرًۭا مِّنْهُمْ فَـٰسِقُونَ",
+    "start_surah_en": "Al-Fatihah",
+    "start_surah_ar": "الفاتحة",
+    "end_surah_en": "Al-Ma'idah",
+    "end_surah_ar": "المائدة",
+    "start_surah_number": 1,
+    "end_surah_number": 5,
+    "start_page_number": 1,
+    "end_page_number": 121
+  },
+  "day_2": {
+    "start_ayah_number": 82,
+    "end_ayah_number": 52,
+    "start_ayah_text": "۞ لَتَجِدَنَّ أَشَدَّ ٱلنَّاسِ عَدَٰوَةًۭ لِّلَّذِينَ ءَامَنُوا۟ ٱلْيَهُودَ وَٱلَّذِينَ أَشْرَكُوا۟ ۖ وَلَتَجِدَنَّ أَقْرَبَهُم مَّوَدَّةًۭ لِّلَّذِينَ ءَامَنُوا۟ ٱلَّذِينَ قَالُوٓا۟ إِنَّا نَصَـٰرَىٰ ۚ ذَٰلِكَ بِأَنَّ مِنْهُمْ قِسِّيسِينَ وَرُهْبَانًۭا وَأَنَّهُمْ لَا يَسْتَكْبِرُونَ",
+    "end_ayah_text": "ذَٰلِكَ لِيَعْلَمَ أَنِّى لَمْ أَخُنْهُ بِٱلْغَيْبِ وَأَنَّ ٱللَّهَ لَا يَهْدِى كَيْدَ ٱلْخَآئِنِينَ",
+    "start_surah_en": "Al-Ma'idah",
+    "start_surah_ar": "المائدة",
+    "end_surah_en": "Yusuf",
+    "end_surah_ar": "يوسف",
+    "start_surah_number": 5,
+    "end_surah_number": 12,
+    "start_page_number": 121,
+    "end_page_number": 241
+  },
+  "day_3": {
+    "start_ayah_number": 53,
+    "end_ayah_number": 20,
+    "start_ayah_text": "۞ وَمَآ أُبَرِّئُ نَفْسِىٓ ۚ إِنَّ ٱلنَّفْسَ لَأَمَّارَةٌۢ بِٱلسُّوٓءِ إِلَّا مَا رَحِمَ رَبِّىٓ ۚ إِنَّ رَبِّى غَفُورٌۭ رَّحِيمٌۭ",
+    "end_ayah_text": "وَمَآ أَرْسَلْنَا قَبْلَكَ مِنَ ٱلْمُرْسَلِينَ إِلَّآ إِنَّهُمْ لَيَأْكُلُونَ ٱلطَّعَامَ وَيَمْشُونَ فِى ٱلْأَسْوَاقِ ۗ وَجَعَلْنَا بَعْضَكُمْ لِبَعْضٍۢ فِتْنَةً أَتَصْبِرُونَ ۗ وَكَانَ رَبُّكَ بَصِيرًۭا",
+    "start_surah_en": "Yusuf",
+    "start_surah_ar": "يوسف",
+    "end_surah_en": "Al-Furqan",
+    "end_surah_ar": "الفرقان",
+    "start_surah_number": 12,
+    "end_surah_number": 25,
+    "start_page_number": 242,
+    "end_page_number": 361
+  },
+  "day_4": {
+    "start_ayah_number": 21,
+    "end_ayah_number": 46,
+    "start_ayah_text": "۞ وَقَالَ ٱلَّذِينَ لَا يَرْجُونَ لِقَآءَنَا لَوْلَآ أُنزِلَ عَلَيْنَا ٱلْمَلَـٰٓئِكَةُ أَوْ نَرَىٰ رَبَّنَا ۗ لَقَدِ ٱسْتَكْبَرُوا۟ فِىٓ أَنفُسِهِمْ وَعَتَوْ عُتُوًّۭا كَبِيرًۭا",
+    "end_ayah_text": "مَّنْ عَمِلَ صَـٰلِحًۭا فَلِنَفْسِهِۦ ۖ وَمَنْ أَسَآءَ فَعَلَيْهَا ۗ وَمَا رَبُّكَ بِظَلَّـٰمٍۢ لِّلْعَبِيدِ",
+    "start_surah_en": "Al-Furqan",
+    "start_surah_ar": "الفرقان",
+    "end_surah_en": "Fussilat",
+    "end_surah_ar": "فصلت",
+    "start_surah_number": 25,
+    "end_surah_number": 41,
+    "start_page_number": 362,
+    "end_page_number": 481
+  },
+  "day_5": {
+    "start_ayah_number": 47,
+    "end_ayah_number": 6,
+    "start_ayah_text": "۞ إِلَيْهِ يُرَدُّ عِلْمُ ٱلسَّاعَةِ ۚ وَمَا تَخْرُجُ مِن ثَمَرَٰتٍۢ مِّنْ أَكْمَامِهَا وَمَا تَحْمِلُ مِنْ أُنثَىٰ وَلَا تَضَعُ إِلَّا بِعِلْمِهِۦ ۚ وَيَوْمَ يُنَادِيهِمْ أَيْنَ شُرَكَآءِى قَالُوٓا۟ ءَاذَنَّـٰكَ مَا مِنَّا مِن شَهِيدٍۢ",
+    "end_ayah_text": "مِنَ ٱلْجِنَّةِ وَٱلنَّاسِ",
+    "start_surah_en": "Fussilat",
+    "start_surah_ar": "فصلت",
+    "end_surah_en": "An-Nas",
+    "end_surah_ar": "الناس",
+    "start_surah_number": 41,
+    "end_surah_number": 114,
+    "start_page_number": 482,
+    "end_page_number": 604
+  }
+}

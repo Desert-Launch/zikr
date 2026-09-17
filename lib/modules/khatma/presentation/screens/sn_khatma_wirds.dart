@@ -8,6 +8,7 @@ import 'package:quran/core/widgets/w_shared_scaffold.dart';
 import 'package:quran/modules/khatma/data/datasources/local/ds_local_khatma.dart';
 import 'package:quran/modules/khatma/data/models/m_khatma_metadata.dart';
 import 'package:quran/modules/khatma/presentation/cubits/cb_khatma.dart';
+import 'package:quran/modules/khatma/presentation/widgets/w_khatma_range_row.dart';
 import 'package:quran/modules/khatma/presentation/widgets/w_khatma_section_label.dart';
 import 'package:quran/modules/khatma/presentation/widgets/w_khatma_wird_row.dart';
 
@@ -129,8 +130,15 @@ class _SNKhatmaWirdsState extends State<SNKhatmaWirds> {
     );
   }
 
+  /// Opens the mushaf on the wird's first ayah with both of its ends tinted;
+  /// a wird whose surahs never resolved falls back to its first page.
   void _openWird(MKhatmaWird wird) {
-    Modular.to.pushNamed(QuranRoutes.readerFromPage(wird.startPageNumber));
+    final range = wirdRangeOf(wird);
+    Modular.to.pushNamed(
+      range == null
+          ? QuranRoutes.readerFromPage(wird.startPageNumber)
+          : QuranRoutes.readerForRange(range),
+    );
   }
 
   Future<void> _start(MKhatmaMetadata plan) async {

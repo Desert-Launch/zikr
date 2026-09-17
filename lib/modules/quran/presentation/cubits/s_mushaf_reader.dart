@@ -3,6 +3,7 @@ import 'package:quran/modules/quran/data/models/m_qpc_v4_page.dart';
 import 'package:quran/modules/quran/domain/entities/e_quran_font_mode.dart';
 import 'package:quran/modules/quran/domain/entities/e_reader_scroll_mode.dart';
 import 'package:quran/modules/quran/domain/entities/e_reader_theme.dart';
+import 'package:quran/modules/quran/domain/entities/param_ayah_range.dart';
 import 'package:quran/modules/quran/domain/entities/param_ayah_ref.dart';
 import 'package:quran/modules/quran/presentation/cubits/s_surah_list.dart'
     show LoadStatus;
@@ -26,6 +27,7 @@ class SMushafReader extends Equatable {
     this.searchOpen = false,
     this.bookmarks = const <String, String?>{},
     this.jumpRequest,
+    this.wirdRange,
   });
 
   final int currentPage;
@@ -84,6 +86,12 @@ class SMushafReader extends Equatable {
   /// [CBMushafReader.consumeJumpRequest]. `null` means nothing pending.
   final ParamAyahRef? jumpRequest;
 
+  /// The wird this reader was opened for, when it was opened from a khatma.
+  /// Its first and last ayah stay tinted for the life of the reader — unlike
+  /// [selectedAyah], a tap on the page does not clear them — so the reader can
+  /// see where the wird begins and where to stop.
+  final ParamAyahRange? wirdRange;
+
   SMushafReader copyWith({
     int? currentPage,
     Map<int, MQpcV4Page>? pages,
@@ -104,6 +112,7 @@ class SMushafReader extends Equatable {
     Map<String, String?>? bookmarks,
     ParamAyahRef? jumpRequest,
     bool clearJumpRequest = false,
+    ParamAyahRange? wirdRange,
   }) {
     return SMushafReader(
       currentPage: currentPage ?? this.currentPage,
@@ -123,6 +132,7 @@ class SMushafReader extends Equatable {
       searchOpen: searchOpen ?? this.searchOpen,
       bookmarks: bookmarks ?? this.bookmarks,
       jumpRequest: clearJumpRequest ? null : (jumpRequest ?? this.jumpRequest),
+      wirdRange: wirdRange ?? this.wirdRange,
     );
   }
 
@@ -145,5 +155,6 @@ class SMushafReader extends Equatable {
     searchOpen,
     bookmarks,
     jumpRequest,
+    wirdRange,
   ];
 }

@@ -8,6 +8,7 @@ import 'package:quran/modules/quran/data/models/m_bookmark.dart';
 import 'package:quran/modules/quran/data/models/m_qpc_v4_page.dart';
 import 'package:quran/modules/quran/domain/entities/e_quran_font_mode.dart';
 import 'package:quran/modules/quran/domain/entities/e_reader_theme.dart';
+import 'package:quran/modules/quran/domain/entities/param_ayah_range.dart';
 import 'package:quran/modules/quran/domain/entities/param_ayah_ref.dart';
 import 'package:quran/modules/quran/domain/repos/r_bookmarks.dart';
 import 'package:quran/modules/quran/domain/usecases/uc_get_qpc_v4_page.dart';
@@ -294,6 +295,11 @@ class CBMushafReader extends Cubit<SMushafReader> {
   /// verse-of-the-day card) so the verse is highlighted but nothing pops up.
   void highlightAyah(ParamAyahRef ref) =>
       emit(state.copyWith(selectedAyah: ref));
+
+  /// Pins the two ends of [range] on the page for as long as this reader is
+  /// open. Set once, when a khatma opens the reader on a wird.
+  void markWirdRange(ParamAyahRange range) =>
+      emit(state.copyWith(wirdRange: range));
 
   void selectAyah(ParamAyahRef ref) {
     if (state.selectedAyah?.key == ref.key) {

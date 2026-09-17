@@ -30,7 +30,8 @@ class WKhatmaPlanRow extends StatelessWidget {
                   style: AppTextStyles.ink16W400,
                 ),
                 Text(
-                  isArabic ? plan.quartersPerDayAr : plan.quartersPerDayEn,
+                  '${'khatma_daily_wird'.tr()}: '
+                  '${isArabic ? plan.quartersPerDayAr : plan.quartersPerDayEn}',
                   style: AppTextStyles.grey12W400,
                 ),
               ],
