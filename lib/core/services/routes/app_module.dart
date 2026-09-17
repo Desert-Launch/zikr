@@ -58,15 +58,18 @@ import 'package:quran/modules/live/live_module.dart';
 import 'package:quran/modules/onboarding/onboarding_module.dart';
 import 'package:quran/modules/prayer/data/datasources/local/ds_last_location.dart';
 import 'package:quran/modules/prayer/data/datasources/local/ds_location.dart';
-import 'package:quran/modules/prayer/data/datasources/local/ds_prayer_cache.dart';
+import 'package:quran/modules/prayer/data/datasources/local/ds_prayer_calendar_cache.dart';
+import 'package:quran/modules/prayer/data/datasources/local/ds_prayer_methods_cache.dart';
 import 'package:quran/modules/prayer/data/datasources/remote/ds_remote_prayer.dart';
 import 'package:quran/modules/prayer/data/repos/r_impl_prayer.dart';
-import 'package:quran/modules/prayer/data/sources/local/box_prayer_cache.dart';
 import 'package:quran/modules/prayer/data/sources/local/box_prayer_settings.dart';
 import 'package:quran/modules/prayer/domain/repos/r_prayer.dart';
-import 'package:quran/modules/prayer/domain/usecases/uc_get_prayer_times.dart';
+import 'package:quran/modules/prayer/domain/usecases/uc_get_calculation_methods.dart';
+import 'package:quran/modules/prayer/domain/usecases/uc_get_prayer_calendar.dart';
+import 'package:quran/modules/prayer/domain/usecases/uc_get_prayer_day.dart';
 import 'package:quran/modules/prayer/prayer_module.dart';
 import 'package:quran/modules/prayer/presentation/cubits/cb_prayer_times.dart';
+import 'package:quran/modules/prayer/services/prayer_times_service.dart';
 import 'package:quran/modules/qibla/qibla_module.dart';
 import 'package:quran/modules/quran/data/datasources/local/ds_local_audio_files.dart';
 import 'package:quran/modules/quran/data/datasources/local/ds_local_quran.dart';
@@ -114,7 +117,6 @@ class AppModule extends Module {
     i.addSingleton<BoxUser>(BoxUser.new);
     i.addSingleton<BoxAuthToken>(BoxAuthToken.new);
     i.addSingleton<BoxPrayerSettings>(BoxPrayerSettings.new);
-    i.addSingleton<BoxPrayerCache>(BoxPrayerCache.new);
     i.addSingleton<BoxAdhanPreference>(BoxAdhanPreference.new);
     i.addSingleton<BoxAdhanSettings>(BoxAdhanSettings.new);
     i.addSingleton<BoxAdhanDownload>(BoxAdhanDownload.new);
@@ -212,15 +214,34 @@ class AppModule extends Module {
     // Prayer data + repo (Aladhan remote API). DSRemotePrayer owns its own
     // Dio, so it does not depend on BaseDio.
     i.addSingleton<DSRemotePrayer>(DSRemotePrayer.new);
-    i.addSingleton<DSPrayerCache>(DSPrayerCache.new);
+    i.addSingleton<DSPrayerCalendarCache>(DSPrayerCalendarCache.new);
+    i.addSingleton<DSPrayerMethodsCache>(DSPrayerMethodsCache.new);
     i.addSingleton<DSLastLocation>(DSLastLocation.new);
+    // Singleton, not a factory: the repo holds a session memo of decoded
+    // months, and a fresh instance per resolve would throw that away — the
+    // prayer screen, the home card and the scheduler would each re-read Hive
+    // for the same month.
     i.addSingleton<RPrayer>(
       () => RImplPrayer(
         remote: i.get<DSRemotePrayer>(),
-        cache: i.get<DSPrayerCache>(),
+        cache: i.get<DSPrayerCalendarCache>(),
+        methodsCache: i.get<DSPrayerMethodsCache>(),
       ),
     );
-    i.add<UCGetPrayerTimes>(() => UCGetPrayerTimes(i.get<RPrayer>()));
+    i.add<UCGetPrayerCalendar>(() => UCGetPrayerCalendar(i.get<RPrayer>()));
+    i.add<UCGetPrayerDay>(() => UCGetPrayerDay(i.get<RPrayer>()));
+    i.add<UCGetCalculationMethods>(
+      () => UCGetCalculationMethods(i.get<RPrayer>()),
+    );
+    // The single assembly point both the prayer screen and the adhan scheduler
+    // read through, so what is displayed and what rings can't diverge.
+    i.addSingleton<PrayerTimesService>(
+      () => PrayerTimesService(
+        getCalendar: i.get<UCGetPrayerCalendar>(),
+        settings: i.get<BoxPrayerSettings>(),
+        lastLocation: i.get<DSLastLocation>(),
+      ),
+    );
 
     // Adhan catalog + download (own Dio, falls back to bundled adhans.json).
     i.addSingleton<DSRemoteAdhan>(DSRemoteAdhan.new);
@@ -242,7 +263,7 @@ class AppModule extends Module {
       () => AdhanScheduler(
         notifications: i.get<NotificationsService>(),
         location: i.get<DSLocation>(),
-        getTimes: i.get<UCGetPrayerTimes>(),
+        times: i.get<PrayerTimesService>(),
         prayerSettings: i.get<BoxPrayerSettings>(),
         adhanSettings: i.get<BoxAdhanSettings>(),
         adhanPrefs: i.get<BoxAdhanPreference>(),
@@ -303,10 +324,9 @@ class AppModule extends Module {
     i.addSingleton<CBPrayerTimes>(
       () => CBPrayerTimes(
         location: i.get<DSLocation>(),
-        settings: i.get<BoxPrayerSettings>(),
-        cache: i.get<BoxPrayerCache>(),
+        lastLocation: i.get<DSLastLocation>(),
+        times: i.get<PrayerTimesService>(),
         scheduler: i.get<AdhanScheduler>(),
-        getTimes: i.get<UCGetPrayerTimes>(),
       ),
     );
     // Verse-of-the-day for the home dashboard. Built with a dedicated

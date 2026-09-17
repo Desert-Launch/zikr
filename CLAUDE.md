@@ -275,11 +275,20 @@ dart fix --apply
 
 # Check the project compiles cleanly — this is the verification gate
 flutter analyze
+
+# Run the unit tests (currently the prayer-times domain)
+flutter test
 ```
 
 > ⚠️ **`build_runner` is broken here.** `flutter pub run build_runner build` fails — do not depend on it for `freezed`/Hive codegen. For Hive model changes, hand-edit the `*.g.dart` adapter + `quran_hive_registrar.dart` + `main.dart` (see §10).
 
-> **No test suite exists yet** (no `test/` directory). `flutter analyze` (zero errors) is the only automated gate. Lint config is stock `package:flutter_lints/flutter.yaml` (`analysis_options.yaml`), no custom rules.
+> **Tests:** `flutter test` runs the suite under `test/`. It currently covers the
+> prayer-times domain (Aladhan query building, response parsing, next-prayer,
+> caching, DST) including fixture-based checks against real API responses in
+> `test/fixtures/aladhan/`. There is no widget-test coverage yet.
+> `flutter analyze` (zero errors) remains the gate every change must pass. Lint
+> config is stock `package:flutter_lints/flutter.yaml` (`analysis_options.yaml`),
+> no custom rules.
 
 Things **I (the AI) should never run** in this project:
 - `flutter run`, `flutter build *`, `flutter emulators*`, `adb *`

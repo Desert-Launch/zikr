@@ -14,6 +14,7 @@ import 'package:quran/core/services/notifications/notification_box/m_notificatio
 import 'package:quran/core/services/notifications/notification_router.dart';
 import 'package:quran/core/services/notifications/notifications_service.dart';
 import 'package:quran/core/services/notifications/scheduled_alert_registry.dart';
+import 'package:quran/core/services/time/app_timezone.dart';
 import 'package:quran/modules/adhan/data/datasources/local/ds_local_adhan.dart';
 import 'package:quran/modules/adhan/data/models/m_adhan_preference.dart';
 import 'package:quran/modules/adhan/data/models/m_adhan_settings.dart';
@@ -23,12 +24,14 @@ import 'package:quran/modules/adhan/services/adhan_audio_alarms.dart';
 import 'package:quran/modules/adhan/services/adhan_scheduler.dart';
 import 'package:quran/modules/prayer/data/datasources/local/ds_last_location.dart';
 import 'package:quran/modules/prayer/data/datasources/local/ds_location.dart';
-import 'package:quran/modules/prayer/data/datasources/local/ds_prayer_cache.dart';
+import 'package:quran/modules/prayer/data/datasources/local/ds_prayer_calendar_cache.dart';
+import 'package:quran/modules/prayer/data/datasources/local/ds_prayer_methods_cache.dart';
 import 'package:quran/modules/prayer/data/datasources/remote/ds_remote_prayer.dart';
 import 'package:quran/modules/prayer/data/models/m_prayer_settings.dart';
 import 'package:quran/modules/prayer/data/repos/r_impl_prayer.dart';
 import 'package:quran/modules/prayer/data/sources/local/box_prayer_settings.dart';
-import 'package:quran/modules/prayer/domain/usecases/uc_get_prayer_times.dart';
+import 'package:quran/modules/prayer/domain/usecases/uc_get_prayer_calendar.dart';
+import 'package:quran/modules/prayer/services/prayer_times_service.dart';
 import 'package:quran/modules/quran/data/sources/local/quran_hive_registrar.dart';
 import 'package:quran/modules/tasbih/data/datasources/local/ds_hourly_tasbih.dart';
 import 'package:quran/modules/tasbih/data/datasources/local/ds_salawat_reminder.dart';
@@ -148,6 +151,10 @@ Future<void> adhanWeeklyAlarmCallback() async {
 Future<void> runAdhanBackgroundReschedule() async {
   WidgetsFlutterBinding.ensureInitialized();
   AppLogger.init();
+  // A background isolate shares no state with the app, so the timezone
+  // database has to be loaded here too — cached prayer times are re-resolved
+  // against it, and without it every one of them would land in UTC.
+  AppTimezone.ensureInitialised();
   try {
     await Hive.initFlutter();
     QuranHiveRegistrar.registerAdapters();
@@ -169,8 +176,16 @@ Future<void> runAdhanBackgroundReschedule() async {
     final scheduler = AdhanScheduler(
       notifications: notifications,
       location: DSLocation(),
-      getTimes: UCGetPrayerTimes(
-        RImplPrayer(remote: DSRemotePrayer(), cache: DSPrayerCache()),
+      times: PrayerTimesService(
+        getCalendar: UCGetPrayerCalendar(
+          RImplPrayer(
+            remote: DSRemotePrayer(),
+            cache: DSPrayerCalendarCache(),
+            methodsCache: DSPrayerMethodsCache(),
+          ),
+        ),
+        settings: BoxPrayerSettings(),
+        lastLocation: DSLastLocation(),
       ),
       prayerSettings: BoxPrayerSettings(),
       adhanSettings: BoxAdhanSettings(),
@@ -219,7 +234,8 @@ Future<void> _openBoxes() async {
   await open<MPrayerSettings>('prayer_settings');
   await open<MAdhanSettings>('adhan_settings');
   await open<MAdhanPreference>('adhan_preference');
-  await open<String>('prayer_timings_cache');
+  await open<String>('prayer_calendar_cache');
+  await open<String>('prayer_methods_cache');
   await open<String>('last_location');
   // Companion-notification boxes — the reconciliation is gated off in this
   // isolate, but open them so the wired dependencies never touch a closed box.

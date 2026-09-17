@@ -10,14 +10,32 @@ class LocationResult {
     required this.longitude,
     this.label = '',
     this.countryCode,
+    this.timezone,
   });
   final double latitude;
   final double longitude;
+
+  /// City/region name from reverse geocoding, for display only. Prayer times
+  /// are calculated from the coordinates alone and never wait on this.
   final String label;
 
-  /// ISO-2 country code from reverse geocoding (e.g. 'EG'). Null when the
-  /// lookup failed or returned nothing — callers fall back to a default method.
+  /// ISO-2 country code from reverse geocoding (e.g. 'EG'). Display and
+  /// logging only — it does NOT pick a calculation method; Aladhan resolves
+  /// the authority from the coordinates.
   final String? countryCode;
+
+  /// IANA zone for these coordinates, once the prayer API has named it (a GPS
+  /// fix on its own cannot). Null until then.
+  final String? timezone;
+
+  LocationResult copyWith({String? label, String? countryCode, String? timezone}) =>
+      LocationResult(
+        latitude: latitude,
+        longitude: longitude,
+        label: label ?? this.label,
+        countryCode: countryCode ?? this.countryCode,
+        timezone: timezone ?? this.timezone,
+      );
 }
 
 /// Wraps `geolocator` with permission + service checks. Throws on hard

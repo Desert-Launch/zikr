@@ -19,11 +19,24 @@ class EndPoints {
   static const String usersProfile = '/users/profile';
 
   // Aladhan — prayer timings (free, no auth). Astronomical calculation is
-  // done server-side; we only supply lat/lon/method/school/date.
+  // done server-side; we supply coordinates and the user's calculation
+  // preferences, and NOTHING else — no identity, no device id, no email.
   // Reached via a dedicated Dio in DSRemotePrayer, NOT the shared BaseDio,
   // so the app's Authorization header is never sent to a third party.
   static const String aladhanBase = 'https://api.aladhan.com/v1';
+
+  /// One day: `/timings/{dd-MM-yyyy}` (bare `/timings` means today).
   static const String aladhanTimings = '/timings';
+
+  /// A whole month: `/calendar/{yyyy}/{M}`. The endpoint the app actually
+  /// lives on — one request covers a month of opens.
+  static String aladhanCalendar(int year, int month) =>
+      '/calendar/$year/$month';
+
+  /// The supported calculation authorities. The source of truth for the
+  /// method picker; the app ships only a stopgap list for a first run with no
+  /// network.
+  static const String aladhanMethods = '/methods';
 
   // mp3quran.net — live Quran radio catalogue (free, no auth). Reached via a
   // dedicated Dio in DSRemoteRadio, NOT the shared BaseDio, so the app's

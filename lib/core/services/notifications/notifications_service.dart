@@ -11,7 +11,7 @@ import 'package:quran/core/services/notifications/notification_channels.dart';
 import 'package:quran/core/services/notifications/notification_payload.dart';
 import 'package:quran/core/services/notifications/notification_router.dart';
 import 'package:quran/core/services/notifications/scheduled_alert_registry.dart';
-import 'package:timezone/data/latest_all.dart' as tzdata;
+import 'package:quran/core/services/time/app_timezone.dart';
 import 'package:timezone/timezone.dart' as tz;
 
 /// App-wide notification facade. Wraps [FlutterLocalNotificationsPlugin]
@@ -37,7 +37,9 @@ class NotificationsService {
 
   Future<void> init() async {
     if (_initialized) return;
-    tzdata.initializeTimeZones();
+    // Shared with the prayer module, which materialises times in their own
+    // location's zone long before this runs.
+    AppTimezone.ensureInitialised();
     // CRITICAL: `tz.local` defaults to UTC until we set it. Without this every
     // scheduled notification would fire at the wrong wall-clock time (off by
     // the device's UTC offset), so they'd appear to "never arrive".

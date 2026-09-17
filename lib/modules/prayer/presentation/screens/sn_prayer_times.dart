@@ -15,6 +15,7 @@ import 'package:quran/modules/prayer/presentation/cubits/cb_prayer_times.dart';
 import 'package:quran/modules/prayer/presentation/cubits/s_prayer_times.dart';
 import 'package:quran/modules/prayer/presentation/widgets/w_prayer_header.dart';
 import 'package:quran/modules/prayer/presentation/widgets/w_prayer_message_view.dart';
+import 'package:quran/modules/prayer/presentation/widgets/w_prayer_source_note.dart';
 import 'package:quran/modules/prayer/presentation/widgets/w_prayer_tile.dart';
 
 class SNPrayerTimes extends StatefulWidget {
@@ -61,7 +62,7 @@ class _SNPrayerTimesState extends State<SNPrayerTimes> with WidgetsBindingObserv
   @override
   void didChangeAppLifecycleState(AppLifecycleState state) {
     if (state != AppLifecycleState.resumed) return;
-    if (_cubit.state.slots.isNotEmpty) return;
+    if (_cubit.state.hasTimes) return;
     _cubit.refresh();
   }
 
@@ -76,16 +77,19 @@ class _SNPrayerTimesState extends State<SNPrayerTimes> with WidgetsBindingObserv
         body: BlocBuilder<CBPrayerTimes, SPrayerTimes>(
           builder: (context, state) => RefreshIndicator(
             color: _green,
-            onRefresh: _cubit.refresh,
+            onRefresh: () => _cubit.refresh(force: true),
             child: CustomScrollView(
               physics: const AlwaysScrollableScrollPhysics(),
               slivers: [
                 SliverToBoxAdapter(
                   child: WPrayerHeader(state: state, green: _green, onRefresh: _cubit.refresh),
                 ),
-                if (state.slots.isEmpty && state.status == PrayerLoadStatus.loading)
+                // Which authority produced these times, and whether they are
+                // known to be behind. Renders nothing in the ordinary case.
+                SliverToBoxAdapter(child: WPrayerSourceNote(state: state)),
+                if (!state.hasTimes && state.status == PrayerLoadStatus.loading)
                   const SliverFillRemaining(child: Center(child: CircularProgressIndicator()))
-                else if (state.slots.isEmpty && state.status == PrayerLoadStatus.permissionDenied)
+                else if (!state.hasTimes && state.status == PrayerLoadStatus.permissionDenied)
                   SliverFillRemaining(
                     child: WPrayerMessageView(
                       icon: Icons.location_off_rounded,
@@ -99,7 +103,7 @@ class _SNPrayerTimesState extends State<SNPrayerTimes> with WidgetsBindingObserv
                       onRetry: _cubit.retry,
                     ),
                   )
-                else if (state.slots.isEmpty && state.status == PrayerLoadStatus.error)
+                else if (!state.hasTimes && state.status == PrayerLoadStatus.error)
                   SliverFillRemaining(
                     child: WPrayerMessageView(
                       icon: Icons.error_outline_rounded,
@@ -121,7 +125,8 @@ class _SNPrayerTimesState extends State<SNPrayerTimes> with WidgetsBindingObserv
     );
   }
 
-  /// Renders [SPrayerTimes.displaySlots], NOT `slots`.
+  /// Renders [SPrayerTimes.displaySlots] — today's timings until the last
+  /// salah has gone, then the following day's.
   ///
   /// `nextPrayer` rolls into the following day once today's isha has gone, so
   /// listing today's timings against it paired the highlighted tile with a

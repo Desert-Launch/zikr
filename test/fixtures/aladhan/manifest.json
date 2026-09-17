@@ -1,0 +1,62 @@
+[
+  {
+    "name": "cairo",
+    "lat": 30.0444,
+    "lon": 31.2357,
+    "days": 31
+  },
+  {
+    "name": "makkah",
+    "lat": 21.4225,
+    "lon": 39.8262,
+    "days": 31
+  },
+  {
+    "name": "dubai",
+    "lat": 25.2048,
+    "lon": 55.2708,
+    "days": 31
+  },
+  {
+    "name": "istanbul",
+    "lat": 41.0082,
+    "lon": 28.9784,
+    "days": 31
+  },
+  {
+    "name": "kuala_lumpur",
+    "lat": 3.139,
+    "lon": 101.6869,
+    "days": 31
+  },
+  {
+    "name": "jakarta",
+    "lat": -6.2088,
+    "lon": 106.8456,
+    "days": 31
+  },
+  {
+    "name": "london",
+    "lat": 51.5072,
+    "lon": -0.1276,
+    "days": 31
+  },
+  {
+    "name": "oslo",
+    "lat": 59.9139,
+    "lon": 10.7522,
+    "days": 31
+  },
+  {
+    "name": "new_york",
+    "lat": 40.7128,
+    "lon": -74.006,
+    "days": 31
+  },
+  {
+    "name": "oslo_june",
+    "lat": 59.9139,
+    "lon": 10.7522,
+    "days": 30
+  }
+]

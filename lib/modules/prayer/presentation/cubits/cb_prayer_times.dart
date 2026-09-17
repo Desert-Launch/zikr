@@ -3,72 +3,63 @@ import 'dart:async';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:quran/core/services/logging/app_logger.dart';
 import 'package:quran/modules/adhan/services/adhan_scheduler.dart';
+import 'package:quran/modules/prayer/data/datasources/local/ds_last_location.dart';
 import 'package:quran/modules/prayer/data/datasources/local/ds_location.dart';
-import 'package:quran/modules/prayer/data/models/m_prayer_cache.dart';
-import 'package:quran/modules/prayer/data/models/m_prayer_timings.dart';
-import 'package:quran/modules/prayer/data/sources/local/box_prayer_cache.dart';
-import 'package:quran/modules/prayer/data/sources/local/box_prayer_settings.dart';
 import 'package:quran/modules/prayer/domain/entities/e_location_failure.dart';
-import 'package:quran/modules/prayer/domain/entities/e_prayer.dart';
-import 'package:quran/modules/prayer/domain/entities/param_prayer_times.dart';
-import 'package:quran/modules/prayer/domain/usecases/uc_get_prayer_times.dart';
+import 'package:quran/modules/prayer/domain/entities/e_prayer_schedule.dart';
 import 'package:quran/modules/prayer/presentation/cubits/s_prayer_times.dart';
-import 'package:quran/modules/prayer/utils/prayer_method_mapper.dart';
+import 'package:quran/modules/prayer/services/prayer_refresh_policy.dart';
+import 'package:quran/modules/prayer/services/prayer_times_service.dart';
 
-/// App-wide prayer-times singleton. Loads cached times on construct so the
-/// UI paints instantly; refreshes via [refresh()]. Adhan notification
-/// scheduling (rolling 7-day window) is delegated to [AdhanScheduler].
+/// App-wide prayer-times singleton.
+///
+/// Paints from the last known location on construction so the screen is never
+/// empty while a GPS fix is acquired — that first pass normally resolves
+/// entirely out of the monthly cache and touches no network at all. [refresh]
+/// then takes a live fix.
+///
+/// Adhan notification scheduling (the rolling window) is delegated to
+/// [AdhanScheduler], and only rebuilt when something that changes prayer times
+/// actually changed — a fresh location, a new timezone, or a settings edit —
+/// so opening the screen does not churn the OS schedule.
 class CBPrayerTimes extends Cubit<SPrayerTimes> {
   CBPrayerTimes({
     required DSLocation location,
-    required BoxPrayerSettings settings,
-    required BoxPrayerCache cache,
+    required DSLastLocation lastLocation,
+    required PrayerTimesService times,
     required AdhanScheduler scheduler,
-    required UCGetPrayerTimes getTimes,
-  })  : _location = location,
-        _settingsBox = settings,
-        _cacheBox = cache,
-        _scheduler = scheduler,
-        _getTimes = getTimes,
-        super(const SPrayerTimes()) {
-    _hydrateFromCache();
+  }) : _location = location,
+       _lastLocation = lastLocation,
+       _times = times,
+       _scheduler = scheduler,
+       super(const SPrayerTimes()) {
+    unawaited(_hydrateFromCache());
   }
 
   final DSLocation _location;
-  final BoxPrayerSettings _settingsBox;
-  final BoxPrayerCache _cacheBox;
+  final DSLastLocation _lastLocation;
+  final PrayerTimesService _times;
   final AdhanScheduler _scheduler;
-  final UCGetPrayerTimes _getTimes;
 
-  void _hydrateFromCache() {
-    final cache = _cacheBox.current();
-    if (cache == null) return;
-    final today = DateTime.now();
-    final cached = cache.computedAt;
-    if (cached.year != today.year ||
-        cached.month != today.month ||
-        cached.day != today.day) {
-      // Stale → ignore; refresh() will repopulate.
-      return;
-    }
-    emit(state.copyWith(
-      status: PrayerLoadStatus.success,
-      slots: _slotsFromCache(cache),
-      cityName: cache.cityName,
-      latitude: cache.latitude,
-      longitude: cache.longitude,
-      computedAt: cache.computedAt,
-    ));
+  bool _refreshing = false;
+
+  /// First paint from the last known fix. Costs no GPS prompt and, with a
+  /// cached month, no network either.
+  Future<void> _hydrateFromCache() async {
+    final cached = _lastLocation.read();
+    if (cached == null) return;
+    final result = await _times.scheduleFor(cached, cacheOnly: true);
+    if (isClosed) return;
+    result.fold(
+      (failure) => AppLogger.info(
+        'No cached prayer times to hydrate (${failure.message})',
+        tag: 'CBPrayerTimes',
+      ),
+      (schedule) => emit(
+        state.copyWith(status: PrayerLoadStatus.success, schedule: schedule),
+      ),
+    );
   }
-
-  List<PrayerSlot> _slotsFromCache(MPrayerCache c) => [
-        PrayerSlot(prayer: EPrayer.fajr, time: c.fajr),
-        PrayerSlot(prayer: EPrayer.sunrise, time: c.sunrise),
-        PrayerSlot(prayer: EPrayer.dhuhr, time: c.dhuhr),
-        PrayerSlot(prayer: EPrayer.asr, time: c.asr),
-        PrayerSlot(prayer: EPrayer.maghrib, time: c.maghrib),
-        PrayerSlot(prayer: EPrayer.isha, time: c.isha),
-      ];
 
   /// The action behind the prayer screen's retry button.
   ///
@@ -95,141 +86,154 @@ class CBPrayerTimes extends Cubit<SPrayerTimes> {
     }
   }
 
-  /// Re-fetches GPS, pulls today's timings from Aladhan, persists to cache,
-  /// and reschedules today's notifications.
-  Future<void> refresh() async {
-    emit(state.copyWith(status: PrayerLoadStatus.loading, clearError: true));
-    LocationResult? loc;
+  /// Takes a live GPS fix, resolves the schedule for it, and rebuilds the
+  /// adhan window if the result moved.
+  ///
+  /// [force] skips the cache-freshness shortcut — pull-to-refresh, and the
+  /// path a settings change takes.
+  Future<void> refresh({bool force = false}) async {
+    if (_refreshing) return;
+    _refreshing = true;
     try {
-      loc = await _location.currentPosition();
+      emit(state.copyWith(status: PrayerLoadStatus.loading, clearError: true));
+
+      final location = await _resolveLocation();
+      if (location == null) return; // state already set by the resolver
+
+      final previous = state.schedule;
+      final result = await _times.scheduleFor(location, forceRefresh: force);
+      if (isClosed) return;
+
+      result.fold(
+        (failure) {
+          AppLogger.warning(
+            'Prayer times unavailable: ${failure.message}',
+            tag: 'CBPrayerTimes',
+          );
+          // Keep showing whatever is already there; only surface an error when
+          // the screen would otherwise be blank.
+          emit(
+            state.hasTimes
+                ? state.copyWith(status: PrayerLoadStatus.success)
+                : state.copyWith(
+                    status: PrayerLoadStatus.error,
+                    error: failure.message,
+                  ),
+          );
+        },
+        (schedule) {
+          emit(
+            state.copyWith(
+              status: PrayerLoadStatus.success,
+              schedule: schedule,
+            ),
+          );
+          _logResolution(schedule);
+          if (_shouldReschedule(previous, schedule)) {
+            // Don't block the screen on a fortnight of notification work.
+            unawaited(_scheduler.reschedule());
+          }
+        },
+      );
+    } finally {
+      _refreshing = false;
+    }
+  }
+
+  /// Re-resolves everything after the user changes a calculation setting, and
+  /// rebuilds the notification window — the times that will ring have to match
+  /// the ones now on screen.
+  Future<void> onSettingsChanged() async {
+    await refresh(force: true);
+    unawaited(_scheduler.reschedule());
+  }
+
+  /// A live fix, falling back to the last known one.
+  ///
+  /// Returns null when there is nothing to work with, having already emitted
+  /// the state the screen should show for that case.
+  Future<LocationResult?> _resolveLocation() async {
+    try {
+      final fresh = await _location.currentPosition();
+      if (fresh != null) {
+        await _lastLocation.write(fresh);
+        // Carry the zone already known for this place, so the schedule can
+        // tell a genuine timezone change from a first-ever fix.
+        return fresh.copyWith(timezone: _lastLocation.read()?.timezone);
+      }
     } on LocationException catch (e) {
       AppLogger.warning('Location failed: $e', tag: 'CBPrayerTimes');
-      // Fall back to cache if we have one, else surface a permission error.
-      if (state.slots.isEmpty) {
-        emit(state.copyWith(
-          status: PrayerLoadStatus.permissionDenied,
+      final fallback = _lastLocation.read();
+      if (fallback != null) return fallback;
+      if (isClosed) return null;
+      emit(
+        state.copyWith(
+          status: state.hasTimes
+              ? PrayerLoadStatus.success
+              : PrayerLoadStatus.permissionDenied,
           error: e.message,
           locationFailure: e.reason,
-        ));
-      } else {
-        emit(state.copyWith(status: PrayerLoadStatus.success));
-      }
-      return;
+        ),
+      );
+      return null;
     } catch (e, st) {
-      AppLogger.error('Location lookup',
-          error: e, stackTrace: st, tag: 'CBPrayerTimes');
-      emit(state.copyWith(status: PrayerLoadStatus.error, error: e.toString()));
-      return;
-    }
-    if (loc == null) {
-      emit(state.copyWith(status: PrayerLoadStatus.error, error: 'Timeout'));
-      return;
-    }
-
-    final settings = _settingsBox.current();
-    final today = DateTime.now();
-    final param = ParamPrayerTimes(
-      latitude: loc.latitude,
-      longitude: loc.longitude,
-      method: PrayerMethodMapper.methodForCountry(loc.countryCode),
-      school: settings.madhabIndex.clamp(0, 1),
-      date: today,
-      countryCode: loc.countryCode,
-      cityLabel: loc.label,
-    );
-
-    final result = await _getTimes(param);
-    final cityName = loc.label.isNotEmpty ? loc.label : state.cityName;
-    result.fold(
-      (failure) {
-        AppLogger.warning('Timings fetch failed: ${failure.message}',
-            tag: 'CBPrayerTimes');
-        // Keep showing whatever we already have; only surface an error when
-        // there's nothing on screen.
-        if (state.slots.isEmpty) {
-          emit(state.copyWith(
-            status: PrayerLoadStatus.error,
-            error: failure.message,
-          ));
-        } else {
-          emit(state.copyWith(status: PrayerLoadStatus.success));
-        }
-      },
-      (timings) async {
-        final slots = _slotsFromTimings(timings);
-        await _persist(timings, loc!, cityName);
-        emit(state.copyWith(
-          status: PrayerLoadStatus.success,
-          slots: slots,
-          cityName: cityName,
-          latitude: loc.latitude,
-          longitude: loc.longitude,
-          computedAt: DateTime.now(),
-        ));
-        // Rebuild the rolling adhan window in the background — don't block the
-        // UI on 7 days of timing fetches.
-        unawaited(_scheduler.reschedule());
-        unawaited(_loadTomorrow(loc));
-      },
-    );
-  }
-
-  /// Resolves tomorrow's timings so the card can roll over the moment today's
-  /// isha passes, instead of sitting on a spent day until midnight.
-  ///
-  /// Usually free: [AdhanScheduler] pre-fetches a two-week window into the same
-  /// per-date cache [UCGetPrayerTimes] reads through, so this normally returns
-  /// without touching the network. Failure is not surfaced — the card falls
-  /// back to [SPrayerTimes.nextDaySlots].
-  Future<void> _loadTomorrow(LocationResult loc) async {
-    final now = DateTime.now();
-    final result = await _getTimes(
-      ParamPrayerTimes(
-        latitude: loc.latitude,
-        longitude: loc.longitude,
-        method: PrayerMethodMapper.methodForCountry(loc.countryCode),
-        school: _settingsBox.current().madhabIndex.clamp(0, 1),
-        // Day arithmetic, not a 24h add — DateTime normalises the overflow, so
-        // this stays right across month ends and DST.
-        date: DateTime(now.year, now.month, now.day + 1),
-        countryCode: loc.countryCode,
-        cityLabel: loc.label,
-      ),
-    );
-    if (isClosed) return;
-    result.fold(
-      (failure) => AppLogger.warning(
-        "Tomorrow's timings failed: ${failure.message}",
+      AppLogger.error(
+        'Location lookup',
+        error: e,
+        stackTrace: st,
         tag: 'CBPrayerTimes',
-      ),
-      (timings) => emit(state.copyWith(tomorrowSlots: _slotsFromTimings(timings))),
+      );
+    }
+
+    final fallback = _lastLocation.read();
+    if (fallback != null) return fallback;
+    if (!isClosed) {
+      emit(
+        state.copyWith(
+          status: state.hasTimes
+              ? PrayerLoadStatus.success
+              : PrayerLoadStatus.error,
+          error: 'Location unavailable',
+        ),
+      );
+    }
+    return null;
+  }
+
+  /// Whether this refresh changed anything the OS schedule depends on.
+  ///
+  /// Rebuilding the window on every open would cancel and re-arm dozens of
+  /// notifications for nothing; skipping it after a flight would leave the
+  /// adhan ringing on the old country's times. The three things that actually
+  /// matter are: there was no schedule before, the times moved to another
+  /// zone, or the authority changed.
+  bool _shouldReschedule(EPrayerSchedule? previous, EPrayerSchedule current) {
+    if (previous == null) return true;
+    if (previous.timezone != current.timezone) return true;
+    if (previous.methodId != current.methodId) return true;
+    return PrayerRefreshPolicy.hasMovedMeaningfully(
+      fromLatitude: previous.latitude,
+      fromLongitude: previous.longitude,
+      toLatitude: current.latitude,
+      toLongitude: current.longitude,
     );
   }
 
-  List<PrayerSlot> _slotsFromTimings(MPrayerTimings t) => [
-        PrayerSlot(prayer: EPrayer.fajr, time: t.fajr),
-        PrayerSlot(prayer: EPrayer.sunrise, time: t.sunrise),
-        PrayerSlot(prayer: EPrayer.dhuhr, time: t.dhuhr),
-        PrayerSlot(prayer: EPrayer.asr, time: t.asr),
-        PrayerSlot(prayer: EPrayer.maghrib, time: t.maghrib),
-        PrayerSlot(prayer: EPrayer.isha, time: t.isha),
-      ];
-
-  Future<void> _persist(
-    MPrayerTimings t,
-    LocationResult loc,
-    String cityName,
-  ) =>
-      _cacheBox.save(MPrayerCache(
-        latitude: loc.latitude,
-        longitude: loc.longitude,
-        cityName: cityName,
-        fajrIso: t.fajr.toIso8601String(),
-        sunriseIso: t.sunrise.toIso8601String(),
-        dhuhrIso: t.dhuhr.toIso8601String(),
-        asrIso: t.asr.toIso8601String(),
-        maghribIso: t.maghrib.toIso8601String(),
-        ishaIso: t.isha.toIso8601String(),
-        computedAtIso: DateTime.now().toIso8601String(),
-      ));
+  /// Development diagnostics for §21 — everything needed to explain a timing
+  /// on a support thread, and nothing that identifies the user.
+  ///
+  /// Coordinates are rounded to two decimals (~1 km) rather than logged
+  /// exactly: enough to tell Cairo from Riyadh when debugging, not enough to
+  /// tell a home from a workplace.
+  void _logResolution(EPrayerSchedule schedule) {
+    AppLogger.info(
+      'Prayer times · ${schedule.latitude.toStringAsFixed(2)},'
+      '${schedule.longitude.toStringAsFixed(2)} · tz ${schedule.timezone} · '
+      'mode ${schedule.mode.name} · method ${schedule.methodId} '
+      '${schedule.methodName ?? ''} · source ${schedule.source.name} · '
+      'fetched ${schedule.fetchedAt.toIso8601String()} · '
+      '${schedule.days.length} days',
+      tag: 'CBPrayerTimes',
+    );
+  }
 }

@@ -18,6 +18,7 @@ import 'package:quran/core/services/media/media_artwork.dart';
 import 'package:quran/core/services/notifications/in_app_notification_watcher.dart';
 import 'package:quran/core/services/notifications/notification_box/m_notification.dart';
 import 'package:quran/core/services/notifications/notifications_service.dart';
+import 'package:quran/core/services/time/app_timezone.dart';
 import 'package:quran/core/services/routes/app_module.dart';
 import 'package:quran/core/theme/app_themes.dart';
 import 'package:quran/core/utils/helper/orientation_helper.dart';
@@ -36,7 +37,6 @@ import 'package:quran/modules/khatma/data/models/m_khatma_completion.dart';
 import 'package:quran/modules/khatma/data/models/m_khatma_day.dart';
 import 'package:quran/modules/khatma/data/models/m_khatma_plan.dart';
 import 'package:quran/modules/khatma/presentation/cubits/cb_khatma.dart';
-import 'package:quran/modules/prayer/data/models/m_prayer_cache.dart';
 import 'package:quran/modules/prayer/data/models/m_prayer_settings.dart';
 import 'package:quran/modules/quran/data/models/m_bookmark.dart';
 import 'package:quran/modules/quran/data/models/m_last_read.dart';
@@ -67,6 +67,12 @@ Future<void> main() async {
     assetLoader: const AssetLoaderRootBundleJson('assets/lang/'),
   );
 
+  // The IANA timezone database, loaded before anything can read a prayer
+  // time. `NotificationsService.init()` also needs it, but that runs after the
+  // first frame — and prayer times are materialised in their location's zone
+  // while the boxes below are still being opened.
+  AppTimezone.ensureInitialised();
+
   await Hive.initFlutter();
   QuranHiveRegistrar.registerAdapters();
 
@@ -82,8 +88,8 @@ Future<void> main() async {
   await Hive.openBox<MUser>('app_user');
   await Hive.openBox<MAuthToken>('app_auth_token');
   await Hive.openBox<MPrayerSettings>('prayer_settings');
-  await Hive.openBox<MPrayerCache>('prayer_cache');
-  await Hive.openBox<String>('prayer_timings_cache');
+  await Hive.openBox<String>('prayer_calendar_cache');
+  await Hive.openBox<String>('prayer_methods_cache');
   await Hive.openBox<String>('last_location');
   await Hive.openBox<MAdhanPreference>('adhan_preference');
   await Hive.openBox<MAdhanSettings>('adhan_settings');
@@ -127,6 +133,26 @@ Future<void> _ensureNotificationPermission() async {
   final notifications = Modular.get<NotificationsService>();
   if (await notifications.hasPermission()) return;
   await notifications.requestPermission();
+}
+
+/// Deletes the two prayer boxes this version stopped using.
+///
+/// `prayer_cache` held one day's times for one location and `prayer_timings_cache`
+/// one entry per day; the monthly `prayer_calendar_cache` replaced both. Neither
+/// is opened any more — `MPrayerCache`'s adapter is not even registered — so
+/// they would sit on disk forever otherwise.
+///
+/// Deliberately off the critical boot path and never awaited by anything: it is
+/// a few kilobytes of tidying, and a failure here must not cost a user their
+/// prayer schedule.
+Future<void> _dropRetiredPrayerBoxes() async {
+  for (final name in const ['prayer_cache', 'prayer_timings_cache']) {
+    try {
+      await Hive.deleteBoxFromDisk(name);
+    } catch (e) {
+      AppLogger.warning('Could not drop retired box $name: $e', tag: 'main');
+    }
+  }
 }
 
 /// Runs one boot step, containing its failure.
@@ -201,6 +227,7 @@ Future<void> _bootNotifications() async {
   unawaited(
     _bootStep('tafsir seed', Modular.get<TafsirBootstrap>().run),
   );
+  unawaited(_bootStep('drop retired prayer boxes', _dropRetiredPrayerBoxes));
   await _bootStep('adhan bootstrap', Modular.get<AdhanBootstrap>().run);
   // Rebuild the rolling adhan window on every cold start so scheduling never
   // depends solely on opening Home or an app-resume event — the resume callback

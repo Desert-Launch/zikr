@@ -71,6 +71,16 @@ class _SNPrayerSettingsOverviewState extends State<SNPrayerSettingsOverview> {
                         subtitle: 'prayer_settings_alerts_hint'.tr(),
                         onTap: () => Modular.to.pushNamed(AdhanRoutes.notificationsScreen()),
                       ),
+                      // How the times are calculated, as opposed to how they
+                      // are announced. Everything behind this row has a correct
+                      // default; it is here for the user whose mosque follows a
+                      // different authority from the one the API picks.
+                      WSettingsRow(
+                        icon: Icons.calculate_outlined,
+                        title: 'prayer_calc_title'.tr(),
+                        subtitle: 'prayer_calc_subtitle'.tr(),
+                        onTap: () => Modular.to.pushNamed(PrayerRoutes.fullCalculation()),
+                      ),
                       WSettingsRow(
                         icon: Icons.explore_outlined,
                         title: 'prayer_settings_qibla'.tr(),

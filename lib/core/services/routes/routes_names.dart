@@ -27,6 +27,21 @@ class RoutesNames {
   static const String legalBase = '/legal/';
 }
 
+class PrayerRoutes {
+  PrayerRoutes._();
+
+  /// Sub-routes within the prayer module ('/prayer/').
+  static const String times = '/';
+  static const String calculation = '/calculation';
+  static const String methodPicker = '/method';
+  static const String adjustments = '/adjustments';
+
+  static String fullTimes() => RoutesNames.prayerBase;
+  static String fullCalculation() => '${RoutesNames.prayerBase}calculation';
+  static String fullMethodPicker() => '${RoutesNames.prayerBase}method';
+  static String fullAdjustments() => '${RoutesNames.prayerBase}adjustments';
+}
+
 class AdhanRoutes {
   AdhanRoutes._();
 

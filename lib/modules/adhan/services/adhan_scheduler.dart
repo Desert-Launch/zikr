@@ -15,13 +15,12 @@ import 'package:quran/modules/adhan/data/sources/local/box_adhan_settings.dart';
 import 'package:quran/modules/adhan/services/adhan_audio_alarms.dart';
 import 'package:quran/modules/prayer/data/datasources/local/ds_last_location.dart';
 import 'package:quran/modules/prayer/data/datasources/local/ds_location.dart';
-import 'package:quran/modules/prayer/data/models/m_prayer_timings.dart';
-import 'package:quran/modules/prayer/data/sources/local/box_prayer_settings.dart';
 import 'package:quran/modules/prayer/data/models/m_prayer_settings.dart';
+import 'package:quran/modules/prayer/data/sources/local/box_prayer_settings.dart';
+import 'package:quran/modules/prayer/domain/entities/e_daily_prayer_times.dart';
 import 'package:quran/modules/prayer/domain/entities/e_prayer.dart';
-import 'package:quran/modules/prayer/domain/entities/param_prayer_times.dart';
-import 'package:quran/modules/prayer/domain/usecases/uc_get_prayer_times.dart';
-import 'package:quran/modules/prayer/utils/prayer_method_mapper.dart';
+import 'package:quran/modules/prayer/domain/entities/e_prayer_schedule.dart';
+import 'package:quran/modules/prayer/services/prayer_times_service.dart';
 import 'package:quran/modules/tasbih/data/datasources/local/ds_hourly_tasbih.dart';
 import 'package:quran/modules/tasbih/data/datasources/local/ds_salawat_reminder.dart';
 
@@ -29,6 +28,11 @@ import 'package:quran/modules/tasbih/data/datasources/local/ds_salawat_reminder.
 /// builds the current week (Saturday–Friday) plus the next week as a buffer,
 /// so the schedule survives until the next weekly refresh. Call it on app
 /// launch, after a settings change, and after the location/timezone changes.
+///
+/// Prayer times come from [PrayerTimesService] — the same source the prayer
+/// screen renders — so the adhan can never ring on a different calculation
+/// from the one the user is looking at. Times are timezone-aware instants, so
+/// a DST boundary inside the window needs no special handling here.
 ///
 /// iOS hard-caps pending notifications at 64 across the whole app, so the
 /// window is trimmed to [_iosBudget] there; Android has no such cap.
@@ -44,7 +48,7 @@ class AdhanScheduler {
   AdhanScheduler({
     required NotificationsService notifications,
     required DSLocation location,
-    required UCGetPrayerTimes getTimes,
+    required PrayerTimesService times,
     required BoxPrayerSettings prayerSettings,
     required BoxAdhanSettings adhanSettings,
     required BoxAdhanPreference adhanPrefs,
@@ -56,7 +60,7 @@ class AdhanScheduler {
     required DSSalawatReminder salawat,
   }) : _notifications = notifications,
        _location = location,
-       _getTimes = getTimes,
+       _times = times,
        _prayerSettings = prayerSettings,
        _adhanSettings = adhanSettings,
        _adhanPrefs = adhanPrefs,
@@ -69,7 +73,7 @@ class AdhanScheduler {
 
   final NotificationsService _notifications;
   final DSLocation _location;
-  final UCGetPrayerTimes _getTimes;
+  final PrayerTimesService _times;
   final BoxPrayerSettings _prayerSettings;
   final BoxAdhanSettings _adhanSettings;
   final BoxAdhanPreference _adhanPrefs;
@@ -216,8 +220,23 @@ class AdhanScheduler {
 
       final prayer = _prayerSettings.current();
       final notify = prayer.notifyForPrayer;
-      final method = PrayerMethodMapper.methodForCountry(loc.countryCode);
       final pref = _adhanPrefs.current();
+
+      // One resolve for the whole window, through the same service the prayer
+      // screen uses — so what rings and what is displayed are the same numbers,
+      // calculated by the same authority, in the same timezone. It normally
+      // costs no network: the months are cached.
+      EPrayerSchedule? schedule;
+      (await _times.scheduleFor(loc)).fold(
+        (failure) => AppLogger.warning(
+          'Adhan scheduling: prayer times unavailable (${failure.message}) '
+          '— skipped (0 queued)',
+          tag: 'AdhanScheduler',
+        ),
+        (value) => schedule = value,
+      );
+      final resolved = schedule;
+      if (resolved == null || resolved.isEmpty) return;
 
       // Android background full-adhan: when on, the near-window prayers get a
       // SILENT notification + a native alarm that plays the full adhan via the
@@ -251,33 +270,30 @@ class AdhanScheduler {
       // Window: today → end of next week (weeks run Saturday–Friday), trimmed
       // to the iOS budget; Android schedules the whole window. Pure integer
       // day-counting keeps the horizon DST-safe.
+      //
+      // "Today" is taken in the LOCATION's timezone, not the device's: a
+      // traveller whose phone hasn't caught up must still have the window
+      // start on the right day.
       final now = DateTime.now();
+      final startDay = resolved.localDay(now);
       final daysIntoWeek =
-          (now.weekday - DateTime.saturday) % 7; // 0 = Saturday
+          (startDay.weekday - DateTime.saturday) % 7; // 0 = Saturday
       final totalDays = 14 - daysIntoWeek; // 8..14
       _remaining = Platform.isIOS ? _iosBudget : 1 << 30;
 
       // Today's prayer times, captured for the companion-notification
       // reconciliation (azkar re-timing + hourly-zekr conflict avoidance).
-      MPrayerTimings? todayTimings;
+      EDailyPrayerTimes? todayTimings;
 
       for (var dayOffset = 0; dayOffset < totalDays; dayOffset++) {
         if (_remaining <= 0) break;
-        final date = DateTime(now.year, now.month, now.day + dayOffset);
-        final result = await _getTimes(
-          ParamPrayerTimes(
-            latitude: loc.latitude,
-            longitude: loc.longitude,
-            method: method,
-            school: prayer.madhabIndex.clamp(0, 1),
-            date: date,
-            countryCode: loc.countryCode,
-            cityLabel: loc.label,
-          ),
+        final date = DateTime(
+          startDay.year,
+          startDay.month,
+          startDay.day + dayOffset,
         );
-
-        final timings = result.fold((_) => null, (t) => t);
-        if (timings == null) continue; // skip this day, keep going
+        final timings = resolved.dayFor(date);
+        if (timings == null) continue; // no data for this day, keep going
         if (dayOffset == 0) todayTimings = timings;
 
         await _scheduleDay(
@@ -346,7 +362,7 @@ class AdhanScheduler {
   ///
   /// Failures here never break the adhan schedule (best-effort companion work).
   Future<void> reconcileCompanionNotifications({
-    MPrayerTimings? timings,
+    EDailyPrayerTimes? timings,
   }) async {
     try {
       final prayers = <DateTime>[
@@ -506,7 +522,7 @@ class AdhanScheduler {
 
   Future<void> _scheduleDay({
     required DateTime date,
-    required MPrayerTimings timings,
+    required EDailyPrayerTimes timings,
     required List<bool> notify,
     // The only `MAdhanSettings` fields this needs; passing the whole (untyped)
     // record here was how a dead parameter survived a refactor unnoticed.
@@ -530,7 +546,7 @@ class AdhanScheduler {
       if (_remaining <= 0) return;
       if (i >= notify.length || !notify[i]) continue;
       final prayer = _salah[i];
-      final time = _timeFor(timings, prayer);
+      final time = timings.timeFor(prayer);
       if (time.isBefore(now)) continue;
       final voiceId = _voiceForPrayer(
         prayer,
@@ -645,7 +661,7 @@ class AdhanScheduler {
   /// nearly full drops the tail of the horizon rather than overflowing.
   Future<void> _scheduleSunrise({
     required int doy,
-    required MPrayerTimings timings,
+    required EDailyPrayerTimes timings,
     required List<bool> notify,
     required DateTime now,
   }) async {
@@ -653,7 +669,7 @@ class AdhanScheduler {
     // A record written before sunrise existed is five long — absent reads off.
     if (_sunriseIndex >= notify.length || !notify[_sunriseIndex]) return;
 
-    final time = _timeFor(timings, EPrayer.sunrise);
+    final time = timings.timeFor(EPrayer.sunrise);
     if (time.isBefore(now)) return;
 
     final id = _mainBandStart + doy * 10 + _sunriseIndex;
@@ -731,15 +747,6 @@ class AdhanScheduler {
       await _notifications.cancel(id);
     }
   }
-
-  DateTime _timeFor(MPrayerTimings t, EPrayer p) => switch (p) {
-    EPrayer.fajr => t.fajr,
-    EPrayer.dhuhr => t.dhuhr,
-    EPrayer.asr => t.asr,
-    EPrayer.maghrib => t.maghrib,
-    EPrayer.isha => t.isha,
-    EPrayer.sunrise => t.sunrise,
-  };
 
   int _dayOfYear(DateTime d) => d.difference(DateTime(d.year)).inDays + 1;
 

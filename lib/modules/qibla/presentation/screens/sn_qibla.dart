@@ -11,7 +11,7 @@ import 'package:quran/core/services/logging/app_logger.dart';
 import 'package:quran/core/widgets/w_gradient_app_bar.dart';
 import 'package:quran/core/widgets/w_shared_scaffold.dart';
 import 'package:quran/modules/prayer/data/datasources/local/ds_location.dart';
-import 'package:quran/modules/prayer/data/sources/local/box_prayer_cache.dart';
+import 'package:quran/modules/prayer/data/datasources/local/ds_last_location.dart';
 import 'package:quran/modules/prayer/domain/entities/e_location_failure.dart';
 import 'package:quran/modules/qibla/presentation/widgets/w_compass_dial.dart';
 import 'package:quran/modules/qibla/presentation/widgets/w_qibla_error_state.dart';
@@ -100,13 +100,15 @@ class _SNQiblaState extends State<SNQibla> with WidgetsBindingObserver {
   }
 
   Future<void> _loadLocation() async {
-    final cache = Modular.get<BoxPrayerCache>().current();
+    // The last known fix, so the compass points somewhere sensible before a
+    // fresh one lands (and without prompting for the permission again).
+    final cache = Modular.get<DSLastLocation>().read();
     double? lat;
     double? lng;
     if (cache != null) {
       lat = cache.latitude;
       lng = cache.longitude;
-      _city = cache.cityName;
+      _city = cache.label;
     } else {
       try {
         final loc = await Modular.get<DSLocation>().currentPosition();

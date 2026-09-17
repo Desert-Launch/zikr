@@ -1,35 +1,33 @@
 import 'package:equatable/equatable.dart';
+import 'package:quran/modules/prayer/domain/entities/e_daily_prayer_times.dart';
 import 'package:quran/modules/prayer/domain/entities/e_location_failure.dart';
+import 'package:quran/modules/prayer/domain/entities/e_next_prayer.dart';
 import 'package:quran/modules/prayer/domain/entities/e_prayer.dart';
+import 'package:quran/modules/prayer/domain/entities/e_prayer_schedule.dart';
+import 'package:quran/modules/prayer/domain/entities/e_prayer_source.dart';
+import 'package:quran/modules/prayer/domain/usecases/uc_get_next_prayer.dart';
 
 enum PrayerLoadStatus { idle, loading, success, error, permissionDenied }
 
+/// Prayer-screen state.
+///
+/// It holds the [schedule] rather than a flat list of today's six timings, so
+/// every derived question — what is next, which window we are in, whether the
+/// card should have rolled into tomorrow — is answered from real days instead
+/// of today's times shifted by 24 hours.
 class SPrayerTimes extends Equatable {
   const SPrayerTimes({
     this.status = PrayerLoadStatus.idle,
-    this.slots = const [],
-    this.tomorrowSlots = const [],
-    this.cityName = '',
-    this.latitude,
-    this.longitude,
-    this.computedAt,
+    this.schedule,
     this.error,
     this.locationFailure,
   });
 
   final PrayerLoadStatus status;
 
-  /// Today's six timings, in order (fajr → isha).
-  final List<PrayerSlot> slots;
-
-  /// Tomorrow's six timings. Empty until [CBPrayerTimes] has resolved them;
-  /// [nextDaySlots] covers that gap.
-  final List<PrayerSlot> tomorrowSlots;
-
-  final String cityName;
-  final double? latitude;
-  final double? longitude;
-  final DateTime? computedAt;
+  /// The resolved days, location, zone and authority. Null until the first
+  /// successful load.
+  final EPrayerSchedule? schedule;
 
   /// Untranslated diagnostic detail, for logs. NOT for the screen — it is
   /// whatever the failing layer happened to say, in English.
@@ -40,138 +38,89 @@ class SPrayerTimes extends Equatable {
   /// permission or has to open a settings page.
   final ELocationFailure? locationFailure;
 
-  /// Tomorrow's timings — exact once fetched, otherwise today's shifted by a
-  /// day.
-  ///
-  /// The shift is an approximation: real timings drift by about a minute a day.
-  /// It exists only so the card has something honest to show in the seconds
-  /// before the real fetch lands (or while offline) — the alternative was
-  /// falling back to the clock, which read as a prayer time but wasn't one.
-  List<PrayerSlot> get nextDaySlots {
-    if (tomorrowSlots.isNotEmpty) return tomorrowSlots;
-    if (slots.isEmpty) return const [];
-    return slots
-        .map((s) => PrayerSlot(prayer: s.prayer, time: s.time.add(const Duration(days: 1))))
-        .toList(growable: false);
-  }
+  static const UCGetNextPrayer _nextPrayer = UCGetNextPrayer();
 
-  /// Whether any salah is still ahead today (sunrise excluded — not prayed).
-  bool get hasPrayerLeftToday {
+  String get cityName => schedule?.cityName ?? '';
+  double? get latitude => schedule?.latitude;
+  double? get longitude => schedule?.longitude;
+  String get timezone => schedule?.timezone ?? '';
+  DateTime? get computedAt => schedule?.fetchedAt;
+
+  /// The authority the times were actually calculated with, for the "why do my
+  /// times differ from the mosque" question.
+  String get methodName => schedule?.methodName ?? '';
+
+  /// Whether what is on screen is known to be behind — a cached month that
+  /// could not be refreshed, or an on-device calculation. The screen shows a
+  /// quiet marker; it never silently passes stale data off as live.
+  bool get isStale => schedule?.source.isStale ?? false;
+
+  EPrayerSource? get source => schedule?.source;
+
+  bool get hasTimes => displaySlots.isNotEmpty;
+
+  /// The day the screen lists: today until its last salah has gone, then the
+  /// following day.
+  EDailyPrayerTimes? get displayDay {
+    final schedule = this.schedule;
+    if (schedule == null) return null;
+    final today = schedule.today();
+    if (today == null) return schedule.days.isEmpty ? null : schedule.days.first;
     final now = DateTime.now();
-    return slots.any((s) => s.prayer != EPrayer.sunrise && s.time.isAfter(now));
+    final hasPrayerLeft = today.salahSlots.any((s) => s.time.isAfter(now));
+    return hasPrayerLeft ? today : (schedule.tomorrow() ?? today);
   }
 
-  /// The six timings the UI should list: today's until the last salah has gone,
-  /// then the following day's. Without this the card kept displaying a spent
-  /// day.
-  List<PrayerSlot> get displaySlots =>
-      slots.isNotEmpty && !hasPrayerLeftToday ? nextDaySlots : slots;
+  /// The six rows to list, in clock order. Empty when nothing has loaded.
+  List<PrayerSlot> get displaySlots => displayDay?.slots ?? const [];
 
   /// Whether [displaySlots] belongs to a later calendar day than today, i.e.
   /// whether the UI should caption itself "tomorrow".
-  ///
-  /// Deliberately derived from the dates rather than from "today's are spent".
-  /// Left open across midnight, [slots] still holds the previous day and the
-  /// roll-over list becomes the *current* day — captioning that "tomorrow"
-  /// would be wrong, and it stays right until the next refresh replaces both.
   bool get isShowingNextDay {
-    final shown = displaySlots;
-    if (shown.isEmpty) return false;
-    final day = shown.first.time;
-    final now = DateTime.now();
-    return DateTime(day.year, day.month, day.day)
-        .isAfter(DateTime(now.year, now.month, now.day));
+    final schedule = this.schedule;
+    final shown = displayDay;
+    if (schedule == null || shown == null) return false;
+    return shown.date.isAfter(schedule.localDay());
   }
 
-  /// The next future prayer (sunrise excluded since you don't pray it). Rolls
-  /// into tomorrow's fajr once today's isha has passed, so this is null only
-  /// when there is no timing data at all.
-  PrayerSlot? get nextPrayer {
-    final now = DateTime.now();
-    for (final s in slots) {
-      if (s.prayer == EPrayer.sunrise) continue;
-      if (s.time.isAfter(now)) return s;
-    }
-    for (final s in nextDaySlots) {
-      if (s.prayer == EPrayer.sunrise) continue;
-      if (s.time.isAfter(now)) return s;
-    }
-    return null;
+  /// The next salah — never sunrise, and tomorrow's Fajr once tonight's Isha
+  /// has gone. Null only when there is no timing data at all.
+  ENextPrayer? get nextPrayer {
+    final schedule = this.schedule;
+    if (schedule == null) return null;
+    return _nextPrayer(days: schedule.fromToday());
   }
 
   /// Where the countdown bar for [nextPrayer] starts filling: the salah whose
   /// window the user is currently inside.
   ///
-  /// The bar used to be anchored at midnight, which made it read almost full
-  /// the moment isha ended — most of the calendar day was gone even though
-  /// none of the wait for fajr was. Anchoring on the previous salah makes the
-  /// fraction mean "how much of THIS gap has elapsed".
+  /// Anchored on the previous salah rather than on midnight, so the fraction
+  /// means "how much of THIS gap has elapsed" — anchored at midnight the bar
+  /// read almost full the moment Isha ended, because most of the calendar day
+  /// was gone even though none of the wait for Fajr was.
   ///
-  /// Before today's fajr there is no past salah, and the window that is open
-  /// began with yesterday's isha — approximated by shifting today's back a
-  /// day, the same one-minute-a-day drift [nextDaySlots] already accepts.
-  DateTime? get currentWindowStart {
-    final salah = currentSalah;
-    if (salah != null) return salah.time;
-    for (final s in slots) {
-      if (s.prayer == EPrayer.isha) {
-        return s.time.subtract(const Duration(days: 1));
-      }
-    }
-    return null;
-  }
-
-  /// Returns the salah whose window the user is currently inside (most-recent
-  /// past salah). Null before fajr.
-  PrayerSlot? get currentSalah {
-    final now = DateTime.now();
-    PrayerSlot? hit;
-    for (final s in slots) {
-      if (s.prayer == EPrayer.sunrise) continue;
-      if (s.time.isBefore(now) || s.time.isAtSameMomentAs(now)) hit = s;
-    }
-    return hit;
-  }
+  /// Before today's Fajr the answer is last night's Isha, which is a real
+  /// timing here: the schedule deliberately carries yesterday.
+  DateTime? get currentWindowStart =>
+      _nextPrayer.currentSalah(days: schedule?.days ?? const [])?.time;
 
   SPrayerTimes copyWith({
     PrayerLoadStatus? status,
-    List<PrayerSlot>? slots,
-    List<PrayerSlot>? tomorrowSlots,
-    String? cityName,
-    double? latitude,
-    double? longitude,
-    DateTime? computedAt,
+    EPrayerSchedule? schedule,
     String? error,
     bool clearError = false,
     ELocationFailure? locationFailure,
-  }) {
-    return SPrayerTimes(
-      status: status ?? this.status,
-      slots: slots ?? this.slots,
-      tomorrowSlots: tomorrowSlots ?? this.tomorrowSlots,
-      cityName: cityName ?? this.cityName,
-      latitude: latitude ?? this.latitude,
-      longitude: longitude ?? this.longitude,
-      computedAt: computedAt ?? this.computedAt,
-      error: clearError ? null : (error ?? this.error),
-      // Cleared alongside the error: it describes the same failed attempt, and
-      // a stale reason would send the next retry to the wrong settings page.
-      locationFailure: clearError
-          ? null
-          : (locationFailure ?? this.locationFailure),
-    );
-  }
+  }) => SPrayerTimes(
+    status: status ?? this.status,
+    schedule: schedule ?? this.schedule,
+    error: clearError ? null : (error ?? this.error),
+    // Cleared alongside the error: it describes the same failed attempt, and
+    // a stale reason would send the next retry to the wrong settings page.
+    locationFailure: clearError
+        ? null
+        : (locationFailure ?? this.locationFailure),
+  );
 
   @override
-  List<Object?> get props => [
-    status,
-    slots,
-    tomorrowSlots,
-    cityName,
-    latitude,
-    longitude,
-    computedAt,
-    error,
-    locationFailure,
-  ];
+  List<Object?> get props => [status, schedule, error, locationFailure];
 }

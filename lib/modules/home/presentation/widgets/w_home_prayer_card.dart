@@ -5,6 +5,7 @@ import 'package:localize_and_translate/localize_and_translate.dart';
 import 'package:quran/core/services/routes/routes_names.dart';
 import 'package:quran/core/utils/helper/time_format.dart';
 import 'package:quran/modules/home/presentation/widgets/w_home_prayer_chip.dart';
+import 'package:quran/modules/prayer/domain/entities/e_next_prayer.dart';
 import 'package:quran/modules/prayer/domain/entities/e_prayer.dart';
 import 'package:quran/modules/prayer/presentation/cubits/s_prayer_times.dart';
 
@@ -141,7 +142,7 @@ class WHomePrayerCard extends StatelessWidget {
     // Nothing to show yet: the first launch has no cached timings, so the card
     // would otherwise render "now" as the next prayer and six `--:--` chips —
     // indistinguishable from real data. Show the fetch in progress instead.
-    if (state.slots.isEmpty) {
+    if (!state.hasTimes) {
       return _PrayerCardPlaceholder(status: state.status, green: green);
     }
 
@@ -271,9 +272,9 @@ class WHomePrayerCard extends StatelessWidget {
     );
   }
 
-  String _remaining(PrayerSlot? next) {
+  String _remaining(ENextPrayer? next) {
     if (next == null) return '';
-    final diff = next.time.difference(DateTime.now());
+    final diff = next.remaining;
     if (diff.isNegative) return '';
     final h = diff.inHours;
     final m = diff.inMinutes % 60;
@@ -319,29 +320,16 @@ class WHomePrayerCard extends StatelessWidget {
 
   /// Fraction of the current prayer window that has elapsed:
   /// (now − previous salah) / (next salah − previous salah).
-  /// Sunrise is skipped (not prayed) and the window wraps around midnight.
   double _progress() {
-    final now = DateTime.now();
-    final times = state.slots.where((s) => s.prayer != EPrayer.sunrise).map((s) => s.time).toList()..sort();
-    if (times.length < 2) return 0;
-
-    DateTime? prev;
-    DateTime? next;
-    for (final t in times) {
-      if (t.isAfter(now)) {
-        next = t;
-        break;
-      }
-      prev = t;
-    }
-    // Before today's first salah → window opened with yesterday's last one.
-    prev ??= times.last.subtract(const Duration(days: 1));
-    // After today's last salah → window closes with tomorrow's first one.
-    next ??= times.first.add(const Duration(days: 1));
-
-    final total = next.difference(prev).inSeconds;
+    final start = state.currentWindowStart;
+    final next = state.nextPrayer;
+    if (start == null || next == null) return 0;
+    // Both ends are real timings from the schedule — including last night's
+    // Isha before today's Fajr — so this needs no midnight special case and no
+    // "today's times shifted by a day" approximation.
+    final total = next.time.difference(start).inSeconds;
     if (total <= 0) return 0;
-    final elapsed = now.difference(prev).inSeconds;
-    return (elapsed / total).clamp(0.0, 1.0).toDouble();
+    final elapsed = DateTime.now().difference(start).inSeconds;
+    return (elapsed / total).clamp(0.0, 1.0);
   }
 }

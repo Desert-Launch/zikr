@@ -20,7 +20,12 @@ class HiveTypeIds {
 
   //   20–29  Prayer
   static const int prayerSettings = 20;
-  static const int prayerCache = 21;
+
+  /// Retired. `MPrayerCache` held one day's times for one location; the
+  /// monthly `prayer_calendar_cache` (a plain `Box<String>`, no adapter)
+  /// replaced it. Never reuse the number — installs still have bytes tagged
+  /// with it on disk.
+  static const int prayerCacheRetired = 21;
 
   //   30–39  Azkar
   static const int azkarFavorite = 30;
