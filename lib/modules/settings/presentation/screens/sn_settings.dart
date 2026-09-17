@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_modular/flutter_modular.dart';
@@ -12,6 +14,7 @@ import 'package:quran/modules/adhan/presentation/cubits/cb_adhan_settings.dart';
 import 'package:quran/modules/adhan/presentation/cubits/s_adhan_settings.dart';
 import 'package:quran/modules/adhan/presentation/widgets/w_alarm_permission_switch.dart';
 import 'package:quran/modules/adhan/services/adhan_audio_alarms.dart';
+import 'package:quran/modules/prayer/services/prayer_widget_publisher.dart';
 import 'package:quran/modules/settings/presentation/widgets/w_app_footer.dart';
 import 'package:quran/modules/settings/presentation/widgets/w_profile_card.dart';
 import 'package:quran/modules/settings/presentation/widgets/w_settings_group.dart';
@@ -194,6 +197,8 @@ class _SNSettingsState extends State<SNSettings> {
     );
     if (selected == null || selected == current) return;
     await LocalizeAndTranslate.setLanguageCode(selected);
+    // The home-screen widget carries its own strings.
+    unawaited(Modular.get<PrayerWidgetPublisher>().republish());
     if (mounted) setState(() {});
   }
 }

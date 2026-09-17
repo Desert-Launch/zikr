@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:localize_and_translate/localize_and_translate.dart';
 import 'package:quran/core/data/sources/local/box_app_settings.dart';
@@ -5,6 +7,7 @@ import 'package:quran/core/services/notifications/notifications_service.dart';
 import 'package:quran/modules/adhan/services/adhan_scheduler.dart';
 import 'package:quran/modules/onboarding/presentation/cubits/s_onboarding.dart';
 import 'package:quran/modules/prayer/data/datasources/local/ds_location.dart';
+import 'package:quran/modules/prayer/services/prayer_widget_publisher.dart';
 
 class CBOnboarding extends Cubit<SOnboarding> {
   CBOnboarding(
@@ -12,6 +15,7 @@ class CBOnboarding extends Cubit<SOnboarding> {
     this._notifications,
     this._scheduler,
     this._location,
+    this._widget,
   ) : super(const SOnboarding()) {
     final current = _settings.current();
     emit(state.copyWith(
@@ -24,6 +28,7 @@ class CBOnboarding extends Cubit<SOnboarding> {
   final NotificationsService _notifications;
   final AdhanScheduler _scheduler;
   final DSLocation _location;
+  final PrayerWidgetPublisher _widget;
 
   /// Asks for the OS notification permission so adhan/prayer alerts can fire.
   /// Best-effort — scheduling itself is gated on the result elsewhere.
@@ -36,6 +41,8 @@ class CBOnboarding extends Cubit<SOnboarding> {
     await _settings.setLanguageCode(code);
     await LocalizeAndTranslate.setLanguageCode(code);
     emit(state.copyWith(languageCode: code));
+    // The home-screen widget carries its own strings.
+    unawaited(_widget.republish());
   }
 
   /// Shows the OS location prompt straight away and records the real answer.

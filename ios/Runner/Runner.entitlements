@@ -27,5 +27,17 @@
 	<key>com.apple.developer.usernotifications.critical-alerts</key>
 	<true/>
 	-->
+
+	<!--
+	  App Group shared with the PrayerWidget extension: the app writes the
+	  prayer snapshot into this container (DSPrayerWidget.appGroupId) and the
+	  widget reads it. The capability must be enabled for BOTH App IDs
+	  (com.zikr.mapp and com.zikr.mapp.PrayerWidget) — Xcode's automatic
+	  signing does it when the capability is present here.
+	-->
+	<key>com.apple.security.application-groups</key>
+	<array>
+		<string>group.com.zikr.mapp</string>
+	</array>
 </dict>
 </plist>

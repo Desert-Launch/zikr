@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Window progress: a hairline track with a green→gold fill that grows from
+     the start edge. ProgressBar mirrors this drawable in RTL layouts
+     (`mirrorForRtl` is on for the horizontal style), so under an Arabic
+     snapshot the fill starts at the right and the gradient flips with it. -->
+<layer-list xmlns:android="http://schemas.android.com/apk/res/android">
+    <item android:id="@android:id/background">
+        <shape android:shape="rectangle">
+            <corners android:radius="3dp" />
+            <solid android:color="@color/widget_track" />
+        </shape>
+    </item>
+    <item android:id="@android:id/progress">
+        <clip>
+            <shape android:shape="rectangle">
+                <corners android:radius="3dp" />
+                <gradient
+                    android:angle="0"
+                    android:startColor="@color/widget_green"
+                    android:endColor="@color/widget_gold" />
+            </shape>
+        </clip>
+    </item>
+</layer-list>

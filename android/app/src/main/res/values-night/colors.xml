@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Dark-mode palette for the home-screen prayer widget. -->
+<resources>
+    <color name="widget_card">#FF1C1F1D</color>
+    <color name="widget_text_primary">#FFF2F2F2</color>
+    <color name="widget_text_secondary">#FFA8A8A8</color>
+    <color name="widget_track">#FF2E322F</color>
+    <color name="widget_green">#FF3FA47A</color>
+    <color name="widget_gold">#FFD6A72C</color>
+    <color name="widget_ring">#FFD6A72C</color>
+</resources>

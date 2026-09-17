@@ -26,12 +26,14 @@ import 'package:quran/modules/prayer/data/datasources/local/ds_last_location.dar
 import 'package:quran/modules/prayer/data/datasources/local/ds_location.dart';
 import 'package:quran/modules/prayer/data/datasources/local/ds_prayer_calendar_cache.dart';
 import 'package:quran/modules/prayer/data/datasources/local/ds_prayer_methods_cache.dart';
+import 'package:quran/modules/prayer/data/datasources/local/ds_prayer_widget.dart';
 import 'package:quran/modules/prayer/data/datasources/remote/ds_remote_prayer.dart';
 import 'package:quran/modules/prayer/data/models/m_prayer_settings.dart';
 import 'package:quran/modules/prayer/data/repos/r_impl_prayer.dart';
 import 'package:quran/modules/prayer/data/sources/local/box_prayer_settings.dart';
 import 'package:quran/modules/prayer/domain/usecases/uc_get_prayer_calendar.dart';
 import 'package:quran/modules/prayer/services/prayer_times_service.dart';
+import 'package:quran/modules/prayer/services/prayer_widget_publisher.dart';
 import 'package:quran/modules/quran/data/sources/local/quran_hive_registrar.dart';
 import 'package:quran/modules/tasbih/data/datasources/local/ds_hourly_tasbih.dart';
 import 'package:quran/modules/tasbih/data/datasources/local/ds_salawat_reminder.dart';
@@ -173,6 +175,12 @@ Future<void> runAdhanBackgroundReschedule() async {
     );
     await notifications.init();
 
+    // The widget plugin registers on background engines too, so this headless
+    // refresh is also what keeps the home-screen widget's window moving on a
+    // phone whose owner never opens the app.
+    final widgetSink = DSPrayerWidget();
+    await widgetSink.init();
+
     final scheduler = AdhanScheduler(
       notifications: notifications,
       location: DSLocation(),
@@ -210,6 +218,7 @@ Future<void> runAdhanBackgroundReschedule() async {
         BoxTasbihCounter(),
         BoxAppSettings(),
       ),
+      widget: PrayerWidgetPublisher(widget: widgetSink),
     );
     // Background isolates can't reach the MainActivity method channel, so the
     // native alarms stay as the UI isolate / boot receiver last armed them;

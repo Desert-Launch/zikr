@@ -158,6 +158,30 @@
             </intent-filter>
         </receiver>
 
+        <!-- Home-screen prayer widget (see docs/plans/Prayer_Home_Widget_Plan.md).
+             Redrawn by the launcher (APPWIDGET_UPDATE — also what
+             home_widget's updateWidget sends after Dart publishes a snapshot),
+             by its own minute/boundary alarms (explicit intents, no filter
+             needed), and after boot, an app update, or a clock/zone change.
+             Not exported: system broadcasts reach it regardless, and nothing
+             else should be able to poke it. -->
+        <receiver
+            android:name=".widget.PrayerWidgetProvider"
+            android:exported="false">
+            <intent-filter>
+                <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
+            </intent-filter>
+            <intent-filter>
+                <action android:name="android.intent.action.BOOT_COMPLETED" />
+                <action android:name="android.intent.action.MY_PACKAGE_REPLACED" />
+                <action android:name="android.intent.action.TIMEZONE_CHANGED" />
+                <action android:name="android.intent.action.TIME_SET" />
+            </intent-filter>
+            <meta-data
+                android:name="android.appwidget.provider"
+                android:resource="@xml/prayer_widget_info" />
+        </receiver>
+
         <!-- flutter_local_notifications: receivers for scheduled / boot-time
              rescheduling, and an action receiver for tap handling. -->
         <receiver

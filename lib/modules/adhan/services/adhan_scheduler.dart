@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:io';
 
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
@@ -21,6 +22,7 @@ import 'package:quran/modules/prayer/domain/entities/e_daily_prayer_times.dart';
 import 'package:quran/modules/prayer/domain/entities/e_prayer.dart';
 import 'package:quran/modules/prayer/domain/entities/e_prayer_schedule.dart';
 import 'package:quran/modules/prayer/services/prayer_times_service.dart';
+import 'package:quran/modules/prayer/services/prayer_widget_publisher.dart';
 import 'package:quran/modules/tasbih/data/datasources/local/ds_hourly_tasbih.dart';
 import 'package:quran/modules/tasbih/data/datasources/local/ds_salawat_reminder.dart';
 
@@ -58,6 +60,7 @@ class AdhanScheduler {
     required InitNotificationsService initNotifications,
     required DSHourlyTasbih hourlyZekr,
     required DSSalawatReminder salawat,
+    required PrayerWidgetPublisher widget,
   }) : _notifications = notifications,
        _location = location,
        _times = times,
@@ -69,7 +72,8 @@ class AdhanScheduler {
        _audioAlarms = audioAlarms,
        _initNotifications = initNotifications,
        _hourlyZekr = hourlyZekr,
-       _salawat = salawat;
+       _salawat = salawat,
+       _widget = widget;
 
   final NotificationsService _notifications;
   final DSLocation _location;
@@ -83,6 +87,7 @@ class AdhanScheduler {
   final InitNotificationsService _initNotifications;
   final DSHourlyTasbih _hourlyZekr;
   final DSSalawatReminder _salawat;
+  final PrayerWidgetPublisher _widget;
 
   static const int _preWindowDays = 4; // pre-reminders only for the near days
 
@@ -184,6 +189,7 @@ class AdhanScheduler {
           'Adhan disabled — window cleared',
           tag: 'AdhanScheduler',
         );
+        await _mirrorWidgetFromCache();
         return;
       }
 
@@ -192,6 +198,7 @@ class AdhanScheduler {
           'No notification permission — adhan scheduling skipped (0 queued)',
           tag: 'AdhanScheduler',
         );
+        await _mirrorWidgetFromCache();
         return;
       }
 
@@ -237,6 +244,11 @@ class AdhanScheduler {
       );
       final resolved = schedule;
       if (resolved == null || resolved.isEmpty) return;
+
+      // The widget reads the same resolution, on every path this runs from —
+      // boot, resume, and the headless weekly refresh — which is what keeps
+      // it valid on a phone whose owner never opens the app.
+      unawaited(_widget.publish(resolved));
 
       // Android background full-adhan: when on, the near-window prayers get a
       // SILENT notification + a native alarm that plays the full adhan via the
@@ -344,6 +356,22 @@ class AdhanScheduler {
     } finally {
       _running = false;
     }
+  }
+
+  /// Feeds the home-screen widget on the paths that bail out of [reschedule]
+  /// before a schedule is resolved — adhan off, or no notification permission.
+  ///
+  /// The widget depends on neither, so it is mirrored from the last known
+  /// location and the cached months: no GPS prompt, no network. When nothing
+  /// is cached yet the widget keeps whatever it last showed; the prayer
+  /// screen's own refresh publishes as soon as times exist.
+  Future<void> _mirrorWidgetFromCache() async {
+    final loc = _lastLocation.read();
+    if (loc == null) return;
+    (await _times.scheduleFor(loc, cacheOnly: true)).fold(
+      (_) {},
+      (schedule) => unawaited(_widget.publish(schedule)),
+    );
   }
 
   /// Places every non-adhan feed in one deterministic priority order, so no two

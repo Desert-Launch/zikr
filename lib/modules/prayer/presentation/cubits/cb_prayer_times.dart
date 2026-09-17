@@ -10,6 +10,7 @@ import 'package:quran/modules/prayer/domain/entities/e_prayer_schedule.dart';
 import 'package:quran/modules/prayer/presentation/cubits/s_prayer_times.dart';
 import 'package:quran/modules/prayer/services/prayer_refresh_policy.dart';
 import 'package:quran/modules/prayer/services/prayer_times_service.dart';
+import 'package:quran/modules/prayer/services/prayer_widget_publisher.dart';
 
 /// App-wide prayer-times singleton.
 ///
@@ -22,16 +23,22 @@ import 'package:quran/modules/prayer/services/prayer_times_service.dart';
 /// [AdhanScheduler], and only rebuilt when something that changes prayer times
 /// actually changed — a fresh location, a new timezone, or a settings edit —
 /// so opening the screen does not churn the OS schedule.
+///
+/// Every schedule that reaches the screen is also mirrored onto the
+/// home-screen widget through [PrayerWidgetPublisher]; the publisher skips
+/// snapshots that changed nothing, so this costs the widget no reloads.
 class CBPrayerTimes extends Cubit<SPrayerTimes> {
   CBPrayerTimes({
     required DSLocation location,
     required DSLastLocation lastLocation,
     required PrayerTimesService times,
     required AdhanScheduler scheduler,
+    required PrayerWidgetPublisher widget,
   }) : _location = location,
        _lastLocation = lastLocation,
        _times = times,
        _scheduler = scheduler,
+       _widget = widget,
        super(const SPrayerTimes()) {
     unawaited(_hydrateFromCache());
   }
@@ -40,6 +47,7 @@ class CBPrayerTimes extends Cubit<SPrayerTimes> {
   final DSLastLocation _lastLocation;
   final PrayerTimesService _times;
   final AdhanScheduler _scheduler;
+  final PrayerWidgetPublisher _widget;
 
   bool _refreshing = false;
 
@@ -55,9 +63,12 @@ class CBPrayerTimes extends Cubit<SPrayerTimes> {
         'No cached prayer times to hydrate (${failure.message})',
         tag: 'CBPrayerTimes',
       ),
-      (schedule) => emit(
-        state.copyWith(status: PrayerLoadStatus.success, schedule: schedule),
-      ),
+      (schedule) {
+        emit(
+          state.copyWith(status: PrayerLoadStatus.success, schedule: schedule),
+        );
+        unawaited(_widget.publish(schedule));
+      },
     );
   }
 
@@ -129,6 +140,7 @@ class CBPrayerTimes extends Cubit<SPrayerTimes> {
             ),
           );
           _logResolution(schedule);
+          unawaited(_widget.publish(schedule));
           if (_shouldReschedule(previous, schedule)) {
             // Don't block the screen on a fortnight of notification work.
             unawaited(_scheduler.reschedule());

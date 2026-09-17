@@ -1,6 +1,10 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
+import 'package:flutter_modular/flutter_modular.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:localize_and_translate/localize_and_translate.dart';
+import 'package:quran/modules/prayer/services/prayer_widget_publisher.dart';
 
 class WLanguagePicker extends StatelessWidget {
   const WLanguagePicker({super.key});
@@ -18,6 +22,8 @@ class WLanguagePicker extends StatelessWidget {
       onChanged: (code) async {
         if (code == null || code == current) return;
         await LocalizeAndTranslate.setLanguageCode(code);
+        // The home-screen widget carries its own strings.
+        unawaited(Modular.get<PrayerWidgetPublisher>().republish());
         if (!context.mounted) return;
         (context as Element).markNeedsBuild();
       },

@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  Home-screen prayer widget metadata.
+
+  - 4×2 by default (minWidth/minHeight are the pre-12 sizing, targetCell* the
+    Android 12+ grid), resizable either way; PrayerWidgetProvider drops the
+    chip row below ~3 cells wide and the date row below 2 cells tall.
+  - updatePeriodMillis is the 30-minute floor Android allows. It is only a
+    backstop: the provider keeps itself current with its own alarms
+    (PrayerWidgetAlarms) and is redrawn by the app whenever a new snapshot is
+    published. Losing those alarms (a force-stop) leaves this as the way the
+    widget recovers on its own.
+  - previewLayout (12+) renders the real layout in the picker; older pickers
+    fall back to the app icon.
+-->
+<appwidget-provider xmlns:android="http://schemas.android.com/apk/res/android"
+    android:description="@string/prayer_widget_description"
+    android:initialLayout="@layout/widget_prayer"
+    android:minWidth="250dp"
+    android:minHeight="110dp"
+    android:minResizeWidth="180dp"
+    android:minResizeHeight="70dp"
+    android:targetCellWidth="4"
+    android:targetCellHeight="2"
+    android:previewLayout="@layout/widget_prayer"
+    android:resizeMode="horizontal|vertical"
+    android:updatePeriodMillis="1800000"
+    android:widgetCategory="home_screen" />

@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- English copy for the launcher's widget picker (see values/strings.xml). -->
+<resources>
+    <string name="prayer_widget_label">Prayer times</string>
+    <string name="prayer_widget_description">Next prayer, countdown, and today\'s times</string>
+    <string name="prayer_widget_empty">Open the app to set up prayer times</string>
+</resources>

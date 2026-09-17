@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_modular/flutter_modular.dart';
 import 'package:quran/core/cubits/cb_theme.dart';
 import 'package:quran/core/data/sources/local/box_app_settings.dart';
+import 'package:quran/core/services/home_widget/home_widget_router.dart';
 import 'package:quran/core/services/mock_backend/mock_database.dart';
 import 'package:quran/core/services/mock_backend/mock_interceptor.dart';
 import 'package:quran/core/services/network/base_dio.dart';
@@ -60,6 +61,7 @@ import 'package:quran/modules/prayer/data/datasources/local/ds_last_location.dar
 import 'package:quran/modules/prayer/data/datasources/local/ds_location.dart';
 import 'package:quran/modules/prayer/data/datasources/local/ds_prayer_calendar_cache.dart';
 import 'package:quran/modules/prayer/data/datasources/local/ds_prayer_methods_cache.dart';
+import 'package:quran/modules/prayer/data/datasources/local/ds_prayer_widget.dart';
 import 'package:quran/modules/prayer/data/datasources/remote/ds_remote_prayer.dart';
 import 'package:quran/modules/prayer/data/repos/r_impl_prayer.dart';
 import 'package:quran/modules/prayer/data/sources/local/box_prayer_settings.dart';
@@ -71,6 +73,7 @@ import 'package:quran/modules/prayer/prayer_module.dart';
 import 'package:quran/modules/prayer/presentation/cubits/cb_prayer_times.dart';
 import 'package:quran/modules/prayer/services/prayer_times_service.dart';
 import 'package:quran/modules/qibla/qibla_module.dart';
+import 'package:quran/modules/prayer/services/prayer_widget_publisher.dart';
 import 'package:quran/modules/quran/data/datasources/local/ds_local_audio_files.dart';
 import 'package:quran/modules/quran/data/datasources/local/ds_local_quran.dart';
 import 'package:quran/modules/quran/data/datasources/local/ds_local_reciters.dart';
@@ -242,6 +245,14 @@ class AppModule extends Module {
         lastLocation: i.get<DSLastLocation>(),
       ),
     );
+    // Home-screen widget: the plugin sink, the publisher that renders a
+    // schedule into it, and the tap router. Singletons so the publisher can
+    // coalesce writes and re-render the last schedule on a language switch.
+    i.addSingleton<DSPrayerWidget>(DSPrayerWidget.new);
+    i.addSingleton<PrayerWidgetPublisher>(
+      () => PrayerWidgetPublisher(widget: i.get<DSPrayerWidget>()),
+    );
+    i.addSingleton<HomeWidgetRouter>(HomeWidgetRouter.new);
 
     // Adhan catalog + download (own Dio, falls back to bundled adhans.json).
     i.addSingleton<DSRemoteAdhan>(DSRemoteAdhan.new);
@@ -273,6 +284,7 @@ class AppModule extends Module {
         initNotifications: i.get<InitNotificationsService>(),
         hourlyZekr: i.get<DSHourlyTasbih>(),
         salawat: i.get<DSSalawatReminder>(),
+        widget: i.get<PrayerWidgetPublisher>(),
       ),
     );
     // Owns its own datasource instances rather than QuranModule's: this runs as
@@ -327,6 +339,7 @@ class AppModule extends Module {
         lastLocation: i.get<DSLastLocation>(),
         times: i.get<PrayerTimesService>(),
         scheduler: i.get<AdhanScheduler>(),
+        widget: i.get<PrayerWidgetPublisher>(),
       ),
     );
     // Verse-of-the-day for the home dashboard. Built with a dedicated

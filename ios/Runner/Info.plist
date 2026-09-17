@@ -73,6 +73,23 @@
 		<string>يُستخدم المنبّه للتنبيه بدخول وقت الصلاة ورفع الأذان في موعده. Alarms are used to announce the call to prayer at each prayer time you enable.</string>
 		<key>UIStatusBarHidden</key>
 		<false/>
+		<!-- Custom scheme the home-screen widget opens the app with
+		     (zikr://prayer?homeWidget). home_widget's plugin claims any URL
+		     carrying the `homeWidget` query item and hands it to Dart, where
+		     HomeWidgetRouter picks the screen. -->
+		<key>CFBundleURLTypes</key>
+		<array>
+			<dict>
+				<key>CFBundleTypeRole</key>
+				<string>Editor</string>
+				<key>CFBundleURLName</key>
+				<string>com.zikr.mapp.widget</string>
+				<key>CFBundleURLSchemes</key>
+				<array>
+					<string>zikr</string>
+				</array>
+			</dict>
+		</array>
 		<key>LSApplicationQueriesSchemes</key>
 		<array>
 			<string>https</string>

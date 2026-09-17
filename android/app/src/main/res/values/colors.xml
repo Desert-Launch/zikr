@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  Palette for the home-screen prayer widget (see values-night/colors.xml for
+  the dark variant). Mirrors the in-app home card: brand green, gold accent,
+  ink and grey text, and the hairline track behind the progress bar.
+-->
+<resources>
+    <color name="widget_card">#FFFFFFFF</color>
+    <color name="widget_text_primary">#FF252525</color>
+    <color name="widget_text_secondary">#FF6B6B6B</color>
+    <color name="widget_track">#FFEDEAE3</color>
+    <color name="widget_green">#FF0E6B47</color>
+    <color name="widget_gold">#FFD6A72C</color>
+    <color name="widget_ring">#FFD6A72C</color>
+</resources>

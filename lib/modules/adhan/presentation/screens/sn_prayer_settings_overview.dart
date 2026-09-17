@@ -1,12 +1,16 @@
+import 'dart:io';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_modular/flutter_modular.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:localize_and_translate/localize_and_translate.dart';
 import 'package:quran/core/extension/build_context.dart';
 import 'package:quran/core/services/routes/routes_names.dart';
+import 'package:quran/core/utils/helper/app_alert.dart';
 import 'package:quran/core/widgets/w_gradient_app_bar.dart';
 import 'package:quran/core/widgets/w_shared_scaffold.dart';
 import 'package:quran/modules/home/presentation/widgets/w_home_verse_card.dart';
+import 'package:quran/modules/prayer/data/datasources/local/ds_prayer_widget.dart';
 import 'package:quran/modules/quran/domain/entities/e_daily_verse.dart';
 import 'package:quran/modules/settings/presentation/widgets/w_settings_group.dart';
 import 'package:quran/modules/settings/presentation/widgets/w_settings_row.dart';
@@ -38,6 +42,18 @@ class _SNPrayerSettingsOverviewState extends State<SNPrayerSettingsOverview> {
   );
 
   bool _automaticLocation = true;
+
+  /// Android launchers that support pinning get the system "add widget"
+  /// sheet; everywhere else (iOS, older launchers) the row explains where
+  /// the widget lives in the OS's own picker.
+  Future<void> _addWidget() async {
+    final pinned = await Modular.get<DSPrayerWidget>().requestPin();
+    if (pinned) return;
+    AppAlert.notification(
+      title: 'widget_add_title'.tr(),
+      body: Platform.isIOS ? 'widget_add_ios_howto'.tr() : 'widget_add_android_howto'.tr(),
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -86,6 +102,12 @@ class _SNPrayerSettingsOverviewState extends State<SNPrayerSettingsOverview> {
                         title: 'prayer_settings_qibla'.tr(),
                         subtitle: 'prayer_settings_qibla_hint'.tr(),
                         onTap: () => Modular.to.pushNamed(RoutesNames.qiblaBase),
+                      ),
+                      WSettingsRow(
+                        icon: Icons.widgets_outlined,
+                        title: 'widget_add_title'.tr(),
+                        subtitle: 'widget_add_hint'.tr(),
+                        onTap: _addWidget,
                       ),
                     ],
                   ),

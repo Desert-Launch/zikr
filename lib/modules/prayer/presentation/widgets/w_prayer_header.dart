@@ -5,6 +5,7 @@ import 'package:localize_and_translate/localize_and_translate.dart';
 import 'package:quran/core/extension/build_context.dart';
 import 'package:quran/core/services/routes/routes_names.dart';
 import 'package:quran/core/theme/app_text_styles.dart';
+import 'package:quran/core/utils/helper/date_labels.dart';
 import 'package:quran/core/utils/helper/nav_helper.dart';
 import 'package:quran/core/widgets/w_localize_rotation.dart';
 import 'package:quran/modules/prayer/presentation/cubits/s_prayer_times.dart';
@@ -115,11 +116,11 @@ class WPrayerHeader extends StatelessWidget {
                     child: Row(
                       mainAxisSize: MainAxisSize.min,
                       children: [
-                        Text(_weekday(now), style: AppTextStyles.white12W400),
+                        Text(DateLabels.weekday(now), style: AppTextStyles.white12W400),
                         _dot,
-                        Text(_date(now), style: AppTextStyles.white14W500),
+                        Text(DateLabels.gregorian(now), style: AppTextStyles.white14W500),
                         _dot,
-                        Text(_hijriDate(now), style: AppTextStyles.white12W400),
+                        Text(DateLabels.hijri(now), style: AppTextStyles.white12W400),
                       ],
                     ),
                   ),
@@ -144,91 +145,4 @@ class WPrayerHeader extends StatelessWidget {
       ),
     ),
   );
-
-  String _weekday(DateTime date) {
-    const ar = ['الاثنين', 'الثلاثاء', 'الأربعاء', 'الخميس', 'الجمعة', 'السبت', 'الأحد'];
-    const en = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
-    return LocalizeAndTranslate.getLanguageCode() == 'ar' ? ar[date.weekday - 1] : en[date.weekday - 1];
-  }
-
-  String _date(DateTime date) {
-    const arMonths = [
-      'يناير',
-      'فبراير',
-      'مارس',
-      'أبريل',
-      'مايو',
-      'يونيو',
-      'يوليو',
-      'أغسطس',
-      'سبتمبر',
-      'أكتوبر',
-      'نوفمبر',
-      'ديسمبر',
-    ];
-    const enMonths = [
-      'January',
-      'February',
-      'March',
-      'April',
-      'May',
-      'June',
-      'July',
-      'August',
-      'September',
-      'October',
-      'November',
-      'December',
-    ];
-    final month = LocalizeAndTranslate.getLanguageCode() == 'ar' ? arMonths[date.month - 1] : enMonths[date.month - 1];
-    return '${date.day} $month ${date.year}';
-  }
-
-  String _hijriDate(DateTime date) {
-    final a = (14 - date.month) ~/ 12;
-    final y = date.year + 4800 - a;
-    final m = date.month + (12 * a) - 3;
-    final julianDay = date.day + ((153 * m + 2) ~/ 5) + (365 * y) + (y ~/ 4) - (y ~/ 100) + (y ~/ 400) - 32045;
-
-    var l = julianDay - 1948440 + 10632;
-    final n = (l - 1) ~/ 10631;
-    l = l - (10631 * n) + 354;
-    final j = (((10985 - l) ~/ 5316) * ((50 * l) ~/ 17719)) + ((l ~/ 5670) * ((43 * l) ~/ 15238));
-    l = l - (((30 - j) ~/ 15) * ((17719 * j) ~/ 50)) - ((j ~/ 16) * ((15238 * j) ~/ 43)) + 29;
-    final month = (24 * l) ~/ 709;
-    final day = l - ((709 * month) ~/ 24);
-    final year = (30 * n) + j - 30;
-
-    const arMonths = [
-      'محرم',
-      'صفر',
-      'ربيع الأول',
-      'ربيع الآخر',
-      'جمادى الأولى',
-      'جمادى الآخرة',
-      'رجب',
-      'شعبان',
-      'رمضان',
-      'شوال',
-      'ذو القعدة',
-      'ذو الحجة',
-    ];
-    const enMonths = [
-      'Muharram',
-      'Safar',
-      'Rabi al-Awwal',
-      'Rabi al-Thani',
-      'Jumada al-Awwal',
-      'Jumada al-Thani',
-      'Rajab',
-      'Shaaban',
-      'Ramadan',
-      'Shawwal',
-      'Dhu al-Qidah',
-      'Dhu al-Hijjah',
-    ];
-    final isArabic = LocalizeAndTranslate.getLanguageCode() == 'ar';
-    final monthName = isArabic ? arMonths[month - 1] : enMonths[month - 1];
-    return isArabic ? '$day $monthName $year هـ' : '$day $monthName $year AH';
-  }
 }

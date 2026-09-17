@@ -15,4 +15,14 @@
     -->
     <string name="adhan_alarm_dua_title">دعاء ما بعد الأذان</string>
     <string name="adhan_alarm_dua">«اللَّهُمَّ رَبَّ هذه الدَّعوةِ التَّامَّةِ،\nوالصَّلاةِ القَائمَةِ،\nآتِ مُحمَّدًا الوسيلَةَ والفَضيلَةَ،\nوابعثْهُ مَقامًا محمودًا الذِي وعدتَهُ»</string>
+
+    <!--
+      Home-screen prayer widget. These two are read by the launcher's widget
+      picker, which runs in the DEVICE locale, not the app's — hence real
+      Android resource localisation (values-en) rather than the app's JSON.
+      Everything the widget itself prints arrives pre-localised in the snapshot.
+    -->
+    <string name="prayer_widget_label">مواقيت الصلاة</string>
+    <string name="prayer_widget_description">الصلاة القادمة، العدّ التنازلي، ومواقيت اليوم</string>
+    <string name="prayer_widget_empty">افتح التطبيق لتحديد مواقيت الصلاة</string>
 </resources>

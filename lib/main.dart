@@ -12,6 +12,7 @@ import 'package:quran/core/cubits/s_theme.dart';
 import 'package:quran/core/data/models/m_app_settings.dart';
 import 'package:quran/core/data/sources/local/box_app_settings.dart';
 import 'package:quran/core/extension/build_context.dart';
+import 'package:quran/core/services/home_widget/home_widget_router.dart';
 import 'package:quran/core/services/logging/app_logger.dart';
 import 'package:quran/core/services/media/call_interruption.dart';
 import 'package:quran/core/services/media/media_artwork.dart';
@@ -37,6 +38,7 @@ import 'package:quran/modules/khatma/data/models/m_khatma_completion.dart';
 import 'package:quran/modules/khatma/data/models/m_khatma_day.dart';
 import 'package:quran/modules/khatma/data/models/m_khatma_plan.dart';
 import 'package:quran/modules/khatma/presentation/cubits/cb_khatma.dart';
+import 'package:quran/modules/prayer/data/datasources/local/ds_prayer_widget.dart';
 import 'package:quran/modules/prayer/data/models/m_prayer_settings.dart';
 import 'package:quran/modules/quran/data/models/m_bookmark.dart';
 import 'package:quran/modules/quran/data/models/m_last_read.dart';
@@ -111,6 +113,13 @@ Future<void> main() async {
     androidNotificationChannelName: 'Quran Recitation',
     androidNotificationOngoing: true,
   );
+
+  // Home-screen widget: point the plugin at the iOS App Group before the
+  // first schedule is resolved — the prayer cubit publishes a snapshot as
+  // soon as it hydrates from cache, which is before the post-frame boot
+  // steps get a turn. Plugin-global, so the DI instance need not be the one
+  // that ran it.
+  await DSPrayerWidget().init();
 
   AppLogger.info('Boot done — runApp', tag: 'main');
   runApp(
@@ -200,6 +209,9 @@ Future<void> _bootNotifications() async {
   // reschedules below actually register (new users are prompted during
   // onboarding, so this is gated on hasSeenOnboarding inside).
   await _bootStep('notification permission', _ensureNotificationPermission);
+  // Home-screen widget: route the tap that may have launched us, and keep
+  // routing taps while we run.
+  await _bootStep('home widget taps', Modular.get<HomeWidgetRouter>().start);
   await _bootStep(
     'reminders reschedule',
     Modular.get<CBReminders>().rescheduleAll,
@@ -289,6 +301,7 @@ class _RootState extends State<_Root> with WidgetsBindingObserver {
   @override
   void dispose() {
     Modular.get<InAppNotificationWatcher>().stop();
+    unawaited(Modular.get<HomeWidgetRouter>().stop());
     WidgetsBinding.instance.removeObserver(this);
     super.dispose();
   }

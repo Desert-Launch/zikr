@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<!-- The shared container the app writes the prayer snapshot into. Must match
+	     Runner.entitlements and DSPrayerWidget.appGroupId in Dart, and be enabled
+	     on both App IDs in the developer portal. -->
+	<key>com.apple.security.application-groups</key>
+	<array>
+		<string>group.com.zikr.mapp</string>
+	</array>
+</dict>
+</plist>

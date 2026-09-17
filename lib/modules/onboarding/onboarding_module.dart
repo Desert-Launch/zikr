@@ -9,6 +9,7 @@ import 'package:quran/modules/onboarding/presentation/screens/sn_language_select
 import 'package:quran/modules/onboarding/presentation/screens/sn_location_permission.dart';
 import 'package:quran/modules/onboarding/presentation/screens/sn_onboarding_pager.dart';
 import 'package:quran/modules/prayer/data/datasources/local/ds_location.dart';
+import 'package:quran/modules/prayer/services/prayer_widget_publisher.dart';
 
 class OnboardingModule extends Module {
   @override
@@ -21,6 +22,7 @@ class OnboardingModule extends Module {
         Modular.get<NotificationsService>(),
         Modular.get<AdhanScheduler>(),
         Modular.get<DSLocation>(),
+        Modular.get<PrayerWidgetPublisher>(),
       ),
     );
   }
