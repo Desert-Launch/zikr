@@ -26,13 +26,15 @@ class MTasbihCounterAdapter extends TypeAdapter<MTasbihCounter> {
       reminderIntervalHours: fields[6] == null ? 3 : (fields[6] as num).toInt(),
       reminderHour: fields[7] == null ? 9 : (fields[7] as num).toInt(),
       reminderMinute: fields[8] == null ? 30 : (fields[8] as num).toInt(),
+      phraseCounts: (fields[9] as Map?)?.cast<String, int>(),
+      countsDay: fields[10] as String?,
     );
   }
 
   @override
   void write(BinaryWriter writer, MTasbihCounter obj) {
     writer
-      ..writeByte(9)
+      ..writeByte(11)
       ..writeByte(0)
       ..write(obj.zekrAr)
       ..writeByte(1)
@@ -50,7 +52,11 @@ class MTasbihCounterAdapter extends TypeAdapter<MTasbihCounter> {
       ..writeByte(7)
       ..write(obj.reminderHour)
       ..writeByte(8)
-      ..write(obj.reminderMinute);
+      ..write(obj.reminderMinute)
+      ..writeByte(9)
+      ..write(obj.phraseCounts)
+      ..writeByte(10)
+      ..write(obj.countsDay);
   }
 
   @override

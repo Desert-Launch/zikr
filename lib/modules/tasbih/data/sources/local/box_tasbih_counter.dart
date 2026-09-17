@@ -11,6 +11,14 @@ class BoxTasbihCounter extends HiveBoxBase<MTasbihCounter> {
   /// never clobbers the tasbih count.
   static const int salawatKey = 1;
 
+  /// `yyyyMMdd` stamp that dates [MTasbihCounter.phraseCounts].
+  static String dayKey(DateTime day) {
+    final yyyy = day.year.toString().padLeft(4, '0');
+    final mm = day.month.toString().padLeft(2, '0');
+    final dd = day.day.toString().padLeft(2, '0');
+    return '$yyyy$mm$dd';
+  }
+
   MTasbihCounter current([int key = tasbihKey]) {
     final existing = box.get(key);
     if (existing != null) return existing;
@@ -19,6 +27,21 @@ class BoxTasbihCounter extends HiveBoxBase<MTasbihCounter> {
         : MTasbihCounter();
     box.put(key, fresh);
     return fresh;
+  }
+
+  /// The general tasbih record with its per-phrase counts guaranteed to be
+  /// today's. A record last counted on an earlier day — or before the counts
+  /// were dated at all — comes back with the tally wiped, which is what resets
+  /// the masbaha every morning.
+  MTasbihCounter today() {
+    final c = current();
+    final key = dayKey(DateTime.now());
+    if (c.countsDay != key) {
+      c.phraseCounts = <String, int>{};
+      c.countsDay = key;
+      c.save();
+    }
+    return c;
   }
 
   Future<void> save(MTasbihCounter c, [int key = tasbihKey]) async {

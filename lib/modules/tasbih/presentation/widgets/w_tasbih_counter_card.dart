@@ -47,7 +47,10 @@ class WTasbihCounterCard extends StatelessWidget {
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  Text('${state.count}', style: AppTextStyles.ink24W500.copyWith(fontSize: 35.sp)),
+                  FittedBox(
+                    fit: BoxFit.scaleDown,
+                    child: Text('${state.count}', style: AppTextStyles.ink24W500.copyWith(fontSize: 35.sp)),
+                  ),
                   Text(
                     '${'tasbih_of'.tr()} ${state.target}',
                     style: AppTextStyles.grey12W400.copyWith(fontSize: 10.sp),
@@ -99,12 +102,16 @@ class WTasbihCounterCard extends StatelessWidget {
                   Column(
                     crossAxisAlignment: CrossAxisAlignment.center,
                     children: [
+                      // A round 48-pt badge up to three digits; beyond that
+                      // it widens into a pill around the number rather than
+                      // letting four-plus digits spill out of a fixed box.
                       Container(
-                        width: 48.w,
-                        height: 48.h,
-                        padding: EdgeInsets.symmetric(horizontal: 8.w, vertical: 4.h),
+                        constraints: BoxConstraints(minWidth: 48.w, minHeight: 48.h),
+                        padding: EdgeInsets.symmetric(horizontal: 10.w, vertical: 4.h),
                         decoration: BoxDecoration(color: Color(0xFFF8F7F4), borderRadius: BorderRadius.circular(50.r)),
                         child: Center(
+                          widthFactor: 1,
+                          heightFactor: 1,
                           child: Text(
                             '$totalToday',
                             style: TextStyle(fontSize: 16.sp, fontWeight: FontWeight.w700, color: Colors.black87),

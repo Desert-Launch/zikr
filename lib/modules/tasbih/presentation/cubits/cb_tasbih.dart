@@ -1,3 +1,5 @@
+import 'dart:math';
+
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:quran/core/data/sources/local/box_app_settings.dart';
 import 'package:quran/core/utils/helper/haptics_helper.dart';
@@ -33,11 +35,11 @@ class CBTasbih extends Cubit<STasbih> {
   final _uuid = const Uuid();
 
   void _hydrate() {
-    final c = _counter.current();
+    final c = _counter.today();
     emit(STasbih(
       zekrAr: c.zekrAr,
       target: c.target,
-      count: c.count,
+      count: _todayCount(zekrAr: c.zekrAr, target: c.target),
       vibrate: c.vibrate,
       hourlyEnabled: c.hourlyEnabled,
       hourlyZikrSound: _appSettings.current().hourlyZikrSound,
@@ -48,21 +50,42 @@ class CBTasbih extends Cubit<STasbih> {
     final c = _counter.current()
       ..zekrAr = state.zekrAr
       ..target = state.target
-      ..count = state.count
       ..vibrate = state.vibrate
       ..hourlyEnabled = state.hourlyEnabled;
     await c.save();
   }
 
+  /// Today's tally for [zekrAr] (the active phrase by default), never above
+  /// [target] — a count taken under a bigger target shows as complete once the
+  /// target is lowered, and comes back in full if it's raised again. Read from
+  /// the box rather than from state so a session left open across midnight
+  /// sees the wipe instead of carrying yesterday's count forward.
+  int _todayCount({String? zekrAr, int? target}) {
+    final stored = _counter.today().phraseCounts[zekrAr ?? state.zekrAr] ?? 0;
+    return min(stored, target ?? state.target);
+  }
+
+  Future<void> _saveCount(int count) async {
+    final c = _counter.today();
+    c.phraseCounts[state.zekrAr] = count;
+    await c.save();
+  }
+
+  /// One bead. Stops at the target — once the round is complete further taps
+  /// are ignored until the user resets or switches phrase.
   Future<void> tap() async {
-    final wasComplete = state.isComplete;
-    final next = state.count + 1;
+    final count = _todayCount();
+    if (count >= state.target) return;
+    final next = count + 1;
     emit(state.copyWith(count: next));
     if (state.vibrate) {
       HapticsHelper.tick();
     }
+    // Written before anything yields, so a tap landing while the completion
+    // below is still logging reads this count rather than the one before it.
+    final saved = _saveCount(next);
     // When we hit the target this tap, log the session and pulse harder.
-    if (!wasComplete && next >= state.target) {
+    if (next >= state.target) {
       if (state.vibrate) HapticsHelper.complete();
       await _history.log(MTasbihHistory(
         id: _uuid.v4(),
@@ -71,21 +94,25 @@ class CBTasbih extends Cubit<STasbih> {
         completedAt: DateTime.now(),
       ));
     }
-    await _persist();
+    await saved;
   }
 
   Future<void> reset() async {
     emit(state.copyWith(count: 0));
-    await _persist();
+    await _saveCount(0);
   }
 
+  /// Switches the phrase and resumes its own count for today — each phrase
+  /// keeps a separate tally, so flipping between them never loses progress.
   Future<void> setZekr(String zekrAr) async {
-    emit(state.copyWith(zekrAr: zekrAr, count: 0));
+    emit(state.copyWith(zekrAr: zekrAr, count: _todayCount(zekrAr: zekrAr)));
     await _persist();
   }
 
+  /// Changing the target re-caps the count: dropping below what's already
+  /// been counted lands on "complete" rather than a number past the target.
   Future<void> setTarget(int target) async {
-    emit(state.copyWith(target: target));
+    emit(state.copyWith(target: target, count: _todayCount(target: target)));
     await _persist();
   }
 

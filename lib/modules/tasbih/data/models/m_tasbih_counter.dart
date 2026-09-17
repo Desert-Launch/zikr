@@ -17,7 +17,9 @@ class MTasbihCounter extends HiveObject {
     this.reminderIntervalHours = 3,
     this.reminderHour = 9,
     this.reminderMinute = 30,
-  });
+    Map<String, int>? phraseCounts,
+    this.countsDay,
+  }) : phraseCounts = phraseCounts ?? <String, int>{};
 
   /// The phrase being counted. User can swap between سبحان الله, الحمد لله,
   /// الله أكبر, etc. — see SNTasbih for the list.
@@ -28,7 +30,8 @@ class MTasbihCounter extends HiveObject {
   @HiveField(1)
   int target;
 
-  /// Live count — increments on each tap, resets when the user taps reset.
+  /// Live count of the salawat record. The general tasbih record keeps its
+  /// tally in [phraseCounts] instead, one entry per phrase.
   @HiveField(2)
   int count;
 
@@ -64,4 +67,16 @@ class MTasbihCounter extends HiveObject {
   /// Minute (0–59) for the single specific-time reminder (when interval is 0).
   @HiveField(8)
   int reminderMinute;
+
+  /// Today's tally for each phrase, keyed by the phrase text, so switching
+  /// between سبحان الله / الحمد لله / … resumes that phrase instead of
+  /// starting over. Only meaningful on the general tasbih record.
+  @HiveField(9)
+  Map<String, int> phraseCounts;
+
+  /// `yyyyMMdd` the [phraseCounts] were counted on. [BoxTasbihCounter.today]
+  /// wipes the map once this falls behind the calendar, which is what makes
+  /// the masbaha start from zero each day.
+  @HiveField(10)
+  String? countsDay;
 }
