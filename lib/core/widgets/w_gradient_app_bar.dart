@@ -24,6 +24,7 @@ class WGradientAppBar extends StatelessWidget implements PreferredSizeWidget {
     this.onBack,
     this.showBack = true,
     this.backIcon = Icons.arrow_back_rounded,
+    this.centerTitle = true,
     super.key,
   });
 
@@ -38,6 +39,11 @@ class WGradientAppBar extends StatelessWidget implements PreferredSizeWidget {
   final VoidCallback? onBack;
   final bool showBack;
   final IconData backIcon;
+
+  /// Centers [title]/[subtitle] between the leading and trailing slots. Turn
+  /// off to tuck them against the back button instead (the reader-style
+  /// headers such as the azkar player).
+  final bool centerTitle;
 
   @override
   Size get preferredSize => Size.fromHeight(subtitle == null ? 96.h : 116.h);
@@ -86,14 +92,14 @@ class WGradientAppBar extends StatelessWidget implements PreferredSizeWidget {
                         children: [
                           Text(
                             title,
-                            textAlign: TextAlign.center,
+                            textAlign: centerTitle ? TextAlign.center : TextAlign.start,
                             style: AppTextStyles.white24W400,
                           ),
                           if (subtitle != null) ...[
                             SizedBox(height: 2.h),
                             Text(
                               subtitle ?? '',
-                              textAlign: TextAlign.center,
+                              textAlign: centerTitle ? TextAlign.center : TextAlign.start,
                               style: AppTextStyles.white12W400.copyWith(
                                 color: Colors.white70,
                               ),

@@ -3,14 +3,14 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_modular/flutter_modular.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:localize_and_translate/localize_and_translate.dart';
+import 'package:quran/core/theme/app_colors.dart';
 import 'package:quran/core/utils/helper/nav_helper.dart';
+import 'package:quran/core/widgets/w_gradient_app_bar.dart';
 import 'package:quran/core/widgets/w_shared_scaffold.dart';
-import 'package:quran/modules/azkar/data/sources/local/box_azkar_favorite.dart';
 import 'package:quran/modules/azkar/presentation/cubits/cb_azkar_session.dart';
 import 'package:quran/modules/azkar/presentation/cubits/s_azkar_session.dart';
-import 'package:quran/modules/azkar/presentation/widgets/w_azkar_header.dart';
-import 'package:quran/modules/azkar/presentation/widgets/w_azkar_counter_card.dart';
-import 'package:quran/modules/azkar/presentation/widgets/w_azkar_virtue_card.dart';
+import 'package:quran/modules/azkar/presentation/widgets/w_azkar_player_bar.dart';
+import 'package:quran/modules/azkar/presentation/widgets/w_azkar_player_page.dart';
 
 class SNAzkarPlayer extends StatefulWidget {
   const SNAzkarPlayer({super.key, required this.categoryId, this.itemIndex = 0});
@@ -23,12 +23,11 @@ class SNAzkarPlayer extends StatefulWidget {
 }
 
 class _SNAzkarPlayerState extends State<SNAzkarPlayer> {
-  static const _green = Color(0xFF007A58);
+  static const _green = AppColorsLight.primary;
   static const _gold = Color(0xFFD6A72C);
   static const _canvas = Color(0xFFF8F7F4);
 
   late final CBAzkarSession _cubit = Modular.get<CBAzkarSession>();
-  late final BoxAzkarFavorite _favorites = Modular.get<BoxAzkarFavorite>();
   late final PageController _pageController = PageController(initialPage: widget.itemIndex);
 
   @override
@@ -73,51 +72,45 @@ class _SNAzkarPlayerState extends State<SNAzkarPlayer> {
           },
           builder: (_, state) {
             final category = state.category;
-            if (category == null || category.items.isEmpty) {
+            final current = state.currentItem;
+            if (category == null || current == null) {
               return const Center(child: CircularProgressIndicator());
             }
             return Column(
               children: [
-                WAzkarHeader(
-                  green: _green,
+                WGradientAppBar(
                   title: LocalizeAndTranslate.getLanguageCode() == 'ar' ? category.nameAr : category.nameEn,
-                  categoryCount: category.items.length,
-                  completedToday: category.items.where((item) => state.isComplete(item)).length,
-                  favorites: _favorites.all().length,
+                  subtitle: 'azkar_header_subtitle'.tr(),
+                  centerTitle: false,
                   onBack: NavHelper.back,
+                  actions: [
+                    Padding(
+                      padding: EdgeInsetsDirectional.only(end: 8.w),
+                      child: CircleAvatar(
+                        radius: 21.r,
+                        backgroundColor: Colors.white.withValues(alpha: 0.16),
+                        child: const Text('🤲', style: TextStyle(fontSize: 20)),
+                      ),
+                    ),
+                  ],
                 ),
                 Expanded(
                   child: PageView.builder(
                     controller: _pageController,
                     itemCount: category.items.length,
                     onPageChanged: _cubit.jumpTo,
-                    itemBuilder: (_, index) {
-                      final item = category.items[index];
-                      final completed = state.countFor(item.id);
-                      final virtue = item.virtueAr;
-                      return SingleChildScrollView(
-                        padding: EdgeInsets.fromLTRB(12.w, 8.h, 12.w, 28.h),
-                        child: Column(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            WAzkarCounterCard(
-                              item: item,
-                              completed: completed,
-                              green: _green,
-                              onTap: _cubit.tap,
-                              onReset: _cubit.resetCurrent,
-                              onPrevious: _cubit.previous,
-                              onNext: _cubit.next,
-                            ),
-                            if (virtue != null && virtue.isNotEmpty) ...[
-                              SizedBox(height: 12.h),
-                              WAzkarVirtueCard(text: virtue, gold: _gold),
-                            ],
-                          ],
-                        ),
-                      );
-                    },
+                    itemBuilder: (_, index) =>
+                        WAzkarPlayerPage(item: category.items[index], gold: _gold, onTap: _cubit.tap),
                   ),
+                ),
+                WAzkarPlayerBar(
+                  completed: state.countFor(current.id),
+                  total: current.repeat,
+                  green: _green,
+                  onTap: _cubit.tap,
+                  onReset: _cubit.resetCurrent,
+                  onPrevious: _cubit.previous,
+                  onNext: _cubit.next,
                 ),
               ],
             );

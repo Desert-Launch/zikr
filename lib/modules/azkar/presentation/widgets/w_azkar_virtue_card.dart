@@ -2,49 +2,88 @@ import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:localize_and_translate/localize_and_translate.dart';
+import 'package:quran/core/theme/app_text_styles.dart';
 
-/// The gold-bordered card showing a zekr's virtue (فضل) in the player.
+/// The gold card under a zekr in the player: star badge, "فضل" label, the
+/// virtue itself, and — when the data carries one — the narrator line.
 class WAzkarVirtueCard extends StatelessWidget {
   const WAzkarVirtueCard({super.key, required this.text, required this.gold});
 
+  /// Newline-separated virtue lines as bundled in `fadel_zeker`.
   final String text;
   final Color gold;
 
+  /// Lines that credit the hadith collection rather than describe the virtue.
+  static const _narratorPrefixes = ['رواه', 'أخرجه', 'متفق'];
+
+  static bool _isNarrator(String line) => _narratorPrefixes.any(line.startsWith);
+
   @override
   Widget build(BuildContext context) {
+    final lines = text.split('\n').map((l) => l.trim()).where((l) => l.isNotEmpty).toList();
+    final body = lines.where((l) => !_isNarrator(l)).join('\n');
+    final source = lines.where(_isNarrator).join(' · ');
+
     return Container(
-      padding: EdgeInsets.all(16.r),
       decoration: BoxDecoration(
-        color: const Color(0xFFFFEDC0),
-        borderRadius: BorderRadius.circular(15.r),
+        gradient: const LinearGradient(
+          colors: [Color(0xFFFFF7DF), Color(0xFFFBEBBE)],
+          begin: Alignment.topCenter,
+          end: Alignment.bottomCenter,
+        ),
+        borderRadius: BorderRadius.circular(18.r),
         border: Border.all(color: gold),
+        boxShadow: [BoxShadow(color: gold.withValues(alpha: 0.22), blurRadius: 22, offset: const Offset(0, 8))],
       ),
-      child: Column(
-        children: [
-          CircleAvatar(
-            radius: 13.r,
-            backgroundColor: gold,
-            child: const Icon(
-              Icons.star_rounded,
-              color: Colors.white,
-              size: 14,
+      child: ClipRRect(
+        borderRadius: BorderRadius.circular(18.r),
+        child: Stack(
+          alignment: Alignment.center,
+          children: [
+            Positioned(
+              top: -35.h,
+              right: -30.w,
+              child: Container(
+                width: 100.r,
+                height: 100.r,
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  border: Border.all(color: gold.withValues(alpha: 0.15), width: 3),
+                ),
+              ),
             ),
-          ),
-          SizedBox(height: 5.h),
-          Text(
-            'azkar_virtue'.tr(),
-            style: TextStyle(fontSize: 9.sp, color: Colors.grey[700]),
-          ),
-          SizedBox(height: 7.h),
-          Directionality(
-            textDirection: TextDirection.rtl,
-            child: Text(
-              text,
-              textAlign: TextAlign.center,
-              style: GoogleFonts.amiri(fontSize: 13.sp, height: 1.7),
+            Padding(
+              padding: EdgeInsets.fromLTRB(16.w, 14.h, 16.w, 14.h),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  CircleAvatar(
+                    radius: 18.r,
+                    backgroundColor: gold,
+                    child: Icon(Icons.star_rounded, color: Colors.white, size: 20.sp),
+                  ),
+                  SizedBox(height: 6.h),
+                  Text('azkar_virtue'.tr(), style: AppTextStyles.grey12W400),
+                  if (body.isNotEmpty) ...[
+                    SizedBox(height: 8.h),
+                    Directionality(
+                      textDirection: TextDirection.rtl,
+                      child: Text(
+                        body,
+                        textAlign: TextAlign.center,
+                        style: GoogleFonts.amiri(fontSize: 15.sp, height: 1.9, color: const Color(0xFF1A1A1A)),
+                      ),
+                    ),
+                  ],
+                  if (source.isNotEmpty) ...[
+                    SizedBox(height: 6.h),
+                    Text(source, textAlign: TextAlign.center, style: AppTextStyles.grey12W400),
+                  ],
+                ],
+              ),
             ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }
