@@ -126,19 +126,14 @@ const double kPageFillFactor = 0.99;
 /// independently of the page's whole rhythm.
 double get kMushafChromeGap => 12.h;
 
-/// The page's side margin — the white edge a printed Mushaf leaves around its
-/// text block, and what keeps the glyphs off the screen's bezel.
-///
-/// It is not free, and that is why it stayed a hairline for so long: the text
-/// column's width is what the page's glyph size is solved from, so every pixel
-/// of margin makes the whole page a shade smaller. But a hairline was the wrong
-/// trade. The widest justified line spans the column *exactly* by construction,
-/// so a page with no margin has lines that literally touch the glass — and the
-/// highlight pill behind a selected ayah, which is drawn wider than its glyphs,
-/// ran off both edges of the screen.
-///
-/// A printed Mushaf pays exactly this price for exactly this reason.
-double get kMushafSideMargin => 10.w;
+/// The page's side margin. Deliberately a hairline: the text column's width is
+/// what the page's glyph size is solved from, so every pixel of margin makes
+/// the whole page a shade smaller — a wider margin does not just move the text
+/// inwards, it shrinks it. The widest justified line therefore runs to within
+/// a couple of pixels of the glass, and the highlight pill behind a selected
+/// ayah may clip at the edges; that is the trade the reader chose, a bigger
+/// page over a printed Mushaf's white edge.
+double get kMushafSideMargin => 2.w;
 
 /// Extra leading every printed line carries while the page is in landscape.
 ///
