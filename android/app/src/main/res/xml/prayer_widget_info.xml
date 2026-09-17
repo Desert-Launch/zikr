@@ -3,8 +3,9 @@
   Home-screen prayer widget metadata.
 
   - 4×2 by default (minWidth/minHeight are the pre-12 sizing, targetCell* the
-    Android 12+ grid), resizable either way; PrayerWidgetProvider drops the
-    chip row below ~3 cells wide and the date row below 2 cells tall.
+    Android 12+ grid), resizable either way; PrayerWidgetRenderer drops the
+    six-chip row when narrower than ~240 dp (a 3-cell width on most launchers)
+    and the date row below 2 cells tall.
   - updatePeriodMillis is the 30-minute floor Android allows. It is only a
     backstop: the provider keeps itself current with its own alarms
     (PrayerWidgetAlarms) and is redrawn by the app whenever a new snapshot is

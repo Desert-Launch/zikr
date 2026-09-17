@@ -146,7 +146,7 @@ private struct MediumPrayerView: View {
                 .frame(height: 6)
                 .padding(.top, 2)
 
-            // The day's other prayers: six slots minus the featured one.
+            // The day's six slots, the featured prayer included.
             HStack(spacing: 0) {
                 ForEach(resolution.chips, id: \.k) { slot in
                     ChipView(slot: slot, label: labels.prayer(slot.k))

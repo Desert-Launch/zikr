@@ -175,10 +175,8 @@ class _PrayerCardPlaceholder extends StatelessWidget {
         _divider(),
         SizedBox(height: 14.h),
         Row(
-          // Five chips like the real card, which lists everything but the
-          // featured next salah.
+          // Six chips like the real card, which lists the whole day.
           children: EPrayer.values
-              .where((p) => p.isSalah)
               .map(
                 (p) => Expanded(
                   child: WHomePrayerChip(label: _prayerLabel(p), time: '--:--', style: _prayerStyle(p)),
@@ -192,7 +190,7 @@ class _PrayerCardPlaceholder extends StatelessWidget {
 }
 
 /// Home prayer card: today's dates, the next prayer with its countdown, the
-/// window progress bar, and the remaining prayers as a chip row.
+/// window progress bar, and the day's six slots as a chip row.
 class WHomePrayerCard extends StatelessWidget {
   const WHomePrayerCard({super.key, required this.state, required this.green});
 
@@ -210,9 +208,10 @@ class WHomePrayerCard extends StatelessWidget {
 
     final next = state.nextPrayer;
     // Today's timings until the last salah has gone, then tomorrow's — a spent
-    // day is not useful to look at. (The empty case returned above.) The next
-    // salah is featured in the head row, so the chip row lists the others.
-    final slots = state.displaySlots.where((s) => s.prayer != next?.prayer).toList(growable: false);
+    // day is not useful to look at. (The empty case returned above.) All six
+    // slots, the featured next salah included: the row is the day's schedule,
+    // and a prayer that left it while it was next read as missing.
+    final slots = state.displaySlots;
 
     final caption = StringBuffer('prayer_next_label'.tr());
     if (state.cityName.isNotEmpty) {

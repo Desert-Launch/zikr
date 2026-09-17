@@ -56,7 +56,7 @@ struct PrayerSnapshot: Decodable {
         let next: Slot
         /// The salah whose window we are inside; nil only before the earliest one known.
         let windowStart: Date?
-        /// `displayDay`'s slots minus `next` — the row under the bar.
+        /// `displayDay`'s six slots, `next` included — the row under the bar.
         let chips: [Slot]
 
         var isShowingTomorrow: Bool { displayDay.date != today.date }
@@ -159,7 +159,7 @@ struct PrayerSnapshot: Decodable {
             displayDay: displayDay,
             next: resolvedNext,
             windowStart: windowStart?.date,
-            chips: displayDay.slots.filter { $0.k != resolvedNext.k }
+            chips: displayDay.slots
         )
     }
 

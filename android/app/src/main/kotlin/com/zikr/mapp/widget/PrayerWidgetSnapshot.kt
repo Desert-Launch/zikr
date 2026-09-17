@@ -60,7 +60,7 @@ class PrayerWidgetSnapshot private constructor(
         val next: Slot,
         /** The salah whose window we are inside; null only before the earliest one known. */
         val windowStart: Long?,
-        /** [displayDay]'s slots minus [next] — the row under the bar. */
+        /** [displayDay]'s six slots, [next] included — the row under the bar. */
         val chips: List<Slot>,
     ) {
         val isShowingTomorrow: Boolean get() = displayDay !== today
@@ -118,7 +118,7 @@ class PrayerWidgetSnapshot private constructor(
             displayDay = displayDay,
             next = resolvedNext,
             windowStart = windowStart,
-            chips = displayDay.slots.filter { it.key != resolvedNext.key },
+            chips = displayDay.slots,
         )
     }
 

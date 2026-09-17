@@ -52,10 +52,15 @@ object PrayerWidgetRenderer {
         intArrayOf(R.id.widget_chip_3, R.id.widget_chip_bg_3, R.id.widget_chip_emoji_3, R.id.widget_chip_label_3, R.id.widget_chip_time_3),
         intArrayOf(R.id.widget_chip_4, R.id.widget_chip_bg_4, R.id.widget_chip_emoji_4, R.id.widget_chip_label_4, R.id.widget_chip_time_4),
         intArrayOf(R.id.widget_chip_5, R.id.widget_chip_bg_5, R.id.widget_chip_emoji_5, R.id.widget_chip_label_5, R.id.widget_chip_time_5),
+        intArrayOf(R.id.widget_chip_6, R.id.widget_chip_bg_6, R.id.widget_chip_emoji_6, R.id.widget_chip_label_6, R.id.widget_chip_time_6),
     )
 
-    /** Below this many dp wide the chip row is dropped; below [COMPACT_HEIGHT_DP] tall, the date row too. */
-    private const val COMPACT_WIDTH_DP = 220
+    /**
+     * Below this many dp wide the chip row is dropped; below [COMPACT_HEIGHT_DP]
+     * tall, the date row too. Six chips need ~35 dp each for the 34 dp disc,
+     * plus the card's 28 dp of padding.
+     */
+    private const val COMPACT_WIDTH_DP = 240
     private const val COMPACT_HEIGHT_DP = 100
 
     fun render(
@@ -102,8 +107,8 @@ object PrayerWidgetRenderer {
             false,
         )
 
-        // Chips — whatever the resolution left after removing the featured
-        // prayer; normally five, fewer only for a malformed snapshot.
+        // Chips — the display day's slots, the featured prayer included;
+        // normally six, fewer only for a malformed snapshot.
         val cardColor = context.getColor(R.color.widget_card)
         for ((index, ids) in chipIds.withIndex()) {
             val slot = resolution.chips.getOrNull(index)
