@@ -23,7 +23,12 @@ class EPlaybackOptions extends Equatable {
     this.rangeFrom,
     this.rangeTo,
     this.repeatCount = 0,
+    this.ayahRepeat = 1,
   });
+
+  /// Upper bound for [ayahRepeat]. Every extra repetition multiplies the
+  /// playlist handed to the platform, so it is kept modest.
+  static const int maxAyahRepeat = 10;
 
   final RepeatMode repeatMode;
   final double speed;
@@ -43,6 +48,12 @@ class EPlaybackOptions extends Equatable {
   /// Number of times to repeat the active unit. `0` means infinite.
   final int repeatCount;
 
+  /// Times each ayah plays before the next one, inside a [RepeatMode.range]
+  /// or [RepeatMode.surah] unit — `1 1 1 2 2 2 …` for memorisation. `1` plays
+  /// the unit straight through. Ignored by the other modes: a single ayah is
+  /// already what [repeatCount] loops.
+  final int ayahRepeat;
+
   EPlaybackOptions copyWith({
     RepeatMode? repeatMode,
     double? speed,
@@ -52,6 +63,7 @@ class EPlaybackOptions extends Equatable {
     ParamAyahRef? rangeFrom,
     ParamAyahRef? rangeTo,
     int? repeatCount,
+    int? ayahRepeat,
   }) {
     return EPlaybackOptions(
       repeatMode: repeatMode ?? this.repeatMode,
@@ -62,6 +74,7 @@ class EPlaybackOptions extends Equatable {
       rangeFrom: rangeFrom ?? this.rangeFrom,
       rangeTo: rangeTo ?? this.rangeTo,
       repeatCount: repeatCount ?? this.repeatCount,
+      ayahRepeat: ayahRepeat ?? this.ayahRepeat,
     );
   }
 
@@ -75,6 +88,7 @@ class EPlaybackOptions extends Equatable {
     rangeFrom,
     rangeTo,
     repeatCount,
+    ayahRepeat,
   ];
 }
 

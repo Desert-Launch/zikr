@@ -35,7 +35,9 @@ import 'package:quran/modules/quran/presentation/cubits/s_audio_player.dart';
 /// - `completed` marks the end of the whole playlist, not of one ayah, so
 ///   sleep-timer boundaries are judged on index changes instead;
 /// - a finite repeat is laid out as N copies of the unit and an infinite one
-///   runs under [LoopMode.all], so repeat seams are gapless too.
+///   runs under [LoopMode.all], so repeat seams are gapless too;
+/// - a per-ayah repeat ([EPlaybackOptions.ayahRepeat]) is laid out the same
+///   way, as consecutive copies of each ayah inside every pass.
 ///
 /// Still offline-first: every entry resolves to a local file when it is on
 /// disk, otherwise to a CDN URL streamed in place, and ayat are downloaded in
@@ -104,8 +106,9 @@ class CBAudioPlayer extends Cubit<SAudioPlayer> {
   ESleepTimer? _stopAtBoundary;
 
   /// The playlist currently handed to the platform, one entry per audio clip:
-  /// every ayah of the unit plus any basmalah lead-in, repeated once per
-  /// laid-out pass. Maps a platform index back to an ayah.
+  /// every ayah of the unit (as many times in a row as the per-ayah repeat
+  /// asks) plus any basmalah lead-in, repeated once per laid-out pass. Maps a
+  /// platform index back to an ayah.
   List<_Track> _tracks = const [];
 
   /// Index into [_tracks] the platform is playing, to tell which entry a change
@@ -367,12 +370,15 @@ class CBAudioPlayer extends Cubit<SAudioPlayer> {
   /// used when the unit is rebuilt under the running session (a reciter switch)
   /// and playback should carry on where it stood. [autoPlay] false loads the
   /// playlist without starting it, so a paused session stays paused.
+  /// [keepPassTally] carries the completed-pass count over such a rebuild,
+  /// so a finite repeat is not started over.
   Future<void> _startQueue(
     List<ParamAyahRef> queue,
     MSurah? surah,
     String reciterId, {
     int startQueueIndex = 0,
     bool autoPlay = true,
+    bool keepPassTally = false,
   }) async {
     if (queue.isEmpty) {
       emit(state.copyWith(status: PlayerStatus.idle));
@@ -384,7 +390,7 @@ class CBAudioPlayer extends Cubit<SAudioPlayer> {
     _activeSurah = surah;
     _activeReciterId = reciterId;
     _playToken++;
-    _completedPasses = 0;
+    if (!keepPassTally) _completedPasses = 0;
     // Forget where the outgoing playlist stood: its index must not be compared
     // against the incoming one, or the switch reads as a wrap or a boundary.
     _trackIndex = null;
@@ -524,20 +530,33 @@ class CBAudioPlayer extends Cubit<SAudioPlayer> {
         return null;
       }, (s) => s);
       if (source == null) continue;
-      tracks.add(
-        _Track(
-          queueIndex: i,
-          ref: ref,
-          source: _ayahSource(
-            _activeSurah,
-            ref,
-            source.uri,
-            isLocal: source.isLocal,
-          ),
+      // Each ayah is laid out [_ayahCopies] times in a row — `1 1 1 2 2 2 …` —
+      // so the repetitions are gapless like every other seam. The basmalah
+      // above is not repeated with it: it introduces the ayah, once.
+      final track = _Track(
+        queueIndex: i,
+        ref: ref,
+        source: _ayahSource(
+          _activeSurah,
+          ref,
+          source.uri,
+          isLocal: source.isLocal,
         ),
       );
+      for (var copy = 0; copy < _ayahCopies; copy++) {
+        tracks.add(track);
+      }
     }
     return tracks;
+  }
+
+  /// How many times in a row each ayah of the unit is laid out. Only a range
+  /// or surah unit repeats per ayah; a single-ayah unit is already looped by
+  /// the repeat count, and a plain play-through has no repeat at all.
+  int get _ayahCopies {
+    final mode = state.options.repeatMode;
+    if (mode != RepeatMode.range && mode != RepeatMode.surah) return 1;
+    return state.options.ayahRepeat.clamp(1, EPlaybackOptions.maxAyahRepeat);
   }
 
   /// How many copies of a [passLength]-item unit to lay out for a [target]-pass
@@ -609,7 +628,13 @@ class CBAudioPlayer extends Cubit<SAudioPlayer> {
     emit(
       state.copyWith(queueIndex: track.queueIndex, currentAyah: track.ref),
     );
-    unawaited(_prefetch(track.queueIndex + 1));
+    // Once per ayah, not once per laid-out copy of it.
+    final left = previous != null && previous < _tracks.length
+        ? _tracks[previous]
+        : null;
+    if (left == null || left.queueIndex != track.queueIndex) {
+      unawaited(_prefetch(track.queueIndex + 1));
+    }
   }
 
   /// True when playback should stop now that [done] has finished, under the
@@ -852,7 +877,14 @@ class CBAudioPlayer extends Cubit<SAudioPlayer> {
     }
   }
 
-  Future<void> playRange(ParamAyahRef from, ParamAyahRef to) async {
+  /// Loops the [from]–[to] block. [ayahRepeat], when given, is how many times
+  /// each ayah plays before the next one (`1 1 1 2 2 2 …`); it is remembered
+  /// like the other repeat settings.
+  Future<void> playRange(
+    ParamAyahRef from,
+    ParamAyahRef to, {
+    int? ayahRepeat,
+  }) async {
     try {
       // v1: only supports ranges inside a single surah; cross-surah ranges
       // can be added later by stitching `ayatOfSurah` results.
@@ -865,6 +897,12 @@ class CBAudioPlayer extends Cubit<SAudioPlayer> {
       }
       final lo = from.ayah <= to.ayah ? from.ayah : to.ayah;
       final hi = from.ayah <= to.ayah ? to.ayah : from.ayah;
+      final copies = ayahRepeat?.clamp(1, EPlaybackOptions.maxAyahRepeat);
+      if (copies != null) {
+        // Remembered like the other repeat settings — but on its own, since
+        // the range mode below is per-session and must not be written back.
+        unawaited(_savePrefs(state.options.copyWith(ayahRepeat: copies)));
+      }
       // Set range mode (in-memory) so the repeat engine loops the block.
       emit(
         state.copyWith(
@@ -874,6 +912,7 @@ class CBAudioPlayer extends Cubit<SAudioPlayer> {
             repeatMode: RepeatMode.range,
             rangeFrom: ParamAyahRef(surah: from.surah, ayah: lo),
             rangeTo: ParamAyahRef(surah: from.surah, ayah: hi),
+            ayahRepeat: copies,
           ),
         ),
       );
@@ -929,25 +968,61 @@ class CBAudioPlayer extends Cubit<SAudioPlayer> {
 
   Future<void> next() async {
     final idx = _trackIndex;
-    if (idx == null || idx + 1 >= _tracks.length) return;
+    if (idx == null) return;
+    // The next *ayah*, past any remaining copies of this one — except from a
+    // basmalah lead-in, whose next entry is the ayah it introduces.
+    final target = _tracks[idx].isBasmalah ? idx + 1 : _ayahEnd(idx);
+    if (target >= _tracks.length) return;
     // A jump the user asked for is not an entry running out: forget the cursor
     // so it counts no repeat pass and ends no sleep-timer boundary.
     _trackIndex = null;
-    await _player.seekToNext();
+    await _player.seek(Duration.zero, index: target);
   }
 
   Future<void> previous() async {
     final idx = _trackIndex;
     if (idx == null) return;
-    // Restart the current ayah if we're well into it, otherwise step back.
+    // Restart the current clip if we're well into it, otherwise step back —
+    // to the first copy of this ayah while a later one is playing, else to the
+    // first copy of the previous ayah.
     if (idx == 0 || state.position > const Duration(seconds: 3)) {
       await _player.seek(Duration.zero);
       if (!_player.playing) await _player.play();
       return;
     }
+    final start = _ayahStart(idx);
+    final target = start < idx ? start : _ayahStart(idx - 1);
     _trackIndex = null; // see [next]
-    await _player.seekToPrevious();
+    await _player.seek(Duration.zero, index: target);
   }
+
+  /// First copy of the ayah at [index] — the run of entries sharing its pass
+  /// and queue slot. Its basmalah lead-in is skipped, so stepping back to an
+  /// ayah does not re-open with the basmalah, unless [index] is the lead-in
+  /// itself.
+  int _ayahStart(int index) {
+    var i = index;
+    while (i > 0 && _sameAyah(_tracks[i - 1], _tracks[index])) {
+      i--;
+    }
+    while (i < index && _tracks[i].isBasmalah) {
+      i++;
+    }
+    return i;
+  }
+
+  /// First entry after the run of copies the ayah at [index] belongs to;
+  /// `_tracks.length` when it is the last one.
+  int _ayahEnd(int index) {
+    var i = index + 1;
+    while (i < _tracks.length && _sameAyah(_tracks[i], _tracks[index])) {
+      i++;
+    }
+    return i;
+  }
+
+  bool _sameAyah(_Track a, _Track b) =>
+      a.pass == b.pass && a.queueIndex == b.queueIndex;
 
   Future<void> seekTo(Duration position) => _player.seek(position);
 
@@ -979,6 +1054,36 @@ class CBAudioPlayer extends Cubit<SAudioPlayer> {
     emit(state.copyWith(options: state.options.copyWith(repeatCount: clamped)));
     _persistOptions();
     _completedPasses = 0; // restart the counting window
+  }
+
+  /// Sets how many times each ayah of a range/surah unit plays before the
+  /// next. A unit already loaded is laid out again in place — same ayah, same
+  /// pass tally, paused stays paused — so the change is heard at once.
+  Future<void> setAyahRepeat(int count) async {
+    final clamped = count.clamp(1, EPlaybackOptions.maxAyahRepeat);
+    if (clamped == state.options.ayahRepeat) return;
+    emit(state.copyWith(options: state.options.copyWith(ayahRepeat: clamped)));
+    _persistOptions();
+
+    final mode = state.options.repeatMode;
+    if (mode != RepeatMode.range && mode != RepeatMode.surah) return;
+    const restartable = <PlayerStatus>{
+      PlayerStatus.playing,
+      PlayerStatus.paused,
+      PlayerStatus.loading,
+      PlayerStatus.buffering,
+    };
+    final queue = state.queue;
+    if (queue.isEmpty || !restartable.contains(state.status)) return;
+
+    await _startQueue(
+      queue,
+      _activeSurah,
+      _activeReciterId ?? await _resolveReciterId(),
+      startQueueIndex: state.queueIndex ?? 0,
+      autoPlay: state.status != PlayerStatus.paused,
+      keepPassTally: true,
+    );
   }
 
   Future<void> setAfterRepeat(EAfterRepeat value) async {

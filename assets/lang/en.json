@@ -193,6 +193,7 @@
   "player_repeat_surah": "Surah",
   "player_repeat_count": "Repeat count",
   "player_repeat_infinite": "∞",
+  "player_ayah_repeat": "Repeat each ayah",
   "player_repeat_after": "When finished",
   "player_after_stop": "Stop",
   "player_after_continue": "Continue",

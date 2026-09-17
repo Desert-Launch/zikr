@@ -193,6 +193,7 @@
   "player_repeat_surah": "سورة",
   "player_repeat_count": "عدد التكرارات",
   "player_repeat_infinite": "∞",
+  "player_ayah_repeat": "تكرار كل آية",
   "player_repeat_after": "بعد الانتهاء",
   "player_after_stop": "إيقاف",
   "player_after_continue": "متابعة",

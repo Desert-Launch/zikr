@@ -17,6 +17,7 @@ class DSLocalPlaybackPrefs {
     final speed = box.get(BoxPlaybackPrefs.speedKey);
     final repeatMode = box.get(BoxPlaybackPrefs.repeatModeKey);
     final repeatCount = box.get(BoxPlaybackPrefs.repeatCountKey);
+    final ayahRepeat = box.get(BoxPlaybackPrefs.ayahRepeatKey);
     final afterRepeat = box.get(BoxPlaybackPrefs.afterRepeatKey);
     final autoAdvanceSurah = box.get(BoxPlaybackPrefs.autoAdvanceSurahKey);
 
@@ -29,6 +30,7 @@ class DSLocalPlaybackPrefs {
           ? RepeatModeX.fromStorage(repeatMode)
           : null,
       repeatCount: repeatCount is int ? repeatCount : null,
+      ayahRepeat: ayahRepeat is int && ayahRepeat >= 1 ? ayahRepeat : null,
       afterRepeat: afterRepeat is String
           ? EAfterRepeatX.fromStorage(afterRepeat)
           : null,
@@ -41,6 +43,7 @@ class DSLocalPlaybackPrefs {
       BoxPlaybackPrefs.speedKey: options.speed,
       BoxPlaybackPrefs.repeatModeKey: options.repeatMode.storageKey,
       BoxPlaybackPrefs.repeatCountKey: options.repeatCount,
+      BoxPlaybackPrefs.ayahRepeatKey: options.ayahRepeat,
       BoxPlaybackPrefs.afterRepeatKey: options.afterRepeat.storageKey,
       BoxPlaybackPrefs.autoAdvanceSurahKey: options.autoAdvanceSurah,
     });

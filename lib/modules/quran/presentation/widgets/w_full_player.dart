@@ -525,8 +525,9 @@ class _RepeatRow extends StatelessWidget {
   }
 }
 
-/// Repeat-count stepper, after-repeat toggle (shown only when a repeat mode is
-/// active), plus the auto-advance-surah switch.
+/// Repeat-count stepper, per-ayah repeat stepper (range/surah only) and
+/// after-repeat toggle — shown only when a repeat mode is active — plus the
+/// auto-advance-surah switch.
 class _RepeatExtras extends StatelessWidget {
   const _RepeatExtras();
 
@@ -536,17 +537,41 @@ class _RepeatExtras extends StatelessWidget {
       buildWhen: (a, b) =>
           a.options.repeatMode != b.options.repeatMode ||
           a.options.repeatCount != b.options.repeatCount ||
+          a.options.ayahRepeat != b.options.ayahRepeat ||
           a.options.afterRepeat != b.options.afterRepeat ||
           a.options.autoAdvanceSurah != b.options.autoAdvanceSurah,
       builder: (context, state) {
         final cubit = BlocProvider.of<CBAudioPlayer>(context);
         final opts = state.options;
+        final mode = opts.repeatMode;
+        // Per-ayah repeat only means something for a multi-ayah unit.
+        final perAyah = mode == RepeatMode.range || mode == RepeatMode.surah;
         return Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            if (opts.repeatMode != RepeatMode.off) ...[
+            if (mode != RepeatMode.off) ...[
               SizedBox(height: 4.h),
-              _countRow(context, opts.repeatCount, cubit.setRepeatCount),
+              _StepperRow(
+                label: 'player_repeat_count'.tr(),
+                value: opts.repeatCount == 0
+                    ? 'player_repeat_infinite'.tr()
+                    : '${opts.repeatCount}',
+                onDecrement: opts.repeatCount <= 0
+                    ? null
+                    : () => cubit.setRepeatCount(opts.repeatCount - 1),
+                onIncrement: () => cubit.setRepeatCount(opts.repeatCount + 1),
+              ),
+              if (perAyah)
+                _StepperRow(
+                  label: 'player_ayah_repeat'.tr(),
+                  value: '${opts.ayahRepeat}',
+                  onDecrement: opts.ayahRepeat <= 1
+                      ? null
+                      : () => cubit.setAyahRepeat(opts.ayahRepeat - 1),
+                  onIncrement: opts.ayahRepeat >= EPlaybackOptions.maxAyahRepeat
+                      ? null
+                      : () => cubit.setAyahRepeat(opts.ayahRepeat + 1),
+                ),
               _afterRow(context, opts.afterRepeat, cubit.setAfterRepeat),
             ],
             SwitchListTile(
@@ -562,47 +587,6 @@ class _RepeatExtras extends StatelessWidget {
           ],
         );
       },
-    );
-  }
-
-  Widget _countRow(
-    BuildContext context,
-    int count,
-    ValueChanged<int> onChanged,
-  ) {
-    return Padding(
-      padding: EdgeInsets.symmetric(horizontal: 4.w),
-      child: Row(
-        children: [
-          Text(
-            'player_repeat_count'.tr(),
-            style: TextStyle(fontSize: 13.sp, fontWeight: FontWeight.w600),
-          ),
-          const Spacer(),
-          IconButton(
-            visualDensity: VisualDensity.compact,
-            onPressed: count <= 0 ? null : () => onChanged(count - 1),
-            icon: const Icon(Icons.remove_circle_outline_rounded),
-          ),
-          SizedBox(
-            width: 36.w,
-            child: Text(
-              count == 0 ? 'player_repeat_infinite'.tr() : '$count',
-              textAlign: TextAlign.center,
-              style: TextStyle(
-                fontSize: 15.sp,
-                fontWeight: FontWeight.w700,
-                color: AppColorsLight.primary,
-              ),
-            ),
-          ),
-          IconButton(
-            visualDensity: VisualDensity.compact,
-            onPressed: () => onChanged(count + 1),
-            icon: const Icon(Icons.add_circle_outline_rounded),
-          ),
-        ],
-      ),
     );
   }
 
@@ -638,6 +622,63 @@ class _RepeatExtras extends StatelessWidget {
             ],
             selected: {value},
             onSelectionChanged: (s) => onChanged(s.first),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+/// Label on the leading edge, a −/+ pair around the value on the trailing
+/// edge. A null callback disables that side at the bound.
+class _StepperRow extends StatelessWidget {
+  const _StepperRow({
+    required this.label,
+    required this.value,
+    required this.onDecrement,
+    required this.onIncrement,
+  });
+
+  final String label;
+  final String value;
+  final VoidCallback? onDecrement;
+  final VoidCallback? onIncrement;
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: EdgeInsets.symmetric(horizontal: 4.w),
+      child: Row(
+        children: [
+          Expanded(
+            child: Text(
+              label,
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+              style: TextStyle(fontSize: 13.sp, fontWeight: FontWeight.w600),
+            ),
+          ),
+          IconButton(
+            visualDensity: VisualDensity.compact,
+            onPressed: onDecrement,
+            icon: const Icon(Icons.remove_circle_outline_rounded),
+          ),
+          SizedBox(
+            width: 36.w,
+            child: Text(
+              value,
+              textAlign: TextAlign.center,
+              style: TextStyle(
+                fontSize: 15.sp,
+                fontWeight: FontWeight.w700,
+                color: AppColorsLight.primary,
+              ),
+            ),
+          ),
+          IconButton(
+            visualDensity: VisualDensity.compact,
+            onPressed: onIncrement,
+            icon: const Icon(Icons.add_circle_outline_rounded),
           ),
         ],
       ),
@@ -853,11 +894,16 @@ class _RangePickerState extends State<_RangePicker> {
   MSurah? _selected;
   List<MSurah> _all = const [];
 
+  /// Times each ayah plays before the next — `1 1 1 2 2 2 …`.
+  int _ayahRepeat = 1;
+
   @override
   void initState() {
     super.initState();
     _load();
-    final current = Modular.get<CBAudioPlayer>().state.currentAyah;
+    final player = Modular.get<CBAudioPlayer>().state;
+    _ayahRepeat = player.options.ayahRepeat;
+    final current = player.currentAyah;
     if (current != null) {
       _surah = current.surah;
       _fromAyah = current.ayah;
@@ -973,7 +1019,18 @@ class _RangePickerState extends State<_RangePicker> {
               ),
             ],
           ),
-          SizedBox(height: 12.h),
+          SizedBox(height: 6.h),
+          _StepperRow(
+            label: 'player_ayah_repeat'.tr(),
+            value: '$_ayahRepeat',
+            onDecrement: _ayahRepeat <= 1
+                ? null
+                : () => setState(() => _ayahRepeat--),
+            onIncrement: _ayahRepeat >= EPlaybackOptions.maxAyahRepeat
+                ? null
+                : () => setState(() => _ayahRepeat++),
+          ),
+          SizedBox(height: 6.h),
           SizedBox(
             width: double.infinity,
             child: FilledButton.icon(
@@ -1009,6 +1066,7 @@ class _RangePickerState extends State<_RangePicker> {
     Modular.get<CBAudioPlayer>().playRange(
       ParamAyahRef(surah: s, ayah: from),
       ParamAyahRef(surah: s, ayah: to),
+      ayahRepeat: _ayahRepeat,
     );
     Navigator.of(context).pop();
   }

@@ -14,6 +14,7 @@ class BoxPlaybackPrefs extends HiveBoxBase<dynamic> {
   static const String speedKey = 'speed';
   static const String repeatModeKey = 'repeat_mode';
   static const String repeatCountKey = 'repeat_count';
+  static const String ayahRepeatKey = 'ayah_repeat';
   static const String afterRepeatKey = 'after_repeat';
   static const String autoAdvanceSurahKey = 'auto_advance_surah';
 }
