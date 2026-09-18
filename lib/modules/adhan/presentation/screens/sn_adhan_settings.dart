@@ -11,8 +11,6 @@ import 'package:quran/core/widgets/w_gradient_app_bar.dart';
 import 'package:quran/core/widgets/w_shared_scaffold.dart';
 import 'package:quran/modules/adhan/presentation/cubits/cb_adhan_settings.dart';
 import 'package:quran/modules/adhan/presentation/cubits/s_adhan_settings.dart';
-import 'package:quran/modules/adhan/presentation/widgets/w_adhan_alarm_readiness.dart';
-import 'package:quran/modules/adhan/presentation/widgets/w_adhan_before_row.dart';
 import 'package:quran/modules/adhan/presentation/widgets/w_adhan_group.dart';
 import 'package:quran/modules/adhan/presentation/widgets/w_adhan_prayer_row.dart';
 import 'package:quran/modules/adhan/presentation/widgets/w_adhan_section_label.dart';
@@ -54,9 +52,7 @@ class SNAdhanSettings extends StatelessWidget {
         body: Directionality(
           // Explicit extension — `localize_and_translate` also defines `isRTL`
           // on BuildContext, and importing the app extension makes it ambiguous.
-          textDirection: ContextExtensions(context).isRTL
-              ? TextDirection.rtl
-              : TextDirection.ltr,
+          textDirection: ContextExtensions(context).isRTL ? TextDirection.rtl : TextDirection.ltr,
           child: Column(
             children: [
               WGradientAppBar(title: 'adhan_alerts_title'.tr()),
@@ -71,15 +67,9 @@ class SNAdhanSettings extends StatelessWidget {
                           ? EdgeInsets.fromLTRB(19.w, 14, 19.w, 20)
                           : EdgeInsets.fromLTRB(27.w, 24.h, 27.w, 28.h),
                       children: [
-                        if (!state.hasPermission) ...[
-                          _PermissionWarning(onFix: cubit.requestPermission),
-                          gap,
-                        ],
+                        if (!state.hasPermission) ...[_PermissionWarning(onFix: cubit.requestPermission), gap],
                         if (state.needsDefaultDownload) ...[
-                          _DefaultDownloadPrompt(
-                            busy: state.retryingDownload,
-                            onRetry: cubit.retryDefaultDownload,
-                          ),
+                          _DefaultDownloadPrompt(busy: state.retryingDownload, onRetry: cubit.retryDefaultDownload),
                           gap,
                         ],
                         WAdhanSectionLabel('adhan_prayer_alerts_section'.tr()),
@@ -120,9 +110,7 @@ class SNAdhanSettings extends StatelessWidget {
                                     value: state.fullScreenAlarm,
                                     activeTrackColor: _green,
                                     thumbColor: WidgetStateProperty.all(
-                                      state.fullScreenAlarm
-                                          ? Colors.white
-                                          : Colors.grey.shade400,
+                                      state.fullScreenAlarm ? Colors.white : Colors.grey.shade400,
                                     ),
                                     onChanged: cubit.setFullScreenAlarm,
                                   ),
@@ -146,8 +134,7 @@ class SNAdhanSettings extends StatelessWidget {
                             WAdhanSettingRow(
                               icon: Icons.vibration_rounded,
                               title: 'adhan_vibrate'.tr(),
-                              subtitle:
-                                  defaultTargetPlatform == TargetPlatform.iOS
+                              subtitle: defaultTargetPlatform == TargetPlatform.iOS
                                   ? 'adhan_vibrate_hint_ios'.tr()
                                   : 'adhan_vibrate_hint'.tr(),
                               trailing: Transform.scale(
@@ -156,9 +143,7 @@ class SNAdhanSettings extends StatelessWidget {
                                   value: state.vibrate,
                                   activeTrackColor: _green,
                                   thumbColor: WidgetStateProperty.all(
-                                    state.vibrate
-                                        ? Colors.white
-                                        : Colors.grey.shade400,
+                                    state.vibrate ? Colors.white : Colors.grey.shade400,
                                   ),
                                   onChanged: cubit.setVibrate,
                                 ),
@@ -180,9 +165,7 @@ class SNAdhanSettings extends StatelessWidget {
                                     value: state.duaAfterAdhan,
                                     activeTrackColor: _green,
                                     thumbColor: WidgetStateProperty.all(
-                                      state.duaAfterAdhan
-                                          ? Colors.white
-                                          : Colors.grey.shade400,
+                                      state.duaAfterAdhan ? Colors.white : Colors.grey.shade400,
                                     ),
                                     onChanged: cubit.setDuaAfterAdhan,
                                   ),
@@ -191,17 +174,14 @@ class SNAdhanSettings extends StatelessWidget {
                             // The OS grants the toggle above depends on. Each
                             // flip deep-links to its settings page — Android
                             // exposes no in-app way to change either.
-                            for (final info in alarmPermissionInfos(
-                              state.alarmPermissions,
-                            ))
+                            for (final info in alarmPermissionInfos(state.alarmPermissions))
                               WAdhanSettingRow(
                                 icon: info.icon,
                                 title: info.titleKey.tr(),
                                 subtitle: info.subtitleKey.tr(),
                                 trailing: WAlarmPermissionSwitch(
                                   granted: info.granted,
-                                  onTap: () =>
-                                      cubit.openAlarmSetting(info.setting),
+                                  onTap: () => cubit.openAlarmSetting(info.setting),
                                 ),
                               ),
                           ],
@@ -213,11 +193,7 @@ class SNAdhanSettings extends StatelessWidget {
                         SizedBox(height: isTab ? 10 : 12.h),
                         _TestAdhanButton(cubit: cubit),
                         SizedBox(height: isTab ? 8 : 10.h),
-                        _TestAdhanButton(
-                          cubit: cubit,
-                          prayer: EPrayer.fajr,
-                          labelKey: 'adhan_test_fajr_button',
-                        ),
+                        _TestAdhanButton(cubit: cubit, prayer: EPrayer.fajr, labelKey: 'adhan_test_fajr_button'),
                         // if (defaultTargetPlatform == TargetPlatform.android) ...[
                         //   gap,
                         //   WAdhanSectionLabel('adhan_playback_section'.tr()),
@@ -311,11 +287,7 @@ class _DefaultDownloadPrompt extends StatelessWidget {
         ),
         child: Row(
           children: [
-            Icon(
-              Icons.cloud_download_outlined,
-              size: 20.r,
-              color: const Color(0xFFD79A3B),
-            ),
+            Icon(Icons.cloud_download_outlined, size: 20.r, color: const Color(0xFFD79A3B)),
             SizedBox(width: 12.w),
             Expanded(
               child: Column(
@@ -332,10 +304,7 @@ class _DefaultDownloadPrompt extends StatelessWidget {
                   SizedBox(height: 2.h),
                   Text(
                     'adhan_default_download_hint'.tr(),
-                    style: GoogleFonts.cairo(
-                      fontSize: 9.sp,
-                      color: const Color(0xFFA98B5B),
-                    ),
+                    style: GoogleFonts.cairo(fontSize: 9.sp, color: const Color(0xFFA98B5B)),
                   ),
                 ],
               ),
@@ -345,19 +314,12 @@ class _DefaultDownloadPrompt extends StatelessWidget {
               SizedBox(
                 width: 18.r,
                 height: 18.r,
-                child: CircularProgressIndicator(
-                  strokeWidth: 2.r,
-                  color: const Color(0xFFD79A3B),
-                ),
+                child: CircularProgressIndicator(strokeWidth: 2.r, color: const Color(0xFFD79A3B)),
               )
             else
               Text(
                 'adhan_download'.tr(),
-                style: GoogleFonts.cairo(
-                  fontSize: 11.sp,
-                  fontWeight: FontWeight.w700,
-                  color: const Color(0xFFC8841F),
-                ),
+                style: GoogleFonts.cairo(fontSize: 11.sp, fontWeight: FontWeight.w700, color: const Color(0xFFC8841F)),
               ),
           ],
         ),
@@ -371,11 +333,7 @@ class _DefaultDownloadPrompt extends StatelessWidget {
 /// exactly as it would for a real adhan) without waiting for a prayer time.
 /// Shows a confirmation / failure snackbar.
 class _TestAdhanButton extends StatefulWidget {
-  const _TestAdhanButton({
-    required this.cubit,
-    this.prayer = EPrayer.dhuhr,
-    this.labelKey = 'adhan_test_button',
-  });
+  const _TestAdhanButton({required this.cubit, this.prayer = EPrayer.dhuhr, this.labelKey = 'adhan_test_button'});
 
   final CBAdhanSettings cubit;
 
@@ -423,26 +381,18 @@ class _TestAdhanButtonState extends State<_TestAdhanButton> {
           foregroundColor: _green,
           side: const BorderSide(color: _green),
           padding: EdgeInsets.symmetric(vertical: 14.h),
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(14.r),
-          ),
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14.r)),
         ),
         icon: _busy
             ? SizedBox(
                 width: 16.r,
                 height: 16.r,
-                child: CircularProgressIndicator(
-                  strokeWidth: 2.r,
-                  color: _green,
-                ),
+                child: CircularProgressIndicator(strokeWidth: 2.r, color: _green),
               )
             : Icon(Icons.notifications_active_outlined, size: 18.r),
         label: Text(
           widget.labelKey.tr(),
-          style: GoogleFonts.cairo(
-            fontSize: 12.sp,
-            fontWeight: FontWeight.w700,
-          ),
+          style: GoogleFonts.cairo(fontSize: 12.sp, fontWeight: FontWeight.w700),
         ),
       ),
     );
@@ -470,30 +420,18 @@ class _PermissionWarning extends StatelessWidget {
         ),
         child: Row(
           children: [
-            Icon(
-              Icons.notifications_off_outlined,
-              size: 20.r,
-              color: const Color(0xFFC0473F),
-            ),
+            Icon(Icons.notifications_off_outlined, size: 20.r, color: const Color(0xFFC0473F)),
             SizedBox(width: 12.w),
             Expanded(
               child: Text(
                 'adhan_permission_denied'.tr(),
-                style: GoogleFonts.cairo(
-                  fontSize: 12.sp,
-                  fontWeight: FontWeight.w600,
-                  color: const Color(0xFF8E3A34),
-                ),
+                style: GoogleFonts.cairo(fontSize: 12.sp, fontWeight: FontWeight.w600, color: const Color(0xFF8E3A34)),
               ),
             ),
             SizedBox(width: 10.w),
             Text(
               'adhan_permission_fix'.tr(),
-              style: GoogleFonts.cairo(
-                fontSize: 11.sp,
-                fontWeight: FontWeight.w700,
-                color: const Color(0xFFC0473F),
-              ),
+              style: GoogleFonts.cairo(fontSize: 11.sp, fontWeight: FontWeight.w700, color: const Color(0xFFC0473F)),
             ),
           ],
         ),
@@ -524,11 +462,7 @@ class _BatteryGuidanceNote extends StatelessWidget {
           Row(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Icon(
-                Icons.battery_alert_outlined,
-                size: 18.r,
-                color: const Color(0xFF2F7E63),
-              ),
+              Icon(Icons.battery_alert_outlined, size: 18.r, color: const Color(0xFF2F7E63)),
               SizedBox(width: 10.w),
               Expanded(
                 child: Column(
@@ -545,11 +479,7 @@ class _BatteryGuidanceNote extends StatelessWidget {
                     SizedBox(height: 3.h),
                     Text(
                       'adhan_battery_note_hint'.tr(),
-                      style: GoogleFonts.cairo(
-                        fontSize: 10.sp,
-                        height: 1.5,
-                        color: const Color(0xFF6F8079),
-                      ),
+                      style: GoogleFonts.cairo(fontSize: 10.sp, height: 1.5, color: const Color(0xFF6F8079)),
                     ),
                   ],
                 ),
@@ -562,11 +492,7 @@ class _BatteryGuidanceNote extends StatelessWidget {
               onPressed: onAllow,
               child: Text(
                 'adhan_battery_note_action'.tr(),
-                style: GoogleFonts.cairo(
-                  fontSize: 11.sp,
-                  fontWeight: FontWeight.w700,
-                  color: const Color(0xFF2F7E63),
-                ),
+                style: GoogleFonts.cairo(fontSize: 11.sp, fontWeight: FontWeight.w700, color: const Color(0xFF2F7E63)),
               ),
             ),
           ),
