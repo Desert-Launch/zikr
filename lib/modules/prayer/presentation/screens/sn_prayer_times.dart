@@ -114,7 +114,7 @@ class _SNPrayerTimesState extends State<SNPrayerTimes> with WidgetsBindingObserv
                   )
                 else
                   SliverPadding(
-                    padding: EdgeInsets.fromLTRB(16.w, 12.h, 16.w, 28.h),
+                    padding: EdgeInsets.fromLTRB(16.w, 8.h, 16.w, 24.h),
                     sliver: _buildList(state),
                   ),
               ],

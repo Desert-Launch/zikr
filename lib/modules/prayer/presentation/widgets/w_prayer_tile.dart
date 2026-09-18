@@ -37,7 +37,7 @@ class WPrayerTile extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final tile = Container(
-      padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 14.h),
+      padding: EdgeInsets.symmetric(horizontal: 14.w, vertical: 11.h),
       decoration: BoxDecoration(
         color: isNext ? null : Colors.white,
         gradient: isNext
@@ -75,10 +75,10 @@ class WPrayerTile extends StatelessWidget {
         Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text(_label(slot.prayer), style: AppTextStyles.ink14W500),
+            Text(_label(slot.prayer), style: AppTextStyles.ink14W500.copyWith(fontSize: 15.sp, height: 1.3)),
             if (!_isPast) ...[
-              SizedBox(height: 3.h),
-              Text('prayer_upcoming'.tr(), style: AppTextStyles.grey12W400),
+              SizedBox(height: 1.h),
+              Text('prayer_upcoming'.tr(), style: _captionGrey),
             ],
           ],
         ),
@@ -86,7 +86,7 @@ class WPrayerTile extends StatelessWidget {
         Column(
           crossAxisAlignment: CrossAxisAlignment.end,
           children: [
-            Text(_formatTime(slot.time), style: AppTextStyles.ink18W500),
+            Text(_formatTime(slot.time), style: AppTextStyles.ink18W500.copyWith(height: 1.2)),
             if (onNotificationChanged != null)
               Row(
                 children: [
@@ -94,19 +94,22 @@ class WPrayerTile extends StatelessWidget {
                     notificationEnabled
                         ? 'prayer_notification_on'.tr()
                         : 'prayer_notification_off'.tr(),
-                    style: AppTextStyles.grey12W400,
+                    style: _captionGrey,
                   ),
                   SizedBox(width: 2.w),
-                  Switch.adaptive(
-                    value: notificationEnabled,
-                    activeTrackColor: green,
-                    onChanged: onNotificationChanged,
+                  _compactSwitch(
+                    Switch.adaptive(
+                      value: notificationEnabled,
+                      activeTrackColor: green,
+                      materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                      onChanged: onNotificationChanged,
+                    ),
                   ),
                   SizedBox(width: 2.w),
                   Icon(
                     Icons.notifications_none_rounded,
                     color: green,
-                    size: 20.r,
+                    size: 18.r,
                   ),
                 ],
               ),
@@ -128,10 +131,10 @@ class WPrayerTile extends StatelessWidget {
             Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(_label(slot.prayer), style: AppTextStyles.white14W500),
+                Text(_label(slot.prayer), style: AppTextStyles.white14W500.copyWith(fontSize: 15.sp, height: 1.3)),
                 Text(
                   '${'prayer_after'.tr()} ${_formatDuration(remaining)}',
-                  style: AppTextStyles.white12W400,
+                  style: AppTextStyles.white12W400.copyWith(height: 1.2),
                 ),
               ],
             ),
@@ -139,7 +142,7 @@ class WPrayerTile extends StatelessWidget {
             Column(
               crossAxisAlignment: CrossAxisAlignment.end,
               children: [
-                Text(_formatTime(slot.time), style: AppTextStyles.white18W500),
+                Text(_formatTime(slot.time), style: AppTextStyles.white18W500.copyWith(height: 1.2)),
                 Row(
                   children: [
                     Text(
@@ -165,18 +168,21 @@ class WPrayerTile extends StatelessWidget {
                     // Material's unselected thumb is `outline` grey, which is
                     // muddy on the gradient, and Cupertino's is always white.
                     // Pinning makes both platforms agree in both states.
-                    Switch.adaptive(
-                      value: notificationEnabled,
-                      activeTrackColor: gold,
-                      inactiveTrackColor: Colors.white24,
-                      thumbColor: const WidgetStatePropertyAll(Colors.white),
-                      onChanged: onNotificationChanged,
+                    _compactSwitch(
+                      Switch.adaptive(
+                        value: notificationEnabled,
+                        activeTrackColor: gold,
+                        inactiveTrackColor: Colors.white24,
+                        thumbColor: const WidgetStatePropertyAll(Colors.white),
+                        materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                        onChanged: onNotificationChanged,
+                      ),
                     ),
                     SizedBox(width: 2.w),
                     Icon(
                       Icons.notifications_none_rounded,
                       color: Colors.white,
-                      size: 20.r,
+                      size: 18.r,
                     ),
                   ],
                 ),
@@ -184,27 +190,26 @@ class WPrayerTile extends StatelessWidget {
             ),
           ],
         ),
-        Divider(color: Colors.white.withValues(alpha: 0.24), height: 24.h),
+        Divider(color: Colors.white.withValues(alpha: 0.24), height: 20.h),
         Row(
           children: [
             Text(
               'prayer_time_remaining'.tr(),
               style: AppTextStyles.white12W400.copyWith(
+                height: 1.2,
                 color: Colors.white.withValues(alpha: 0.72),
               ),
             ),
             const Spacer(),
             Text(
               '${(progress * 100).round()}%',
-              style: AppTextStyles.white12W400,
+              style: AppTextStyles.white12W400.copyWith(height: 1.2),
             ),
           ],
         ),
-
-        SizedBox(height: 5.h),
+        SizedBox(height: 4.h),
         Directionality(
           textDirection: context.isRTL ? TextDirection.rtl : TextDirection.ltr,
-
           child: ClipRRect(
             borderRadius: BorderRadius.circular(2.r),
             child: LinearProgressIndicator(
@@ -219,6 +224,22 @@ class WPrayerTile extends StatelessWidget {
       ],
     );
   }
+
+  /// Caption under the name and beside the switch, on a tight line so the two
+  /// rows stack inside the badge.
+  TextStyle get _captionGrey => AppTextStyles.grey12W400.copyWith(height: 1.2);
+
+  /// Shrinks the switch to the row it sits in.
+  ///
+  /// A [Switch] lays out at its 48px tap target whatever it draws, and that
+  /// one box set the height of every tile — six of them did not fit a phone.
+  /// `shrinkWrap` drops it to 40px and the fitted box scales the drawn switch
+  /// down to 34px on top of that; hit-testing follows the transform, so the
+  /// toggle stays tappable at its drawn size.
+  Widget _compactSwitch(Switch child) => SizedBox(
+    height: 34.h,
+    child: FittedBox(child: child),
+  );
 
   /// Fraction of the gap between the previous salah and [target] that has
   /// elapsed.

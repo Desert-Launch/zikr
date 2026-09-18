@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_modular/flutter_modular.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:localize_and_translate/localize_and_translate.dart';
-import 'package:quran/core/extension/build_context.dart';
 import 'package:quran/core/services/routes/routes_names.dart';
 import 'package:quran/core/theme/app_text_styles.dart';
 import 'package:quran/core/utils/helper/date_labels.dart';
@@ -21,9 +20,11 @@ class WPrayerHeader extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final now = DateTime.now();
+    // Sized by its content rather than a fixed height: the header is the
+    // single biggest block on a screen that has to hold six tiles under it, and
+    // a fixed 258.h kept ~50px of green that carried nothing.
     return Container(
-      height: context.isTablet ? 190.h : 258.h,
-      padding: EdgeInsets.fromLTRB(18.w, 8.h, 18.w, 16.h),
+      padding: EdgeInsets.fromLTRB(16.w, 0, 16.w, 14.h),
       decoration: BoxDecoration(
         color: green,
         borderRadius: BorderRadius.vertical(bottom: Radius.circular(30.r)),
@@ -50,33 +51,41 @@ class WPrayerHeader extends StatelessWidget {
                   children: [
                     IconButton(
                       onPressed: NavHelper.back,
+                      visualDensity: VisualDensity.compact,
                       icon: const WLocalizeRotation(
                         reverse: true,
                         child: Icon(Icons.arrow_back_rounded, color: Colors.white),
                       ),
                     ),
-                    SizedBox(width: 7.w),
+                    SizedBox(width: 6.w),
                     Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Text('prayer_title'.tr(), style: AppTextStyles.white22W500),
-                        Text('prayer_header_subtitle'.tr(), style: AppTextStyles.white14W400),
+                        Text(
+                          'prayer_title'.tr(),
+                          style: AppTextStyles.white22W500.copyWith(height: 1.3),
+                        ),
+                        Text(
+                          'prayer_header_subtitle'.tr(),
+                          style: AppTextStyles.white14W400.copyWith(height: 1.2),
+                        ),
                       ],
                     ),
                     const Spacer(),
                     IconButton(
                       onPressed: () => Modular.to.pushNamed(AdhanRoutes.overview()),
+                      visualDensity: VisualDensity.compact,
                       icon: const Icon(Icons.settings_outlined, color: Colors.white),
                     ),
                   ],
                 ),
-                SizedBox(height: 7.h),
+                SizedBox(height: 8.h),
                 InkWell(
                   borderRadius: BorderRadius.circular(20.r),
                   onTap: onRefresh,
                   child: Container(
                     width: double.infinity,
-                    padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 9.h),
+                    padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 7.h),
                     decoration: BoxDecoration(
                       color: Colors.white.withValues(alpha: 0.08),
                       borderRadius: BorderRadius.circular(20.r),
@@ -90,17 +99,17 @@ class WPrayerHeader extends StatelessWidget {
                             state.cityName.isNotEmpty ? state.cityName : 'prayer_location_unknown'.tr(),
                             maxLines: 1,
                             overflow: TextOverflow.ellipsis,
-                            style: AppTextStyles.white14W400,
+                            style: AppTextStyles.white14W400.copyWith(height: 1.3),
                           ),
                         ),
                       ],
                     ),
                   ),
                 ),
-                SizedBox(height: 14.h),
+                SizedBox(height: 10.h),
                 Container(
                   width: double.infinity,
-                  padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 10.h),
+                  padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 7.h),
                   decoration: BoxDecoration(
                     color: Colors.white.withValues(alpha: 0.07),
                     borderRadius: BorderRadius.circular(18.r),
@@ -116,11 +125,11 @@ class WPrayerHeader extends StatelessWidget {
                     child: Row(
                       mainAxisSize: MainAxisSize.min,
                       children: [
-                        Text(DateLabels.weekday(now), style: AppTextStyles.white12W400),
+                        Text(DateLabels.weekday(now), style: _dateStyle),
                         _dot,
-                        Text(DateLabels.gregorian(now), style: AppTextStyles.white14W500),
+                        Text(DateLabels.gregorian(now), style: AppTextStyles.white14W500.copyWith(height: 1.3)),
                         _dot,
-                        Text(DateLabels.hijri(now), style: AppTextStyles.white12W400),
+                        Text(DateLabels.hijri(now), style: _dateStyle),
                       ],
                     ),
                   ),
@@ -133,16 +142,17 @@ class WPrayerHeader extends StatelessWidget {
     );
   }
 
+  /// Weekday and Hijri parts, one step under the Gregorian date.
+  TextStyle get _dateStyle => AppTextStyles.white12W400.copyWith(fontSize: 13.sp, height: 1.3);
+
   /// Neutral separator between the three date parts. A middle dot rather than
   /// a slash or dash: it carries no direction, so it sits the same way in RTL
   /// and LTR.
   Widget get _dot => Padding(
-    padding: EdgeInsets.symmetric(horizontal: 7.w),
+    padding: EdgeInsets.symmetric(horizontal: 6.w),
     child: Text(
       '\u00B7',
-      style: AppTextStyles.white12W400.copyWith(
-        color: Colors.white.withValues(alpha: 0.45),
-      ),
+      style: _dateStyle.copyWith(color: Colors.white.withValues(alpha: 0.45)),
     ),
   );
 }

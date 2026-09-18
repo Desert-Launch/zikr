@@ -12,8 +12,8 @@ class WPrayerIcon extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      width: 52.r,
-      height: 52.r,
+      width: 48.r,
+      height: 48.r,
       alignment: Alignment.center,
       decoration: BoxDecoration(
         color: active ? Colors.white.withValues(alpha: 0.14) : const Color(0xFFF8F7F1),
@@ -22,10 +22,10 @@ class WPrayerIcon extends StatelessWidget {
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
         ),
-        borderRadius: BorderRadius.circular(20.r),
+        borderRadius: BorderRadius.circular(17.r),
         boxShadow: const [BoxShadow(color: Color(0x10000000), blurRadius: 7, offset: Offset(0, 10))],
       ),
-      child: Text(_emoji(prayer), style: TextStyle(fontSize: 20.sp)),
+      child: Text(_emoji(prayer), style: TextStyle(fontSize: 19.sp)),
     );
   }
 
