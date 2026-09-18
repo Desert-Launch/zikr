@@ -23,11 +23,17 @@ class PrayerModule extends Module {
     // session, and a factory would hand each of them its own copy of the
     // settings — picking a method on one screen would leave the others showing
     // the old one.
+    //
+    // The three dependencies live in AppModule and must be read through
+    // `Modular.get`: the local injector does not traverse up into AppModule's
+    // binds, so `i.get` threw `UnregisteredInstance` while this singleton was
+    // being started and the whole module — every `/prayer/` route — failed to
+    // open.
     i.addSingleton<CBPrayerCalcSettings>(
       () => CBPrayerCalcSettings(
-        box: i.get<BoxPrayerSettings>(),
-        getMethods: i.get<UCGetCalculationMethods>(),
-        prayerTimes: i.get<CBPrayerTimes>(),
+        box: Modular.get<BoxPrayerSettings>(),
+        getMethods: Modular.get<UCGetCalculationMethods>(),
+        prayerTimes: Modular.get<CBPrayerTimes>(),
       ),
     );
   }
