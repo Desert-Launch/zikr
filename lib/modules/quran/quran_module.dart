@@ -290,6 +290,8 @@ class QuranModule extends Module {
         reciters: i.get<UCGetReciters>(),
         ensure: i.get<UCEnsureAyahDownloaded>(),
         resolve: i.get<UCResolveAyahSource>(),
+        surahStatus: i.get<UCGetSurahStatus>(),
+        downloadSurah: i.get<UCDownloadSurah>(),
         getPrefs: i.get<UCGetPlaybackPrefs>(),
         savePrefs: i.get<UCSavePlaybackPrefs>(),
       ),

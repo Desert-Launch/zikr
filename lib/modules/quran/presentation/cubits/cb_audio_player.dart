@@ -10,13 +10,16 @@ import 'package:quran/core/services/media/audio_focus.dart';
 import 'package:quran/core/services/media/media_artwork.dart';
 import 'package:quran/modules/quran/data/models/m_surah.dart';
 import 'package:quran/modules/quran/domain/entities/e_ayah_audio_source.dart';
+import 'package:quran/modules/quran/domain/entities/e_download_progress.dart';
 import 'package:quran/modules/quran/domain/entities/e_playback_options.dart';
 import 'package:quran/modules/quran/domain/entities/e_sleep_timer.dart';
 import 'package:quran/modules/quran/domain/entities/param_ayah_ref.dart';
 import 'package:quran/modules/quran/domain/repos/r_quran.dart';
+import 'package:quran/modules/quran/domain/usecases/uc_download_surah.dart';
 import 'package:quran/modules/quran/domain/usecases/uc_ensure_ayah_downloaded.dart';
 import 'package:quran/modules/quran/domain/usecases/uc_get_playback_prefs.dart';
 import 'package:quran/modules/quran/domain/usecases/uc_get_reciters.dart';
+import 'package:quran/modules/quran/domain/usecases/uc_get_surah_status.dart';
 import 'package:quran/modules/quran/domain/usecases/uc_resolve_ayah_source.dart';
 import 'package:quran/modules/quran/domain/usecases/uc_save_playback_prefs.dart';
 import 'package:quran/modules/quran/presentation/cubits/s_audio_player.dart';
@@ -41,9 +44,11 @@ import 'package:quran/modules/quran/presentation/cubits/s_audio_player.dart';
 ///
 /// Still offline-first: every entry resolves to a local file when it is on
 /// disk, otherwise to a CDN URL streamed in place, and ayat are downloaded in
-/// the background so a later replay is local. The playlist is built once per
-/// unit and never appended to while it plays — under just_audio_background that
-/// leaves the auto-advanced item silent until a manual pause/resume.
+/// the background so a later replay is local — the next ayah as each one
+/// plays ([_prefetch]), and the whole surah once a unit starts in it
+/// ([_downloadSurahInBackground]). The playlist is built once per unit and
+/// never appended to while it plays — under just_audio_background that leaves
+/// the auto-advanced item silent until a manual pause/resume.
 ///
 /// Ayah 1 of a surah is preceded by the basmalah, an entry that carries the
 /// following ayah's index so the reader keeps highlighting it — see
@@ -54,12 +59,16 @@ class CBAudioPlayer extends Cubit<SAudioPlayer> {
     required UCGetReciters reciters,
     required UCEnsureAyahDownloaded ensure,
     required UCResolveAyahSource resolve,
+    required UCGetSurahStatus surahStatus,
+    required UCDownloadSurah downloadSurah,
     required UCGetPlaybackPrefs getPrefs,
     required UCSavePlaybackPrefs savePrefs,
   }) : _quran = quran,
        _reciters = reciters,
        _ensure = ensure,
        _resolve = resolve,
+       _surahStatus = surahStatus,
+       _downloadSurah = downloadSurah,
        _getPrefs = getPrefs,
        _savePrefs = savePrefs,
        _player = AudioPlayer(),
@@ -74,6 +83,8 @@ class CBAudioPlayer extends Cubit<SAudioPlayer> {
   final UCGetReciters _reciters;
   final UCEnsureAyahDownloaded _ensure;
   final UCResolveAyahSource _resolve;
+  final UCGetSurahStatus _surahStatus;
+  final UCDownloadSurah _downloadSurah;
   final UCGetPlaybackPrefs _getPrefs;
   final UCSavePlaybackPrefs _savePrefs;
   final AudioPlayer _player;
@@ -83,6 +94,11 @@ class CBAudioPlayer extends Cubit<SAudioPlayer> {
 
   /// Surah metadata for the active queue (for media-notification titles).
   MSurah? _activeSurah;
+
+  /// `reciterId/surah` keys whose background download this cubit has started
+  /// and not yet seen finish. Keeps a tap on every ayah of a surah from
+  /// re-checking the disk while that surah is still coming down.
+  final Set<String> _surahDownloadsInFlight = <String>{};
 
   /// Ceiling on how many clips one playlist may hold. A repeat count that would
   /// exceed it is played out over several playlists instead — the seam between
@@ -454,6 +470,12 @@ class CBAudioPlayer extends Cubit<SAudioPlayer> {
         'from ${queue[start].key}',
         tag: 'CBAudioPlayer',
       );
+      // Only once the platform has the playlist and the first clip is
+      // buffering: the surah fetch shares the connection with that stream and
+      // must not delay the start of playback.
+      for (final surahNumber in {for (final ref in queue) ref.surah}) {
+        unawaited(_downloadSurahInBackground(reciterId, surahNumber));
+      }
     } catch (e, st) {
       if (token != _playToken) return;
       AppLogger.error(
@@ -674,6 +696,54 @@ class CBAudioPlayer extends Cubit<SAudioPlayer> {
     final queue = state.queue;
     if (queueIndex < 0 || queueIndex >= queue.length) return;
     await _ensure(queue[queueIndex], _activeReciterId ?? 'alafasy');
+  }
+
+  /// Best-effort background download of every ayah of [surah] for [reciterId],
+  /// so any later play inside the surah — with or without a network — is local.
+  ///
+  /// Complements [_prefetch], which only stays one ayah ahead of playback.
+  /// Idempotent at the repo (it fetches the gaps and joins a run already in
+  /// flight), but a surah that is complete on disk is skipped here first so a
+  /// tap on each of its ayat does not post-and-dismiss the tray's download
+  /// notification. The run is never cancelled from the player: stopping,
+  /// leaving the surah or switching reciter lets it finish, which is the point.
+  Future<void> _downloadSurahInBackground(String reciterId, int surah) async {
+    final key = '$reciterId/$surah';
+    if (!_surahDownloadsInFlight.add(key)) return;
+    try {
+      final info = await _surahStatus(reciterId, surah);
+      final complete = info.fold((_) => false, (i) => i.isComplete);
+      if (complete) return;
+      AppLogger.info(
+        'background surah download $key',
+        tag: 'CBAudioPlayer',
+      );
+      // Drained rather than subscribed to for progress: the downloads screen
+      // reads the same stream from the repo when it wants to show it. A run
+      // cancelled from that screen closes without a final event.
+      SurahDownloadProgress? last;
+      await for (final p in _downloadSurah(reciterId, surah)) {
+        last = p;
+      }
+      final error = last?.error;
+      if (error != null) {
+        AppLogger.warning(
+          'background surah download $key ended with: $error',
+          tag: 'CBAudioPlayer',
+        );
+      }
+    } catch (e, st) {
+      // Best-effort: playback is already streaming, so a failed fetch only
+      // means the next replay streams too.
+      AppLogger.error(
+        'background surah download $key failed',
+        error: e,
+        stackTrace: st,
+        tag: 'CBAudioPlayer',
+      );
+    } finally {
+      _surahDownloadsInFlight.remove(key);
+    }
   }
 
   /// The playlist ran out. With repeat off that is the end of the unit; with a
