@@ -10,8 +10,8 @@ import com.zikr.mapp.reminder.ReminderSoundScheduler
  * OS clears all pending alarms on boot, so without this the full-adhan auto-play
  * would silently stop working until the user next opened the app.
  *
- * The reminder-sound alarms (salawat "remind while silenced") ride along for the
- * same reason, from their own separate mirror.
+ * The reminder-sound alarms (the salawat and hourly-zekr clips) ride along for
+ * the same reason, from their own separate mirror.
  */
 class AdhanBootReceiver : BroadcastReceiver() {
     override fun onReceive(context: Context, intent: Intent) {

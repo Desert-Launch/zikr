@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_modular/flutter_modular.dart';
@@ -14,6 +15,7 @@ import 'package:quran/modules/settings/presentation/widgets/w_settings_note.dart
 import 'package:quran/modules/settings/presentation/widgets/w_settings_row.dart';
 import 'package:quran/modules/settings/presentation/widgets/w_settings_section_label.dart';
 import 'package:quran/modules/settings/presentation/widgets/w_settings_switch.dart';
+import 'package:quran/modules/settings/presentation/widgets/w_settings_volume_row.dart';
 import 'package:quran/modules/tasbih/presentation/cubits/cb_tasbih.dart';
 import 'package:quran/modules/tasbih/presentation/cubits/s_tasbih.dart';
 
@@ -63,13 +65,18 @@ class SNTasbihHourly extends StatelessWidget {
                 sliver: SliverList.list(
                   children: [
                     WSettingsSectionLabel('tasbih_hourly_section'.tr()),
-                    // Both switches in one selector: the sound row is only
-                    // meaningful while the reminder itself is on, so it reads
-                    // both flags and disables itself when the reminder is off.
-                    BlocSelector<CBTasbih, STasbih, (bool, bool)>(
-                      selector: (s) => (s.hourlyEnabled, s.hourlyZikrSound),
+                    // All three in one selector: the sound row is only
+                    // meaningful while the reminder itself is on, and the
+                    // volume only while the sound is, so each reads the flags
+                    // above it and disables itself accordingly.
+                    BlocSelector<CBTasbih, STasbih, (bool, bool, int)>(
+                      selector: (s) => (
+                        s.hourlyEnabled,
+                        s.hourlyZikrSound,
+                        s.hourlyZikrVolume,
+                      ),
                       builder: (context, flags) {
-                        final (enabled, withSound) = flags;
+                        final (enabled, withSound, volume) = flags;
                         return WSettingsGroup(
                           children: [
                             WSettingsRow(
@@ -101,6 +108,17 @@ class SNTasbihHourly extends StatelessWidget {
                                   ? () => cb.setHourlyZikrSound(!withSound)
                                   : null,
                             ),
+                            // Android only: iOS plays a notification's sound
+                            // at the system volume, with no way to set it.
+                            if (defaultTargetPlatform == TargetPlatform.android)
+                              WSettingsVolumeRow(
+                                title: 'tasbih_hourly_volume'.tr(),
+                                subtitle: 'tasbih_hourly_volume_hint'.tr(),
+                                value: volume,
+                                onChanged: enabled && withSound
+                                    ? cb.setHourlyZikrVolume
+                                    : null,
+                              ),
                           ],
                         );
                       },

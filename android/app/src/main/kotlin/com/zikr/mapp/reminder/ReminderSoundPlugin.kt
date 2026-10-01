@@ -27,7 +27,17 @@ class ReminderSoundPlugin(private val context: Context) : MethodChannel.MethodCa
                     result.error("bad_args", "id, hour, minute and rawRes are required", null)
                     return
                 }
-                ReminderSoundScheduler.scheduleDaily(context, id, hour, minute, rawRes)
+                val volume = call.argument<Int>("volume") ?: ReminderSoundScheduler.NO_VOLUME
+                val throughSilent = call.argument<Boolean>("throughSilent") ?: true
+                ReminderSoundScheduler.scheduleDaily(
+                    context,
+                    id,
+                    hour,
+                    minute,
+                    rawRes,
+                    volume,
+                    throughSilent,
+                )
                 result.success(true)
             }
             "cancel" -> {
@@ -37,6 +47,15 @@ class ReminderSoundPlugin(private val context: Context) : MethodChannel.MethodCa
                     return
                 }
                 ReminderSoundScheduler.cancel(context, id)
+                result.success(true)
+            }
+            "cancelIds" -> {
+                val ids = call.argument<List<Int>>("ids")
+                if (ids == null) {
+                    result.error("bad_args", "ids is required", null)
+                    return
+                }
+                ReminderSoundScheduler.cancelIds(context, ids)
                 result.success(true)
             }
             "cancelAll" -> {

@@ -77,6 +77,7 @@ class CBSalawat extends Cubit<STasbih> {
         windowEndHour: app.reminderWindowEndHour,
         ignoreSilent: app.salawatIgnoreSilent,
         pauseOnCall: app.salawatPauseOnCall,
+        reminderVolume: app.salawatVolume,
       ),
     );
   }
@@ -174,6 +175,19 @@ class CBSalawat extends Cubit<STasbih> {
   Future<void> setPauseOnCall(bool value) async {
     emit(state.copyWith(pauseOnCall: value));
     await _appSettings.setSalawatPauseOnCall(value);
+  }
+
+  /// Sets the reminder clip's loudness (0–100) and reschedules.
+  ///
+  /// A real reschedule, not a flag write: on Android the level is baked into
+  /// each armed clip, because the alarm wakes a receiver with no Flutter
+  /// isolate to ask. Hence the slider commits on release, never mid-drag.
+  Future<void> setReminderVolume(int value) async {
+    final clamped = value.clamp(0, 100);
+    if (clamped == state.reminderVolume) return;
+    emit(state.copyWith(reminderVolume: clamped));
+    await _appSettings.setSalawatVolume(clamped);
+    await _reschedule();
   }
 
   /// (c) Moves the window the salawat interval reminders and the hourly zekr

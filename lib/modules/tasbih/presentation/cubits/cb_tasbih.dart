@@ -43,6 +43,7 @@ class CBTasbih extends Cubit<STasbih> {
       vibrate: c.vibrate,
       hourlyEnabled: c.hourlyEnabled,
       hourlyZikrSound: _appSettings.current().hourlyZikrSound,
+      hourlyZikrVolume: _appSettings.current().hourlyZikrVolume,
     ));
   }
 
@@ -145,6 +146,16 @@ class CBTasbih extends Cubit<STasbih> {
   Future<void> setHourlyZikrSound(bool value) async {
     emit(state.copyWith(hourlyZikrSound: value));
     await _appSettings.setHourlyZikrSound(value);
+    await _hourly.rescheduleFromSettings();
+  }
+
+  /// Sets the hourly zekr's loudness (0–100) and re-arms the feed — on Android
+  /// the level is baked into each armed clip. See [MAppSettings.hourlyZikrVolume].
+  Future<void> setHourlyZikrVolume(int value) async {
+    final clamped = value.clamp(0, 100);
+    if (clamped == state.hourlyZikrVolume) return;
+    emit(state.copyWith(hourlyZikrVolume: clamped));
+    await _appSettings.setHourlyZikrVolume(clamped);
     await _hourly.rescheduleFromSettings();
   }
 }

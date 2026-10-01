@@ -81,4 +81,16 @@ class BoxAppSettings extends HiveBoxBase<MAppSettings> {
     r.hourlyZikrSound = value;
     await r.save();
   }
+
+  Future<void> setSalawatVolume(int value) async {
+    final r = current();
+    r.salawatVolume = value.clamp(0, 100);
+    await r.save();
+  }
+
+  Future<void> setHourlyZikrVolume(int value) async {
+    final r = current();
+    r.hourlyZikrVolume = value.clamp(0, 100);
+    await r.save();
+  }
 }

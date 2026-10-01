@@ -21,6 +21,11 @@ import 'package:quran/core/services/logging/app_logger.dart';
 /// channel and the sound comes from here instead. One notification, one sound,
 /// on every OEM.
 ///
+/// It is also the only way to give a reminder its own volume: the OS plays a
+/// channel sound at the system slider's level, full stop. So on Android the
+/// salawat reminder and the hourly zekr always sound from here, each alarm
+/// carrying its feature's volume and whether it may play through silent mode.
+///
 /// Android only, and every method is a safe no-op elsewhere or when the channel
 /// is unreachable — notably a background isolate, where the
 /// MainActivity-registered channel doesn't exist. The armed alarms simply stay
@@ -33,6 +38,11 @@ class ReminderSoundAlarms {
   /// Arms [id] to play `res/raw/[rawRes]` daily at [hour]:[minute], replacing
   /// any alarm already armed under that id.
   ///
+  /// [volume] (0–100) is the share of the device's maximum ALARM volume the
+  /// clip plays at — raised or lowered for the clip and put back after, like
+  /// the adhan's. With [throughSilent] false the clip stays quiet whenever a
+  /// notification sound would: silent/vibrate, Do Not Disturb, or a call.
+  ///
   /// The alarm re-arms itself for the following day when it fires, so the
   /// reminders keep sounding even if the app is never opened again. Returns
   /// false when nothing was armed (non-Android, unreachable channel) — the
@@ -42,6 +52,8 @@ class ReminderSoundAlarms {
     required int hour,
     required int minute,
     required String rawRes,
+    required int volume,
+    required bool throughSilent,
   }) async {
     if (!Platform.isAndroid) return false;
     try {
@@ -50,6 +62,8 @@ class ReminderSoundAlarms {
         'hour': hour,
         'minute': minute,
         'rawRes': rawRes,
+        'volume': volume.clamp(0, 100),
+        'throughSilent': throughSilent,
       });
       return armed ?? false;
     } on MissingPluginException {
@@ -79,8 +93,24 @@ class ReminderSoundAlarms {
     }
   }
 
-  /// Cancels every armed clip. Called before re-arming a fresh schedule and
-  /// whenever the reminder is switched off.
+  /// Cancels the clips armed under [ids], leaving every other id alone — the
+  /// salawat and hourly zekr share the native mirror, so each clears only its
+  /// own block.
+  Future<void> cancelIds(List<int> ids) async {
+    if (!Platform.isAndroid || ids.isEmpty) return;
+    try {
+      await _channel.invokeMethod('cancelIds', {'ids': ids});
+    } on MissingPluginException {
+      // ignore — see [scheduleDaily].
+    } catch (e) {
+      AppLogger.warning(
+        'Reminder sound cancelIds failed: $e',
+        tag: 'ReminderSoundAlarms',
+      );
+    }
+  }
+
+  /// Cancels every armed clip, whichever feature armed it.
   Future<void> cancelAll() async {
     if (!Platform.isAndroid) return;
     try {

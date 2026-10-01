@@ -36,13 +36,20 @@ class MAppSettingsAdapter extends TypeAdapter<MAppSettings> {
       // `true`, matching a fresh install. Nothing changes for them until the
       // clips are actually bundled; see `DSHourlyTasbih`.
       hourlyZikrSound: fields[9] == null ? true : fields[9] as bool,
+      // Absent on every record predating the reminder volume settings.
+      salawatVolume: fields[10] == null
+          ? MAppSettings.defaultReminderVolume
+          : (fields[10] as num).toInt(),
+      hourlyZikrVolume: fields[11] == null
+          ? MAppSettings.defaultReminderVolume
+          : (fields[11] as num).toInt(),
     );
   }
 
   @override
   void write(BinaryWriter writer, MAppSettings obj) {
     writer
-      ..writeByte(10)
+      ..writeByte(12)
       ..writeByte(0)
       ..write(obj.hasSeenOnboarding)
       ..writeByte(1)
@@ -62,7 +69,11 @@ class MAppSettingsAdapter extends TypeAdapter<MAppSettings> {
       ..writeByte(8)
       ..write(obj.salawatPauseOnCall)
       ..writeByte(9)
-      ..write(obj.hourlyZikrSound);
+      ..write(obj.hourlyZikrSound)
+      ..writeByte(10)
+      ..write(obj.salawatVolume)
+      ..writeByte(11)
+      ..write(obj.hourlyZikrVolume);
   }
 
   @override

@@ -46,6 +46,15 @@ import org.json.JSONObject
  * never sweep these away. Each alarm also re-arms itself for the next day when
  * it fires, so the reminders keep sounding even if the app is never opened
  * again.
+ *
+ * # Volume
+ *
+ * This is also the ONLY place a reminder's loudness can be controlled — the OS
+ * plays a channel sound at whatever the system slider says. So the salawat
+ * reminder and the hourly zekr play through here on Android whatever the
+ * silent-mode setting is, each alarm carrying its feature's volume (0–100) and
+ * whether it may sound through silent mode. Both are baked into the alarm, like
+ * the adhan's volume, because the receiver has no Flutter isolate to ask.
  */
 object ReminderSoundScheduler {
     private const val PREFS = "reminder_sound_alarms"
@@ -55,6 +64,12 @@ object ReminderSoundScheduler {
     const val EXTRA_RAW = "raw"
     const val EXTRA_HOUR = "hour"
     const val EXTRA_MINUTE = "minute"
+    const val EXTRA_VOLUME = "volume"
+    const val EXTRA_THROUGH_SILENT = "throughSilent"
+
+    /** Volume sentinel: leave the ALARM stream where the user has it. Also what
+     *  alarms mirrored before the volume setting existed decode to. */
+    const val NO_VOLUME = -1
 
     /** True when exact alarms are allowed (always pre-API-31; gated after). */
     fun canScheduleExact(context: Context): Boolean {
@@ -66,17 +81,44 @@ object ReminderSoundScheduler {
     /**
      * Arms [id] to play `res/raw/[rawRes]` at the next [hour]:[minute], and
      * every day after. Re-arming an existing id replaces it.
+     *
+     * [volume] is 0–100 of the ALARM stream's maximum, or [NO_VOLUME]. With
+     * [throughSilent] false the clip behaves like a notification sound and stays
+     * quiet on silent/vibrate, in Do Not Disturb and during a call.
      */
-    fun scheduleDaily(context: Context, id: Int, hour: Int, minute: Int, rawRes: String) {
+    fun scheduleDaily(
+        context: Context,
+        id: Int,
+        hour: Int,
+        minute: Int,
+        rawRes: String,
+        volume: Int,
+        throughSilent: Boolean,
+    ) {
         val trigger = nextOccurrence(hour, minute)
-        arm(context, id, trigger, hour, minute, rawRes)
-        persist(context, id, trigger, hour, minute, rawRes)
+        arm(context, id, trigger, hour, minute, rawRes, volume, throughSilent)
+        persist(context, id, trigger, hour, minute, rawRes, volume, throughSilent)
     }
 
     fun cancel(context: Context, id: Int) {
         val am = context.getSystemService(Context.ALARM_SERVICE) as AlarmManager
         am.cancel(cancellationPendingIntent(context, id))
         write(context, withoutId(read(context), id))
+    }
+
+    /**
+     * Cancels each of [ids] in one pass over the mirror. Each feature clears
+     * only its own block this way — `cancelAll` would take the other feature's
+     * clips with it.
+     */
+    fun cancelIds(context: Context, ids: List<Int>) {
+        val am = context.getSystemService(Context.ALARM_SERVICE) as AlarmManager
+        var remaining = read(context)
+        for (id in ids) {
+            am.cancel(cancellationPendingIntent(context, id))
+            remaining = withoutId(remaining, id)
+        }
+        write(context, remaining)
     }
 
     /** Cancels every reminder-sound alarm this object ever armed. */
@@ -108,6 +150,11 @@ object ReminderSoundScheduler {
                 o.getInt("hour"),
                 o.getInt("minute"),
                 o.getString("raw"),
+                // Absent on alarms mirrored before these settings existed —
+                // all of them salawat "remind while silenced" clips played at
+                // the stream's own level, which is exactly what these restore.
+                o.optInt("volume", NO_VOLUME),
+                o.optBoolean("throughSilent", true),
             )
         }
     }
@@ -136,9 +183,11 @@ object ReminderSoundScheduler {
         hour: Int,
         minute: Int,
         rawRes: String,
+        volume: Int,
+        throughSilent: Boolean,
     ) {
         val am = context.getSystemService(Context.ALARM_SERVICE) as AlarmManager
-        val pi = receiverPendingIntent(context, id, hour, minute, rawRes)
+        val pi = receiverPendingIntent(context, id, hour, minute, rawRes, volume, throughSilent)
         try {
             // ...AndAllowWhileIdle so Doze delays it by seconds rather than
             // holding it until the next maintenance window. Reminders sit hours
@@ -165,6 +214,8 @@ object ReminderSoundScheduler {
         hour: Int,
         minute: Int,
         rawRes: String,
+        volume: Int,
+        throughSilent: Boolean,
     ): PendingIntent = PendingIntent.getBroadcast(
         context,
         id,
@@ -176,6 +227,8 @@ object ReminderSoundScheduler {
             putExtra(EXTRA_RAW, rawRes)
             putExtra(EXTRA_HOUR, hour)
             putExtra(EXTRA_MINUTE, minute)
+            putExtra(EXTRA_VOLUME, volume)
+            putExtra(EXTRA_THROUGH_SILENT, throughSilent)
         },
         pendingIntentFlags(),
     )
@@ -215,6 +268,8 @@ object ReminderSoundScheduler {
         hour: Int,
         minute: Int,
         raw: String,
+        volume: Int,
+        throughSilent: Boolean,
     ) {
         val out = withoutId(read(context), id)
         out.put(
@@ -224,6 +279,8 @@ object ReminderSoundScheduler {
                 put("hour", hour)
                 put("minute", minute)
                 put("raw", raw)
+                put("volume", volume)
+                put("throughSilent", throughSilent)
             },
         )
         write(context, out)

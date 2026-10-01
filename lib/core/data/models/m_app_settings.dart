@@ -19,7 +19,15 @@ class MAppSettings extends HiveObject {
     this.salawatIgnoreSilent = false,
     this.salawatPauseOnCall = true,
     this.hourlyZikrSound = true,
+    this.salawatVolume = defaultReminderVolume,
+    this.hourlyZikrVolume = defaultReminderVolume,
   });
+
+  /// Default for [salawatVolume] and [hourlyZikrVolume]. Gentler than the
+  /// adhan's 100: these are short reminders that fire many times a day, and the
+  /// level is a share of the ALARM stream's maximum, which is built to wake a
+  /// sleeper.
+  static const int defaultReminderVolume = 60;
 
   @HiveField(0)
   bool hasSeenOnboarding;
@@ -86,4 +94,22 @@ class MAppSettings extends HiveObject {
   /// have audio and doesn't.
   @HiveField(9)
   bool hourlyZikrSound;
+
+  /// Salawat reminder loudness, 0–100 — the same idea as
+  /// `MAdhanSettings.adhanVolume`.
+  ///
+  /// Android: the native clip raises (or lowers) the device's ALARM stream to
+  /// this share of its maximum for the few seconds it plays, then puts it back.
+  /// Baked into each armed alarm, so a change needs a reschedule. 0 mutes the
+  /// clip; the notification itself still arrives.
+  ///
+  /// iOS: no effect. A notification sound always plays at the system volume,
+  /// and the reminder never plays through the app.
+  @HiveField(10)
+  int salawatVolume;
+
+  /// Hourly zekr loudness, 0–100. Same mechanism and caveats as
+  /// [salawatVolume]; only meaningful while [hourlyZikrSound] is on.
+  @HiveField(11)
+  int hourlyZikrVolume;
 }

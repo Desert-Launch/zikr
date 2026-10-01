@@ -115,7 +115,7 @@ class AppNotificationChannels {
   /// Hourly tasbih is silent + low importance so it doesn't interrupt.
   ///
   /// Still the channel used whenever the per-zekr audio is switched off, or
-  /// when the hour's clip isn't bundled — see [hourlyZikr].
+  /// when the hour's clip isn't bundled — see [hourlyAppSound].
   static const hourly = AndroidNotificationChannel(
     'hourly_channel',
     'Hourly Tasbih',
@@ -125,62 +125,56 @@ class AppNotificationChannels {
     enableVibration: false,
   );
 
-  /// Prefix of the per-zekr hourly channels built by [hourlyZikr]. Their ids
-  /// embed the clip's slug, so they're matched by prefix rather than listed.
+  /// Prefix of the retired per-zekr hourly channels — see
+  /// [hourlyZikrChannelId].
   static const String hourlyZikrChannelPrefix = 'hourly_zikr_';
 
-  /// Channel id for the hourly zekr whose clip is [soundSlug].
+  /// Id of the retired audible channel for the hourly zekr whose clip is
+  /// [soundSlug].
   ///
-  /// The `_v1` suffix is the escape hatch for changing a clip later: a
-  /// channel's sound is frozen when Android first creates it, so replacing
-  /// `zikr_01_subhan_allah.mp3` with a different recording means bumping this
-  /// to `_v2` and adding the old id to [legacyIds] — editing the file alone
-  /// leaves every existing install playing the original.
+  /// The hourly zekr used to carry its recording as the channel sound, one
+  /// channel per zekr. A channel sound always plays at the system notification
+  /// volume, so the per-feature volume setting moved the audio into the app
+  /// (see [hourlyAppSound]). These ids are kept only so `DSHourlyTasbih` can
+  /// delete the channels from installs that created them.
   static String hourlyZikrChannelId(String soundSlug) =>
       '$hourlyZikrChannelPrefix${soundSlug}_v1';
 
-  /// An audible hourly-zekr channel that plays the bundled clip [soundSlug]
-  /// (an `android/app/src/main/res/raw/<soundSlug>.mp3`), labelled [name].
+  /// The hourly zekr while its audio is on (Android).
   ///
-  /// One channel per zekr, because the sound lives on the channel and not on
-  /// the notification — a single channel could only ever play one clip. They're
-  /// created on demand by `DSHourlyTasbih` rather than at boot, so an install
-  /// that never turns the audio on never grows ten entries in its notification
-  /// settings, and deleted again when the user switches the audio back off.
-  ///
-  /// [name] is the zekr's own text so the ten entries are tellable apart in
-  /// Android's per-channel settings, where the user can silence just one.
-  ///
-  /// Default importance rather than [Importance.low]: low is silent whatever
-  /// the channel's sound says. Vibration stays off — this fires up to 15 times
-  /// a day, and the clip is the point.
-  static AndroidNotificationChannel hourlyZikr({
-    required String soundSlug,
-    required String name,
-  }) => AndroidNotificationChannel(
-    hourlyZikrChannelId(soundSlug),
-    name,
-    description: 'Hourly zekr reminder, read aloud',
+  /// Silent, because the recording is played by the app itself through
+  /// `ReminderSoundAlarms` at the user's hourly-zekr volume — the only way to
+  /// give it a volume of its own. Default importance rather than
+  /// [Importance.low] so it still reads as an audible reminder in the tray, and
+  /// vibration stays off: this fires up to 15 times a day, and the clip is the
+  /// point.
+  static const hourlyAppSound = AndroidNotificationChannel(
+    'hourly_zikr_app_sound',
+    'Hourly Zekr (with audio)',
+    description: 'Hourly zekr reminder, read aloud by the app',
     importance: Importance.defaultImportance,
-    playSound: true,
-    sound: RawResourceAndroidNotificationSound(soundSlug),
+    playSound: false,
     enableVibration: false,
   );
 
-  /// Salawat-upon-the-Prophet reminders. Plays a short bundled clip
-  /// (`res/raw/salah_3la_mohamed.mp3`) so it's audibly distinct from the silent
-  /// hourly tasbih. Default importance keeps it gentle but audible. Channel
-  /// sound is immutable once created — never change [id] or the clip silently.
-  static const salawat = AndroidNotificationChannel(
-    'salawat_channel',
+  /// Salawat-upon-the-Prophet reminders. Default importance keeps it gentle.
+  ///
+  /// Silent, because the clip (`res/raw/salah_3la_mohamed.mp3`) is played by
+  /// the app itself through `ReminderSoundAlarms` at the user's salawat volume
+  /// — a channel sound can only ever play at the system notification volume.
+  /// That clip still stays quiet on silent/vibrate, in Do Not Disturb and
+  /// during a call, as the channel sound did; [salawatSilent] is the
+  /// "remind while silenced" twin. Vibration is left at the default, as on the
+  /// sounding channel this replaced.
+  static const salawatAppSound = AndroidNotificationChannel(
+    'salawat_channel_app_sound',
     'Salawat Reminder',
     description: 'Reminders to send salawat upon the Prophet ﷺ',
     importance: Importance.defaultImportance,
-    playSound: true,
-    sound: RawResourceAndroidNotificationSound('salah_3la_mohamed'),
+    playSound: false,
   );
 
-  /// Silent twin of [salawat], used when the user asks to be reminded even
+  /// Heads-up twin of [salawatAppSound], used when the user asks to be reminded even
   /// while the phone is silenced.
   ///
   /// The obvious implementation — an alarm-attributed channel, which is what
@@ -243,7 +237,8 @@ class AppNotificationChannels {
     adhanSilentVibrate,
     adhanPre,
     hourly,
-    salawat,
+    hourlyAppSound,
+    salawatAppSound,
     salawatSilent,
     reminders,
     quranReminders,
@@ -262,6 +257,9 @@ class AppNotificationChannels {
     // app-played clip. Its sound never reached users on One UI, and a channel
     // that still exists keeps showing up in the app's notification settings.
     'salawat_channel_alarm',
+    // Sounding salawat channel, replaced by [salawatAppSound] + the app-played
+    // clip so the reminder can have a volume of its own.
+    'salawat_channel',
   ];
 
   /// Prefix of the per-voice adhan channels created by

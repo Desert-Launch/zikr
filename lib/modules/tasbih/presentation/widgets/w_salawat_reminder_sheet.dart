@@ -13,6 +13,7 @@ import 'package:quran/modules/settings/presentation/widgets/w_settings_note.dart
 import 'package:quran/modules/settings/presentation/widgets/w_settings_row.dart';
 import 'package:quran/modules/settings/presentation/widgets/w_settings_section_label.dart';
 import 'package:quran/modules/settings/presentation/widgets/w_settings_switch.dart';
+import 'package:quran/modules/settings/presentation/widgets/w_settings_volume_row.dart';
 import 'package:quran/modules/tasbih/presentation/cubits/cb_salawat.dart';
 import 'package:quran/modules/tasbih/presentation/cubits/s_tasbih.dart';
 
@@ -213,8 +214,18 @@ class WSalawatReminderSheet extends StatelessWidget {
                             ),
                             WSettingsGroup(
                               children: [
+                                // Android only: iOS plays a notification's sound
+                                // at the system volume, with no way to set it.
+                                if (defaultTargetPlatform ==
+                                    TargetPlatform.android)
+                                  WSettingsVolumeRow(
+                                    title: 'salawat_volume'.tr(),
+                                    subtitle: 'salawat_volume_hint'.tr(),
+                                    value: state.reminderVolume,
+                                    onChanged: cubit.setReminderVolume,
+                                  ),
                                 WSettingsRow(
-                                  icon: Icons.volume_up_outlined,
+                                  icon: Icons.notifications_paused_outlined,
                                   title: 'salawat_ignore_silent'.tr(),
                                   subtitle:
                                       defaultTargetPlatform ==

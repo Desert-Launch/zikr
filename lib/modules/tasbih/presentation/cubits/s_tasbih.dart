@@ -1,4 +1,5 @@
 import 'package:equatable/equatable.dart';
+import 'package:quran/core/data/models/m_app_settings.dart';
 
 class STasbih extends Equatable {
   const STasbih({
@@ -8,6 +9,7 @@ class STasbih extends Equatable {
     this.vibrate = true,
     this.hourlyEnabled = true,
     this.hourlyZikrSound = true,
+    this.hourlyZikrVolume = MAppSettings.defaultReminderVolume,
     this.reminderEnabled = true,
     this.reminderIntervalHours = 3,
     this.reminderHour = 9,
@@ -16,6 +18,7 @@ class STasbih extends Equatable {
     this.windowEndHour = 22,
     this.ignoreSilent = false,
     this.pauseOnCall = true,
+    this.reminderVolume = MAppSettings.defaultReminderVolume,
     this.previewPlaying = false,
   });
 
@@ -28,6 +31,9 @@ class STasbih extends Equatable {
   /// Read each hourly zekr aloud with its own clip, instead of leaving the
   /// reminder silent. See [MAppSettings.hourlyZikrSound].
   final bool hourlyZikrSound;
+
+  /// Hourly zekr loudness, 0–100. See [MAppSettings.hourlyZikrVolume].
+  final int hourlyZikrVolume;
 
   /// Salawat reminder settings (used by the salawat screen only).
   final bool reminderEnabled;
@@ -50,6 +56,9 @@ class STasbih extends Equatable {
   /// Hold back app-played salawat feedback while a call/other app owns audio.
   final bool pauseOnCall;
 
+  /// Salawat reminder loudness, 0–100. See [MAppSettings.salawatVolume].
+  final int reminderVolume;
+
   /// The reminder clip is auditioning right now (settings sheet preview).
   /// Transient — never persisted.
   final bool previewPlaying;
@@ -67,6 +76,7 @@ class STasbih extends Equatable {
     bool? vibrate,
     bool? hourlyEnabled,
     bool? hourlyZikrSound,
+    int? hourlyZikrVolume,
     bool? reminderEnabled,
     int? reminderIntervalHours,
     int? reminderHour,
@@ -75,6 +85,7 @@ class STasbih extends Equatable {
     int? windowEndHour,
     bool? ignoreSilent,
     bool? pauseOnCall,
+    int? reminderVolume,
     bool? previewPlaying,
   }) {
     return STasbih(
@@ -84,6 +95,7 @@ class STasbih extends Equatable {
       vibrate: vibrate ?? this.vibrate,
       hourlyEnabled: hourlyEnabled ?? this.hourlyEnabled,
       hourlyZikrSound: hourlyZikrSound ?? this.hourlyZikrSound,
+      hourlyZikrVolume: hourlyZikrVolume ?? this.hourlyZikrVolume,
       reminderEnabled: reminderEnabled ?? this.reminderEnabled,
       reminderIntervalHours:
           reminderIntervalHours ?? this.reminderIntervalHours,
@@ -93,6 +105,7 @@ class STasbih extends Equatable {
       windowEndHour: windowEndHour ?? this.windowEndHour,
       ignoreSilent: ignoreSilent ?? this.ignoreSilent,
       pauseOnCall: pauseOnCall ?? this.pauseOnCall,
+      reminderVolume: reminderVolume ?? this.reminderVolume,
       previewPlaying: previewPlaying ?? this.previewPlaying,
     );
   }
@@ -105,6 +118,7 @@ class STasbih extends Equatable {
     vibrate,
     hourlyEnabled,
     hourlyZikrSound,
+    hourlyZikrVolume,
     reminderEnabled,
     reminderIntervalHours,
     reminderHour,
@@ -113,6 +127,7 @@ class STasbih extends Equatable {
     windowEndHour,
     ignoreSilent,
     pauseOnCall,
+    reminderVolume,
     previewPlaying,
   ];
 }

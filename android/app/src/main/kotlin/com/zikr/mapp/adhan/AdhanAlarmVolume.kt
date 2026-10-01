@@ -24,6 +24,15 @@ import kotlin.math.roundToInt
  *
  * Every entry point is idempotent and never throws: volume is a nicety, and it
  * must never take the adhan down with it.
+ *
+ * The salawat and hourly-zekr clips use the same lever for their own volume
+ * settings (see `ReminderSoundReceiver`). There is only ONE marker, because
+ * two independent ones on the same stream would restore each other's levels
+ * in the wrong order. Instead the marker records its [owner], a reminder never
+ * boosts while any boost is pending, and a reminder only restores a boost it
+ * made itself ([restoreIfOwnedBy]). An adhan that starts mid-reminder heals the
+ * reminder's boost first (via [boost]'s own [restoreIfPending]), so the level
+ * it records and later restores is still the user's.
  */
 object AdhanAlarmVolume {
     private const val PREFS = "adhan_alarm_volume"
@@ -31,8 +40,15 @@ object AdhanAlarmVolume {
     /** Mirrored ALARM level to restore, or absent when no boost is active. */
     private const val KEY_PREVIOUS = "previous"
 
+    /** Who made the pending boost; absent on markers older than the field,
+     *  which can only have been the adhan's. */
+    private const val KEY_OWNER = "owner"
+
     /** Sentinel for "nothing to restore" — real levels are always >= 0. */
     private const val NONE = -1
+
+    const val OWNER_ADHAN = "adhan"
+    const val OWNER_REMINDER = "reminder"
 
     /**
      * Applies [percent] (0–100) of the device's maximum ALARM volume, after
@@ -44,7 +60,7 @@ object AdhanAlarmVolume {
      * critically leaves NO marker behind — writing one would mean a later
      * restore "restores" a level that was never changed.
      */
-    fun boost(context: Context, percent: Int) {
+    fun boost(context: Context, percent: Int, owner: String = OWNER_ADHAN) {
         restoreIfPending(context)
         if (percent !in 0..100) return
         try {
@@ -60,7 +76,7 @@ object AdhanAlarmVolume {
                 max,
             )
             if (target == current) return
-            prefs(context).edit().putInt(KEY_PREVIOUS, current).apply()
+            prefs(context).edit().putInt(KEY_PREVIOUS, current).putString(KEY_OWNER, owner).apply()
             am.setStreamVolume(AudioManager.STREAM_ALARM, target, 0)
         } catch (e: Exception) {
             // SecurityException here is the common one: changing stream volume
@@ -68,6 +84,27 @@ object AdhanAlarmVolume {
             // ACCESS_NOTIFICATION_POLICY. The adhan still plays at whatever the
             // device is set to, which is the correct degradation.
         }
+    }
+
+    /** True while some boost is waiting to be restored. */
+    fun isBoostPending(context: Context): Boolean = try {
+        prefs(context).getInt(KEY_PREVIOUS, NONE) != NONE
+    } catch (e: Exception) {
+        false
+    }
+
+    /**
+     * [restoreIfPending], but only when the pending boost is [owner]'s — so a
+     * reminder clip ending mid-adhan can't drop the adhan back to the user's
+     * level.
+     */
+    fun restoreIfOwnedBy(context: Context, owner: String) {
+        try {
+            if (prefs(context).getString(KEY_OWNER, OWNER_ADHAN) != owner) return
+        } catch (e: Exception) {
+            return
+        }
+        restoreIfPending(context)
     }
 
     /**
@@ -87,7 +124,7 @@ object AdhanAlarmVolume {
                 val am = context.getSystemService(Context.AUDIO_SERVICE) as? AudioManager
                 am?.setStreamVolume(AudioManager.STREAM_ALARM, previous, 0)
             } finally {
-                store.edit().remove(KEY_PREVIOUS).apply()
+                store.edit().remove(KEY_PREVIOUS).remove(KEY_OWNER).apply()
             }
         } catch (e: Exception) {
             // Never let volume bookkeeping break a caller — every one of them is

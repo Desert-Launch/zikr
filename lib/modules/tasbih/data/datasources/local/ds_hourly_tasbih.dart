@@ -1,7 +1,6 @@
 import 'dart:convert';
 
 import 'package:flutter/services.dart' show rootBundle;
-import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:localize_and_translate/localize_and_translate.dart';
 import 'package:quran/core/data/sources/local/box_app_settings.dart';
 import 'package:quran/core/extension/string_extensions.dart';
@@ -10,6 +9,7 @@ import 'package:quran/core/services/notifications/notification_channels.dart';
 import 'package:quran/core/services/notifications/notification_payload.dart';
 import 'package:quran/core/services/notifications/notification_slots.dart';
 import 'package:quran/core/services/notifications/notifications_service.dart';
+import 'package:quran/core/services/notifications/reminder_sound_alarms.dart';
 import 'package:quran/modules/tasbih/data/sources/local/box_tasbih_counter.dart';
 
 /// Schedules the hourly zekr notifications (Decision 2). One per hour of the
@@ -24,12 +24,17 @@ import 'package:quran/modules/tasbih/data/sources/local/box_tasbih_counter.dart'
 /// bundled three times over — `assets/audio/adhan/<slug>.mp3` for Flutter,
 /// `res/raw/<slug>.mp3` for the Android channel, and `<slug>.caf` in the iOS
 /// bundle (`tool/sync_zikr_sounds.py` publishes the two native copies). When
-/// `MAppSettings.hourlyZikrSound` is on, the hour is scheduled on its own
-/// [AppNotificationChannels.hourlyZikr] channel and carries the matching iOS
-/// sound; when it's off — or the clip isn't bundled — it falls back to the
-/// silent [AppNotificationChannels.hourly]. The Flutter asset is what's probed
-/// for that decision: it ships in the same commit as the native copies, and it
-/// is the only one of the three Dart can actually see.
+/// `MAppSettings.hourlyZikrSound` is on, iOS carries the matching sound on the
+/// notification itself, while Android posts on the silent
+/// [AppNotificationChannels.hourlyAppSound] and plays the clip through
+/// [ReminderSoundAlarms] at `MAppSettings.hourlyZikrVolume` — a channel sound
+/// can only play at the system notification volume, so this is what gives the
+/// zekr a volume of its own. That clip still stays quiet on silent/vibrate, in
+/// Do Not Disturb and during a call, as the channel sound did. When the audio
+/// is off — or the clip isn't bundled — the hour falls back to the silent
+/// [AppNotificationChannels.hourly]. The Flutter asset is what's probed for
+/// that decision: it ships in the same commit as the native copies, and it is
+/// the only one of the three Dart can actually see.
 ///
 /// **Same-hour conflict avoidance:** other feeds (prayer, azkar/quran init)
 /// also land on the hour boundary, so passing their [reservedTimes] shifts a
@@ -39,11 +44,17 @@ import 'package:quran/modules/tasbih/data/sources/local/box_tasbih_counter.dart'
 ///
 /// Notification IDs reserved: 5000..5023 (one per hour, `_baseId + hour`).
 class DSHourlyTasbih {
-  DSHourlyTasbih(this._notifications, this._counter, this._appSettings);
+  DSHourlyTasbih(
+    this._notifications,
+    this._counter,
+    this._appSettings, [
+    ReminderSoundAlarms? sound,
+  ]) : _sound = sound ?? ReminderSoundAlarms();
 
   final NotificationsService _notifications;
   final BoxTasbihCounter _counter;
   final BoxAppSettings _appSettings;
+  final ReminderSoundAlarms _sound;
 
   static const _assetPath = 'assets/data/notifictaions/hourly_notifications.json';
 
@@ -106,11 +117,12 @@ class DSHourlyTasbih {
     // shifted onto each other (e.g. 12:50 and 13:00).
     final taken = NotificationSlots.minutesOfDay(reserved);
     final hours = _activeHours;
-    final withAudio = _appSettings.current().hourlyZikrSound;
-    // Off means the channels shouldn't linger in the phone's notification
-    // settings either — the user asked for the reminder to stop making noise,
-    // and ten dead entries there read as if it still might.
-    if (!withAudio) await _deleteZikrChannels();
+    final settings = _appSettings.current();
+    final withAudio = settings.hourlyZikrSound;
+    // The per-zekr sounding channels are retired whatever this is set to —
+    // the audio is app-played now — and ten dead entries in the phone's
+    // notification settings would read as if they still did something.
+    await _deleteZikrChannels();
     var audible = 0;
     for (final hour in hours) {
       final minute = _minuteForHour(hour, taken);
@@ -124,33 +136,33 @@ class DSHourlyTasbih {
         minute: minute,
         title: "zikr_allah".translated,
         body: _bodyOf(row, hour),
-        channel: await _channelFor(slug, row),
+        channel: slug == null
+            ? AppNotificationChannels.hourly
+            : AppNotificationChannels.hourlyAppSound,
         // iOS has no channels: the sound rides on the notification itself, and
         // an unbundled name would make it fall back to the default tone — hence
         // the same `slug != null` gate as Android.
         iosSound: slug == null ? null : '$slug.caf',
         payload: const NotificationPayload(type: 'hourly'),
       );
+      // Android's half of the audio (a no-op elsewhere). An hour with no clip
+      // arms nothing; [disable] above already cleared its previous one.
+      if (slug != null) {
+        await _sound.scheduleDaily(
+          id: _baseId + hour,
+          hour: hour,
+          minute: minute,
+          rawRes: slug,
+          volume: settings.hourlyZikrVolume,
+          throughSilent: false,
+        );
+      }
     }
     AppLogger.info(
       'Hourly zekr scheduled (${hours.length} slots, $audible with audio, '
       '${reserved.length} reserved times)',
       tag: 'HourlyZekr',
     );
-  }
-
-  /// The channel for an hour: the zekr's own audible channel when [slug] names
-  /// a bundled clip, otherwise the silent one. Creates the channel on demand —
-  /// they're deliberately absent from the boot set, so an install that never
-  /// enables the audio never grows ten entries in its notification settings.
-  Future<AndroidNotificationChannel> _channelFor(String? slug, Map<String, String>? row) async {
-    if (slug == null) return AppNotificationChannels.hourly;
-    // Labelled with the zekr itself so the ten are tellable apart in Android's
-    // per-channel settings, where each can be silenced on its own.
-    final label = row?['ar'] ?? '';
-    final channel = AppNotificationChannels.hourlyZikr(soundSlug: slug, name: label.isEmpty ? slug : label);
-    await _notifications.createChannel(channel);
-    return channel;
   }
 
   /// The clip slug for [row], or null when it declares none or the clip isn't
@@ -178,8 +190,9 @@ class DSHourlyTasbih {
     }
   }
 
-  /// Removes every per-zekr channel this source may have created. Best-effort:
-  /// a channel that was never created is a no-op delete.
+  /// Removes every retired per-zekr channel this source may have created on an
+  /// earlier build. Best-effort: a channel that was never created is a no-op
+  /// delete.
   Future<void> _deleteZikrChannels() async {
     for (final row in _azkar ?? const <Map<String, String>>[]) {
       final slug = row['sound'] ?? '';
@@ -242,11 +255,14 @@ class DSHourlyTasbih {
   ///
   /// Sweeps the whole day rather than the current window, for the same reason
   /// [DSSalawatReminder.disable] does: hours dropped by a narrowed window would
-  /// otherwise stay armed and keep firing outside it.
+  /// otherwise stay armed and keep firing outside it. Takes the app-played
+  /// clips with it, by id, leaving the salawat reminder's alone.
   Future<void> disable() async {
-    for (var hour = 0; hour < 24; hour++) {
-      await _notifications.cancel(_baseId + hour);
+    final ids = [for (var hour = 0; hour < 24; hour++) _baseId + hour];
+    for (final id in ids) {
+      await _notifications.cancel(id);
     }
+    await _sound.cancelIds(ids);
   }
 
   /// First preferred minute in [hour] that clears every reserved time. Compared

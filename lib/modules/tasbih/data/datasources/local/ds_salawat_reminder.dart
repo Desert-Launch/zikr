@@ -29,15 +29,20 @@ import 'package:quran/modules/tasbih/data/sources/local/box_tasbih_counter.dart'
 /// The hourly zekr is placed *after* salawat and treats these times as reserved
 /// in turn — see `AdhanScheduler.reconcileCompanionNotifications`.
 ///
-/// Each reminder plays the bundled salawat clip via
-/// [AppNotificationChannels.salawat] (Android) / [_iosSound] (iOS).
+/// Each reminder plays the bundled salawat clip. On iOS that is the
+/// notification's own sound ([_iosSound]). On Android the notification is
+/// silent and the clip is played by the app itself through
+/// [ReminderSoundAlarms], on the ALARM stream, at `MAppSettings.salawatVolume`
+/// — a channel sound always plays at the system notification volume, so this
+/// is the only way the reminder can have a volume of its own.
 ///
-/// **"Remind while silenced"** (`MAppSettings.salawatIgnoreSilent`) is not a
-/// different channel sound but a different *source* of sound: the notification
-/// moves to the silent [AppNotificationChannels.salawatSilent] and the clip is
-/// played by the app itself through [ReminderSoundAlarms], on the ALARM stream.
+/// **"Remind while silenced"** (`MAppSettings.salawatIgnoreSilent`) only
+/// changes how that clip behaves: off, it stays quiet on silent/vibrate, in Do
+/// Not Disturb and during a call, like the channel sound it replaced
+/// ([AppNotificationChannels.salawatAppSound]); on, it plays regardless and the
+/// notification moves to the heads-up [AppNotificationChannels.salawatSilent].
 /// A channel sound — even an alarm-attributed one — is dropped outright by One
-/// UI's Mute mode, which is exactly the case the toggle exists for. iOS has no
+/// UI's Mute mode, which is why neither mode relies on one. iOS has no
 /// equivalent: only a critical alert pierces the Ring/Silent switch, and this
 /// app's entitlement request scopes that to the adhan alone, so there the
 /// reminder is merely marked time-sensitive (which clears Focus, not silent).
@@ -62,7 +67,7 @@ class DSSalawatReminder {
   static const _iosSound = 'salah_3la_mohamed.caf';
 
   /// Android raw resource (`res/raw/salah_3la_mohamed.mp3`) — the same clip,
-  /// played by [ReminderSoundAlarms] in "remind while silenced" mode.
+  /// played by [ReminderSoundAlarms].
   static const _androidClip = 'salah_3la_mohamed';
 
   /// Preferred minutes, in order. `:30` first (offset from the hourly tasbih's
@@ -181,16 +186,17 @@ class DSSalawatReminder {
     return slots;
   }
 
-  /// Schedules the notification for one slot and, in "remind while silenced"
-  /// mode on Android, the clip that goes with it.
+  /// Schedules the notification for one slot and, on Android, the clip that
+  /// goes with it.
   ///
   /// The two are separate schedules for the same minute rather than one
   /// mechanism, because no single mechanism does both: only the OS can post a
-  /// notification while the app is dead, and only the app can play audio the
-  /// OS's Mute mode won't drop. They are armed and cancelled together, and the
-  /// notification is silent in this mode so a device that *would* have played
-  /// the channel sound doesn't sound twice.
+  /// notification while the app is dead, and only the app can play audio at a
+  /// volume of its choosing (or that the OS's Mute mode won't drop). They are
+  /// armed and cancelled together, and the notification is always silent on
+  /// Android so the reminder never sounds twice.
   Future<void> _scheduleOne(int id, int hour, int minute) async {
+    final settings = _appSettings.current();
     final throughSilent = _ignoreSilentOnAndroid;
     await _notifications.scheduleDaily(
       id: id,
@@ -200,31 +206,32 @@ class DSSalawatReminder {
       body: 'اللَّهُمَّ صَلِّ وَسَلِّمْ عَلَى نَبِيِّنَا مُحَمَّدٍ',
       channel: throughSilent
           ? AppNotificationChannels.salawatSilent
-          : AppNotificationChannels.salawat,
+          : AppNotificationChannels.salawatAppSound,
       iosSound: _iosSound,
       // iOS can't be made to sound through the Ring/Silent switch, but it can
       // be lifted above a Focus mode when the user asked to be reminded
       // regardless — the most the platform allows here.
-      iosTimeSensitive: _appSettings.current().salawatIgnoreSilent,
+      iosTimeSensitive: settings.salawatIgnoreSilent,
       payload: const NotificationPayload(type: 'salawat'),
     );
-    if (throughSilent) {
-      await _sound.scheduleDaily(
-        id: id,
-        hour: hour,
-        minute: minute,
-        rawRes: _androidClip,
-      );
-    }
+    // A no-op off Android. Armed whatever the volume — the native side treats
+    // 0 as "stay quiet" — so the schedule never depends on the slider.
+    await _sound.scheduleDaily(
+      id: id,
+      hour: hour,
+      minute: minute,
+      rawRes: _androidClip,
+      volume: settings.salawatVolume,
+      throughSilent: throughSilent,
+    );
   }
 
-  /// True when the reminder should be carried by the app-played clip.
+  /// True when the clip may sound through silent mode (and the notification
+  /// gets the heads-up channel).
   ///
   /// Read from the persisted setting alone — never from whether the native
   /// channel happens to be reachable — so a reschedule from a background
   /// isolate (which can't reach it) picks the same channel as the UI isolate.
-  /// Otherwise the notification could quietly go back to the sounding channel
-  /// while the armed clips stayed in place, and the reminder would fire twice.
   bool get _ignoreSilentOnAndroid =>
       Platform.isAndroid && _appSettings.current().salawatIgnoreSilent;
 
@@ -236,14 +243,13 @@ class DSSalawatReminder {
   /// under the previous one, and they'd keep firing outside it forever. Ids
   /// [_hourBase]+0..23 stay clear of the hourly zekr's 5000..5023 band.
   ///
-  /// The clips are cleared unconditionally, not only in "remind while silenced"
-  /// mode: turning the toggle OFF has to take the already-armed ones with it,
-  /// and by then the setting no longer says they exist.
+  /// The clips are cleared by id rather than with `cancelAll`: the hourly zekr
+  /// arms its own clips in the same native mirror, and must keep them.
   Future<void> disable() async {
-    await _notifications.cancel(_specificId);
-    for (var h = 0; h < 24; h++) {
-      await _notifications.cancel(_hourBase + h);
+    final ids = [_specificId, for (var h = 0; h < 24; h++) _hourBase + h];
+    for (final id in ids) {
+      await _notifications.cancel(id);
     }
-    await _sound.cancelAll();
+    await _sound.cancelIds(ids);
   }
 }
