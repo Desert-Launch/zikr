@@ -20,6 +20,7 @@ class WGradientAppBar extends StatelessWidget implements PreferredSizeWidget {
   const WGradientAppBar({
     required this.title,
     this.subtitle,
+    this.subtitleIcon,
     this.actions,
     this.onBack,
     this.showBack = true,
@@ -30,6 +31,10 @@ class WGradientAppBar extends StatelessWidget implements PreferredSizeWidget {
 
   final String title;
   final String? subtitle;
+
+  /// Optional glyph in front of [subtitle] (e.g. a location pin before the
+  /// current city).
+  final IconData? subtitleIcon;
 
   /// Optional trailing icons (rendered on the end/left side in RTL).
   final List<Widget>? actions;
@@ -97,12 +102,10 @@ class WGradientAppBar extends StatelessWidget implements PreferredSizeWidget {
                           ),
                           if (subtitle != null) ...[
                             SizedBox(height: 2.h),
-                            Text(
-                              subtitle ?? '',
-                              textAlign: centerTitle ? TextAlign.center : TextAlign.start,
-                              style: AppTextStyles.white12W400.copyWith(
-                                color: Colors.white70,
-                              ),
+                            _Subtitle(
+                              text: subtitle ?? '',
+                              icon: subtitleIcon,
+                              centered: centerTitle,
                             ),
                           ],
                         ],
@@ -122,6 +125,38 @@ class WGradientAppBar extends StatelessWidget implements PreferredSizeWidget {
           ],
         ),
       ),
+    );
+  }
+}
+
+class _Subtitle extends StatelessWidget {
+  const _Subtitle({required this.text, required this.icon, required this.centered});
+
+  final String text;
+  final IconData? icon;
+  final bool centered;
+
+  @override
+  Widget build(BuildContext context) {
+    final style = AppTextStyles.white12W400.copyWith(color: Colors.white70);
+    final glyph = icon;
+    if (glyph == null) {
+      return Text(
+        text,
+        textAlign: centered ? TextAlign.center : TextAlign.start,
+        style: style,
+      );
+    }
+    // Kept to one line so the icon stays level with the text it labels.
+    return Row(
+      mainAxisAlignment: centered ? MainAxisAlignment.center : MainAxisAlignment.start,
+      children: [
+        Icon(glyph, size: 14.r, color: Colors.white70),
+        SizedBox(width: 4.w),
+        Flexible(
+          child: Text(text, maxLines: 1, overflow: TextOverflow.ellipsis, style: style),
+        ),
+      ],
     );
   }
 }

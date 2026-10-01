@@ -22,6 +22,20 @@ class AppConfig {
   static const int connectTimeoutMs = 15000;
   static const int receiveTimeoutMs = 20000;
 
+  /// Google Maps Platform key, used for the Places API (New) nearby-mosques
+  /// lookup (see `DSRemoteMosques`). Sent only to places.googleapis.com.
+  ///
+  /// Never committed — supplied at build time as `GOOGLE_MAPS_API_KEY`:
+  /// - locally: `flutter run --dart-define-from-file=dart_defines.json`
+  ///   (gitignored file holding `{"GOOGLE_MAPS_API_KEY": "…"}`)
+  /// - Codemagic: the pre-build script swaps this lookup for the key held in
+  ///   the secure `GOOGLE_MAPS_API_KEY` environment variable.
+  ///
+  /// Empty when neither ran; the mosques screen then shows its error state.
+  /// Restrict the key in the Cloud Console (Places API (New) only, plus the
+  /// app signatures) — it is still readable from the app binary.
+  static const String googleMapsApiKey = String.fromEnvironment('GOOGLE_MAPS_API_KEY');
+
   /// How a shared ayah signs itself. The badge is printed on the share card and
   /// appended to shared text whenever the reader leaves it on, so it is the one
   /// place the app speaks in its own name outside the app.

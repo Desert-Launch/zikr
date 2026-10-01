@@ -146,7 +146,7 @@ class _SNHomeState extends State<SNHome> {
           title: 'home_mosques'.tr(),
           subtitle: 'home_mosques_hint'.tr(),
           color: _gold,
-          route: RoutesNames.qiblaBase,
+          route: MosquesRoutes.fullNearby(),
         ),
         // WHomeFeatureCard(
         //   icon: Assets.icons.bookOpen.path,

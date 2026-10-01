@@ -46,3 +46,7 @@ app.*.map.json
 
 /resources/
 /docs/
+
+# Local build-time secrets (flutter run --dart-define-from-file=dart_defines.json).
+# CI injects them instead — never commit this file.
+dart_defines.json

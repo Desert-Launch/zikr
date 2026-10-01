@@ -183,6 +183,15 @@ class RemindersRoutes {
       '${RoutesNames.remindersBase}form${id != null ? '?id=$id' : ''}';
 }
 
+class MosquesRoutes {
+  MosquesRoutes._();
+
+  /// Nearest-mosques list ('/mosques/').
+  static const String nearby = '/';
+
+  static String fullNearby() => RoutesNames.mosquesBase;
+}
+
 class QiblaRoutes {
   QiblaRoutes._();
 

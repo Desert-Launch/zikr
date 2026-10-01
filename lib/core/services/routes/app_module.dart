@@ -56,6 +56,7 @@ import 'package:quran/modules/khatma/khatma_module.dart';
 import 'package:quran/modules/khatma/presentation/cubits/cb_khatma.dart';
 import 'package:quran/modules/legal/legal_module.dart';
 import 'package:quran/modules/live/live_module.dart';
+import 'package:quran/modules/mosques/mosques_module.dart';
 import 'package:quran/modules/onboarding/onboarding_module.dart';
 import 'package:quran/modules/prayer/data/datasources/local/ds_last_location.dart';
 import 'package:quran/modules/prayer/data/datasources/local/ds_location.dart';
@@ -436,6 +437,7 @@ class AppModule extends Module {
     r.module(RoutesNames.azkarBase, module: AzkarModule());
     r.module(RoutesNames.tasbihBase, module: TasbihModule());
     r.module(RoutesNames.remindersBase, module: RemindersModule());
+    r.module(RoutesNames.mosquesBase, module: MosquesModule());
     r.module(RoutesNames.qiblaBase, module: QiblaModule());
     r.module(RoutesNames.khatmaBase, module: KhatmaModule());
     r.module(RoutesNames.legalBase, module: LegalModule());

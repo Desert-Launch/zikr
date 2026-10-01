@@ -59,6 +59,14 @@ class EndPoints {
   // `full_path` values live in the ETafsirBook catalog and are appended here.
   static const String tafsirBase = 'https://quran-backend-delta.vercel.app/';
 
+  // Google Places API (New) — nearby mosques. Keyed by
+  // `AppConfig.googleMapsApiKey`, sent as a header, never in the URL. Reached
+  // via a dedicated Dio in DSRemoteMosques, NOT the shared BaseDio, so the
+  // app's Authorization header is never sent to a third party. Only the
+  // coordinates of the search centre leave the device.
+  static const String googlePlacesBase = 'https://places.googleapis.com/v1';
+  static const String googlePlacesSearchNearby = '/places:searchNearby';
+
   // Adhan voice catalog (host as JSON on your CDN). Lets NEW voices ship
   // without an app update. Empty = remote catalog disabled: the app uses the
   // bundled `assets/data/adhans.json` only and skips the network entirely.
