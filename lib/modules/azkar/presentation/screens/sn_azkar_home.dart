@@ -40,6 +40,7 @@ class _SNAzkarHomeState extends State<SNAzkarHome> {
     'after_pray': Color(0xFF09A981),
     'masged': Color(0xFF0A7E8C),
     'faraj_keys': Color(0xFFB8860B),
+    'umrah_guide': Color(0xFF6D4C41),
     'other_azkar': Color(0xFFFF0B68),
   };
 

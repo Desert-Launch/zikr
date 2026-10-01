@@ -1,31 +1,29 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:localize_and_translate/localize_and_translate.dart';
 import 'package:quran/modules/azkar/data/models/m_azkar_item.dart';
 import 'package:quran/modules/azkar/presentation/widgets/w_azkar_tag.dart';
 
-/// A zekr row in the category list: favorite toggle, the Arabic text, optional
-/// source / virtue tags, and the repeat count.
+/// A zekr row in the category list: favorite toggle, the Arabic text, an
+/// optional virtue tag, and the repeat count.
 class WAzkarZekrListCard extends StatelessWidget {
   const WAzkarZekrListCard({
     super.key,
     required this.item,
     required this.favorite,
-    required this.gold,
     required this.onFavorite,
     required this.onTap,
   });
 
   final MAzkarItem item;
   final bool favorite;
-  final Color gold;
   final VoidCallback onFavorite;
   final VoidCallback onTap;
 
   @override
   Widget build(BuildContext context) {
-    final source = item.source;
-    final virtue = item.virtueAr;
+    final virtue = item.virtue(LocalizeAndTranslate.getLanguageCode());
     return InkWell(
       borderRadius: BorderRadius.circular(16.r),
       onTap: onTap,
@@ -67,21 +65,14 @@ class WAzkarZekrListCard extends StatelessWidget {
                     textAlign: TextAlign.start,
                     style: GoogleFonts.amiri(fontSize: 16.sp, height: 1.65),
                   ),
-                  SizedBox(height: 7.h),
-                  Wrap(
-                    spacing: 5.w,
-                    runSpacing: 4.h,
-                    children: [
-                      if (source != null && source.isNotEmpty)
-                        WAzkarTag(text: source, color: gold),
-                      if (virtue != null && virtue.isNotEmpty)
-                        WAzkarTag(
-                          text: virtue,
-                          color: const Color(0xFF007A58),
-                          outlined: true,
-                        ),
-                    ],
-                  ),
+                  if (virtue != null && virtue.isNotEmpty) ...[
+                    SizedBox(height: 7.h),
+                    WAzkarTag(
+                      text: virtue,
+                      color: const Color(0xFF007A58),
+                      outlined: true,
+                    ),
+                  ],
                 ],
               ),
             ),

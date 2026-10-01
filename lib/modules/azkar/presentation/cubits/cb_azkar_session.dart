@@ -1,10 +1,19 @@
+import 'dart:async';
+
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:just_audio/just_audio.dart';
+import 'package:just_audio_background/just_audio_background.dart';
+import 'package:localize_and_translate/localize_and_translate.dart';
+import 'package:quran/core/services/logging/app_logger.dart';
+import 'package:quran/core/services/media/audio_focus.dart';
+import 'package:quran/core/services/media/media_artwork.dart';
 import 'package:quran/modules/azkar/data/datasources/local/ds_local_azkar.dart';
 import 'package:quran/modules/azkar/data/sources/local/box_azkar_progress.dart';
 import 'package:quran/modules/azkar/presentation/cubits/s_azkar_session.dart';
 
 /// Per-screen cubit that drives the azkar player: which category we're in,
-/// which item is on screen, and how many taps each item has gotten today.
+/// which item is on screen, how many taps each item has gotten today, and the
+/// recitation of the zekr on screen.
 class CBAzkarSession extends Cubit<SAzkarSession> {
   CBAzkarSession({
     required DSLocalAzkar local,
@@ -16,9 +25,22 @@ class CBAzkarSession extends Cubit<SAzkarSession> {
   final DSLocalAzkar _local;
   final BoxAzkarProgress _progress;
 
+  /// Built on the first play — most sessions only count.
+  AudioPlayer? _player;
+  StreamSubscription<ProcessingState>? _playerSub;
+
+  /// The zekr whose clip is loaded, so play after a pause resumes it rather
+  /// than starting over.
+  String? _loadedItemId;
+
+  /// Bumped by every load and stop, so a load that a newer one (a quick swipe)
+  /// or a pause overtook never starts playing.
+  int _audioRequest = 0;
+
   Future<void> open(String categoryId) async {
     final cat = await _local.category(categoryId);
-    if (cat == null) return;
+    // The screen closes this cubit on dispose — it may be gone by now.
+    if (cat == null || isClosed) return;
     final stored = _progress.today(categoryId);
     emit(
       state.copyWith(
@@ -51,24 +73,19 @@ class CBAzkarSession extends Cubit<SAzkarSession> {
     }
   }
 
-  void next() {
-    final cat = state.category;
-    if (cat == null) return;
-    final ni = (state.itemIndex + 1).clamp(0, cat.items.length - 1);
-    emit(state.copyWith(itemIndex: ni));
-  }
+  void next() => jumpTo(state.itemIndex + 1);
 
-  void previous() {
-    final cat = state.category;
-    if (cat == null) return;
-    final pi = (state.itemIndex - 1).clamp(0, cat.items.length - 1);
-    emit(state.copyWith(itemIndex: pi));
-  }
+  void previous() => jumpTo(state.itemIndex - 1);
 
+  /// Moves to [index]. While the recitation runs it follows the zekr on
+  /// screen, stopping on one that has no clip.
   void jumpTo(int index) {
     final cat = state.category;
-    if (cat == null) return;
-    emit(state.copyWith(itemIndex: index.clamp(0, cat.items.length - 1)));
+    if (cat == null || cat.items.isEmpty) return;
+    final target = index.clamp(0, cat.items.length - 1);
+    if (target == state.itemIndex) return;
+    emit(state.copyWith(itemIndex: target));
+    if (state.audioPlaying) unawaited(_playCurrent());
   }
 
   Future<void> resetCategory() async {
@@ -85,5 +102,115 @@ class CBAzkarSession extends Cubit<SAzkarSession> {
     await _progress.resetItem(cat.id, item.id);
     final updated = Map<String, int>.from(state.completed)..remove(item.id);
     emit(state.copyWith(completed: updated));
+  }
+
+  /// Play / pause for the zekr on screen. Once started, every finished clip
+  /// moves on to the next zekr and plays its clip, until the list ends or
+  /// reaches a zekr without one.
+  Future<void> toggleAudio() async {
+    if (state.audioPlaying) {
+      await _pauseAudio();
+    } else {
+      await _playCurrent();
+    }
+  }
+
+  Future<void> _playCurrent() async {
+    final cat = state.category;
+    final item = state.currentItem;
+    final asset = item?.audioAsset;
+    if (cat == null || item == null || asset == null) {
+      await stopAudio();
+      return;
+    }
+    final request = ++_audioRequest;
+    emit(state.copyWith(audioPlaying: true));
+    try {
+      final player = _player ?? _createPlayer();
+      final resumable = _loadedItemId == item.id &&
+          player.processingState != ProcessingState.idle &&
+          player.processingState != ProcessingState.completed;
+      if (!resumable) {
+        // `just_audio_background` allows one platform-active player app-wide,
+        // so free the slot before loading. Every source needs a MediaItem tag.
+        await AudioFocus.instance.take(this);
+        await player.setAudioSource(
+          AudioSource.asset(
+            asset,
+            tag: MediaItem(
+              id: item.id,
+              album: 'azkar_title'.tr(),
+              title: LocalizeAndTranslate.getLanguageCode() == 'ar' ? cat.nameAr : cat.nameEn,
+              artUri: MediaArtwork.uri,
+            ),
+          ),
+        );
+        _loadedItemId = item.id;
+      }
+      if (isClosed || request != _audioRequest) return;
+      // Completes only when playback pauses or stops — the processing-state
+      // listener is what reacts to the clip ending.
+      unawaited(player.play());
+    } on PlayerInterruptedException {
+      // A newer load replaced this one and owns playback now.
+    } catch (e, st) {
+      AppLogger.error('Azkar audio play (${item.id})', error: e, stackTrace: st, tag: 'CBAzkarSession');
+      if (!isClosed && request == _audioRequest) await stopAudio();
+    }
+  }
+
+  AudioPlayer _createPlayer() {
+    final player = AudioPlayer();
+    _player = player;
+    // Registered on first use so the Qur'an/radio/adhan players can stop this
+    // one when they claim the shared background slot.
+    AudioFocus.instance.register(this, stopAudio);
+    _playerSub = player.processingStateStream.listen((s) {
+      if (s == ProcessingState.completed && state.audioPlaying) _onClipFinished();
+    });
+    return player;
+  }
+
+  void _onClipFinished() {
+    final cat = state.category;
+    // Ignore a clip that ended just as the user moved to another zekr.
+    if (cat == null || _loadedItemId != state.currentItem?.id) return;
+    if (state.itemIndex >= cat.items.length - 1) {
+      unawaited(stopAudio());
+      return;
+    }
+    jumpTo(state.itemIndex + 1);
+  }
+
+  Future<void> _pauseAudio() async {
+    _audioRequest++;
+    emit(state.copyWith(audioPlaying: false));
+    try {
+      await _player?.pause();
+    } catch (e) {
+      AppLogger.warning('Azkar audio pause failed: $e', tag: 'CBAzkarSession');
+    }
+  }
+
+  /// Stops the recitation and hands the shared media slot back. Safe to call
+  /// when nothing is playing.
+  Future<void> stopAudio() async {
+    _audioRequest++;
+    if (!isClosed && state.audioPlaying) emit(state.copyWith(audioPlaying: false));
+    try {
+      await _player?.stop();
+    } catch (e) {
+      AppLogger.warning('Azkar audio stop failed: $e', tag: 'CBAzkarSession');
+    }
+    AudioFocus.instance.release(this);
+  }
+
+  @override
+  Future<void> close() async {
+    _audioRequest++;
+    AudioFocus.instance.unregister(this);
+    await _playerSub?.cancel();
+    await _player?.dispose();
+    return super.close();
   }
 }

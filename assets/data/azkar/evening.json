@@ -1,332 +1,352 @@
 [
     {
         "id": 1,
-        "description": {},
+        "sort": 1,
+        "description": "",
         "count": 1,
         "zekr": "أَعُوذُ بِاللهِ مِنْ الشَّيْطَانِ الرَّجِيمِ\nاللّهُ لاَ إِلَـهَ إِلاَّ هُوَ الْحَيُّ الْقَيُّومُ لاَ تَأْخُذُهُ سِنَةٌ وَلاَ نَوْمٌ لَّهُ مَا فِي السَّمَاوَاتِ وَمَا فِي الأَرْضِ مَن ذَا الَّذِي يَشْفَعُ عِنْدَهُ إِلاَّ بِإِذْنِهِ يَعْلَمُ مَا بَيْنَ أَيْدِيهِمْ وَمَا خَلْفَهُمْ وَلاَ يُحِيطُونَ بِشَيْءٍ مِّنْ عِلْمِهِ إِلاَّ بِمَا شَاء وَسِعَ كُرْسِيُّهُ السَّمَاوَاتِ وَالأَرْضَ وَلاَ يَؤُودُهُ حِفْظُهُمَا وَهُوَ الْعَلِيُّ الْعَظِيمُ(255)",
-        "reference": "",
-        "category": "أذكار المساء",
+        "zekr_en": "(أعوذ بالله من الشيطان الرجيم)\n\nاللّهُ لاَ إِلَـهَ إِلاَّ هُوَ الْحَيُّ الْقَيُّومُ لاَ تَأْخُذُهُ سِنَةٌ وَلاَ نَوْمٌ لَّهُ مَا فِي السَّمَاوَاتِ وَمَا فِي الأَرْضِ مَن ذَا الَّذِي يَشْفَعُ عِنْدَهُ إِلاَّ بِإِذْنِهِ يَعْلَمُ مَا بَيْنَ أَيْدِيهِمْ وَمَا خَلْفَهُمْ وَلاَ يُحِيطُونَ بِشَيْءٍ مِّنْ عِلْمِهِ إِلاَّ بِمَا شَاء وَسِعَ كُرْسِيُّهُ السَّمَاوَاتِ وَالأَرْضَ وَلاَ يَؤُودُهُ حِفْظُهُمَا وَهُوَ الْعَلِيُّ الْعَظِيمُ\n\nA`ūdhu billāhi min ash-shaytāni 'r-rajīm) Allāhu lā ilāha illā huwa ‘l-Ḥayyul-Qayyūm, lā ta'khudhuhu sinatun wa lā nawm, lahu mā fis-samāwāti wa māfil-arḍ, man dhal-ladhī yashfa`u `indahu illā bi'idhnih, ya`lamu mā bayna aydīhim wa mā khalfahum, wa lā yuḥīṭūna bishay'im-min `ilmihi illā bimā shā', wasi`a kursiyyuhus-samāwāti wal-arḍ, wa lā ya'ūduhu hifẓuhumā, wa huwal-`Aliyyu‘l-`Aẓīm.\n\nAllah! There is none worthy of worship but He, the Ever-Living, the One Who sustains and protects all that exists. Neither slumber nor sleep overtakes Him. To Him belongs whatever is in the heavens and whatever is on the earth. Who is he that can intercede with Him except with His Permission? He knows what happens to them in this world, and what will happen to them in the Hereafter. And they will never encompass anything of His Knowledge except that which He wills. His Throne extends over the heavens and the earth, and He feels no fatigue in guarding and preserving them. And He is the Most High, the Most Great.",
+        "reference": "Reference: Whoever says this when he rises in the morning will be protected from jinns until he retires in the evening, and whoever says it when retiring in the evening will be protected from them until he rises in the morning. It was reported by Al-Hakim 1 / 562, Al-Albani graded it as authentic in Sahihut-Targhib wat-Tarhib 1/273, and traces it to An-Nasa'i and At-Tabarani. He says that At-Tabarani's chain of transmission is reliable (Jayyid).\n\nHisn al-Muslim 75",
         "fadel_zeker": [
-            "[آية الكرسى - البقرة 255].",
-            "من قالها حين يصبح أجير من الجن حتى يمسى ومن قالها حين يمسى أجير من الجن حتى يصبح.",
-            "رواه الحاكم وابن حبان"
-        ]
+            "مَنْ قَالَهَا حِينَ يُصْبِحُ أُجِيرَ مِنَ الْجِنِّ حَتَّى يُمْسِيَ، وَمَنْ قَالَهَا حِينَ يُمْسِي أُجِيرَ مِنْهُمْ حَتَّى يُصْبِحَ .المرجع المعتمد: أخرجه الحاكم (1/ 562)، وصححه الألباني في صحيح الترغيب والترهيب برقم (1/ 273)، وقال: وعزاه إلى النسائي، والطبراني، وقال: وإسناد الطبراني جيد."
+        ],
+        "audio": "Zikr-M-1",
+        "category": "أذكار المساء"
     },
     {
         "id": 2,
-        "description": {},
-        "count": 1,
-        "zekr": "أَعُوذُ بِاللهِ مِنْ الشَّيْطَانِ الرَّجِيمِ\nآمَنَ الرَّسُولُ بِمَا أُنْزِلَ إِلَيْهِ مِنْ رَبِّهِ وَالْمُؤْمِنُونَ ۚ كُلٌّ آمَنَ بِاللَّهِ وَمَلَائِكَتِهِ وَكُتُبِهِ وَرُسُلِهِ لَا نُفَرِّقُ بَيْنَ أَحَدٍ مِنْ رُسُلِهِ ۚ وَقَالُوا سَمِعْنَا وَأَطَعْنَا ۖ غُفْرَانَكَ رَبَّنَا وَإِلَيْكَ الْمَصِيرُ(285) لَا يُكَلِّفُ اللَّهُ نَفْسًا إِلَّا وُسْعَهَا لَهَا مَا كَسَبَتْ وَعَلَيْهَا مَا اكْتَسَبَتْ رَبَّنَا لَا تُؤَاخِذْنَا إِنْ نَّسِينَآ أَوْ أَخْطَأْنَا رَبَّنَا وَلَا تَحْمِلْ عَلَيْنَا إِصْرًا كَمَا حَمَلْتَهُ عَلَى الَّذِينَ مِنْ قَبْلِنَا رَبَّنَا وَلَا تُحَمِّلْنَا مَا لَا طَاقَةَ لَنَا بِهِ وَاعْفُ عَنَّا وَاغْفِرْ لَنَا وَارْحَمْنَا أَنْتَ مَوْلَانَا فَانْصُرْنَا عَلَى الْقَوْمِ الْكَافِرِينَ(286)",
-        "reference": "",
-        "category": "أذكار المساء",
+        "sort": 2,
+        "description": "",
+        "count": 3,
+        "zekr": "بِسْمِ اللهِ الرَّحْمنِ الرَّحِيم\nقُلْ هُوَ ٱللَّهُ أَحَدٌ(1) ٱللَّهُ ٱلصَّمَدُ(2) لَمْ يَلِدْ وَلَمْ يُولَدْ(3) وَلَمْ يَكُن لَّهُۥ كُفُوًا أَحَدٌۢ(4)",
+        "zekr_en": "بسم الله الرحمن الرحيم { قُلْ هُوَ ٱللَّهُ أَحَدٌ(1) ٱللَّهُ ٱلصَّمَدُ(2) لَمْ يَلِدْ وَلَمْ يُولَدْ(3) وَلَمْ يَكُن لَّهُۥ كُفُوًا أَحَدٌۢ(4) }\n\nBismillāhir-Raḥmānir-Raḥīm. Qul huwallāhu aḥad. Allāhuṣ-ṣamad. Lam yalid wa lam yūlad. Wa lam yakun lahu kufuwan aḥad\n\nWith the Name of Allah, the Most Gracious, the Most Merciful. Say: He is Allah (the) One. The Self-Sufficient Master, Whom all creatures need, He begets not nor was He begotten, and there is none equal to Him",
+        "reference": "Al-Ikhlas 112: 1-4, Al-Falaq 113: 1-5, An-Nas 114: 1-6. Whoever recites these three times in the morning and in the evening, they will suffice him (as a protection) against everything. The Hadith was reported by Abu Dawud 4/322, and At-Tirmidhi 5/567. See Al-Albani's Sahih At-Tirmidhi 3/182.\n\nHisn al-Muslim",
         "fadel_zeker": [
-            "[البقرة 285 - 286].",
-            "من قرأ آيتين من آخر سورة البقرة في ليلة كفتاه."
-        ]
+            "من قالها حين يصبح وحين يمسى كفته من كل شىء (الإخلاص والمعوذتين). رواه الترمذي"
+        ],
+        "audio": "Zikr-M-2",
+        "category": "أذكار المساء"
     },
     {
         "id": 3,
-        "description": {},
+        "sort": 3,
+        "description": "",
         "count": 3,
-        "zekr": "بِسْمِ اللهِ الرَّحْمنِ الرَّحِيم\nقُلْ هُوَ ٱللَّهُ أَحَدٌ(1) ٱللَّهُ ٱلصَّمَدُ(2) لَمْ يَلِدْ وَلَمْ يُولَدْ(3) وَلَمْ يَكُن لَّهُۥ كُفُوًا أَحَدٌۢ(4)",
-        "reference": "",
-        "category": "أذكار المساء",
+        "zekr": "بِسْمِ اللهِ الرَّحْمنِ الرَّحِيم\nقُلْ أَعُوذُ بِرَبِّ ٱلْفَلَقِ(1) مِن شَرِّ مَا خَلَقَ(2) وَمِن شَرِّ غَاسِقٍ إِذَا وَقَبَ(3) وَمِن شَرِّ ٱلنَّفَّٰثَٰتِ فِى ٱلْعُقَدِ(4) وَمِن شَرِّ حَاسِدٍ إِذَا حَسَدَ(5)",
+        "zekr_en": "بسم الله الرحمن الرحيم { قُلْ أَعُوذُ بِرَبِّ ٱلْفَلَقِ(1) مِن شَرِّ مَا خَلَقَ(2) وَمِن شَرِّ غَاسِقٍ إِذَا وَقَبَ(3) وَمِن شَرِّ ٱلنَّفَّٰثَٰتِ فِى ٱلْعُقَدِ(4) وَمِن شَرِّ حَاسِدٍ إِذَا حَسَدَ(5) }\n\nBismillāhir-Raḥmānir-Raḥīm. Qul a`ūdhu birabbil-falaq. Min sharri mā khalaq. Wa min sharri ghāsiqin idhā waqab. Wa min sharrin-naffāthāti fil-`uqad. Wa min sharri ḥāsidin idhā ḥasad\n\nWith the Name of Allah, the Most Gracious, the Most Merciful. Say: I seek refuge with (Allah) the Lord of the daybreak, from the evil of what He has created, and from the evil of the darkening (night) as it comes with its darkness, and from the evil of those who practice witchcraft when they blow in the knots, and from the evil of the envier when he envies",
+        "reference": "Al-Ikhlas 112: 1-4, Al-Falaq 113: 1-5, An-Nas 114: 1-6. Whoever recites these three times in the morning and in the evening, they will suffice him (as a protection) against everything. The Hadith was reported by Abu Dawud 4/322, and At-Tirmidhi 5/567. See Al-Albani's Sahih At-Tirmidhi 3/182.\n\nHisn al-Muslim",
         "fadel_zeker": [
-            "من قالها حين يصبح وحين يمسى كفته من كل شىء (الإخلاص والمعوذتين).",
-            "رواه الترمذي"
-        ]
+            "من قالها حين يصبح وحين يمسى كفته من كل شىء (الإخلاص والمعوذتين). رواه الترمذي"
+        ],
+        "audio": "Zikr-M-3",
+        "category": "أذكار المساء"
     },
     {
         "id": 4,
-        "description": {},
+        "sort": 4,
+        "description": "",
         "count": 3,
-        "zekr": "بِسْمِ اللهِ الرَّحْمنِ الرَّحِيم\nقُلْ أَعُوذُ بِرَبِّ ٱلْفَلَقِ(1) مِن شَرِّ مَا خَلَقَ(2) وَمِن شَرِّ غَاسِقٍ إِذَا وَقَبَ(3) وَمِن شَرِّ ٱلنَّفَّٰثَٰتِ فِى ٱلْعُقَدِ(4) وَمِن شَرِّ حَاسِدٍ إِذَا حَسَدَ(5)",
-        "reference": "",
-        "category": "أذكار المساء",
+        "zekr": "بِسْمِ اللهِ الرَّحْمنِ الرَّحِيم\nقُلْ أَعُوذُ بِرَبِّ ٱلنَّاسِ(1) مَلِكِ ٱلنَّاسِ(2) إِلَٰهِ ٱلنَّاسِ(3) مِن شَرِّ ٱلْوَسْوَاسِ ٱلْخَنَّاسِ(4) ٱلَّذِى يُوَسْوِسُ فِى صُدُورِ ٱلنَّاسِ(5) مِنَ ٱلْجِنَّةِ وَٱلنَّاسِ(6)",
+        "zekr_en": "بسم الله الرحمن الرحيم { قُلْ أَعُوذُ بِرَبِّ ٱلنَّاسِ(1) مَلِكِ ٱلنَّاسِ(2) إِلَٰهِ ٱلنَّاسِ(3) مِن شَرِّ ٱلْوَسْوَاسِ ٱلْخَنَّاسِ(4) ٱلَّذِى يُوَسْوِسُ فِى صُدُورِ ٱلنَّاسِ(5) مِنَ ٱلْجِنَّةِ وَٱلنَّاسِ(6) }\n\nBismillāhir-Raḥmānir-Raḥīm. Qul a`ūdhu birabbin-nās. Malikin-nās. 'Ilāhin-nās. Min sharri ‘l-waswāsil-khannās. Alladhī yuwaswisu fī ṣudūrin-nās. Minal-jinnati wannās.\n\nWith the Name of Allah, the Most Gracious, the Most Merciful. Say: I seek refuge with (Allah) the Lord of mankind, the King of mankind, the God of mankind, from the evil of the whisperer who withdraws, who whispers in the breasts of mankind, of jinns and men",
+        "reference": "Al-Ikhlas 112: 1-4, Al-Falaq 113: 1-5, An-Nas 114: 1-6. Whoever recites these three times in the morning and in the evening, they will suffice him (as a protection) against everything. The Hadith was reported by Abu Dawud 4/322, and At-Tirmidhi 5/567. See Al-Albani's Sahih At-Tirmidhi 3/182.\n\nHisn al-Muslim",
         "fadel_zeker": [
-            "من قالها حين يصبح وحين يمسى كفته من كل شىء (الإخلاص والمعوذتين).",
-            "رواه الترمذي"
-        ]
+            "من قالها حين يصبح وحين يمسى كفته من كل شىء (الإخلاص والمعوذتين). رواه الترمذي"
+        ],
+        "audio": "Zikr-M-4",
+        "category": "أذكار المساء"
     },
     {
         "id": 5,
-        "description": {},
-        "count": 3,
-        "zekr": "بِسْمِ اللهِ الرَّحْمنِ الرَّحِيم\nقُلْ أَعُوذُ بِرَبِّ ٱلنَّاسِ(1) مَلِكِ ٱلنَّاسِ(2) إِلَٰهِ ٱلنَّاسِ(3) مِن شَرِّ ٱلْوَسْوَاسِ ٱلْخَنَّاسِ(4) ٱلَّذِى يُوَسْوِسُ فِى صُدُورِ ٱلنَّاسِ(5) مِنَ ٱلْجِنَّةِ وَٱلنَّاسِ(6)",
-        "reference": "",
-        "category": "أذكار المساء",
+        "sort": 5,
+        "description": "",
+        "count": 1,
+        "zekr": "أَمْسَيْـنا وَأَمْسـى المـلكُ لله وَالحَمدُ لله ، لا إلهَ إلاّ اللّهُ وَحدَهُ لا شَريكَ لهُ، لهُ المُـلكُ ولهُ الحَمْـد، وهُوَ على كلّ شَيءٍ قدير ، رَبِّ أسْـأَلُـكَ خَـيرَ ما في هـذهِ اللَّـيْلَةِ وَخَـيرَ ما بَعْـدَهـا ، وَأَعـوذُ بِكَ مِنْ شَـرِّ ما في هـذهِ اللَّـيْلةِ وَشَرِّ ما بَعْـدَهـا ، رَبِّ أَعـوذُبِكَ مِنَ الْكَسَـلِ وَسـوءِ الْكِـبَر ، رَبِّ أَعـوذُ بِكَ مِنْ عَـذابٍ في النّـارِ وَعَـذابٍ في القَـبْر.",
+        "zekr_en": "أَمْسَيْـنا وَأَمْسـى المـلكُ لله وَالحَمدُ لله ، لا إلهَ إلاّ اللّهُ وَحدَهُ لا شَريكَ لهُ، لهُ المُـلكُ ولهُ الحَمْـد، وهُوَ على كلّ شَيءٍ قدير ، رَبِّ أسْـأَلُـكَ خَـيرَ ما في هـذهِ اللَّـيْلَةِ وَخَـيرَ ما بَعْـدَهـا ، وَأَعـوذُ بِكَ مِنْ شَـرِّ ما في هـذهِ اللَّـيْلةِ وَشَرِّ ما بَعْـدَهـا ، رَبِّ أَعـوذُبِكَ مِنَ الْكَسَـلِ وَسـوءِ الْكِـبَر ، رَبِّ أَعـوذُ بِكَ مِنْ عَـذابٍ في النّـارِ وَعَـذابٍ في القَـبْر.\n\nAmsaynā wa amsal-mulku lillāh, walḥamdu lillāh, lā ilāha illallāhu waḥdahu lā sharīka lah, lahul-mulku wa lahul-ḥamd, wa huwa `alā kulli shay'in Qadīr. Rabbi as'aluka khayra mā fī hādha ‘l-yawmi wa khayra mā ba`dahu wa a`ūdhu bika min sharri mā fī hātha ‘l-yawmi wa sharri mā ba`dahu, Rabbi a`ūdhu bika minal-kasali, wa sū'il-kibar, Rabbi a`ūdhu bika min `adhābin fin-nāri wa `adhābin fil-qabr\n\nWe have entered a new day  and with it all dominion is Allah's. Praise is to Allah. None has the right to be worshipped but Allah alone, Who has no partner. To Allah belongs the dominion, and to Him is the praise and He is Able to do all things. My Lord, I ask You for the goodness of this day and of the days that come after it, and I seek refuge in You from the evil of this day and of the days that come after it. My Lord, I seek refuge in You from laziness and helpless old age. My Lord, I seek refuge in You from the punishment of Hell-fire, and from the punishment of the grave.",
+        "reference": "Muslim 4/2088.\n\nHisn al-Muslim",
         "fadel_zeker": [
-            "من قالها حين يصبح وحين يمسى كفته من كل شىء (الإخلاص والمعوذتين).",
-            "رواه الترمذي"
-        ]
+            "المرجع: [رواه مسلم] 4/2088 (وكذلك أخرجه الترمذي رقم 3390).حصن المسلم 77 (الذكر رقم 77 في النسخة المرقومة للكتاب).الباب الثاني (رقم 27 في الترتيب التفصيلي): أذكار الصباح والمساء، الكتاب: حصن المسلم."
+        ],
+        "audio": "Zikr-M-5",
+        "category": "أذكار المساء"
     },
     {
         "id": 6,
-        "description": {},
+        "sort": 6,
+        "description": "",
         "count": 1,
-        "zekr": "أَمْسَيْـنا وَأَمْسـى المـلكُ لله وَالحَمدُ لله ، لا إلهَ إلاّ اللّهُ وَحدَهُ لا شَريكَ لهُ، لهُ المُـلكُ ولهُ الحَمْـد، وهُوَ على كلّ شَيءٍ قدير ، رَبِّ أسْـأَلُـكَ خَـيرَ ما في هـذهِ اللَّـيْلَةِ وَخَـيرَ ما بَعْـدَهـا ، وَأَعـوذُ بِكَ مِنْ شَـرِّ ما في هـذهِ اللَّـيْلةِ وَشَرِّ ما بَعْـدَهـا ، رَبِّ أَعـوذُبِكَ مِنَ الْكَسَـلِ وَسـوءِ الْكِـبَر ، رَبِّ أَعـوذُ بِكَ مِنْ عَـذابٍ في النّـارِ وَعَـذابٍ في القَـبْر.",
-        "reference": "",
-        "category": "أذكار المساء",
+        "zekr": "اللّهُـمَّ بِكَ أَمْسَـينا وَبِكَ أَصْـبَحْنا، وَبِكَ نَحْـيا وَبِكَ نَمُـوتُ وََإِلَـيْكَ النِّـشورُ.",
+        "zekr_en": "اللّهُـمَّ بِكَ أَمْسَـينا وَبِكَ أَصْـبَحْنا، وَبِكَ نَحْـيا وَبِكَ نَمُـوتُ وََإِلَـيْكَ النِّـشورُ.\n\nAllāhumma bika amsaynā wa bika aṣbaḥnā, wa bika naḥyā, wa bika namūt, wa ilaykal-maṣīr\n\nO Allah, You bring us the end of the day as You bring us its beginning,\nYou bring us life and you bring us death,\nand to You is our fate",
+        "reference": "Reference: Sahih At-Tirmidhi 3/142\n\nHisn al-Muslim 78\nChapter 27: In the morning and evening, Book: Fortress of the Muslim (Hisn al-Muslim)",
         "fadel_zeker": [
-            "رواه مسلم"
-        ]
+            "المرجع: [صحيح الترمذي] 3/142 (رقم 3391).حصن المسلم 78 (الذكر رقم 78 في الكتاب).الباب الثاني (رقم 27 في الترتيب التفصيلي): أذكار الصباح والمساء، الكتاب: حصن المسلم."
+        ],
+        "audio": "Zikr-M-6",
+        "category": "أذكار المساء"
     },
     {
         "id": 7,
-        "description": {},
+        "sort": 7,
+        "description": "",
         "count": 1,
         "zekr": "اللّهـمَّ أَنْتَ رَبِّـي لا إلهَ إلاّ أَنْتَ ، خَلَقْتَنـي وَأَنا عَبْـدُك ، وَأَنا عَلـى عَهْـدِكَ وَوَعْـدِكَ ما اسْتَـطَعْـت ، أَعـوذُبِكَ مِنْ شَـرِّ ما صَنَـعْت ، أَبـوءُ لَـكَ بِنِعْـمَتِـكَ عَلَـيَّ وَأَبـوءُ بِذَنْـبي فَاغْفـِرْ لي فَإِنَّـهُ لا يَغْـفِرُ الذُّنـوبَ إِلاّ أَنْتَ .",
-        "reference": "",
-        "category": "أذكار المساء",
+        "zekr_en": "اللّهـمَّ أَنْتَ رَبِّـي لا إلهَ إلاّ أَنْتَ خَلَقْتَنـي وَأَنا عَبْـدُك وَأَنا عَلـى عَهْـدِكَ وَوَعْـدِكَ ما اسْتَـطَعْـت أَعـوذُ بِكَ مِنْ شَـرِّ ما صَنَـعْت أَبـوءُ لَـكَ بِنِعْـمَتِـكَ عَلَـيَّ وَأَبـوءُ بِذَنْـبي فَاغْفـِرْ لي فَإِنَّـهُ لا يَغْـفِرُ الذُّنـوبَ إِلاّ أَنْتَ\n\nAllāhumma anta Rabbī lā ilāha illā ant, khalaqtanī wa anā `abduk, wa anā `alā `ahdika wa wa`dika mastaṭa`t, a`ūdhu bika min sharri mā ṣana`t, abū'u laka bi ni`matika `alay, wa abū'u bidhanbī faghfir lī fa'innahu lā yaghfirudh-dhunūba illā ant\n\nO Allah, You are my Lord, there is none worthy of worship but You. You created me and I am your slave. I keep Your covenant, and my pledge to You so far as I am able. I seek refuge in You from the evil of what I have done. I admit to Your blessings upon me, and I admit to my misdeeds. Forgive me, for there is none who may forgive sins but You",
+        "reference": "Reference: Whoever recites this with conviction in the evening and dies during that night shall enter Paradise, and whoever recites it with conviction in the morning and dies during that day shall enter Paradise, Al-Bukhari 7/150. Other reports are in An-Nasa'i and At-Tirmidhi\n\nHisn al-Muslim 79",
         "fadel_zeker": [
-            "من قالها موقنا بها حين يمسى ومات من ليلته دخل الجنة وكذلك حين يصبح.",
-            "رواه البخاري"
-        ]
+            "المرجع: مَن قالها موقناً بها حين يُمسي فمات من ليلته دخل الجنة، ومَن قالها موقناً بها حين يُصبح فمات من يومه دخل الجنة. [رواه البخاري] 7/150، ورواه غيره في النسائي والترمذي.حصن المسلم 79 (الذكر رقم 79 في الكتاب).الباب الثاني: أذكار الصباح والمساء، الكتاب: حصن المسلم."
+        ],
+        "audio": "Zikr-M-7",
+        "category": "أذكار المساء"
     },
     {
         "id": 8,
-        "description": {},
-        "count": 3,
-        "zekr": "رَضيـتُ بِاللهِ رَبَّـاً وَبِالإسْلامِ ديـناً وَبِمُحَـمَّدٍ صلى الله عليه وسلم نَبِيّـاً.",
-        "reference": "",
-        "category": "أذكار المساء",
+        "sort": 8,
+        "description": "",
+        "count": 4,
+        "zekr": "اللّهُـمَّ إِنِّـي أَمسيتُ أُشْـهِدُك ، وَأُشْـهِدُ حَمَلَـةَ عَـرْشِـك ، وَمَلَائِكَتَكَ ، وَجَمـيعَ خَلْـقِك ، أَنَّـكَ أَنْـتَ اللهُ لا إلهَ إلاّ أَنْـتَ وَحْـدَكَ لا شَريكَ لَـك ، وَأَنَّ ُ مُحَمّـداً عَبْـدُكَ وَرَسـولُـك.",
+        "zekr_en": "اللّهُـمَّ إِنِّـي أَمسيتُ أُشْـهِدُك ، وَأُشْـهِدُ حَمَلَـةَ عَـرْشِـك ، وَمَلَائِكَتَكَ ، وَجَمـيعَ خَلْـقِك ، أَنَّـكَ أَنْـتَ اللهُ لا إلهَ إلاّ أَنْـتَ وَحْـدَكَ لا شَريكَ لَـك ، وَأَنَّ ُ مُحَمّـداً عَبْـدُكَ وَرَسـولُـك.\n\nAllāhumma innī amsaytu ush-hiduka wa ush-hidu ḥamalata `arshik, wa malā'ikataka wajamī`a khalqik, annaka antallāhu lā ilāha illā ant, waḥdaka lā sharīka lak, wa anna Muḥammadan `abduka wa rasūluk\n\nO Allah, I have ended another day  and call upon You and upon the bearers of Your Throne, upon Your angels and all creation to bear witness that surely You are Allah, there is none worthy of worship but You alone, You have no partners, and that Muhammad is Your slave and Your Messenger.",
+        "reference": "Reference: 1 When you say this in the evening you should say, Allāhumma innī amsaytu. . . .: \"O Allah, I have ended another day...\" 2 \"Allah will spare whoever says this four times in the morning or evening from the fire of Hell.\" Abu Dawud 4/317. It was also reported by Al-Bukhari in Al-'Adab Al-Mufrad, An-Nasa'i in 'Amalul-Yawm wal-Laylah and Ibn As-Sunni. Nasa'i's and Abu Dawud's chains of transmission are good (Hasan), Ibn Baz, p. 23.\n\nHisn al-Muslim 80",
         "fadel_zeker": [
-            "من قالها حين يصبح وحين يمسى كان حقا على الله أن يرضيه يوم القيامة.",
-            "رواه أصحاب السنن"
-        ]
+            "المرجع : \"مَن قال هذا أربع مرات حين يصبح أو يمسي، أعتقه الله من النار.\" [رواه أبو داود] 4/317، وأخرجه البخاري في [الأدب المفرد]، والنسائي في [عمل اليوم والليلة]، وابن السني. وإسناد النسائي وأبي داود حسن، [ابن باز]، ص 23.حصن المسلم 80 (الذكر رقم 80 في الكتاب).الباب الثاني: أذكار الصباح والمساء، الكتاب: حصن المسلم."
+        ],
+        "audio": "Zikr-M-8",
+        "category": "أذكار المساء"
     },
     {
         "id": 9,
-        "description": {},
-        "count": 4,
-        "zekr": "اللّهُـمَّ إِنِّـي أَمسيتُ أُشْـهِدُك ، وَأُشْـهِدُ حَمَلَـةَ عَـرْشِـك ، وَمَلَائِكَتَكَ ، وَجَمـيعَ خَلْـقِك ، أَنَّـكَ أَنْـتَ اللهُ لا إلهَ إلاّ أَنْـتَ وَحْـدَكَ لا شَريكَ لَـك ، وَأَنَّ ُ مُحَمّـداً عَبْـدُكَ وَرَسـولُـك.",
-        "reference": "",
-        "category": "أذكار المساء",
+        "sort": 9,
+        "description": "",
+        "count": 1,
+        "zekr": "اللّهُـمَّ ما أَمسى بي مِـنْ نِعْـمَةٍ أَو بِأَحَـدٍ مِـنْ خَلْـقِك ، فَمِـنْكَ وَحْـدَكَ لا شريكَ لَـك ، فَلَـكَ الْحَمْـدُ وَلَـكَ الشُّكْـر.",
+        "zekr_en": "اللّهُـمَّ ما أَمسى بي مِـنْ نِعْـمَةٍ أَو بِأَحَـدٍ مِـنْ خَلْـقِك ، فَمِـنْكَ وَحْـدَكَ لا شريكَ لَـك ، فَلَـكَ الْحَمْـدُ وَلَـكَ الشُّكْـر.\n\nAllāhumma mā 'amsā bī min ni`matin aw bi aḥadin min khalqik, fa minka waḥdaka lā sharīka lak, falaka ‘l-ḥamdu wa lakash-shukr\n\nO Allah, as I enter this evening whatever blessing has been received by me or anyone of Your creation is from You alone, You have no partner. All praise is for you and thanks is to You",
+        "reference": "Reference: 1 When you say this in the evening, you should say: Allāhumma mā 'amsā bī...: \"O Allah, as I... enter this evening...\" 2 Whoever recites this in the morning, has completed his obligation to thank Allah for that day; and whoever says it in the evening, has completed his obligation for that night. Abu Dawud 4/318, An-Nasa'i 'Amalul-Yawm wal-Laylah (no. 7), Ibn As-Sunni (no. 41), Ibn Hibban (no. 2361). Its chain of transmission is good (Hasan), Ibn Baz, p. 24.\n\nHisn al-Muslim 81",
         "fadel_zeker": [
-            "من قالها أعتقه الله من النار.",
-            "رواه أبو داود والترمذي"
-        ]
+            "المرجع : \"مَن قالها حين يصبح فقد أدى شُكر يومه، ومَن قال ذلك حين يمسي فقد أدى شُكر ليلته.\" [رواه أبو داود] 4/318، والنسائي في [عمل اليوم والليلة] (رقم 7)، وابن السني (رقم 41)، وابن حبان (رقم 2361). وإسناده حسن، [ابن باز]، ص 24.حصن المسلم 81 (الذكر رقم 81 في الكتاب).الباب الثاني: أذكار الصباح والمساء، الكتاب: حصن المسلم."
+        ],
+        "audio": "Zikr-M-9",
+        "category": "أذكار المساء"
     },
     {
         "id": 10,
-        "description": {},
-        "count": 1,
-        "zekr": "اللّهُـمَّ ما أَمسى بي مِـنْ نِعْـمَةٍ أَو بِأَحَـدٍ مِـنْ خَلْـقِك ، فَمِـنْكَ وَحْـدَكَ لا شريكَ لَـك ، فَلَـكَ الْحَمْـدُ وَلَـكَ الشُّكْـر.",
-        "reference": "",
-        "category": "أذكار المساء",
+        "sort": 10,
+        "description": "",
+        "count": 3,
+        "zekr": "اللّهُـمَّ عافِـني في بَدَنـي ، اللّهُـمَّ عافِـني في سَمْـعي ، اللّهُـمَّ عافِـني في بَصَـري ، لا إلهَ إلاّ أَنْـتَ.\nاللّهُـمَّ إِنّـي أَعـوذُ بِكَ مِنَ الْكُـفر ، وَالفَـقْر ، وَأَعـوذُ بِكَ مِنْ عَذابِ القَـبْر ، لا إلهَ إلاّ أَنْـتَ.",
+        "zekr_en": "اللّهُـمَّ عافِـني في بَدَنـي، اللّهُـمَّ عافِـني في سَمْـعي، اللّهُـمَّ عافِـني في بَصَـري، لا إلهَ إلاّ اللّه أَنْـتَ. اللّهُـمَّ إِنّـي أَعـوذُبِكَ مِنَ الْكُـفر، وَالفَـقْر، وَأَعـوذُ بِكَ مِنْ عَذابِ القَـبْر، لا إلهَ إلاّ أَنْـتَ\n\nAllāhumma `āfinī fī badanī, Allāhumma `āfinī fī sam`ī, Allāhumma `āfinī fī baṣarī, lā ilāha illā ant. Allāhumma innī a`ūdhu bika mina ‘l-kufri, wa ‘l-faqr, wa a`ūdhu bika min `adhābi ‘l-qabr, lā ilāha illā ant\n\nO Allah, make me healthy in my body. O Allah, preserve for me my hearing. O Allah, preserve for me my sight. There is none worthy of worship but You. O Allah, I seek refuge in You from disbelief and poverty, and I seek refuge in You from the punishment of the grave. There is none worthy of worship but You",
+        "reference": "Abu Dawud 4/324, Ahmad 5/42, An-Nasa'i, 'Amalul-Yawm wal-Laylah (no. 22), Ibn As-Sunni (no. 69), Al-Bukhari Al-'Adab Al-Mufrad. Its chain of transmission is good (Hasan), Ibn Baz, p. 26.\n\nHisn al-Muslim 82",
         "fadel_zeker": [
-            "من قالها حين يمسى أدى شكر يومه."
-        ]
+            "المرجع: [رواه أبو داود] 4/324، والإمام أحمد 5/42، والنسائي في [عمل اليوم والليلة] (رقم 22)، وابن السني (رقم 69)، والبخاري في [الأدب المفرد]. وإسناده حسن، [ابن باز]، ص 26.حصن المسلم 82 (الذكر رقم 82 في الكتاب).الباب الثاني: أذكار الصباح والمساء، الكتاب: حصن المسلم."
+        ],
+        "audio": "Zikr-M-10",
+        "category": "أذكار المساء"
     },
     {
         "id": 11,
-        "description": {},
+        "sort": 11,
+        "description": "",
         "count": 7,
         "zekr": "حَسْبِـيَ اللّهُ لا إلهَ إلاّ هُوَ عَلَـيهِ تَوَكَّـلتُ وَهُوَ رَبُّ العَرْشِ العَظـيم.",
-        "reference": "",
-        "category": "أذكار المساء",
+        "zekr_en": "حَسْبِـيَ اللّهُ لا إلهَ إلاّ هُوَ عَلَـيهِ تَوَكَّـلتُ وَهُوَ رَبُّ العَرْشِ العَظـيم.\n\nḤasbiyallāhu lā ilāha illā huwa `alayhi tawakkalt, wa huwa Rabbu ‘l-`Arshi ‘l-'Aẓīm\n.\nAllah is sufficient for me. There is none worthy of worship but Him. I have placed my trust in Him, He is Lord of the Majestic Throne",
+        "reference": "Reference: Allah will grant whoever recites this seven times in the morning or evening whatever he desires from this world or the next, Ibn As-Sunni (no. 71), Abu Dawud 4/321. Both reports are attributed directly to the Prophet j§ (Marfu1). The chain of transmission is sound (Sahih). Ibn As-Sunni.\n\nHisn al-Muslim 83\nChapter 27: In the morning and evening, Book: Fortress of the Muslim (Hisn al-Muslim)",
         "fadel_zeker": [
-            "[التوبة:129]",
-            "من قالها كفاه الله ما أهمه من أمر الدنيا والأخرة.",
-            "رواه أبو داود"
-        ]
+            "المرجع: \"مَن قالها سبع مرات حين يصبح أو يمسي كفاه الله ما أهمَّه من أمر الدنيا والآخرة.\" [رواه ابن السني] (رقم 71)، وأخرجه [أبو داود] 4/321. وكلا الروايتين مَرفوعتان مباشرة إلى النبي ﷺ. وإسناد ابن السني صحيح.حصن المسلم 83 (الذكر رقم 83 في الكتاب).الباب الثاني (رقم 27 في الترتيب التفصيلي للنسخة الإنجليزية): أذكار الصباح والمساء، الكتاب: حصن المسلم."
+        ],
+        "audio": "Zikr-M-11",
+        "category": "أذكار المساء"
     },
     {
         "id": 12,
-        "description": {},
-        "count": 3,
-        "zekr": "بِسـمِ اللهِ الذي لا يَضُـرُّ مَعَ اسمِـهِ شَيءٌ في الأرْضِ وَلا في السّمـاءِ وَهـوَ السّمـيعُ العَلـيم.",
-        "reference": "",
-        "category": "أذكار المساء",
+        "sort": 12,
+        "description": "",
+        "count": 1,
+        "zekr": "اللّهُـمَّ إِنِّـي أسْـأَلُـكَ العَـفْوَ وَالعـافِـيةَ في الدُّنْـيا وَالآخِـرَة ، اللّهُـمَّ إِنِّـي أسْـأَلُـكَ العَـفْوَ وَالعـافِـيةَ في ديني وَدُنْـيايَ وَأهْـلي وَمالـي ، اللّهُـمَّ اسْتُـرْ عـوْراتي وَآمِـنْ رَوْعاتـي ، اللّهُـمَّ احْفَظْـني مِن بَـينِ يَدَيَّ وَمِن خَلْفـي وَعَن يَمـيني وَعَن شِمـالي ، وَمِن فَوْقـي ، وَأَعـوذُ بِعَظَمَـتِكَ أَن أُغْـتالَ مِن تَحْتـي.",
+        "zekr_en": "اللّهُـمَّ إِنِّـي أسْـأَلُـكَ العَـفْوَ وَالعـافِـيةَ في الدُّنْـيا وَالآخِـرَة ، اللّهُـمَّ إِنِّـي أسْـأَلُـكَ العَـفْوَ وَالعـافِـيةَ في ديني وَدُنْـيايَ وَأهْـلي وَمالـي ، اللّهُـمَّ اسْتُـرْ عـوْراتي وَآمِـنْ رَوْعاتـي ، اللّهُـمَّ احْفَظْـني مِن بَـينِ يَدَيَّ وَمِن خَلْفـي وَعَن يَمـيني وَعَن شِمـالي ، وَمِن فَوْقـي ، وَأَعـوذُ بِعَظَمَـتِكَ أَن أُغْـتالَ مِن تَحْتـي\n\nAllāhumma innī as'aluka 'l-`afwa wal-`āfiyah fid-dunyā wal-ākhirah, Allāhumma innī as'aluka 'l-`afwa wal-`āfiyah fī dīnī wa dunyāya, wa ahlī, wa mālī, Allāhummastur `awrātī, wa āmin raw`ātī, Allāhummaḥfaẓnī min bayni yadayya, wa min khalfī, wa `an yamīnī, wa `an shimālī, wa min fawqī, wa a`ūdhu bi`aẓamatika an 'ughtāla min taḥtī\n\nO Allah, I seek Your forgiveness and Your protection in this world and the next. O Allah, I seek Your forgiveness and Your protection in my religion, in my worldly affairs, in my family and in my wealth. O Allah, conceal my secrets and preserve me from anguish. O Allah, guard me from what is in front of me and behind me, from my left, and from my right, and from above me. I seek refuge in Your Greatness from being struck down from beneath me",
+        "reference": "Reference: Sahih Ibn Majah 2/332 and Abu Dawud.\n\nHisn al-Muslim 84\nChapter 27: In the morning and evening, Book: Fortress of the Muslim (Hisn al-Muslim)",
         "fadel_zeker": [
-            "لم يضره من الله شيء.",
-            "رواه أصحاب السنن عدا النسائي"
-        ]
+            "المرجع: [صحيح ابن ماجه] 2/332، وأخرجه [أبو داود].حصن المسلم 84 (الذكر رقم 84 في الكتاب).الباب الثاني (رقم 27 في الترتيب التفصيلي): أذكار الصباح والمساء، الكتاب: حصن المسلم."
+        ],
+        "audio": "Zikr-M-12",
+        "category": "أذكار المساء"
     },
     {
         "id": 13,
-        "description": {},
+        "sort": 13,
+        "description": "",
         "count": 1,
-        "zekr": "اللّهُـمَّ بِكَ أَمْسَـينا وَبِكَ أَصْـبَحْنا، وَبِكَ نَحْـيا وَبِكَ نَمُـوتُ وَإِلَـيْكَ الْمَصِيرُ.",
-        "reference": "",
-        "category": "أذكار المساء",
+        "zekr": "اللّهُـمَّ عالِـمَ الغَـيْبِ وَالشّـهادَةِ فاطِـرَ السّماواتِ وَالأرْضِ رَبَّ كـلِّ شَـيءٍ وَمَليـكَه ، أَشْهَـدُ أَنْ لا إِلـهَ إِلاّ أَنْت ، أَعـوذُ بِكَ مِن شَـرِّ نَفْسـي وَمِن شَـرِّ الشَّيْـطانِ وَشِرْكِهِ ، وَأَنْ أَقْتَـرِفَ عَلـى نَفْسـي سوءاً أَوْ أَجُـرَّهُ إِلـى مُسْـلِم.",
+        "zekr_en": "اللّهُـمَّ عالِـمَ الغَـيْبِ وَالشّـهادَةِ فاطِـرَ السّماواتِ وَالأرْضِ رَبَّ كـلِّ شَـيءٍ وَمَليـكَه ، أَشْهَـدُ أَنْ لا إِلـهَ إِلاّ أَنْت ، أَعـوذُ بِكَ مِن شَـرِّ نَفْسـي وَمِن شَـرِّ الشَّيْـطانِ وَشِـرْكِه ، وَأَنْ أَقْتَـرِفَ عَلـى نَفْسـي سوءاً أَوْ أَجُـرَّهُ إِلـى مُسْـلِم\n\nAllāhumma `ālima ‘l-ghaybi wash-shahādah fātir as-samāwāti wa ‘l'arḍ, Rabba kulli shay'in wa malīkah, ash-hadu an lā ilāha illā ant, a`ūdhu bika min sharri nafsī, wa min sharrish-shayṭāni wa shirkih, wa an aqtarifa `alā nafsī sū'an, aw ajurrahu ilā Muslim\n\nO Allah, Knower of the unseen and the evident, Maker of the heavens and the earth, Lord of everything and its Possessor, I bear witness that there is none worthy of worship but You. I seek refuge in You from the evil of my soul, and from the evil of Satan and his helpers. (I seek refuge in You) from bringing evil upon my soul and from harming any Muslim",
+        "reference": "Reference: Sahih At-Tirmidhi 3/142 and AbuDawud.\n\nHisn al-Muslim 85\nChapter 27: In the morning and evening, Book: Fortress of the Muslim (Hisn al-Muslim)",
         "fadel_zeker": [
-            "رواه أصحاب السنن عدا النسائي"
-        ]
+            "المرجع: [صحيح الترمذي] 3/142، وأخرجه [أبو داود].حصن المسلم 85 (الذكر رقم 85 في الكتاب).الباب الثاني (رقم 27 في الترتيب التفصيلي): أذكار الصباح والمساء، الكتاب: حصن المسلم."
+        ],
+        "audio": "Zikr-M-13",
+        "category": "أذكار المساء"
     },
     {
         "id": 14,
-        "description": {},
-        "count": 1,
-        "zekr": "أَمْسَيْنَا عَلَى فِطْرَةِ الإسْلاَمِ، وَعَلَى كَلِمَةِ الإِخْلاَصِ، وَعَلَى دِينِ نَبِيِّنَا مُحَمَّدٍ صَلَّى اللهُ عَلَيْهِ وَسَلَّمَ، وَعَلَى مِلَّةِ أَبِينَا إبْرَاهِيمَ حَنِيفاً مُسْلِماً وَمَا كَانَ مِنَ المُشْرِكِينَ.",
-        "reference": "",
-        "category": "أذكار المساء",
+        "sort": 14,
+        "description": "",
+        "count": 3,
+        "zekr": "بِسـمِ اللهِ الذي لا يَضُـرُّ مَعَ اسمِـهِ شَيءٌ في الأرْضِ وَلا في السّمـاءِ وَهـوَ السّمـيعُ العَلـيم.",
+        "zekr_en": "بِسـمِ اللهِ الذي لا يَضُـرُّ مَعَ اسمِـهِ شَيءٌ في الأرْضِ وَلا في السّمـاءِ وَهـوَ السّمـيعُ العَلـيم\n\nBismillāhi ‘l-ladhī lā yaḍurru ma`a-smihi shay'un fil-'arḍi wa lā fis-samā' wa huwas Samī `ul-`Alīm\n\nIn the Name of Allah, Who with His Name nothing can cause harm in the earth nor in the heavens, and He is the All-Hearing, the All-Knowing",
+        "reference": "Reference: \"Whoever recites it three times in the morning will not be afflicted by any calamity before evening, and whoever recites it three times in the evening will not be overtaken by any calamity before morning.\" Abu Dawud 4/323, At-Tirmidhi 5/465, Ibn Majah 2/332, Ahmad. Ibn Majah's chain of transmission is good (Hasan), Ibn Baz, p. 39.\n\nHisn al-Muslim 86\nChapter 27: In the morning and evening, Book: Fortress of the Muslim (Hisn al-Muslim)",
         "fadel_zeker": [
-            "رواه أحمد"
-        ]
+            "المرجع: \"مَن قالها ثلاث مرات حين يصبح لم تُصبه فجأةُ بلاءٍ حتى يمسي، ومَن قالها ثلاث مرات حين يمسي لم تُصبه فجأةُ بلاءٍ حتى يصبح.\" [رواه أبو داود] 4/323، والترمذي 5/465، وابن ماجه 2/332، والإمام أحمد. وإسناد ابن ماجه حسن، [ابن باز]، ص 39.حصن المسلم 86 (الذكر رقم 86 في الكتاب).الباب الثاني (رقم 27 في الترتيب التفصيلي): أذكار الصباح والمساء، الكتاب: حصن المسلم."
+        ],
+        "audio": "Zikr-M-14",
+        "category": "أذكار المساء"
     },
     {
         "id": 15,
-        "description": {},
+        "sort": 15,
+        "description": "",
         "count": 3,
-        "zekr": "سُبْحـانَ اللهِ وَبِحَمْـدِهِ عَدَدَ خَلْـقِه ، وَرِضـا نَفْسِـه ، وَزِنَـةَ عَـرْشِـه ، وَمِـدادَ كَلِمـاتِـه.",
-        "reference": "",
-        "category": "أذكار المساء",
-        "fadel_zeker": []
+        "zekr": "رَضيـتُ بِاللهِ رَبَّـاً وَبِالإسْلامِ ديـناً وَبِمُحَـمَّدٍ صلى الله عليه وسلم نَبِيّـاً.",
+        "zekr_en": "رَضيـتُ بِاللهِ رَبَّـاً وَبِالإسْلامِ ديـناً وَبِمُحَـمَّدٍ صلى الله عليه وسلم نَبِيّـاً.\n\nRaḍītu billāhi Rabba, wa bil-Islāmi dīna, wa bi-Muḥammadin (ṣallallāhu `alayhi wa sallama) nabiyya\n\nI am pleased with Allah as my Lord, with Islam as my religion, and with Muhammad (peace and blessings of Allah be upon him) as my Prophet.",
+        "reference": "Reference: \"Allah has promised that anyone who says this three times every morning or evening will be pleased on the Day of Resurrection.\" Ahmad 4/ 337, An-Nasa'i, 'Amalul-Yawm wal-Laylah p. 4, Ibn As-Sunni (no. 68), At-Tirmidhi 5/465. Its chain of transmission is good (Hasan), Ibn Baz, p. 39.\n\nHisn al-Muslim 87\nChapter 27: In the morning and evening, Book: Fortress of the Muslim (Hisn al-Muslim)",
+        "fadel_zeker": [
+            "المرجع: \"كان حقاً على الله أن يُرضيَه يوم القيامة مَن قالها ثلاث مرات حين يصبح وثلاث مرات حين يمسي.\" [رواه الإمام أحمد] 4/337، والنسائي في [عمل اليوم والليلة] ص 4، وابن السني (رقم 68)، والترمذي 5/465. وإسناده حسن، [ابن باز]، ص 39.حصن المسلم 87 (الذكر رقم 87 في الكتاب).الباب الثاني (رقم 27 في الترتيب التفصيلي): أذكار الصباح والمساء، الكتاب: حصن المسلم."
+        ],
+        "audio": "Zikr-M-15",
+        "category": "أذكار المساء"
     },
     {
         "id": 16,
-        "description": {},
+        "sort": 16,
+        "description": "",
         "count": 3,
-        "zekr": "اللّهُـمَّ عافِـني في بَدَنـي ، اللّهُـمَّ عافِـني في سَمْـعي ، اللّهُـمَّ عافِـني في بَصَـري ، لا إلهَ إلاّ أَنْـتَ.",
-        "reference": "",
-        "category": "أذكار المساء",
+        "zekr": "يَا حَيُّ يَا قيُّومُ بِرَحْمَتِكَ أسْتَغِيثُ أصْلِحْ لِي شَأنِي كُلَّهُ وَلاَ تَكِلْنِي إلَى نَفْسِي طَـرْفَةَ عَيْنٍ.",
+        "zekr_en": "يا حَـيُّ يا قَيّـومُ بِـرَحْمَـتِكِ أَسْتَـغـيث ، أَصْلِـحْ لي شَـأْنـي كُلَّـه ، وَلا تَكِلـني إِلى نَفْـسي طَـرْفَةَ عَـين\n\nYā Ḥayyu yā Qayyūmu biraḥmatika astaghīth aṣlih lī sha'nī kullah wa lā takilnī ilā nafsī ṭarfata `ayn\n\nO Ever-Living One, O Eternal One, by Your mercy I call on You to set right all my affairs. Do not place me in charge of my soul even for the blinking of an eye (i.e. a moment).",
+        "reference": "Reference: Its chain of transmission is sound (Sahih), Al-Hakim 1/545, see Albani, Sahihut-Targhib wat-Tarhib, 1/273.\n\nHisn al-Muslim 88\nChapter 27: In the morning and evening, Book: Fortress of the Muslim (Hisn al-Muslim)",
         "fadel_zeker": [
-            "رواه أبو داود"
-        ]
+            "المرجع: إسناده صحيح، أخرجه الحاكم 1/545، انظر: صحيح الترغيب والترهيب للألباني 1/273.حصن المسلم 88 (الذكر رقم 88 في الكتاب).الباب الثاني (رقم 27 في الترتيب التفصيلي): أذكار الصباح والمساء، الكتاب: حصن المسلم."
+        ],
+        "audio": "Zikr-M-16",
+        "category": "أذكار المساء"
     },
     {
         "id": 17,
-        "description": {},
-        "count": 3,
-        "zekr": "اللّهُـمَّ إِنّـي أَعـوذُ بِكَ مِنَ الْكُـفر ، وَالفَـقْر ، وَأَعـوذُ بِكَ مِنْ عَذابِ القَـبْر ، لا إلهَ إلاّ أَنْـتَ.",
-        "reference": "",
-        "category": "أذكار المساء",
-        "fadel_zeker": []
+        "sort": 17,
+        "description": "",
+        "count": 1,
+        "zekr": "أَمْسَيْنا وَأَمْسَى الْمُلْكُ للهِ رَبِّ الْعَالَمَيْنِ، اللَّهُمَّ إِنَّي أسْأَلُكَ خَيْرَ هَذَه اللَّيْلَةِ فَتْحَهَا ونَصْرَهَا، ونُوْرَهَا وبَرَكَتهَا، وَهُدَاهَا، وَأَعُوذُ بِكَ مِنْ شَرِّ مَا فيهِا وَشَرَّ مَا بَعْدَهَا.",
+        "zekr_en": "أَصْبَـحْـنا وَأَصْبَـحْ المُـلكُ للهِ رَبِّ العـالَمـين ، اللّهُـمَّ إِنِّـي أسْـأَلُـكَ خَـيْرَ هـذا الـيَوْم ، فَـتْحَهُ ، وَنَصْـرَهُ ، وَنـورَهُ وَبَـرَكَتَـهُ ، وَهُـداهُ ، وَأَعـوذُ بِـكَ مِـنْ شَـرِّ ما فـيهِ وَشَـرِّ ما بَعْـدَه\nوإذا أمسى قال: أَمْسَيْـنا وَأَمْسـى المُـلكُ للهِ رَبِّ العـالَمـين ، اللّهُـمَّ إِنِّـي أسْـأَلُـكَ خَـيْرَ هـذهِ اللَّـيْلَة ، فَتْحَهـا ، وَنَصْـرَهـا ، وَنـورَهـا وَبَـرَكَتَـهـا ، وَهُـداهـا ، وَأَعـوذُ بِـكَ مِـنْ شَـرِّ ما فـيهـاِ وَشَـرِّ ما بَعْـدَهـا\n\nAṣbaḥnā wa aṣbaḥal-mulku lillāhi Rabbi ‘l-a`lāmīn, Allāhumma innī as'aluka khayra hādha ‘l-yawm: Fat’ḥahu wa naṣrahu wa nūrahu, wa barakatahu, wa hudāh, wa a`ūdhu bika min sharri mā fīhi wa sharri mā ba`dah\n\nWe have entered a new day and with it all the dominion which belongs to Allah, Lord of all that exists. O Allah, I ask You for the goodness of this day,2 its victory, its help, its light, its blessings, and its guidance. I seek refuge in You from the evil that is in it, and from the evil that follows it.",
+        "reference": "Reference: 1 For evening recitation, say here: Allāhumma innī as'aluka khayra hāthihil-laylah: \"My Lord, I ask You for the good things of this night.\" 2 Abu Dawud 4/322. Its transmission chain is good (Hasan). See also Ibn Al-Qayyim, Zadul- Ma'ad 2/273.\n\nHisn al-Muslim 89\nChapter 27: In the morning and evening, Book: Fortress of the Muslim (Hisn al-Muslim)",
+        "fadel_zeker": [
+            "المرجع : [رواه أبو داود] 4/322. وإسناده حسن. انظر أيضاً: ابن القيم، [زاد المعاد] 2/273.حصن المسلم 89 (الذكر رقم 89 في الكتاب).الباب الثاني (رقم 27 في الترتيب التفصيلي): أذكار الصباح والمساء، الكتاب: حصن المسلم."
+        ],
+        "audio": "Zikr-M-17",
+        "category": "أذكار المساء"
     },
     {
         "id": 18,
-        "description": {},
+        "sort": 18,
+        "description": "",
         "count": 1,
-        "zekr": "اللّهُـمَّ إِنِّـي أسْـأَلُـكَ العَـفْوَ وَالعـافِـيةَ في الدُّنْـيا وَالآخِـرَة ، اللّهُـمَّ إِنِّـي أسْـأَلُـكَ العَـفْوَ وَالعـافِـيةَ في ديني وَدُنْـيايَ وَأهْـلي وَمالـي ، اللّهُـمَّ اسْتُـرْ عـوْراتي وَآمِـنْ رَوْعاتـي ، اللّهُـمَّ احْفَظْـني مِن بَـينِ يَدَيَّ وَمِن خَلْفـي وَعَن يَمـيني وَعَن شِمـالي ، وَمِن فَوْقـي ، وَأَعـوذُ بِعَظَمَـتِكَ أَن أُغْـتالَ مِن تَحْتـي.",
-        "reference": "",
-        "category": "أذكار المساء",
+        "zekr": "أَمْسَيْنَا عَلَى فِطْرَةِ الإسْلاَمِ، وَعَلَى كَلِمَةِ الإِخْلاَصِ، وَعَلَى دِينِ نَبِيِّنَا مُحَمَّدٍ صَلَّى اللهُ عَلَيْهِ وَسَلَّمَ، وَعَلَى مِلَّةِ أَبِينَا إبْرَاهِيمَ حَنِيفاً مُسْلِماً وَمَا كَانَ مِنَ المُشْرِكِينَ.",
+        "zekr_en": "أَصْـبَحْنا علـى فِطْـرَةِ الإسْلام، وَعَلـى كَلِـمَةِ الإخْـلاص، وَعلـى دينِ نَبِـيِّنا مُحَـمَّدٍ وَعَلـى مِلَّـةِ أبينـا إِبْـراهيـمَ حَنيـفاً مُسْلِـماً وَمـا كـانَ مِنَ المُشـرِكيـن\n\nAṣbahnā `alā fiṭrati ‘l-Islām, wa `alā kalimati ‘l-ikhlās, wa `alā dīni nabiyyinā Muḥammadin (ṣallallāhu `alayhi wa sallam), wa `alā millati abīnā Ibrāhīm, ḥanīfan Musliman wa mā kāna mina ‘l-mushrikīn\n.\nWe have entered a new day upon the natural religion of Islam, the word of sincere devotion, the religion of our Prophet Muhammad (peace and blessings of Allah be upon him), and the faith of our father Ibrahim. He was upright (in worshipping Allah), and a Muslim. He was not of those who worship others besides Allah",
+        "reference": "Reference: 1 When you say this in the evening, you should say: 'Amsaynā `alā fiṭratil-Islām...: \"We end this day...\" 2 Ahmad 3/406-7, 5/123, An-Nasa'i, 'Amalul- Yawm wal-Laylah (no. 34), At-Tirmidhi 4/209.\n\nHisn al-Muslim 90\nChapter 27: In the morning and evening, Book: Fortress of the Muslim (Hisn al-Muslim)",
         "fadel_zeker": [
-            "رواه أبو داود وابن ماجه"
-        ]
+            "المرجع 2: رواه الإمام أحمد 3/406-407، و5/123، والنسائي في [عمل اليوم والليلة] (رقم 34)، والترمذي 4/209.حصن المسلم 90 (الذكر رقم 90 في الكتاب).الباب الثاني (رقم 27 في الترتيب التفصيلي): أذكار الصباح والمساء، الكتاب: حصن المسلم."
+        ],
+        "audio": "Zikr-M-18",
+        "category": "أذكار المساء"
     },
     {
         "id": 19,
-        "description": {},
-        "count": 3,
-        "zekr": "يَا حَيُّ يَا قيُّومُ بِرَحْمَتِكَ أسْتَغِيثُ أصْلِحْ لِي شَأنِي كُلَّهُ وَلاَ تَكِلْنِي إلَى نَفْسِي طَـرْفَةَ عَيْنٍ.",
-        "reference": "",
-        "category": "أذكار المساء",
+        "sort": 19,
+        "description": "",
+        "count": 100,
+        "zekr": "سُبْحـانَ اللهِ وَبِحَمْـدِهِ.",
+        "zekr_en": "سُبْحـانَ اللهِ وَبِحَمْـدِهِ\n\nSubḥānallāhi wa biḥamdih\n\nGlory is to Allah and praise is to Him",
+        "reference": "Reference: \"Whoever recites this one hundred times in the morning and in the evening will not be surpassed on the Day of Resurrection by anyone having done better than this except for someone who had recited it more. \" Al-Bukhari 4/2071.\n\nHisn al-Muslim 91\nChapter 27: In the morning and evening, Book: Fortress of the Muslim (Hisn al-Muslim)",
         "fadel_zeker": [
-            "رواه البزار"
-        ]
+            "المرجع: \"مَنْ قَالَ ذَلِكَ حِينَ يُصْبِحُ وَحِينَ يُمْسِي مِائَةَ مَرَّةٍ، لَمْ يَأْتِ أَحَدٌ يَوْمَ الْقِيَامَةِ بِأَفْضَلَ مِمَّا جَاءَ بِهِ، إِلَّا أَحَدٌ قَالَ مِثْلَ مَا قَالَ أَوْ زَادَ عَلَيْهِ.\" [رواه البخاري] 4/2071 (وكذلك رواه مسلم).حصن المسلم 91 (الذكر رقم 91 في الكتاب).الباب الثاني (رقم 27 في الترتيب التفصيلي): أذكار الصباح والمساء، الكتاب: حصن المسلم."
+        ],
+        "audio": "Zikr-M-19",
+        "category": "أذكار المساء"
     },
     {
         "id": 20,
-        "description": {},
-        "count": 1,
-        "zekr": "أَمْسَيْنا وَأَمْسَى الْمُلْكُ للهِ رَبِّ الْعَالَمَيْنِ، اللَّهُمَّ إِنَّي أسْأَلُكَ خَيْرَ هَذَه اللَّيْلَةِ فَتْحَهَا ونَصْرَهَا، ونُوْرَهَا وبَرَكَتهَا، وَهُدَاهَا، وَأَعُوذُ بِكَ مِنْ شَرِّ مَا فيهِا وَشَرَّ مَا بَعْدَهَا.",
-        "reference": "",
-        "category": "أذكار المساء",
-        "fadel_zeker": []
+        "sort": 20,
+        "description": "",
+        "count": 100,
+        "zekr": "لَا إلَه إلّا اللهُ وَحْدَهُ لَا شَرِيكَ لَهُ، لَهُ الْمُلْكُ وَلَهُ الْحَمْدُ وَهُوَ عَلَى كُلِّ شَيْءِ قَدِيرِ.",
+        "zekr_en": "لا إلهَ إلاّ اللّهُ وحْـدَهُ لا شَـريكَ لهُ، لهُ المُـلْكُ ولهُ الحَمْـد، وهُوَ على كُلّ شَيءٍ قَدير\n\nLā ilāha illallāhu waḥdahu lā sharīka lah, lahu ‘l-mulku walahu ‘l-ḥamd, wa huwa `alā kulli shay'in qadīr\n\nNone has the right to be worshipped but Allah alone, Who has no partner. His is the dominion and His is the praise and He is Able to do all things.",
+        "reference": "Reference: Allah will write ten Hasanaat (rewards) for whoever recites this ten times in the morning, and forgive him ten misdeeds and give him the reward of freeing ten slaves and protect him from Satan. Whoever recites this ten times in the evening will get this same reward. An-Nasa'i, 'Amalul-Yawm wal-Laylah (no. 24). Its chain of transmission is sound (Sahih). Albani 1/272. Abu Hurayrah «fe narrated that the Prophet j§ said: \"Allah will write one hundred Hasanat for whoever says There is no God but Allah alone, He has no partner. To Allah is possession of everything, and to Him all praise is. He is Capable of all things' ten times in the morning, and forgive him one hundred misdeeds. He will have the reward of freeing a slave and will be protected from Satan throughout the day unto dusk. Whoever says it in the evening will have the same reward.\" Ahmad 8/704, 16/293. Its chain of transmission is good (Hasan), Ibn Baz, p. 44. 2 Whoever recites this in the morning, will have the reward of freeing a slave from the Children of Isma'il. Ten Hasanaat (rewards) will be written for him, and he will be forgiven ten misdeeds, raised up ten degrees, and be protected from Satan until evening. Whoever says it in the evening will have the same reward until morning. Abu Dawud 4/319, 3/957, Ahmad 4/ 60, Ibn Majah 2/331, Ibn Al-Qayyim Zadul-Ma'ad 2/388. Its chain of transmission is sound (Sahih). Al-Albani 1/270.\n\nHisn al-Muslim 92\nChapter 27: In the morning and evening, Book: Fortress of the Muslim (Hisn al-Muslim)",
+        "fadel_zeker": [
+            "المرجع 1: كتب الله له عشر حسنات لمَن قالها عشر مرات حين يصبح، ومحا عنه عشر سيئات، وكان له عدل عتق عشر رقاب، وحفظاً له من الشيطان. ومَن قالها عشر مرات حين يمسي نال نفس الأجر. [رواه النسائي] في [عمل اليوم والليلة] (رقم 24). وإسناده صحيح، [الألباني] 1/272."
+        ],
+        "audio": "Zikr-M-20",
+        "category": "أذكار المساء"
     },
     {
         "id": 21,
-        "description": {},
-        "count": 1,
-        "zekr": "اللّهُـمَّ عالِـمَ الغَـيْبِ وَالشّـهادَةِ فاطِـرَ السّماواتِ وَالأرْضِ رَبَّ كـلِّ شَـيءٍ وَمَليـكَه ، أَشْهَـدُ أَنْ لا إِلـهَ إِلاّ أَنْت ، أَعـوذُ بِكَ مِن شَـرِّ نَفْسـي وَمِن شَـرِّ الشَّيْـطانِ وَشِرْكِهِ ، وَأَنْ أَقْتَـرِفَ عَلـى نَفْسـي سوءاً أَوْ أَجُـرَّهُ إِلـى مُسْـلِم.",
-        "reference": "",
-        "category": "أذكار المساء",
+        "sort": 21,
+        "description": "",
+        "count": 3,
+        "zekr": "سُبْحـانَ اللهِ وَبِحَمْـدِهِ عَدَدَ خَلْـقِه ، وَرِضـا نَفْسِـه ، وَزِنَـةَ عَـرْشِـه ، وَمِـدادَ كَلِمـاتِـه.",
+        "zekr_en": "سُبْحـانَ اللهِ وَبِحَمْـدِهِ عَدَدَ خَلْـقِه ، وَرِضـا نَفْسِـه ، وَزِنَـةَ عَـرْشِـه ، وَمِـدادَ كَلِمـاتِـه\n\nSubḥānallāhi wa biḥamdih: `adada khalqih, wa riḍā nafsih, wa zinata `arshih, wa midāda kalimātih\n\nGlory is to Allah and praise is to Him, by the multitude of His creation, by His Pleasure, by the weight of His Throne, and by the extent of His Words.",
+        "reference": "Reference: Muslim 4/2090.\n\nHisn al-Muslim 94\nChapter 27: In the morning and evening, Book: Fortress of the Muslim (Hisn al-Muslim)",
         "fadel_zeker": [
-            "رواه الترمذي"
-        ]
+            "المرجع: [رواه مسلم] 4/2090.حصن المسلم 94 (الذكر رقم 94 في النسخة المرقومة للكتاب).الباب الثاني (رقم 2"
+        ],
+        "audio": "Zikr-M-21",
+        "category": "أذكار المساء"
     },
     {
         "id": 22,
-        "description": {},
-        "count": 3,
-        "zekr": "أَعـوذُ بِكَلِمـاتِ اللّهِ التّـامّـاتِ مِنْ شَـرِّ ما خَلَـق.",
-        "reference": "",
-        "category": "أذكار المساء",
+        "sort": 22,
+        "description": "",
+        "count": 1,
+        "zekr": "اللَّهُمَّ إِنِّي أَسْأَلُكَ عِلْمًا نَافِعًا، وَرِزْقًا طَيِّبًا، وَعَمَلًا مُتَقَبَّلًا.",
+        "zekr_en": "اللَّهُمَّ إِنِّي أَسْأَلُكَ عِلْماً نَافِعاً، وَرِزْقاً طَيِّباً، وَعَمَلاً مُتَقَبَّلاً\n\nAllāhumma innī as'aluka `ilman nāfi`a, wa rizqan ṭayyiba, wa `amalan mutaqabbala\n.\nO Allah, I ask You for knowledge that is of benefit, a good provision, and deeds that will be accepted",
+        "reference": "Reference: Ibn As-Sunni, no. 54, Ibn Majah no. 925. Its chain of transmission is good (Hasan), Ibn Al-Qayyim 2/375.\n\nHisn al-Muslim 95\nChapter 27: In the morning and evening, Book: Fortress of the Muslim (Hisn al-Muslim)",
         "fadel_zeker": [
-            "رواه مسلم"
-        ]
+            "المرجع: أخرجه ابن السني (رقم 54)، وابن ماجه (رقم 925). وإسناده حسن، [ابن القيم] 2/375.حصن المسلم 95 (الذكر رقم 95 في الكتاب).الباب الثاني (رقم 27 في الترتيب التفصيلي): أذكار الصباح والمساء، الكتاب: حصن المسلم."
+        ],
+        "audio": "Zikr-M-22",
+        "category": "أذكار المساء"
     },
     {
         "id": 23,
-        "description": {},
-        "count": 10,
-        "zekr": "اللَّهُمَّ صَلِّ وَسَلِّمْ وَبَارِكْ على نَبِيِّنَا مُحمَّد.",
-        "reference": "",
-        "category": "أذكار المساء",
+        "sort": 23,
+        "description": "",
+        "count": 100,
+        "zekr": "أسْتَغْفِرُ اللهَ وَأتُوبُ إلَيْهِ",
+        "zekr_en": "أَسْتَغْفِرُ اللَّهَ وَأَتُوبُ إِلَيْهِ\n\nAstaghfirullāha wa atūbu ilayh\n\nI seek the forgiveness of Allah and repent to Him",
+        "reference": "Reference: Al-Bukhari, cf. Al-Asqalani, Fathul-Bari 11/101, Muslim 4/2075.\n\nHisn al-Muslim 96\nChapter 27: In the morning and evening, Book: Fortress of the Muslim (Hisn al-Muslim)",
         "fadel_zeker": [
-            "من صلى على حين يصبح وحين يمسى ادركته شفاعتى يوم القيامة."
-        ]
+            "المرجع: [رواه البخاري]، وانظر: [فتح الباري] لابن حجر العسقلاني 11/101، و[رواه مسلم] 4/2075.حصن المسلم 96 (الذكر رقم 96 في الكتاب).الباب الثاني (رقم 27 في الترتيب التفصيلي): أذكار الصباح والمساء، الكتاب: حصن المسلم."
+        ],
+        "audio": "Zikr-M-23",
+        "category": "أذكار المساء"
     },
     {
         "id": 24,
-        "description": {},
+        "sort": 24,
+        "description": "",
         "count": 3,
-        "zekr": "اللَّهُمَّ إِنَّا نَعُوذُ بِكَ مِنْ أَنْ نُشْرِكَ بِكَ شَيْئًا نَعْلَمُهُ ، وَنَسْتَغْفِرُكَ لِمَا لَا نَعْلَمُهُ.",
-        "reference": "",
-        "category": "أذكار المساء",
-        "fadel_zeker": []
+        "zekr": "أَعـوذُ بِكَلِمـاتِ اللّهِ التّـامّـاتِ مِنْ شَـرِّ ما خَلَـق.",
+        "zekr_en": "أَعـوذُ بِكَلِمـاتِ اللّهِ التّـامّـاتِ مِنْ شَـرِّ ما خَلَـق\n\nA`ūdhu bikalimāti-llāhit-tāmmāti min sharri mā khalaq\n\nI seek refuge in the Perfect Words of Allah from the evil of what He has created",
+        "reference": "Reference: Whoever recites this three times in the evening will be protected from insect stings, Ahmad 2/ 290, An-Nasa'i, 'Amalul-Yawm wal-Laylah no. 590, At-Tirmidhi 3/187, Ibn As-Sunni no. 68. According to Al-Albani, Ibn Majah's (2/266) chain of transmission is sound (Sahih), and following Ibn Baz 45, At-Tirmidhi's report is good (Hasan).\n\nHisn al-Muslim 97\nChapter 27: In the morning and evening, Book: Fortress of the Muslim (Hisn al-Muslim)",
+        "fadel_zeker": [
+            "المرجع: \"مَن قالها ثلاث مرات حين يمسي لم تضره حَمَةٌ (لدغة عقرب أو حشرة) تلك الليلة.\" [رواه الإمام أحمد] 2/290، والنسائي في [عمل اليوم والليلة] (رقم 590)، والترمذي 3/187، وابن السني (رقم 68). ووفقاً للألباني فإن إسناد ابن ماجه (2/266) صحيح، وحَسَّنَ الشيخ ابن باز حديث الترمذي، ص 45.حصن المسلم 97 (الذكر رقم 97 في الكتاب).الباب الثاني (رقم 27 في الترتيب التفصيلي): أذكار الصباح والمساء، الكتاب: حصن المسلم."
+        ],
+        "audio": "Zikr-M-24",
+        "category": "أذكار المساء"
     },
     {
         "id": 25,
-        "description": {},
-        "count": 3,
-        "zekr": "اللَّهُمَّ إِنِّي أَعُوذُ بِكَ مِنْ الْهَمِّ وَالْحَزَنِ، وَأَعُوذُ بِكَ مِنْ الْعَجْزِ وَالْكَسَلِ، وَأَعُوذُ بِكَ مِنْ الْجُبْنِ وَالْبُخْلِ، وَأَعُوذُ بِكَ مِنْ غَلَبَةِ الدَّيْنِ، وَقَهْرِ الرِّجَالِ.",
-        "reference": "",
-        "category": "أذكار المساء",
-        "fadel_zeker": []
-    },
-    {
-        "id": 26,
-        "description": {},
-        "count": 3,
-        "zekr": "أسْتَغْفِرُ اللهَ العَظِيمَ الَّذِي لاَ إلَهَ إلاَّ هُوَ، الحَيُّ القَيُّومُ، وَأتُوبُ إلَيهِ.",
-        "reference": "",
-        "category": "أذكار المساء",
-        "fadel_zeker": []
-    },
-    {
-        "id": 27,
-        "description": {},
-        "count": 3,
-        "zekr": "يَا رَبِّ , لَكَ الْحَمْدُ كَمَا يَنْبَغِي لِجَلَالِ وَجْهِكَ , وَلِعَظِيمِ سُلْطَانِكَ.",
-        "reference": "",
-        "category": "أذكار المساء",
-        "fadel_zeker": []
-    },
-    {
-        "id": 28,
-        "description": {},
-        "count": 100,
-        "zekr": "لَا إلَه إلّا اللهُ وَحْدَهُ لَا شَرِيكَ لَهُ، لَهُ الْمُلْكُ وَلَهُ الْحَمْدُ وَهُوَ عَلَى كُلِّ شَيْءِ قَدِيرِ.",
-        "reference": "",
-        "category": "أذكار المساء",
+        "sort": 24,
+        "description": "",
+        "count": 10,
+        "zekr": "اللَّهُمَّ صَلِّ وَسَلِّمْ وَبَارِكْ على نَبِيِّنَا مُحمَّد.",
+        "zekr_en": "اللَّهُمَّ صَلِّ وَ سَلِّمْ عَلَى نَبِيِّنَا مُحَمَّدٍ\n\nAllāhumma ṣalli wa sallim `alā nabiyyinā Muḥammad\n\nO Allah, we ask for your peace and blessings upon our Prophet Muhammad",
+        "reference": "Reference: The Prophet (ﷺ) said: \"Who recites blessings upon me ten times in the morning and ten times in the evening will obtain my intercession on the Day of Resurrection.\" At-Tabarani reported this Hadith together with two chains of transmission. One of them is reliable (Jayyid). See Haythami's Majma'uz-Zawa'id 10/120, and Al-Albani's Sahihut-Targhib wat-Tarhib 1/273.\n\nHisn al-Muslim 98\nChapter 27: In the morning and evening, Book: Fortress of the Muslim (Hisn al-Muslim)",
         "fadel_zeker": [
-            "كانت له عدل عشر رقاب، وكتبت له مئة حسنة، ومحيت عنه مئة سيئة، وكانت له حرزا من الشيطان.",
-            "رواه البزار والطبراني في \"الدعاء\""
-        ]
-    },
-    {
-        "id": 29,
-        "description": {},
-        "count": 1,
-        "zekr": "اللَّهُمَّ أَنْتَ رَبِّي لا إِلَهَ إِلا أَنْتَ ، عَلَيْكَ تَوَكَّلْتُ ، وَأَنْتَ رَبُّ الْعَرْشِ الْعَظِيمِ , مَا شَاءَ اللَّهُ كَانَ ، وَمَا لَمْ يَشَأْ لَمْ يَكُنْ ، وَلا حَوْلَ وَلا قُوَّةَ إِلا بِاللَّهِ الْعَلِيِّ الْعَظِيمِ , أَعْلَمُ أَنَّ اللَّهَ عَلَى كُلِّ شَيْءٍ قَدِيرٌ ، وَأَنَّ اللَّهَ قَدْ أَحَاطَ بِكُلِّ شَيْءٍ عِلْمًا , اللَّهُمَّ إِنِّي أَعُوذُ بِكَ مِنْ شَرِّ نَفْسِي ، وَمِنْ شَرِّ كُلِّ دَابَّةٍ أَنْتَ آخِذٌ بِنَاصِيَتِهَا ، إِنَّ رَبِّي عَلَى صِرَاطٍ مُسْتَقِيمٍ.",
-        "reference": "",
-        "category": "أذكار المساء",
-        "fadel_zeker": [
-            "ذكر طيب."
-        ]
-    },
-    {
-        "id": 30,
-        "description": {},
-        "count": 100,
-        "zekr": "سُبْحـانَ اللهِ وَبِحَمْـدِهِ.",
-        "reference": "",
-        "category": "أذكار المساء",
-        "fadel_zeker": [
-            "حُطَّتْ خَطَايَاهُ وَإِنْ كَانَتْ مِثْلَ زَبَدِ الْبَحْرِ. لَمْ يَأْتِ أَحَدٌ يَوْمَ الْقِيَامَةِ بِأَفْضَلَ مِمَّا جَاءَ بِهِ إِلَّا أَحَدٌ قَالَ مِثْلَ مَا قَالَ أَوْ زَادَ عَلَيْهِ.",
-            "رواه مسلم"
-        ]
+            "المرجع: قَالَ النَّبِيُّ ﷺ: \"مَنْ صَلَّى عَلَيَّ حِينَ يُصْبِحُ عَشْرًا، وَحِينَ يُمْسِي عَشْرًا، أَدْرَكَتْهُ شَفَاعَتِي يَوْمَ الْقِيَامَةِ.\" رَوَاهُ الطَّبَرَانِيُّ بِإِسْنَادَيْنِ، أَحَدُهُمَا جَيِّدٌ. انظر: [مجمع الزوائد] للهيثمي 10/120، و[صحيح الترغيب والترهيب] للألباني 1/273.حصن المسلم 98 (الذكر رقم 98 في الكتاب).الباب الثاني (رقم 27 في الترتيب التفصيلي): أذكار الصباح والمساء، الكتاب: حصن المسلم."
+        ],
+        "audio": "Zikr-M-25",
+        "category": "أذكار المساء"
     }
 ]

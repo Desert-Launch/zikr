@@ -6,12 +6,17 @@ class SAzkarSession extends Equatable {
     this.category,
     this.itemIndex = 0,
     this.completed = const {},
+    this.audioPlaying = false,
   });
 
   final MAzkarCategory? category;
   final int itemIndex;
   /// item id → number of taps on this zekr today.
   final Map<String, int> completed;
+
+  /// Whether the recitation is running (or loading) — drives the play/pause
+  /// icon, and while true each finished clip moves on to the next zekr.
+  final bool audioPlaying;
 
   MAzkarItem? get currentItem {
     final c = category;
@@ -28,14 +33,16 @@ class SAzkarSession extends Equatable {
     MAzkarCategory? category,
     int? itemIndex,
     Map<String, int>? completed,
+    bool? audioPlaying,
   }) {
     return SAzkarSession(
       category: category ?? this.category,
       itemIndex: itemIndex ?? this.itemIndex,
       completed: completed ?? this.completed,
+      audioPlaying: audioPlaying ?? this.audioPlaying,
     );
   }
 
   @override
-  List<Object?> get props => [category, itemIndex, completed];
+  List<Object?> get props => [category, itemIndex, completed, audioPlaying];
 }

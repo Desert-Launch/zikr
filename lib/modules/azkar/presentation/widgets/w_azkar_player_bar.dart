@@ -4,7 +4,8 @@ import 'package:localize_and_translate/localize_and_translate.dart';
 import 'package:quran/core/theme/app_text_styles.dart';
 
 /// The white control bar pinned under the azkar pager:
-/// previous · play · counter ring · reset · next.
+/// previous · play/pause · counter ring · reset · next. The play button is
+/// left out for a zekr that has no recitation.
 ///
 /// The row inherits the ambient direction, so in Arabic "previous" lands on
 /// the right edge; the chevrons are mirrored icons and follow it.
@@ -19,6 +20,7 @@ class WAzkarPlayerBar extends StatelessWidget {
     required this.onPrevious,
     required this.onNext,
     this.onPlay,
+    this.playing = false,
   });
 
   final int completed;
@@ -31,8 +33,11 @@ class WAzkarPlayerBar extends StatelessWidget {
   final VoidCallback onPrevious;
   final VoidCallback onNext;
 
-  /// No-op while null — azkar have no audio to play yet.
+  /// Toggles the recitation; `null` hides the button (the zekr has no clip).
   final VoidCallback? onPlay;
+
+  /// Whether the recitation is running — shows pause instead of play.
+  final bool playing;
 
   static const _ink = Color(0xFF2B2B2B);
 
@@ -57,7 +62,13 @@ class WAzkarPlayerBar extends StatelessWidget {
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
                   _RoundButton.filled(green: green, icon: Icons.arrow_back_ios_new_rounded, onTap: onPrevious),
-                  _RoundButton.soft(icon: Icons.play_arrow_rounded, iconColor: green, iconSize: 26, onTap: onPlay),
+                  if (onPlay != null)
+                    _RoundButton.soft(
+                      icon: playing ? Icons.pause_rounded : Icons.play_arrow_rounded,
+                      iconColor: green,
+                      iconSize: 26,
+                      onTap: onPlay,
+                    ),
                   _CounterRing(completed: completed, total: total, green: green, onTap: onTap),
                   _RoundButton.soft(icon: Icons.replay_rounded, iconColor: _ink, iconSize: 22, onTap: onReset),
                   _RoundButton.filled(green: green, icon: Icons.arrow_forward_ios_rounded, onTap: onNext),

@@ -24,7 +24,6 @@ class SNAzkarCategory extends StatefulWidget {
 
 class _SNAzkarCategoryState extends State<SNAzkarCategory> {
   static const _green = Color(0xFF007A58);
-  static const _gold = Color(0xFFD6A72C);
   static const _canvas = Color(0xFFF8F7F4);
 
   late final Future<MAzkarCategory?> _future = Modular.get<DSLocalAzkar>()
@@ -73,7 +72,6 @@ class _SNAzkarCategoryState extends State<SNAzkarCategory> {
                     return WAzkarZekrListCard(
                       item: item,
                       favorite: _favorites.isFavorite(item.id),
-                      gold: _gold,
                       onFavorite: () async {
                         await _favorites.toggle(
                           item.id,

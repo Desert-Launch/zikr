@@ -36,8 +36,8 @@ class DSLocalAzkar {
     final list = <MAzkarCategory>[];
     for (final entry in entries) {
       final raw = await rootBundle.loadString('$_dir/${entry.filename}');
-      final items = (jsonDecode(raw) as List<dynamic>)
-          .map((e) => MAzkarItem.fromJson(Map<String, dynamic>.from(e as Map), entry.slug))
+      final items = _sorted(jsonDecode(raw) as List<dynamic>)
+          .map((e) => MAzkarItem.fromJson(e, entry.slug))
           .toList(growable: false);
       list.add(MAzkarCategory(
         id: entry.slug,
@@ -48,6 +48,20 @@ class DSLocalAzkar {
     }
     _dailyCache = list;
     return list;
+  }
+
+  /// Rows in the order of their `sort` value (the sheet's sort column). Rows
+  /// without one, and ties, keep their file order — `List.sort` is not
+  /// stable, so the file index breaks ties explicitly.
+  static List<Map<String, dynamic>> _sorted(List<dynamic> raw) {
+    final rows = raw.map((e) => Map<String, dynamic>.from(e as Map)).toList();
+    int sortOf(int i) => (rows[i]['sort'] as num?)?.toInt() ?? 1 << 30;
+    final order = List<int>.generate(rows.length, (i) => i)
+      ..sort((a, b) {
+        final bySort = sortOf(a).compareTo(sortOf(b));
+        return bySort != 0 ? bySort : a.compareTo(b);
+      });
+    return [for (final i in order) rows[i]];
   }
 
   /// Categories from `other_azkar.json` — a map of `{ category name: [items] }`.

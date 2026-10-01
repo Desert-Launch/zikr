@@ -49,6 +49,13 @@
         "emoji": "🗝️"
     },
     {
+        "id": 9,
+        "arName": "دليل العمرة",
+        "enName": "Umrah Guide",
+        "filename": "umrah_guide.json",
+        "emoji": "🕋"
+    },
+    {
         "id": 7,
         "arName": "اذكار اضافية",
         "enName": "Other Azkar",

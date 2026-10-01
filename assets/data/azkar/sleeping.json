@@ -1,141 +1,268 @@
 [
     {
         "id": 1,
-        "description": {},
-        "count": 1,
-        "zekr": "بِاسْمِكَ رَبِّـي وَضَعْـتُ جَنْـبي ، وَبِكَ أَرْفَعُـه، فَإِن أَمْسَـكْتَ نَفْسـي فارْحَـمْها ، وَإِنْ أَرْسَلْتَـها فاحْفَظْـها بِمـا تَحْفَـظُ بِه عِبـادَكَ الصّـالِحـين.",
-        "reference": "",
-        "category": "أذكار النوم",
-        "fadel_zeker": []
+        "sort": 1,
+        "description": "",
+        "count": 3,
+        "zekr": "بِسْمِ اللَّهِ الرَّحْمَنِ الرَّحِيمِ {قُلْ هُوَ اللَّهُ أَحَدٌ * اللَّهُ الصَّمَدُ* لَمْ يَلِدْ وَلَمْ يُولَدْ* وَلَمْ يَكُن لَّهُ كُفُواً أَحَدٌ}",
+        "zekr_en": "بسم الله الرحمن الرحيم { قُلْ هُوَ اللَّهُ أَحَدٌ * اللَّهُ الصَّمَدُ * لَمْ يَلِدْ وَلَمْ يُولَدْ * لَمْ يَكُن لَّهُ كُفُواً أَحَدٌ }\n\nBismillāhir-Raḥmānir-Raḥīm. Qul huwallāhu aḥad. Allāhuṣ-ṣamad. Lam yalid wa lam yūlad. Wa lam yakun lahu kufuwan aḥad.\n\nWith the Name of Allah, the Most Gracious, the Most Merciful. Say: He is Allah (the) One. The Self-Sufficient Master, Whom all creatures need, He begets not nor was He begotten, and there is none equal to Him.",
+        "reference": "Al-Bukhari, cf. Al-Asqalani, Fathul-Bari 9/62, and Muslim 4/ 1723.",
+        "fadel_zeker": [
+            "المرجع: [رواه البخاري]، وانظر: [فتح الباري] لابن حجر العسقلاني 9/62، و[رواه مسلم] 4/1723.حصن المسلم 99 (الذكر رقم 99 في النسخة المرقومة للكتاب).الباب الثالث والعشرون (رقم 28 في الترتيب التفصيلي): أذكار النوم، الكتاب: حصن المسلم."
+        ],
+        "audio": "Zikr-Noom-1",
+        "category": "أذكار النوم"
     },
     {
         "id": 2,
-        "description": {},
-        "count": 1,
-        "zekr": "اللّهُـمَّ إِنَّـكَ خَلَـقْتَ نَفْسـي وَأَنْـتَ تَوَفّـاهـا لَكَ ممَـاتـها وَمَحْـياها ، إِنْ أَحْيَيْـتَها فاحْفَظْـها ، وَإِنْ أَمَتَّـها فَاغْفِـرْ لَـها . اللّهُـمَّ إِنَّـي أَسْـأَلُـكَ العـافِـيَة.",
-        "reference": "",
-        "category": "أذكار النوم",
-        "fadel_zeker": []
+        "sort": 2,
+        "description": "",
+        "count": 3,
+        "zekr": "بِسْمِ اللَّهِ الرَّحْمَنِ الرَّحِيمِ {قُلْ أَعُوذُ بِرَبِّ الْفَلَقِ* مِن شَرِّ مَا خَلَقَ* وَمِن شَرِّ غَاسِقٍ إِذَا وَقَبَ* وَمِن شَرِّ النَّفَّاثَاتِ فِي الْعُقَدِ* وَمِن شَرِّ حَاسِدٍ إِذَا حَسَدَ}",
+        "zekr_en": "بسم الله الرحمن الرحيم { قُلْ أَعُوذُ بِرَبِّ الْفَلَقِ * مِن شَرِّ مَا خَلَقَ * وَمِن شَرِّ غَاسِقٍ إِذَا وَقَبَ * وَمِن شَرِّ النَّفَّاثَاتِ فِي الْعُقَدِ * وَمِن شَرِّ حَاسِدٍ إِذَا حَسَدَ }\n\nBismillāhir-Raḥmānir-Raḥīm. Qul a`ūdhu birabbil-falaq. Min sharri mā khalaq. Wa min sharri ghāsiqin idhā waqab. Wa min sharrin-naffāthāti fil-`uqad. Wa min sharri ḥāsidin idhā ḥasad.\n\nWith the Name of Allah, the Most Gracious, the Most Merciful. Say: I seek refuge with (Allah) the Lord of the daybreak, from the evil of what He has created, and from the evil of the darkening (night) as it comes with its darkness, and from the evil of those who practice witchcraft when they blow in the knots, and from the evil of the envier when he envies.",
+        "reference": "Al-Bukhari, cf. Al-Asqalani, Fathul-Bari 9/62, and Muslim 4/ 1723.",
+        "fadel_zeker": [
+            "المرجع: [رواه البخاري]، وانظر: [فتح الباري] لابن حجر العسقلاني 9/62، و[رواه مسلم] 4/1723.حصن المسلم 99 (الذكر رقم 99 في النسخة المرقومة للكتاب).الباب الثالث والعشرون (رقم 28 في الترتيب التفصيلي): أذكار النوم، الكتاب: حصن المسلم."
+        ],
+        "audio": "Zikr-Noom-2",
+        "category": "أذكار النوم"
     },
     {
         "id": 3,
-        "description": {},
+        "sort": 3,
+        "description": "",
         "count": 3,
-        "zekr": "اللّهُـمَّ قِنـي عَذابَـكَ يَـوْمَ تَبْـعَثُ عِبـادَك.",
-        "reference": "",
-        "category": "أذكار النوم",
-        "fadel_zeker": []
+        "zekr": "بِسْمِ اللَّهِ الرَّحْمَنِ الرَّحِيمِ {قُلْ أَعُوذُ بِرَبِّ النَّاسِ* مَلِكِ النَّاسِ* إِلَهِ النَّاسِ* مِن شَرِّ الْوَسْوَاسِ الْخَنَّاسِ* الَّذِي يُوَسْوِسُ فِي صُدُورِ النَّاسِ* مِنَ الْجِنَّةِ وَالنَّاسِ}",
+        "zekr_en": "بسم الله الرحمن الرحيم { قُلْ أَعُوذُ بِرَبِّ النَّاسِ * مَلِكِ النَّاسِ * إِلَهِ النَّاسِ * مِن شَرِّ الْوَسْوَاسِ الْخَنَّاسِ * الَّذِي يُوَسْوِسُ فِي صُدُورِ النَّاسِ * مِنَ الْجِنَّةِ وَالنَّاسِ }\n\nBismillāhir-Raḥmānir-Raḥīm. Qul a`ūdhu birabbin-nās. Malikin-nās. 'Ilāhin-nās. Min sharri ‘l-waswāsil-khannās. Alladhī yuwaswisu fī ṣudūrin-nās. Minal-jinnati wannās.\n\nWith the Name of Allah, the Most Gracious, the Most Merciful. Say: I seek refuge with (Allah) the Lord of mankind, the King of mankind, the God of mankind, from the evil of the whisperer who withdraws, who whispers in the breasts of mankind, of jinns and men.",
+        "reference": "Al-Bukhari, cf. Al-Asqalani, Fathul-Bari 9/62, and Muslim 4/ 1723.",
+        "fadel_zeker": [
+            "المرجع: [رواه البخاري]، وانظر: [فتح الباري] لابن حجر العسقلاني 9/62، و[رواه مسلم] 4/1723.حصن المسلم 99 (الذكر رقم 99 في النسخة المرقومة للكتاب).الباب الثالث والعشرون (رقم 28 في الترتيب التفصيلي): أذكار النوم، الكتاب: حصن المسلم."
+        ],
+        "audio": "Zikr-Noom-3",
+        "category": "أذكار النوم"
     },
     {
         "id": 4,
-        "description": {},
+        "sort": 4,
+        "description": "",
         "count": 1,
-        "zekr": "بِاسْـمِكَ اللّهُـمَّ أَمـوتُ وَأَحْـيا.",
-        "reference": "",
-        "category": "أذكار النوم",
-        "fadel_zeker": []
+        "zekr": "اللّهُ لاَ إِلَـهَ إِلاَّ هُوَ الْحَيُّ الْقَيُّومُ لاَ تَأْخُذُهُ سِنَةٌ وَلاَ نَوْمٌ لَّهُ مَا فِي السَّمَاوَاتِ وَمَا فِي الأَرْضِ مَن ذَا الَّذِي يَشْفَعُ عِنْدَهُ إِلاَّ بِإِذْنِهِ يَعْلَمُ مَا بَيْنَ أَيْدِيهِمْ وَمَا خَلْفَهُمْ وَلاَ يُحِيطُونَ بِشَيْءٍ مِّنْ عِلْمِهِ إِلاَّ بِمَا شَاء وَسِعَ كُرْسِيُّهُ السَّمَاوَاتِ وَالأَرْضَ وَلاَ يَؤُودُهُ حِفْظُهُمَا وَهُوَ الْعَلِيُّ الْعَظِيمُ(255)",
+        "zekr_en": "اللّهُ لاَ إِلَـهَ إِلاَّ هُوَ الْحَيُّ الْقَيُّومُ لاَ تَأْخُذُهُ سِنَةٌ وَلاَ نَوْمٌ لَّهُ مَا فِي السَّمَاوَاتِ وَمَا فِي الأَرْضِ مَن ذَا الَّذِي يَشْفَعُ عِنْدَهُ إِلاَّ بِإِذْنِهِ يَعْلَمُ مَا بَيْنَ أَيْدِيهِمْ وَمَا خَلْفَهُمْ وَلاَ يُحِيطُونَ بِشَيْءٍ مِّنْ عِلْمِهِ إِلاَّ بِمَا شَاء وَسِعَ كُرْسِيُّهُ السَّمَاوَاتِ وَالأَرْضَ وَلاَ يَؤُودُهُ حِفْظُهُمَا وَهُوَ الْعَلِيُّ الْعَظِيم\n\nAllāhu lā ilāha illā huwa ‘l-Ḥayyul-Qayyūm, lā ta'khudhuhu sinatun wa lā nawm, lahu mā fis-samāwāti wa māfil-ardh, man dhal-ladhī yashfa`u `indahu illā bi'idhnih, ya`lamu mā bayna aydīhim wa mā khalfahum, wa lā yuḥītūna bishay'im-min `ilmihi illā bimā shā', wasi`a kursiyyuhus-samāwāti wal-ardh, wa lā ya'ūduhu hifẓuhumā, wa huwal-`Aliyyu‘l-`Aẓīm\n\nAllah! There is none worthy of worship but He, the Ever-Living, the One Who sustains and protects all that exists. Neither slumber nor sleep overtakes Him. To Him belongs whatever is in the heavens and whatever is on the earth. Who is he that can intercede with Him except with His Permission? He knows what happens to them in this world, and what will happen to them in the Hereafter. And they will never encompass anything of His Knowledge except that which He wills. His Throne extends over the heavens and the earth, and He feels no fatigue in guarding and preserving them. And He is the Most High, the Most Great",
+        "reference": "Reference: Al-Baqarah 2: 255. Whoever reads this when he lies down to sleep will have a guardian from Allah remain with him and Satan will not be able to come near him until he rises in the morning. See Al-Bukhari, cf. Al-Asqalani, Fathul-Bari 4/487.\n\nHisn al-Muslim 100\nChapter 28: Before sleeping, Book: Fortress of the Muslim (Hisn al-Muslim)",
+        "fadel_zeker": [
+            "\"المرجع: سورة البقرة، الآية: ٢٥٥. مَن قرأَ هذا عندَ مَضْجَعِهِ للنَّوْمِ، لَمْ يَزَلْ عَلَيْهِ مِنَ اللهِ حَافِظٌ، وَلَمْ يَقْرَبْهُ شَيْطَانٌ حَتَّى يُصْبِحَ. أَخْرَجَهُ الْبُخَارِيُّ، وَيُنْظَرُ: فَتْحُ الْبَارِي لِلْعَسْقَلَانِيِّ ٤/٤٨٧.حِصْنُ الْمُسْلِمِ ١٠٠الْبَابُ ٢٨: مَا يُقَالُ قَبْلَ النَّوْمِ، مِنْ كِتَابِ: حِصْنُ الْمُسْلِمِ\""
+        ],
+        "audio": "Zikr-Noom-4",
+        "category": "أذكار النوم"
     },
     {
         "id": 5,
-        "description": {},
+        "sort": 5,
+        "description": "",
         "count": 1,
-        "zekr": "الـحَمْدُ للهِ الَّذي أَطْـعَمَنا وَسَقـانا، وَكَفـانا، وَآوانا، فَكَـمْ مِمَّـنْ لا كـافِيَ لَـهُ وَلا مُـؤْوي.",
-        "reference": "",
-        "category": "أذكار النوم",
-        "fadel_zeker": []
+        "zekr": "آمَنَ الرَّسُولُ بِمَا أُنزِلَ إِلَيْهِ مِن رَّبِّهِ وَالْمُؤْمِنُونَ كُلٌّ آمَنَ بِاللَّهِ وَمَلآئِكَتِهِ وَكُتُبِهِ وَرُسُلِهِ لاَ نُفَرِّقُ بَيْنَ أَحَدٍ مِّن رُّسُلِهِ وَقَالُواْ سَمِعْنَا وَأَطَعْنَا غُفْرَانَكَ رَبَّنَا وَإِلَيْكَ الْمَصِيرُ* لاَ يُكَلِّفُ اللَّهُ نَفْساً إِلاَّ وُسْعَهَا لَهَا مَا كَسَبَتْ وَعَلَيْهَا مَا اكْتَسَبَتْ رَبَّنَا لاَ تُؤَاخِذْنَا إِن نَّسِينَا أَوْ أَخْطَأْنَا رَبَّنَا وَلاَ تَحْمِلْ عَلَيْنَا إِصْراً كَمَا حَمَلْتَهُ عَلَى الَّذِينَ مِن قَبْلِنَا رَبَّنَا وَلاَ تُحَمِّلْنَا مَا لاَ طَاقَةَ لَنَا بِهِ وَاعْفُ عَنَّا وَاغْفِرْ لَنَا وَارْحَمْنَآ أَنتَ مَوْلاَنَا فَانصُرْنَا عَلَى الْقَوْمِ الْكَافِرِينَ",
+        "zekr_en": "آمَنَ الرَّسُولُ بِمَا أُنزِلَ إِلَيْهِ مِن رَّبِّهِ وَالْمُؤْمِنُونَ كُلٌّ آمَنَ بِاللَّهِ وَمَلآئِكَتِهِ وَكُتُبِهِ وَرُسُلِهِ لاَ نُفَرِّقُ بَيْنَ أَحَدٍ مِّن رُّسُلِهِ وَقَالُواْ سَمِعْنَا وَأَطَعْنَا غُفْرَانَكَ رَبَّنَا وَإِلَيْكَ الْمَصِيرُ* لاَ يُكَلِّفُ اللَّهُ نَفْساً إِلاَّ وُسْعَهَا لَهَا مَا كَسَبَتْ وَعَلَيْهَا مَا اكْتَسَبَتْ رَبَّنَا لاَ تُؤَاخِذْنَا إِن نَّسِينَا أَوْ أَخْطَأْنَا رَبَّنَا وَلاَ تَحْمِلْ عَلَيْنَا إِصْراً كَمَا حَمَلْتَهُ عَلَى الَّذِينَ مِن قَبْلِنَا رَبَّنَا وَلاَ تُحَمِّلْنَا مَا لاَ طَاقَةَ لَنَا بِهِ وَاعْفُ عَنَّا وَاغْفِرْ لَنَا وَارْحَمْنَآ أَنتَ مَوْلاَنَا فَانصُرْنَا عَلَى الْقَوْمِ الْكَافِرِينَ\n\nĀmanar-Rasūlu bimā unzila ilaihi mir-Rabbihi wa ‘l-mu'minūn, kullun āmana billāhi wa malā'ikatihi wa kutubihi wa rusulih, lā nufarriqu bayna aḥadim-mir-rusulih, wa qālū sami`nā wa aṭa`nā, ghufrānaka Rabbanā wa ilayka ‘l-maṣīr. Lā yukallifu ‘llāhu nafsan illā wus`ahā, lahā mā kasabat wa `alayhā mak-tasabat, Rabbanā lā tu'ākhidhnā in nasīnā aw akhta'nā, Rabbanā wa lā taḥmil `alaynā iṣran kamā ḥamaltahu `alal-ladhīna min qablinā, Rabbanā wa lā tuḥammilnā mā lā ṭāqata lanā bih, wa`fu `annā, waghfir lanā, warḥamnā, Anta mawlānā fanṣurnā `ala ‘l-qawmi ‘l-kāfirīn\n\nThe Messenger believes in what has been sent down to him from his Lord, and so do the believers. Each one believes in Allah, His Angels, His Books, and His Messengers. They say: \"We make no distinction between any of His Messengers,\" and they say: \"We hear, and we obey. (We seek) Your Forgiveness, our Lord, and to You is the return.\" Allah burdens not a person beyond what he can bear. He gets rewarded for that (good) which he has earned, and he is punished for that (evil) which he has earned. Our Lord! Punish us not if we forget or fall into error. Our Lord! Lay not on us a burden like that which You did lay on those before us. Our Lord! Put not on us a burden greater than we have the strength to bear. Pardon us and grant us forgiveness. Have mercy on us. You are our Protector, and help us against the disbelieving people",
+        "reference": "Reference: Al-Baqarah 2: 285-6. These two Verses will be sufficient for anyone who recites them at night before sleeping. Al-Bukhari, cf. Al-Asqalani, Fathul-Bari.9/94, Muslim 1/554.\n\nHisn al-Muslim 101\nChapter 28: Before sleeping, Book: Fortress of the Muslim (Hisn al-Muslim)",
+        "fadel_zeker": [
+            "المرجع: سورة البقرة الآيتان 285-286. \"مَنْ قَرَأَهُمَا فِي لَيْلَةٍ كَفَتَاهُ\" (أي كفتاه كل سوء، أو كفتاه عن قيام الليل). [رواه البخاري]، وانظر: [فتح الباري] لابن حجر العسقلاني 9/94، و[رواه مسلم] 1/554.حصن المسلم 101 (الذكر رقم 101 في النسخة المرقومة للكتاب).الباب الثامن والعشرون: أذكار النوم، الكتاب: حصن المسلم."
+        ],
+        "audio": "Zikr-Noom-5",
+        "category": "أذكار النوم"
     },
     {
         "id": 6,
-        "description": {},
+        "sort": 6,
+        "description": "",
         "count": 1,
-        "zekr": "اللّهُـمَّ عالِـمَ الغَـيبِ وَالشّـهادةِ فاطِـرَ السّماواتِ وَالأرْضِ رَبَّ كُـلِّ شَـيءٍ وَمَليـكَه، أَشْهـدُ أَنْ لا إِلـهَ إِلاّ أَنْت، أَعـوذُ بِكَ مِن شَـرِّ نَفْسـي، وَمِن شَـرِّ الشَّيْـطانِ وَشِـرْكِه، وَأَنْ أَقْتَـرِفَ عَلـى نَفْسـي سوءاً أَوْ أَجُـرَّهُ إِلـى مُسْـلِم .",
-        "reference": "",
-        "category": "أذكار النوم",
-        "fadel_zeker": []
+        "zekr": "بِاسْمِكَ رَبِّـي وَضَعْـتُ جَنْـبي ، وَبِكَ أَرْفَعُـه، فَإِن أَمْسَـكْتَ نَفْسـي فارْحَـمْها ، وَإِنْ أَرْسَلْتَـها فاحْفَظْـها بِمـا تَحْفَـظُ بِه عِبـادَكَ الصّـالِحـين.",
+        "zekr_en": "بِاسْمِكَ رَبِّي وَضَعْتُ جَنْبِي، وَبِكَ أَرْفَعُهُ، فَإِن أَمْسَكْتَ نَفْسِي فارْحَمْهَا، وَإِنْ أَرْسَلْتَهَا فَاحْفَظْهَا بِمَا تَحْفَظُ بِهِ عِبَادَكَ الصَّالِحِينَ\n\nBismika Rabbī waḍa`tu janbī, wa bika arfa`uh, fa in amsakta nafsī farḥamhā, wa in arsaltahā faḥfaẓhā bimā taḥfaẓu bihi `ibādakaṣ-ṣāliḥīn\n\nWith Your Name1 my Lord, I lay myself down; and with Your Name I rise. And if You take my soul, have mercy on it, and if You send it back then protect it as You protect Your righteous slaves",
+        "reference": "Reference:\n1 \"If any of you rises from his bed and later returns to it, let him dust off his bed with his waist garment three times and mention the Name of Allah, for he does not know what may have entered the bed after him, and when he lies down he should say. . . \".\n\n2 Al-Bukhari 1 1/ 126 and Muslim 4/2084.\n\nHisn al-Muslim 102\nChapter 28: Before sleeping, Book: Fortress of the Muslim (Hisn al-Muslim)",
+        "fadel_zeker": [
+            "المرجع 2: [رواه البخاري] 11/126، و[رواه مسلم] 4/2084.حصن المسلم 102 (الذكر رقم 102 في النسخة المرقومة للكتاب).الباب الثامن والعشرون: أذكار النوم، الكتاب: حصن المسلم."
+        ],
+        "audio": "Zikr-Noom-6",
+        "category": "أذكار النوم"
     },
     {
         "id": 7,
-        "description": {},
+        "sort": 7,
+        "description": "",
         "count": 1,
-        "zekr": "اللّهُـمَّ أَسْـلَمْتُ نَفْـسي إِلَـيْكَ، وَفَوَّضْـتُ أَمْـري إِلَـيْكَ، وَوَجَّـهْتُ وَجْـهي إِلَـيْكَ، وَأَلْـجَـاْتُ ظَهـري إِلَـيْكَ، رَغْبَـةً وَرَهْـبَةً إِلَـيْكَ، لا مَلْجَـأَ وَلا مَنْـجـا مِنْـكَ إِلاّ إِلَـيْكَ، آمَنْـتُ بِكِتـابِكَ الّـذي أَنْزَلْـتَ وَبِنَبِـيِّـكَ الّـذي أَرْسَلْـت.",
-        "reference": "",
-        "category": "أذكار النوم",
-        "fadel_zeker": []
+        "zekr": "اللّهُـمَّ إِنَّـكَ خَلَـقْتَ نَفْسـي وَأَنْـتَ تَوَفّـاهـا لَكَ ممَـاتـها وَمَحْـياها ، إِنْ أَحْيَيْـتَها فاحْفَظْـها ، وَإِنْ أَمَتَّـها فَاغْفِـرْ لَـها . اللّهُـمَّ إِنَّـي أَسْـأَلُـكَ العـافِـيَة.",
+        "zekr_en": "اللَّهُمَّ إِنَّكَ خَلَقْتَ نَفْسِي وَأَنْتَ تَوَفَّاهَا، لَكَ مَمَاتُهَا وَمَحْياهَا، إِنْ أَحْيَيْتَهَا فَاحْفَظْهَا، وَإِنْ أَمَتَّهَا فَاغْفِرْ لَهَا. اللَّهُمَّ إِنِّي أَسْأَلُكَ العَافِيَةَ\n\nAllāhumma innaka khalaqta nafsī wa anta tawaffāhā, laka mamātuhā wa maḥyāhā, in aḥyaytahā faḥfaẓhā, wa in amattahā faghfir lahā. Allāhumma innī as'aluka ‘l-`āfiyah\n\nO Allah, You have created my soul and You take it back. Unto You is its death and its life. If You give it life then protect it, and if You cause it to die then forgive it. O Allah, I ask You for strength",
+        "reference": "Reference: Muslim 4/2083 and Ahmad 2/79.\n\nHisn al-Muslim 103\nChapter 28: Before sleeping, Book: Fortress of the Muslim (Hisn al-Muslim)",
+        "fadel_zeker": [
+            "المرجع: [رواه مسلم] 4/2083، والإمام أحمد 2/79.حصن المسلم 103 (الذكر رقم 103 في النسخة المرقومة للكتاب).الباب الثامن والعشرون: أذكار النوم، الكتاب: حصن المسلم."
+        ],
+        "audio": "Zikr-Noom-7",
+        "category": "أذكار النوم"
     },
     {
         "id": 8,
-        "description": {},
-        "count": 33,
-        "zekr": "سُبْحَانَ اللَّهِ.",
-        "reference": "",
-        "category": "أذكار النوم",
-        "fadel_zeker": []
+        "sort": 8,
+        "description": "",
+        "count": 3,
+        "zekr": "اللّهُـمَّ قِنـي عَذابَـكَ يَـوْمَ تَبْـعَثُ عِبـادَك",
+        "zekr_en": "اللّهُـمَّ قِنـي عَذابَـكَ يَـوْمَ تَبْـعَثُ عِبـادَك .\n\nAllāhumma qinī `adhābaka yawma tab`athu `ibādak.\n\nO Allah, save me from Your punishment on the Day that You resurrect Your slaves",
+        "reference": "Reference:\n\"When the Prophet (ﷺ) wanted to lie down to sleep, he used to place his right hand under his cheek and say...\" 2 Abu Dawud 4/311. See also Al-Albani, Sahih At-Tirmidhi 3/143.\n\nHisn al-Muslim 104\nChapter 28: Before sleeping, Book: Fortress of the Muslim (Hisn al-Muslim)",
+        "fadel_zeker": [
+            "المرجع 2: [رواه أبو داود] 4/311. انظر أيضاً: [صحيح الترمذي] للألباني 3/143.حصن المسلم 104 (الذكر رقم 104 في النسخة المرقومة للكتاب).الباب الثامن والعشرون: أذكار النوم، الكتاب: حصن المسلم."
+        ],
+        "audio": "Zikr-Noom-8",
+        "category": "أذكار النوم"
     },
     {
         "id": 9,
-        "description": {},
-        "count": 33,
-        "zekr": "الْحَمْدُ لِلَّهِ.",
-        "reference": "",
-        "category": "أذكار النوم",
-        "fadel_zeker": []
+        "sort": 9,
+        "description": "",
+        "count": 1,
+        "zekr": "بِاسْـمِكَ اللّهُـمَّ أَمـوتُ وَأَحْـيا",
+        "zekr_en": "بِاسْـمِكَ اللّهُـمَّ أَمـوتُ وَأَحْـيا\n\nBismika Allāhumma amūtu wa aḥyā\n\nIn Your Name, O Allah, I die and I live",
+        "reference": "Reference: Here, dying and living are metaphors for sleep and wakefulness. This explains why the normal order of these words has been reversed in this Hadith. In other contexts the living is mentioned before dying. See Qur'an Al-Baqarah 2: 258, Aal-'Imrdn 3: 156, Al-A'raf 7: 158 among many other examples, (trans.). See also Al-Asqalani, Fathul-Bari 11/113, Muslim 4/ 2083.\n\nHisn al-Muslim 105\nChapter 28: Before sleeping, Book: Fortress of the Muslim (Hisn al-Muslim)",
+        "fadel_zeker": [
+            "المرجع 2: انظر أيضاً: [فتح الباري] لابن حجر العسقلاني 11/113، و[رواه مسلم] 4/2083.حصن المسلم 105 (الذكر رقم 105 في النسخة المرقومة للكتاب).الباب الثامن والعشرون: أذكار النوم، الكتاب: حصن المسلم."
+        ],
+        "audio": "Zikr-Noom-9",
+        "category": "أذكار النوم"
     },
     {
         "id": 10,
-        "description": {},
-        "count": 34,
-        "zekr": "اللَّهُ أَكْبَرُ.",
-        "reference": "",
-        "category": "أذكار النوم",
-        "fadel_zeker": []
+        "sort": 10,
+        "description": "",
+        "count": 1,
+        "zekr": "اللّهُـمَّ رَبَّ السّمـواتِ السَّبْـعِ وَرَبَّ العَـرْشِ العَظـيم رَبَّنـا وَرَبَّ كُـلِّ شَـيء فالِـقَ الحَـبِّ وَالنَّـوى وَمُـنَزِّلَ التَّـوْراةِ وَالإنْجـيل والفُـرْقان أَعـوذُ بِـكَ مِن شَـرِّ كُـلِّ شَـيءٍ أَنْـتَ آخِـذٌ بِنـاصِـيَتِه",
+        "zekr_en": "اللّهُـمَّ رَبَّ السّمـواتِ السَّبْـعِ وَرَبَّ العَـرْشِ العَظـيم رَبَّنـا وَرَبَّ كُـلِّ شَـيء فالِـقَ الحَـبِّ وَالنَّـوى وَمُـنَزِّلَ التَّـوْراةِ وَالإنْجـيل والفُـرْقان أَعـوذُ بِـكَ مِن شَـرِّ كُـلِّ شَـيءٍ أَنْـتَ آخِـذٌ بِنـاصِـيَتِه اللّهُـمَّ أَنْـتَ الأوَّلُ فَلَـيسَ قَبْـلَكَ شَيء وَأَنْـتَ الآخِـرُ فَلَـيسَ بَعْـدَكَ شَيء وَأَنْـتَ الظّـاهِـرُ فَلَـيْسَ فَـوْقَـكَ شَيء وَأَنْـتَ الْبـاطِـنُ فَلَـيْسَ دونَـكَ شَيء اقـْضِ عَنّـا الـدَّيْـنَ وَأَغْـنِنـا مِنَ الفَـقْر\n\nAllāhumma Rabbas-samāwātis-sab`i wa Rabba ‘l-`Arshi ‘l-`Aẓīm, Rabbanā wa Rabba kulli shay', fāliqa ‘l-ḥabbi wan-nawā, wa munzilat-Tawrāti wal-'Injīli, wal-Furqān, a`ūdhu bika min sharri kulli shay'in anta ākhidhun bināṣiyatih. Allāhumma anta ‘l-awwalu falaysa qablaka shay', wa antal-ākhiru falaysa ba`daka shay', wa antaẓ-ẓāhiru falaysa fawqaka shay', wa antal-bāṭinu falaysa dūnaka shay', iqḍi `annad-dayn, wa aghninā mina ‘l-faqr\n\nO Allah! Lord of the seven heavens and Lord of the Magnificent Throne. Our Lord and the Lord of everything. Splitter of the grain and the date-stone, Revealer of the Torah and the Injeel1 and the Furqan (the Qur'an), I seek refuge in You from the evil of everything that You shall seize by the forelock. O Allah You are the First and nothing has come before you, and You are the Last, and nothing may come after You. You are the Most High, nothing is above You and You are the Most Near, and nothing is nearer than You. Remove our debts from us and enrich us against poverty",
+        "reference": "Reference: 1 The Scripture that was revealed to 'Isa (Jesus). 2 See Qur'an Al-'Alaq 96: 15, where seizure by the forelock preceeds being cast into Hell. (Translator) 3 Muslim 4/2084.\n\nHisn al-Muslim 107\nChapter 28: Before sleeping, Book: Fortress of the Muslim (Hisn al-Muslim)",
+        "fadel_zeker": [
+            "المرجع 3: [رواه مسلم] 4/2084.حصن المسلم 107 (الذكر رقم 107 في النسخة المرقومة للكتاب).الباب الثامن والعشرون: أذكار النوم، الكتاب: حصن المسلم."
+        ],
+        "audio": "Zikr-Noom-10",
+        "category": "أذكار النوم"
     },
     {
         "id": 11,
-        "description": {},
-        "count": 3,
-        "zekr": "يجمع كفيه ثم ينفث فيهما والقراءة فيهما‏:‏ ‏{‏قل هو الله أحد(1)‏}‏ و‏{‏قل أعوذ برب الفلق(1)‏}‏ و‏{‏قل أعوذ برب الناس(1)‏}‏ ومسح ما استطاع من الجسد يبدأ بهما على رأسه ووجه وما أقبل من جسده.",
-        "reference": "",
-        "category": "أذكار النوم",
-        "fadel_zeker": []
+        "sort": 11,
+        "description": "",
+        "count": 1,
+        "zekr": "اللّهُـمَّ أَنْـتَ الأوَّلُ فَلَـيسَ قَبْـلَكَ شَيء وَأَنْـتَ الآخِـرُ فَلَـيسَ بَعْـدَكَ شَيء وَأَنْـتَ الظّـاهِـرُ فَلَـيْسَ فَـوْقَـكَ شَيء وَأَنْـتَ الْبـاطِـنُ فَلَـيْسَ دونَـكَ شَيء اقـْضِ عَنّـا الـدَّيْـنَ وَأَغْـنِنـا مِنَ الفَـقْر",
+        "zekr_en": "اللّهُـمَّ رَبَّ السّمـواتِ السَّبْـعِ وَرَبَّ العَـرْشِ العَظـيم رَبَّنـا وَرَبَّ كُـلِّ شَـيء فالِـقَ الحَـبِّ وَالنَّـوى وَمُـنَزِّلَ التَّـوْراةِ وَالإنْجـيل والفُـرْقان أَعـوذُ بِـكَ مِن شَـرِّ كُـلِّ شَـيءٍ أَنْـتَ آخِـذٌ بِنـاصِـيَتِه اللّهُـمَّ أَنْـتَ الأوَّلُ فَلَـيسَ قَبْـلَكَ شَيء وَأَنْـتَ الآخِـرُ فَلَـيسَ بَعْـدَكَ شَيء وَأَنْـتَ الظّـاهِـرُ فَلَـيْسَ فَـوْقَـكَ شَيء وَأَنْـتَ الْبـاطِـنُ فَلَـيْسَ دونَـكَ شَيء اقـْضِ عَنّـا الـدَّيْـنَ وَأَغْـنِنـا مِنَ الفَـقْر\n\nAllāhumma Rabbas-samāwātis-sab`i wa Rabba ‘l-`Arshi ‘l-`Aẓīm, Rabbanā wa Rabba kulli shay', fāliqa ‘l-ḥabbi wan-nawā, wa munzilat-Tawrāti wal-'Injīli, wal-Furqān, a`ūdhu bika min sharri kulli shay'in anta ākhidhun bināṣiyatih. Allāhumma anta ‘l-awwalu falaysa qablaka shay', wa antal-ākhiru falaysa ba`daka shay', wa antaẓ-ẓāhiru falaysa fawqaka shay', wa antal-bāṭinu falaysa dūnaka shay', iqḍi `annad-dayn, wa aghninā mina ‘l-faqr\n\nO Allah! Lord of the seven heavens and Lord of the Magnificent Throne. Our Lord and the Lord of everything. Splitter of the grain and the date-stone, Revealer of the Torah and the Injeel1 and the Furqan (the Qur'an), I seek refuge in You from the evil of everything that You shall seize by the forelock. O Allah You are the First and nothing has come before you, and You are the Last, and nothing may come after You. You are the Most High, nothing is above You and You are the Most Near, and nothing is nearer than You. Remove our debts from us and enrich us against poverty",
+        "reference": "Reference: 1 The Scripture that was revealed to 'Isa (Jesus). 2 See Qur'an Al-'Alaq 96: 15, where seizure by the forelock preceeds being cast into Hell. (Translator) 3 Muslim 4/2084.\n\nHisn al-Muslim 107\nChapter 28: Before sleeping, Book: Fortress of the Muslim (Hisn al-Muslim)",
+        "fadel_zeker": [
+            "المرجع 3: [رواه مسلم] 4/2084.حصن المسلم 107 (الذكر رقم 107 في النسخة المرقومة للكتاب).الباب الثامن والعشرون: أذكار النوم، الكتاب: حصن المسلم."
+        ],
+        "audio": "Zikr-Noom-11",
+        "category": "أذكار النوم"
     },
     {
         "id": 12,
-        "description": {},
+        "sort": 12,
+        "description": "",
         "count": 1,
-        "zekr": "سورة البقرة: أَعُوذُ بِاللهِ مِنْ الشَّيْطَانِ الرَّجِيمِ\nآمَنَ الرَّسُولُ بِمَا أُنْزِلَ إِلَيْهِ مِنْ رَبِّهِ وَالْمُؤْمِنُونَ ۚ كُلٌّ آمَنَ بِاللَّهِ وَمَلَائِكَتِهِ وَكُتُبِهِ وَرُسُلِهِ لَا نُفَرِّقُ بَيْنَ أَحَدٍ مِنْ رُسُلِهِ ۚ وَقَالُوا سَمِعْنَا وَأَطَعْنَا ۖ غُفْرَانَكَ رَبَّنَا وَإِلَيْكَ الْمَصِيرُ(285) لَا يُكَلِّفُ اللَّهُ نَفْسًا إِلَّا وُسْعَهَا لَهَا مَا كَسَبَتْ وَعَلَيْهَا مَا اكْتَسَبَتْ رَبَّنَا لَا تُؤَاخِذْنَا إِن نَسِينَا أَوْ أَخْطَأْنَا رَبَّنَا وَلَا تَحْمِلْ عَلَيْنَا إِصْرًا كَمَا حَمَلْتَهُ عَلَى الَّذِينَ مِنْ قَبْلِنَا رَبَّنَا وَلَا تُحَمِّلْنَا مَا لَا طَاقَةَ لَنَا بِهِ وَاعْفُ عَنَّا وَاغْفِرْ لَنَا وَارْحَمْنَا أَنْتَ مَوْلَانَا فَانْصُرْنَا عَلَى الْقَوْمِ الْكَافِرِينَ(286)",
-        "reference": "",
-        "category": "أذكار النوم",
+        "zekr": "الْحَمْدُ لِلَّهِ الَّذِي أَطْعَمَنَا وَسَقَانَا، وَكَفَانَا، وَآوَانَا، فَكَمْ مِمَّنْ لاَ كَافِيَ لَهُ وَلاَ مُؤْوِيَ",
+        "zekr_en": "الْحَمْدُ لِلَّهِ الَّذِي أَطْعَمَنَا وَسَقَانَا، وَكَفَانَا، وَآوَانَا، فَكَمْ مِمَّنْ لاَ كَافِيَ لَهُ وَلاَ مُؤْوِيَ\n\nAlḥamdu lillāhil-lathī 'aṭ`amanā wa saqānā, wa kafānā, wa 'āwānā, fakam mimman lā kāfiya lahu wa lā mu'wī\n\nPraise is to Allah Who has provided us with food and with drink, sufficed us and gave us an abode, for how many are there with no provision and no home",
+        "reference": "Reference: Muslim 4/2085.\n\nHisn al-Muslim 108\nChapter 28: Before sleeping, Book: Fortress of the Muslim (Hisn al-Muslim)",
         "fadel_zeker": [
-            "من قرأ آيتين من آخر سورة البقرة في ليلة كفتاه."
-        ]
+            "المرجع: [رواه مسلم] 4/2085.حصن المسلم 108 (الذكر رقم 108 في النسخة المرقومة للكتاب).الباب الثامن والعشرون: أذكار النوم، الكتاب: حصن المسلم."
+        ],
+        "audio": "Zikr-Noom-12",
+        "category": "أذكار النوم"
     },
     {
         "id": 13,
-        "description": {},
+        "sort": 13,
+        "description": "",
         "count": 1,
-        "zekr": "آية الكرسى: أَعُوذُ بِاللهِ مِنْ الشَّيْطَانِ الرَّجِيمِ\nاللّهُ لاَ إِلَـهَ إِلاَّ هُوَ الْحَيُّ الْقَيُّومُ لاَ تَأْخُذُهُ سِنَةٌ وَلاَ نَوْمٌ لَّهُ مَا فِي السَّمَاوَاتِ وَمَا فِي الأَرْضِ مَن ذَا الَّذِي يَشْفَعُ عِنْدَهُ إِلاَّ بِإِذْنِهِ يَعْلَمُ مَا بَيْنَ أَيْدِيهِمْ وَمَا خَلْفَهُمْ وَلاَ يُحِيطُونَ بِشَيْءٍ مِّنْ عِلْمِهِ إِلاَّ بِمَا شَاء وَسِعَ كُرْسِيُّهُ السَّمَاوَاتِ وَالأَرْضَ وَلاَ يَؤُودُهُ حِفْظُهُمَا وَهُوَ الْعَلِيُّ الْعَظِيمُ(255)",
-        "reference": "",
-        "category": "أذكار النوم",
+        "zekr": "اللّهُـمَّ عالِـمَ الغَـيْبِ وَالشّـهادَةِ فاطِـرَ السّماواتِ وَالأرْضِ رَبَّ كـلِّ شَـيءٍ وَمَليـكَه أَشْهَـدُ أَنْ لا إِلـهَ إِلاّ أَنْت أَعـوذُ بِكَ مِن شَـرِّ نَفْسـي وَمِن شَـرِّ الشَّيْـطانِ وَشِـرْكِه وَأَنْ أَقْتَـرِفَ عَلـى نَفْسـي سوءاً أَوْ أَجُـرَّهُ إِلـى مُسْـلِم",
+        "zekr_en": "اللّهُـمَّ عالِـمَ الغَـيْبِ وَالشّـهادَةِ فاطِـرَ السّماواتِ وَالأرْضِ رَبَّ كـلِّ شَـيءٍ وَمَليـكَه أَشْهَـدُ أَنْ لا إِلـهَ إِلاّ أَنْت أَعـوذُ بِكَ مِن شَـرِّ نَفْسـي وَمِن شَـرِّ الشَّيْـطانِ وَشِـرْكِه وَأَنْ أَقْتَـرِفَ عَلـى نَفْسـي سوءاً أَوْ أَجُـرَّهُ إِلـى مُسْـلِم\n\nAllāhumma `ālima ‘l-ghaybi wash-shahādah, fātiras-samāwāti wa ‘l-ardh, Rabba kulli shay'in wa malīkah, ash-hadu an lā ilāha illā ant, a`ūdhu bika min sharri nafsī, wa min sharrish-shayṭāni wa shirkih, wa an aqtarifa `alā nafsī sū'an, aw ajurrahu ilā Muslim\n\nO Allah, Knower of the unseen and the evident, Maker of the heavens and the earth, Lord of everything and its Master, I bear witness that there is none worthy of worship but You. I seek refuge in You from the evil of my soul, and from the evil of Satan and his helpers. (I seek refuge in You) from bringing evil upon my soul and from harming any Muslim",
+        "reference": "Reference: Abu Dawud 4/317. See also Al-Albani, SahihAt-Tirmidhi 3/142.\n\nHisn al-Muslim 109\nChapter 28: Before sleeping, Book: Fortress of the Muslim (Hisn al-Muslim)",
         "fadel_zeker": [
-            "أجير من الجن حتى يصبح."
-        ]
+            "المرجع: [رواه أبو داود] 4/317. انظر أيضاً: [صحيح الترمذي] للألباني 3/142.حصن المسلم 109 (الذكر رقم 109 في النسخة المرقومة للكتاب).الباب الثامن والعشرون: أذكار النوم، الكتاب: حصن المسلم."
+        ],
+        "audio": "Zikr-Noom-13",
+        "category": "أذكار النوم"
     },
     {
         "id": 14,
-        "description": {},
+        "sort": 14,
+        "description": "",
         "count": 1,
-        "zekr": "أذكار من قلق في فراشه ولم ينم\nعن بريدة رضي الله عنه، قال‏:‏ شكا خالد بن الوليد رضي الله عنه إلى النبي صلى الله عليه وسلم فقال‏:‏ يا رسول الله‏!‏ ما أنام الليل من الأرق، فقال النبي صلى الله عليه وسلم‏:‏ ‏\"‏إذا أويت إلى فراشك فقل‏:‏ اللهم رب السموات السبع وما أظلت، ورب الأرضين وما أقلت، ورب الشياطين وما أضلت، كن لي جارا من خلقك كلهم جميعا أن يفرط علي أحد منهم أو أن يبغي علي، عز جارك، وجل ثناؤك ولا إله غيرك، ولا إله إلا أنت‏\" عن عمرو بن شعيب، عن أبيه، عن جده: أن رسول الله صلى الله عليه وسلم كان يعلمهم من الفزع كلمات‏:‏ ‏\"‏أعوذ بكلمات الله التامة من غضبه وشر عباده، ومن همزات الشياطين وأن يحضرون‏\"",
-        "reference": "",
-        "category": "أذكار النوم",
-        "fadel_zeker": []
+        "zekr": "اللّهُـمَّ أَسْـلَمْتُ نَفْـسي إِلَـيْكَ، وَفَوَّضْـتُ أَمْـري إِلَـيْكَ، وَوَجَّـهْتُ وَجْـهي إِلَـيْكَ، وَأَلْـجَـاْتُ ظَهـري إِلَـيْكَ، رَغْبَـةً وَرَهْـبَةً إِلَـيْكَ، لا مَلْجَـأَ وَلا مَنْـجـا مِنْـكَ إِلاّ إِلَـيْكَ، آمَنْـتُ بِكِتـابِكَ الّـذي أَنْزَلْـتَ وَبِنَبِـيِّـكَ الّـذي أَرْسَلْـت",
+        "zekr_en": "اللّهُـمَّ أَسْـلَمْتُ نَفْـسي إِلَـيْكَ، وَفَوَّضْـتُ أَمْـري إِلَـيْكَ، وَوَجَّـهْتُ وَجْـهي إِلَـيْكَ، وَأَلْـجَـاْتُ ظَهـري إِلَـيْكَ، رَغْبَـةً وَرَهْـبَةً إِلَـيْكَ، لا مَلْجَـأَ وَلا مَنْـجـا مِنْـكَ إِلاّ إِلَـيْكَ، آمَنْـتُ بِكِتـابِكَ الّـذي أَنْزَلْـتَ وَبِنَبِـيِّـكَ الّـذي أَرْسَلْـت\n\nAllāhumma aslamtu nafsī ilayk, wa fawwaḍtu amrī ilayk, wa wajjahtu wajhī ilayk, wa alja'tu ẓahrī ilayk, raghbatan wa rahbatan ilayk, lā malja'a wa la manjā minka illā ilayk, āmantu bikitābika ‘l-ladhī anzalt, wa bi-nabiyyika ‘l-ladhī arsalt\n\nO Allah,1 I submit myself to You, entrust my affairs to You, turn my face to You, and lay myself down depending upon You, hoping in You and fearing You. There is no refuge, and no escape, except to You. I believe in Your Book (the Qur'an) that You revealed, and the Prophet whom You sent",
+        "reference": "Reference: 1 \"Before you go to bed perform ablutions as you would for prayer, then lie down on your right side and say. . . \" The Prophet (ﷺ) said: \"Whoever says this and dies in his sleep, has died in a state of the natural monotheism (Fitrah).\" Al-Bukhari, cf. Al-Asqalani, Fathul-Bari 11/113, Muslim 4/2081.\n\nHisn al-Muslim 111\nChapter 28: Before sleeping, Book: Fortress of the Muslim (Hisn al-Muslim)",
+        "fadel_zeker": [
+            "المرجع : قَالَ النَّبِيُّ ﷺ: \"مَنْ قَالَهَا ثُمَّ مَاتَ فِي لَيْلَتِهِ، مَاتَ عَلَى الْفِطْرَةِ.\" [رواه البخاري]، وانظر: [فتح الباري] لابن حجر العسقلاني 11/113، و[رواه مسلم] 4/2081.حصن المسلم 111 (الذكر رقم 111 في النسخة المرقومة للكتاب).الباب الثامن والعشرون: أذكار النوم، الكتاب: حصن المسلم."
+        ],
+        "audio": "Zikr-Noom-14",
+        "category": "أذكار النوم"
     },
     {
         "id": 15,
-        "description": {},
-        "count": 1,
-        "zekr": "أذكار الأحلام\nعن أبي قتادة رضي الله عنه قال‏:‏ قال رسول الله صلى الله عليه وسلم‏:‏ ‏\"‏الرؤيا الصالحة‏\"‏ وفي رواية ‏\"‏الرؤيا الحسنة من الله، والحلم من الشيطان، فمن رأى شيئا يكرهه فلينفث عن شماله ثلاثا وليتعوذ من الشيطان، فإنها لا تضره‏\".",
+        "sort": 15,
+        "description": "",
+        "count": 33,
+        "zekr": "سُبْحَانَ اللَّهِ.",
+        "zekr_en": "سُبْحَانَ اللَّهِ\n\nSubḥānallāh, Wa ‘l-ḥamdu lillāh, Wallāhu Akbar.\nGlory is to Allah (thirty-three times in Arabic), Praise is to Allah (thirty-three times), Allah is the Most Great (thirty-four times)\nReference: Al-Bukhari, cf. Al-Asqalani, Fathul-Bari 7/71, Muslim 4/2091.\n\nHisn al-Muslim 106\nChapter 28: Before sleeping, Book: Fortress of the Muslim (Hisn al-Muslim)",
         "reference": "",
-        "category": "أذكار النوم",
-        "fadel_zeker": []
+        "fadel_zeker": [
+            "عن علي رضي الله عنه أن فاطمة رضي الله عنها شكت ما تلقى في يدها من الرحى وأتت النبي ﷺ تسأله خادماً، فلم تجده، فذكرت ذلك لعائشة، فلما جاء النبي ﷺ أخبرته، فجاءنا وقد أخذنا مضاجعنا، فذهبتُ قمْتُ، فقال: «مَكانَكما» فجلس بيننا حتى وجدتُ برَدَ قدميه على صدري، فقال: «ألا أدلُّكما على خيرٍ مما سألتُما؟ إذا أويتما إلى فراشكما -أو أخذتما مضاجعكما- فكبرا أربعاً وثلاثين، وسبحا ثلاثاً وثلاثين، واحْمدا ثلاثاً وثلاثين، فهو خير لكما من خادم» (رواه البخاري ومسلم)"
+        ],
+        "audio": null,
+        "category": "أذكار النوم"
+    },
+    {
+        "id": 16,
+        "sort": 16,
+        "description": "",
+        "count": 33,
+        "zekr": "الْحَمْدُ لِلَّهِ.",
+        "zekr_en": "الْحَمْدُ لِلَّهِ\n\nSubḥānallāh, Wa ‘l-ḥamdu lillāh, Wallāhu Akbar.\nGlory is to Allah (thirty-three times in Arabic), Praise is to Allah (thirty-three times), Allah is the Most Great (thirty-four times)\nReference: Al-Bukhari, cf. Al-Asqalani, Fathul-Bari 7/71, Muslim 4/2091.\n\nHisn al-Muslim 106\nChapter 28: Before sleeping, Book: Fortress of the Muslim (Hisn al-Muslim)",
+        "reference": "",
+        "fadel_zeker": [
+            "عن علي رضي الله عنه أن فاطمة رضي الله عنها شكت ما تلقى في يدها من الرحى وأتت النبي ﷺ تسأله خادماً، فلم تجده، فذكرت ذلك لعائشة، فلما جاء النبي ﷺ أخبرته، فجاءنا وقد أخذنا مضاجعنا، فذهبتُ قمْتُ، فقال: «مَكانَكما» فجلس بيننا حتى وجدتُ برَدَ قدميه على صدري، فقال: «ألا أدلُّكما على خيرٍ مما سألتُما؟ إذا أويتما إلى فراشكما -أو أخذتما مضاجعكما- فكبرا أربعاً وثلاثين، وسبحا ثلاثاً وثلاثين، واحْمدا ثلاثاً وثلاثين، فهو خير لكما من خادم» (رواه البخاري ومسلم)"
+        ],
+        "audio": null,
+        "category": "أذكار النوم"
+    },
+    {
+        "id": 17,
+        "sort": 17,
+        "description": "",
+        "count": 33,
+        "zekr": "لا إِلـهَ إِلاّ اللهُ",
+        "zekr_en": "لا إِلـهَ إِلاّ اللهُ\n\nSubḥānallāh, Wa ‘l-ḥamdu lillāh, Wallāhu Akbar.\nGlory is to Allah (thirty-three times in Arabic), Praise is to Allah (thirty-three times), Allah is the Most Great (thirty-four times)\nReference: Al-Bukhari, cf. Al-Asqalani, Fathul-Bari 7/71, Muslim 4/2091.\n\nHisn al-Muslim 106\nChapter 28: Before sleeping, Book: Fortress of the Muslim (Hisn al-Muslim)",
+        "reference": "",
+        "fadel_zeker": [
+            "عن علي رضي الله عنه أن فاطمة رضي الله عنها شكت ما تلقى في يدها من الرحى وأتت النبي ﷺ تسأله خادماً، فلم تجده، فذكرت ذلك لعائشة، فلما جاء النبي ﷺ أخبرته، فجاءنا وقد أخذنا مضاجعنا، فذهبتُ قمْتُ، فقال: «مَكانَكما» فجلس بيننا حتى وجدتُ برَدَ قدميه على صدري، فقال: «ألا أدلُّكما على خيرٍ مما سألتُما؟ إذا أويتما إلى فراشكما -أو أخذتما مضاجعكما- فكبرا أربعاً وثلاثين، وسبحا ثلاثاً وثلاثين، واحْمدا ثلاثاً وثلاثين، فهو خير لكما من خادم» (رواه البخاري ومسلم)"
+        ],
+        "audio": null,
+        "category": "أذكار النوم"
+    },
+    {
+        "id": 18,
+        "sort": 18,
+        "description": "",
+        "count": 34,
+        "zekr": "اللَّهُ أَكْبَرُ.",
+        "zekr_en": "اللَّهُ أَكْبَرُ\n\nSubḥānallāh, Wa ‘l-ḥamdu lillāh, Wallāhu Akbar.\nGlory is to Allah (thirty-three times in Arabic), Praise is to Allah (thirty-three times), Allah is the Most Great (thirty-four times)\nReference: Al-Bukhari, cf. Al-Asqalani, Fathul-Bari 7/71, Muslim 4/2091.\n\nHisn al-Muslim 106\nChapter 28: Before sleeping, Book: Fortress of the Muslim (Hisn al-Muslim)",
+        "reference": "",
+        "fadel_zeker": [
+            "عن علي رضي الله عنه أن فاطمة رضي الله عنها شكت ما تلقى في يدها من الرحى وأتت النبي ﷺ تسأله خادماً، فلم تجده، فذكرت ذلك لعائشة، فلما جاء النبي ﷺ أخبرته، فجاءنا وقد أخذنا مضاجعنا، فذهبتُ قمْتُ، فقال: «مَكانَكما» فجلس بيننا حتى وجدتُ برَدَ قدميه على صدري، فقال: «ألا أدلُّكما على خيرٍ مما سألتُما؟ إذا أويتما إلى فراشكما -أو أخذتما مضاجعكما- فكبرا أربعاً وثلاثين، وسبحا ثلاثاً وثلاثين، واحْمدا ثلاثاً وثلاثين، فهو خير لكما من خادم» (رواه البخاري ومسلم)"
+        ],
+        "audio": null,
+        "category": "أذكار النوم"
+    },
+    {
+        "id": 19,
+        "sort": 19,
+        "description": "",
+        "count": 1,
+        "zekr": "لَا إِلَهَ إِلَّا اللَّهُ وَحْدَهُ لَا شَرِيكَ لَهُ، لَهُ الْمُلْكُ وَلَهُ الْحَمْدُ، يُحْيِي وَيُمِيتُ، وَهُوَ عَلَى كُلِّ شَيْءٍ قَدِيرٌ",
+        "zekr_en": "لاَ إِلَهَ إِلاَّ اللَّهُ وَحْدَهُ لاَ شَرِيكَ لَهُ لَهُ الْمُلْكُ وَلَهُ الْحَمْدُ يُحْيِي وَيُمِيتُ وَهُوَ عَلَى كُلِّ شَيْءٍ قَدِيرٌ\n\nLā ilāha illallāh waḥdahu lā sharīka lah, lahu‘l-mulku wa lahu‘l-ḥamd yuḥyī wa yumīt wa huwa `alā kulli shay'in qadīr\n\nNone has the right to be worshipped but Allah alone, Who has no partner. His is the dominion and His is the praise. He brings life and He causes death, and He is Able to do all things",
+        "reference": "Reference: At-Tirmidhi 5/515, Ahmad 4/227. See its checking in Ibn Al-Qayyim Al-Jawziyyah's Zddul-Ma'ad 1/300.\n\nHisn al-Muslim 72\nChapter 25: After salam, Book: Fortress of the Muslim (Hisn al-Muslim)",
+        "fadel_zeker": [
+            "من قال إذا أصبح: لا إله إلا الله وحده لا شريك له له الملك وله الحمد وهو على كل شيء قدير كان له عدل رقبة من ولد إسماعيل، وكتب له عشر حسنات وحط عنه عشر سيئات، ورفع له عشر درجات وكان في حرز من الشيطان حتى يمسي، وإن قالها إذا أمسى كان له مثل ذلك حتى يصبح"
+        ],
+        "audio": null,
+        "category": "أذكار النوم"
     }
 ]

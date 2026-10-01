@@ -39,11 +39,15 @@ class _SNAzkarPlayerState extends State<SNAzkarPlayer> {
   @override
   void dispose() {
     _pageController.dispose();
+    // Factory cubit owned by this screen — closing it also stops the
+    // recitation and frees the shared media slot.
+    _cubit.close();
     super.dispose();
   }
 
   Future<void> _open() async {
     await _cubit.open(widget.categoryId);
+    if (!mounted) return;
     _cubit.jumpTo(widget.itemIndex);
   }
 
@@ -111,6 +115,8 @@ class _SNAzkarPlayerState extends State<SNAzkarPlayer> {
                   onReset: _cubit.resetCurrent,
                   onPrevious: _cubit.previous,
                   onNext: _cubit.next,
+                  onPlay: current.hasAudio ? _cubit.toggleAudio : null,
+                  playing: state.audioPlaying,
                 ),
               ],
             );

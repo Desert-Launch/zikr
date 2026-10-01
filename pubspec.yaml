@@ -182,6 +182,12 @@ flutter:
     # notification plays the res/raw copy and iOS the CAF one; this is the
     # same recording, bundled for in-app playback.
     - assets/audio/salah_3la_mohamed.mp3
+    # Azkar recitations, one clip per zekr. The sheet's `Audio` name picks the
+    # file: `Zikr-S-1` → `zike-audios/Zikr-S/Zikr-S-1.mp3` (see MAzkarItem).
+    - assets/audio/zike-audios/Zikr-Estikaz/
+    - assets/audio/zike-audios/Zikr-M/
+    - assets/audio/zike-audios/Zikr-Noom/
+    - assets/audio/zike-audios/Zikr-S/
     - assets/images/
     - assets/icons/
     - assets/lang/
