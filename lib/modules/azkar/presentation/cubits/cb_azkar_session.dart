@@ -8,6 +8,7 @@ import 'package:quran/core/services/logging/app_logger.dart';
 import 'package:quran/core/services/media/audio_focus.dart';
 import 'package:quran/core/services/media/media_artwork.dart';
 import 'package:quran/modules/azkar/data/datasources/local/ds_local_azkar.dart';
+import 'package:quran/modules/azkar/data/models/m_azkar_item.dart';
 import 'package:quran/modules/azkar/data/sources/local/box_azkar_progress.dart';
 import 'package:quran/modules/azkar/presentation/cubits/s_azkar_session.dart';
 
@@ -59,10 +60,7 @@ class CBAzkarSession extends Cubit<SAzkarSession> {
       next();
       return;
     }
-    final updated = Map<String, int>.from(state.completed);
-    updated[item.id] = (updated[item.id] ?? 0) + 1;
-    emit(state.copyWith(completed: updated));
-    await _progress.increment(cat.id, item.id);
+    await _count(cat, item);
 
     // Reached the last count → pause briefly, then auto-advance to the next zekr.
     if (state.isComplete(item)) {
@@ -71,6 +69,14 @@ class CBAzkarSession extends Cubit<SAzkarSession> {
       // Only advance if we're still sitting on the zekr that just completed.
       if (state.currentItem?.id == item.id) next();
     }
+  }
+
+  /// Adds one repetition to [item] and saves it to today's progress.
+  Future<void> _count(MAzkarCategory cat, MAzkarItem item) async {
+    final updated = Map<String, int>.from(state.completed);
+    updated[item.id] = (updated[item.id] ?? 0) + 1;
+    emit(state.copyWith(completed: updated));
+    await _progress.increment(cat.id, item.id);
   }
 
   void next() => jumpTo(state.itemIndex + 1);
@@ -104,9 +110,9 @@ class CBAzkarSession extends Cubit<SAzkarSession> {
     emit(state.copyWith(completed: updated));
   }
 
-  /// Play / pause for the zekr on screen. Once started, every finished clip
-  /// moves on to the next zekr and plays its clip, until the list ends or
-  /// reaches a zekr without one.
+  /// Play / pause for the zekr on screen. Each playthrough counts as one
+  /// repetition, so the clip plays until the zekr reaches its count, then the
+  /// next zekr plays — until the list ends or reaches a zekr without a clip.
   Future<void> toggleAudio() async {
     if (state.audioPlaying) {
       await _pauseAudio();
@@ -166,17 +172,38 @@ class CBAzkarSession extends Cubit<SAzkarSession> {
     // one when they claim the shared background slot.
     AudioFocus.instance.register(this, stopAudio);
     _playerSub = player.processingStateStream.listen((s) {
-      if (s == ProcessingState.completed && state.audioPlaying) _onClipFinished();
+      if (s == ProcessingState.completed && state.audioPlaying) {
+        unawaited(_onClipFinished());
+      }
     });
     return player;
   }
 
-  void _onClipFinished() {
+  /// A playthrough ended: it counts as one repetition, like a tap. Replays
+  /// until the zekr reaches its count, then moves to the next zekr. A zekr
+  /// that was already complete plays once, uncounted.
+  Future<void> _onClipFinished() async {
     final cat = state.category;
+    final item = state.currentItem;
     // Ignore a clip that ended just as the user moved to another zekr.
-    if (cat == null || _loadedItemId != state.currentItem?.id) return;
+    if (cat == null || item == null || _loadedItemId != item.id) return;
+    final request = _audioRequest;
+    final counting = !state.isComplete(item);
+    if (counting) await _count(cat, item);
+    // A pause, stop, or move during the save owns playback now.
+    if (isClosed || request != _audioRequest || state.currentItem?.id != item.id) return;
+    if (counting && !state.isComplete(item)) {
+      // `playing` stays true past the end, so rewinding replays the clip.
+      try {
+        await _player?.seek(Duration.zero);
+      } catch (e) {
+        AppLogger.warning('Azkar audio replay failed: $e', tag: 'CBAzkarSession');
+        await stopAudio();
+      }
+      return;
+    }
     if (state.itemIndex >= cat.items.length - 1) {
-      unawaited(stopAudio());
+      await stopAudio();
       return;
     }
     jumpTo(state.itemIndex + 1);
