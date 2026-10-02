@@ -793,5 +793,11 @@
   "prayer_calc_note": "Times are calculated from your current location. On Automatic the closest regional authority is used, so your times may differ slightly from an app that follows a different one.",
   "prayer_source_offline": "Saved times — couldn't refresh",
   "prayer_source_calculated": "Calculated offline",
-  "prayer_method_label": "Calculated with {{method}}"
+  "prayer_method_label": "Calculated with {{method}}",
+  "car_quran": "The Holy Quran",
+  "car_quran_subtitle": "Pick a reciter, then a surah",
+  "car_downloads": "Downloaded",
+  "car_downloads_subtitle": "Plays without internet",
+  "car_active_reciter": "Current reciter",
+  "car_downloaded": "Downloaded"
 }

@@ -49,7 +49,7 @@
 - DI + Routing: **flutter_modular**
 - Local storage: **hive_ce** + `hive_ce_flutter`
 - Networking: `dio` (via shared `BaseDio`)
-- Audio: `just_audio` + `just_audio_background`
+- Audio: `just_audio` + `audio_service` (one media session, `AppAudioHandler`, shared by every player via `AudioFocus`; also serves Android Auto)
 - Functional error handling: `dartz` (`Either<Failure, T>`)
 - Immutable state: `freezed`
 
@@ -502,12 +502,8 @@ Future<void> main() async {
   await BoxBookmarks().init();
   // …
 
-  // Audio background service
-  await JustAudioBackground.init(
-    androidNotificationChannelId: 'com.qrn.audio',
-    androidNotificationChannelName: 'Quran Recitation',
-    androidNotificationOngoing: true,
-  );
+  // Media session (notification, lock screen, headset buttons, Android Auto)
+  await AppAudioHandler.init();
 
   runApp(ModularApp(module: AppModule(), child: const App()));
 }

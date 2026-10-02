@@ -1,18 +1,19 @@
 import 'dart:async';
 
+import 'package:audio_service/audio_service.dart';
 import 'package:audio_session/audio_session.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:just_audio/just_audio.dart';
-import 'package:just_audio_background/just_audio_background.dart';
 import 'package:quran/core/services/logging/app_logger.dart';
 import 'package:quran/core/services/media/audio_focus.dart';
 import 'package:quran/core/services/media/media_artwork.dart';
+import 'package:quran/core/services/media/media_session_binding.dart';
 import 'package:quran/modules/radio/data/models/m_radio_station.dart';
 import 'package:quran/modules/radio/presentation/cubits/s_radio_player.dart';
 
 /// App-wide live-radio player. Singleton (registered via `addLazySingleton`) so
 /// playback survives navigating away from the radio screen and runs in the
-/// background media notification (just_audio_background is initialised in main).
+/// background media notification (the media session, `AppAudioHandler`).
 ///
 /// Unlike [CBAudioPlayer] there is no queue: a station is a single live stream
 /// that plays until paused/stopped or replaced by another station.
@@ -20,7 +21,11 @@ class CBRadioPlayer extends Cubit<SRadioPlayer> {
   CBRadioPlayer()
       : _player = AudioPlayer(),
         super(const SRadioPlayer()) {
-    AudioFocus.instance.register(this, stop);
+    AudioFocus.instance.register(
+      this,
+      stop,
+      session: MediaSessionBinding(player: _player, onStop: stop),
+    );
     _wireStreams();
   }
 
@@ -115,7 +120,7 @@ class CBRadioPlayer extends Cubit<SRadioPlayer> {
       clearError: true,
     ));
     try {
-      // Free the shared just_audio_background slot from any other domain player
+      // Free the shared media slot from any other domain player
       // (Qur'an audio/adhan/preview) before claiming it for this station.
       await AudioFocus.instance.take(this);
       await _player.setAudioSource(

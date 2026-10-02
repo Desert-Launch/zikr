@@ -1,13 +1,14 @@
 import 'dart:async';
 
+import 'package:audio_service/audio_service.dart';
 import 'package:audio_session/audio_session.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:just_audio/just_audio.dart';
-import 'package:just_audio_background/just_audio_background.dart';
 import 'package:localize_and_translate/localize_and_translate.dart';
 import 'package:quran/core/services/logging/app_logger.dart';
 import 'package:quran/core/services/media/audio_focus.dart';
 import 'package:quran/core/services/media/media_artwork.dart';
+import 'package:quran/core/services/media/media_session_binding.dart';
 import 'package:quran/modules/quran/data/models/m_surah.dart';
 import 'package:quran/modules/quran/domain/entities/e_ayah_audio_source.dart';
 import 'package:quran/modules/quran/domain/entities/e_download_progress.dart';
@@ -47,8 +48,9 @@ import 'package:quran/modules/quran/presentation/cubits/s_audio_player.dart';
 /// the background so a later replay is local — the next ayah as each one
 /// plays ([_prefetch]), and the whole surah once a unit starts in it
 /// ([_downloadSurahInBackground]). The playlist is built once per unit and
-/// never appended to while it plays — under just_audio_background that leaves
-/// the auto-advanced item silent until a manual pause/resume.
+/// never appended to while it plays — under just_audio_background (the session
+/// plugin before audio_service) that left the auto-advanced item silent until
+/// a manual pause/resume.
 ///
 /// Ayah 1 of a surah is preceded by the basmalah, an entry that carries the
 /// following ayah's index so the reader keeps highlighting it — see
@@ -73,7 +75,19 @@ class CBAudioPlayer extends Cubit<SAudioPlayer> {
        _savePrefs = savePrefs,
        _player = AudioPlayer(),
        super(const SAudioPlayer()) {
-    AudioFocus.instance.register(this, stop);
+    AudioFocus.instance.register(
+      this,
+      stop,
+      // Skips go through the ayah-aware next/previous: a repeated ayah is
+      // several playlist entries, and a jump must not count a repeat pass.
+      session: MediaSessionBinding(
+        player: _player,
+        onStop: stop,
+        onSkipToNext: next,
+        onSkipToPrevious: previous,
+        onSkipToQueueItem: skipToTrack,
+      ),
+    );
     _hydrate();
     _hydratePrefs();
     _wireStreams();
@@ -146,6 +160,9 @@ class CBAudioPlayer extends Cubit<SAudioPlayer> {
   Future<void> _hydrate() async {
     final res = await _reciters.active();
     res.fold((_) {}, (r) {
+      // A play request that named its reciter (the car's) can land while this
+      // read is in flight; the stored choice must not overwrite it.
+      if (_activeReciterId != null) return;
       _activeReciterId = r.id;
       _activeReciterName = r.arabic.isNotEmpty ? r.arabic : r.name;
       emit(state.copyWith(reciterId: r.id));
@@ -449,7 +466,7 @@ class CBAudioPlayer extends Cubit<SAudioPlayer> {
     ];
 
     try {
-      // Free the shared just_audio_background slot from any other domain player
+      // Free the shared media slot from any other domain player
       // (radio/adhan/preview) before claiming it.
       await AudioFocus.instance.take(this);
       if (token != _playToken) return;
@@ -1004,6 +1021,31 @@ class CBAudioPlayer extends Cubit<SAudioPlayer> {
     }
   }
 
+  /// Plays [surah] through from its first ayah — what picking a surah from the
+  /// car's library or by voice means. [reciterId], when given, becomes the
+  /// player's voice first, without rebuilding whatever was playing.
+  ///
+  /// A memorisation repeat (one ayah, or a range) would turn "play this surah"
+  /// into one ayah on a loop, so it is dropped for this session, the way
+  /// [playFrom] drops a range it was not asked to play. A surah repeat is kept:
+  /// it still plays the surah.
+  Future<void> playSurah(int surah, {String? reciterId}) async {
+    if (reciterId != null && reciterId != _activeReciterId) {
+      _activeReciterId = reciterId;
+      await _applyReciterName(reciterId);
+      emit(state.copyWith(reciterId: reciterId));
+    }
+    final mode = state.options.repeatMode;
+    if (mode == RepeatMode.singleAyah || mode == RepeatMode.range) {
+      emit(
+        state.copyWith(
+          options: state.options.copyWith(repeatMode: RepeatMode.off),
+        ),
+      );
+    }
+    await playFrom(ParamAyahRef(surah: surah, ayah: 1));
+  }
+
   Future<void> repeatSingle(ParamAyahRef ref) async {
     emit(
       state.copyWith(
@@ -1093,6 +1135,13 @@ class CBAudioPlayer extends Cubit<SAudioPlayer> {
 
   bool _sameAyah(_Track a, _Track b) =>
       a.pass == b.pass && a.queueIndex == b.queueIndex;
+
+  /// Jumps to playlist entry [index] — a tap on an ayah in the car's queue.
+  Future<void> skipToTrack(int index) async {
+    if (index < 0 || index >= _tracks.length) return;
+    _trackIndex = null; // see [next]
+    await _player.seek(Duration.zero, index: index);
+  }
 
   Future<void> seekTo(Duration position) => _player.seek(position);
 

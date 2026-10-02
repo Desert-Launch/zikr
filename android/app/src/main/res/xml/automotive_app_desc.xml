@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Declares the app to Android Auto as a media app: the car lists and plays
+     the browse tree served by audio_service's AudioService (a
+     MediaBrowserService), which Dart's AppAudioHandler fills. -->
+<automotiveApp>
+    <uses name="media" />
+</automotiveApp>

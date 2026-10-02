@@ -1,14 +1,15 @@
 import 'dart:async';
 
+import 'package:audio_service/audio_service.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:just_audio/just_audio.dart';
-import 'package:just_audio_background/just_audio_background.dart';
 import 'package:localize_and_translate/localize_and_translate.dart';
 import 'package:quran/core/data/sources/local/box_app_settings.dart';
 import 'package:quran/core/services/logging/app_logger.dart';
 import 'package:quran/core/services/media/audio_focus.dart';
 import 'package:quran/core/services/media/call_interruption.dart';
 import 'package:quran/core/services/media/media_artwork.dart';
+import 'package:quran/core/services/media/media_session_binding.dart';
 import 'package:quran/core/services/notifications/notification_window.dart';
 import 'package:quran/core/utils/helper/haptics_helper.dart';
 import 'package:quran/modules/tasbih/data/datasources/local/ds_hourly_tasbih.dart';
@@ -222,15 +223,19 @@ class CBSalawat extends Cubit<STasbih> {
       if (_previewSub == null) {
         // Registered on first use so the adhan/radio/Qur'an players can stop
         // this preview when they claim the shared background slot.
-        AudioFocus.instance.register(this, stopPreview);
+        AudioFocus.instance.register(
+          this,
+          stopPreview,
+          session: MediaSessionBinding(player: player, onStop: stopPreview),
+        );
         _previewSub = player.playerStateStream.listen((s) {
           if (s.processingState == ProcessingState.completed) {
             unawaited(stopPreview());
           }
         });
       }
-      // `just_audio_background` allows one platform-active player app-wide, so
-      // free the slot before loading. Every source must carry a MediaItem tag.
+      // One player sounds at a time app-wide, so free the slot before
+      // loading. The tag is what the media session shows.
       await AudioFocus.instance.take(this);
       await player.setAudioSource(
         AudioSource.asset(

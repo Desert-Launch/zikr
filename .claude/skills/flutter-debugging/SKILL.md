@@ -19,7 +19,7 @@ Never rush to edit. Find the root cause, fix all occurrences, verify green. The 
   - `HiveError: Box not found` → box opened too late; open it in `main()` before `runApp`.
   - UI doesn't update → missing `emit(state.copyWith(...))`, or `BlocSelector` selecting an unchanged field.
   - Mushaf glyphs render as boxes → QPC font not preloaded before the page builds.
-  - Audio stops on lock → `JustAudioBackground.init()` ordering in `main()`.
+  - Audio stops on lock / no notification controls → `AppAudioHandler.init()` ordering in `main()`, and the player's `MediaSessionBinding` in `AudioFocus.register`.
   - Translation shows literally → key missing in `ar.json`/`en.json` or not prefixed; or used without `.tr()`.
   - Navigation fails → string-literal route instead of a typed `*Routes` builder.
   - `LateInitializationError` on a cubit field → cubit `new`'d directly instead of resolved via `Modular.get`/`binds`.

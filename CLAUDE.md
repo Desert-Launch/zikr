@@ -14,7 +14,7 @@
 **Audience:** Arabic-first, RTL by default. English/Urdu/French planned.
 
 **Entry points:**
-- `lib/main.dart` — boots in this order before `runApp`: `AppLogger.init()` → `LocalizeAndTranslate.init()` (ar/en) → `Hive.initFlutter()` + `QuranHiveRegistrar.registerAdapters()` → **open all ~22 Hive boxes** → `JustAudioBackground.init()` → `runApp(ModularApp(AppModule()))`. Post-build it runs `CBTheme.load()`, `CBAuth.bootstrap()`, `NotificationsService.init()`, `CBReminders.rescheduleAll()`, `AdhanBootstrap.run()`.
+- `lib/main.dart` — boots in this order before `runApp`: `AppLogger.init()` → `LocalizeAndTranslate.init()` (ar/en) → `Hive.initFlutter()` + `QuranHiveRegistrar.registerAdapters()` → **open all ~22 Hive boxes** → `AppAudioHandler.init()` (the `audio_service` media session) → `runApp(ModularApp(AppModule()))`. Post-build it runs `CBTheme.load()`, `CBAuth.bootstrap()`, `NotificationsService.init()`, `CBReminders.rescheduleAll()`, `AdhanBootstrap.run()`.
 - `lib/core/services/routes/app_module.dart` — the **root `AppModule`**: registers box singletons, shared data sources, `BaseDio`, app-wide cubits, and mounts every feature module at its base path.
 - Route paths live in `RoutesNames` (module bases) + per-module `*Routes` classes (e.g. `QuranRoutes`, `AdhanRoutes`) in the routes layer — see rule #3.
 
@@ -262,7 +262,7 @@ Then tell the user to hot **restart** (not reload).
 | `HiveError: Box not found` | Box opened too late | Open all boxes in `main()` before `runApp` |
 | Hot reload doesn't pick up a new route | Route changes require restart | Tell user: hot restart needed |
 | Mushaf font glyphs render as boxes | QPC font not preloaded | Preload page font in `WMushafPage.initState` (see Quran plan §10) |
-| Audio stops when screen locks | `just_audio_background` not initialized | Call `JustAudioBackground.init()` in `main()` before `runApp` |
+| Audio stops when screen locks / no notification controls | Media session not up, or the player has no session | `AppAudioHandler.init()` in `main()` before `runApp`; register the player with `AudioFocus.register(..., session: MediaSessionBinding(...))` and call `AudioFocus.take` before loading |
 | Translations key shows literally | Missing key in `assets/lang/*.json` or no underscore prefix | Add flat key with `feature_thing` pattern |
 
 ---

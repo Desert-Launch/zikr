@@ -47,6 +47,8 @@ import 'package:quran/modules/azkar/data/datasources/local/ds_local_azkar.dart';
 import 'package:quran/modules/azkar/data/sources/local/box_azkar_category_favorite.dart';
 import 'package:quran/modules/azkar/data/sources/local/box_azkar_favorite.dart';
 import 'package:quran/modules/azkar/data/sources/local/box_azkar_progress.dart';
+import 'package:quran/modules/car/domain/usecases/uc_match_car_query.dart';
+import 'package:quran/modules/car/presentation/services/car_media_library.dart';
 import 'package:quran/modules/home/home_module.dart';
 import 'package:quran/modules/khatma/data/datasources/local/ds_local_khatma.dart';
 import 'package:quran/modules/khatma/data/sources/local/box_khatma_completion.dart';
@@ -85,11 +87,22 @@ import 'package:quran/modules/quran/data/datasources/remote/ds_remote_tafsir.dar
 import 'package:quran/modules/quran/data/repos/r_impl_quran.dart';
 import 'package:quran/modules/quran/data/repos/r_impl_tafsir.dart';
 import 'package:quran/modules/quran/data/sources/local/box_tafsir.dart';
+import 'package:quran/modules/quran/domain/usecases/uc_get_all_surahs_status.dart';
 import 'package:quran/modules/quran/domain/usecases/uc_get_daily_verse.dart';
+import 'package:quran/modules/quran/domain/usecases/uc_get_reciters.dart';
+import 'package:quran/modules/quran/domain/usecases/uc_get_surah_list.dart';
+import 'package:quran/modules/quran/presentation/cubits/cb_audio_player.dart';
 import 'package:quran/modules/quran/presentation/cubits/cb_daily_verse.dart';
+import 'package:quran/modules/quran/presentation/cubits/cb_reciter.dart';
+import 'package:quran/modules/quran/quran_audio_module.dart';
 import 'package:quran/modules/quran/quran_module.dart';
 import 'package:quran/modules/quran/services/basmalah_bootstrap.dart';
 import 'package:quran/modules/quran/services/tafsir_bootstrap.dart';
+import 'package:quran/modules/radio/data/datasources/local/ds_local_radio.dart';
+import 'package:quran/modules/radio/data/datasources/remote/ds_remote_radio.dart';
+import 'package:quran/modules/radio/data/repos/r_impl_radio.dart';
+import 'package:quran/modules/radio/domain/usecases/uc_get_live_stations.dart';
+import 'package:quran/modules/radio/domain/usecases/uc_get_national_stations.dart';
 import 'package:quran/modules/radio/presentation/cubits/cb_radio_player.dart';
 import 'package:quran/modules/radio/radio_module.dart';
 import 'package:quran/modules/reminders/data/sources/local/box_reminders.dart';
@@ -113,6 +126,11 @@ import 'package:quran/presentation/sn_splash.dart';
 /// AuthModule registers only the per-screen form cubits and the use cases
 /// that exclusively serve them (login/register/forgot/reset).
 class AppModule extends Module {
+  /// The Qur'an recitation player and what it stands on are app-wide: Home's
+  /// mini player and the car library reach them with no Qur'an route mounted.
+  @override
+  List<Module> get imports => [QuranAudioModule()];
+
   @override
   void binds(Injector i) {
     // Hive box singletons (shared across modules)
@@ -402,6 +420,27 @@ class AppModule extends Module {
     // Live Quran radio player — app-wide so playback survives leaving the radio
     // screen. Lazy so its AudioPlayer is only created on first radio use.
     i.addLazySingleton<CBRadioPlayer>(CBRadioPlayer.new);
+    // Android Auto's browse tree and voice search, attached to the media
+    // session by the app root. Its radio sources are its own instances, like
+    // BasmalahBootstrap's: stateless, and RadioModule's only resolve while a
+    // radio route is mounted.
+    i.addLazySingleton<CarMediaLibrary>(() {
+      final radio = RImplRadio(
+        local: const DSLocalRadio(),
+        remote: DSRemoteRadio(),
+      );
+      return CarMediaLibrary(
+        reciters: i.get<UCGetReciters>(),
+        surahs: i.get<UCGetSurahList>(),
+        surahsStatus: i.get<UCGetAllSurahsStatus>(),
+        nationalStations: UCGetNationalStations(radio),
+        liveStations: UCGetLiveStations(radio),
+        match: const UCMatchCarQuery(),
+        quranPlayer: i.get<CBAudioPlayer>(),
+        reciterChoice: i.get<CBReciter>(),
+        radioPlayer: i.get<CBRadioPlayer>(),
+      );
+    });
     i.addSingleton<CBReminders>(
       () => CBReminders(
         box: i.get<BoxReminders>(),

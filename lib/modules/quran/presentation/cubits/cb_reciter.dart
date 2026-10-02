@@ -28,8 +28,8 @@ class CBReciter extends Cubit<SReciter> {
   final DSRemoteAudio _remote;
   final CBAudioPlayer _audioPlayer;
 
-  /// Lazily created so constructing this cubit never spawns a second just_audio
-  /// player — just_audio_background allows only one. Built on first preview use.
+  /// Lazily created on first preview use. Registered with [AudioFocus] without
+  /// a media session: a seven-second sample needs no notification.
   AudioPlayer? _previewPlayer;
   AudioPlayer get _preview => _previewPlayer ??= AudioPlayer();
 
@@ -70,7 +70,7 @@ class CBReciter extends Cubit<SReciter> {
     final url = _remote.primaryUrl(folder: reciter.folder, surah: 1, ayah: 1);
     try {
       emit(state.copyWith(previewingId: reciterId));
-      // Free the shared just_audio_background slot from any other domain player
+      // Free the shared media slot from any other domain player
       // (Qur'an audio/radio/adhan) before previewing.
       await AudioFocus.instance.take(this);
       await _preview.stop();

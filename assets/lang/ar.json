@@ -793,5 +793,11 @@
   "prayer_calc_note": "المواقيت تُحسب من موقعك الحالي. في الوضع التلقائي تُختار الهيئة الأنسب لبلدك، ولذلك قد تختلف المواقيت قليلًا عن تطبيق آخر يعتمد هيئة أخرى.",
   "prayer_source_offline": "مواقيت محفوظة — تعذّر التحديث",
   "prayer_source_calculated": "حساب تقريبي بدون إنترنت",
-  "prayer_method_label": "الحساب وفق {{method}}"
+  "prayer_method_label": "الحساب وفق {{method}}",
+  "car_quran": "القرآن الكريم",
+  "car_quran_subtitle": "اختر القارئ ثم السورة",
+  "car_downloads": "المحمّلة",
+  "car_downloads_subtitle": "تعمل بدون إنترنت",
+  "car_active_reciter": "القارئ الحالي",
+  "car_downloaded": "محمّلة"
 }

@@ -5,7 +5,6 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_modular/flutter_modular.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:hive_ce_flutter/hive_flutter.dart';
-import 'package:just_audio_background/just_audio_background.dart';
 import 'package:localize_and_translate/localize_and_translate.dart';
 import 'package:quran/core/cubits/cb_theme.dart';
 import 'package:quran/core/cubits/s_theme.dart';
@@ -14,6 +13,7 @@ import 'package:quran/core/data/sources/local/box_app_settings.dart';
 import 'package:quran/core/extension/build_context.dart';
 import 'package:quran/core/services/home_widget/home_widget_router.dart';
 import 'package:quran/core/services/logging/app_logger.dart';
+import 'package:quran/core/services/media/app_audio_handler.dart';
 import 'package:quran/core/services/media/call_interruption.dart';
 import 'package:quran/core/services/media/media_artwork.dart';
 import 'package:quran/core/services/notifications/in_app_notification_watcher.dart';
@@ -34,6 +34,7 @@ import 'package:quran/modules/adhan/services/adhan_bootstrap.dart';
 import 'package:quran/modules/adhan/services/adhan_scheduler.dart';
 import 'package:quran/modules/azkar/data/models/m_azkar_favorite.dart';
 import 'package:quran/modules/azkar/data/models/m_azkar_progress.dart';
+import 'package:quran/modules/car/presentation/services/car_media_library.dart';
 import 'package:quran/modules/khatma/data/models/m_khatma_completion.dart';
 import 'package:quran/modules/khatma/data/models/m_khatma_day.dart';
 import 'package:quran/modules/khatma/data/models/m_khatma_plan.dart';
@@ -108,11 +109,10 @@ Future<void> main() async {
   await Hive.openBox<MKhatmaDay>('khatma_days');
   await Hive.openBox<MKhatmaCompletion>('khatma_completions');
 
-  await JustAudioBackground.init(
-    androidNotificationChannelId: 'com.app.quran.audio',
-    androidNotificationChannelName: 'Quran Recitation',
-    androidNotificationOngoing: true,
-  );
+  // The media session (notification, lock screen, headset buttons, Android
+  // Auto). Before runApp: a car connecting to a killed app boots the engine
+  // through this service and asks for the browse root straight away.
+  await AppAudioHandler.init();
 
   // Home-screen widget: point the plugin at the iOS App Group before the
   // first schedule is resolved — the prayer cubit publishes a snapshot as
@@ -290,8 +290,12 @@ class _RootState extends State<_Root> with WidgetsBindingObserver {
     Modular.get<CBTheme>().load();
     Modular.get<CBAuth>().bootstrap();
     // Materialize the media-notification artwork to a file URI (asset:/// URIs
-    // aren't loadable by just_audio_background's artwork downloader).
+    // aren't loadable by audio_service's artwork downloader).
     MediaArtwork.prepare();
+    // Give the media session its browse tree, so Android Auto can list and
+    // play from the library. Here rather than in main(): it needs DI, and a
+    // car's requests made before this wait for it.
+    AppAudioHandler.instance?.attachLibrary(Modular.get<CarMediaLibrary>);
     // Wire notification channels + tap router (silent if not granted yet), then
     // rebuild every schedule so they survive reboots / timezone changes / an OS
     // cleanup, run the one-time adhan bootstrap, and rebuild the adhan window.

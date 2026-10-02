@@ -7,7 +7,7 @@ import 'package:quran/core/services/logging/app_logger.dart';
 /// Resolves the bundled app icon to a real `file://` [Uri] for use as the media
 /// notification / lock-screen `artUri` on audio players.
 ///
-/// `just_audio_background` loads artwork through `flutter_cache_manager`, which
+/// `audio_service` loads artwork through `flutter_cache_manager`, which
 /// only understands http(s)/file URIs. Passing an `asset:///…` URI throws
 /// `Invalid argument(s): No host specified in URI` (it tries to HTTP-download
 /// it). We copy the asset to the temp dir once at startup and hand out that

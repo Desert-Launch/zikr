@@ -1,11 +1,12 @@
 import 'dart:async';
 
+import 'package:audio_service/audio_service.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:just_audio/just_audio.dart';
-import 'package:just_audio_background/just_audio_background.dart';
 import 'package:quran/core/services/logging/app_logger.dart';
 import 'package:quran/core/services/media/audio_focus.dart';
 import 'package:quran/core/services/media/media_artwork.dart';
+import 'package:quran/core/services/media/media_session_binding.dart';
 import 'package:quran/modules/adhan/data/datasources/local/ds_local_adhan.dart';
 import 'package:quran/modules/adhan/data/models/m_adhan.dart';
 import 'package:quran/modules/adhan/data/sources/local/box_adhan_download.dart';
@@ -38,7 +39,11 @@ class CBAdhanPlayer extends Cubit<SAdhanPlayer> {
        _localeTag = localeTag,
        _player = AudioPlayer(),
        super(const SAdhanPlayer()) {
-    AudioFocus.instance.register(this, stop);
+    AudioFocus.instance.register(
+      this,
+      stop,
+      session: MediaSessionBinding(player: _player, onStop: stop),
+    );
     _hydrate();
     _wireStateStream();
   }
@@ -136,8 +141,7 @@ class CBAdhanPlayer extends Cubit<SAdhanPlayer> {
           clearError: true,
         ),
       );
-      // just_audio_background is initialised app-wide, so every AudioSource
-      // must carry a MediaItem tag (used for the lock-screen / notification).
+      // What the media session shows (notification / lock screen / car).
       final tag = MediaItem(
         id: adhan.id,
         album: 'الأذان',
@@ -164,7 +168,7 @@ class CBAdhanPlayer extends Cubit<SAdhanPlayer> {
       } else {
         throw StateError('No playable source for adhan ${adhan.id}');
       }
-      // Free the shared just_audio_background slot from any other domain player
+      // Free the shared media slot from any other domain player
       // (Qur'an audio/radio/preview) before claiming it for the adhan.
       await AudioFocus.instance.take(this);
       await _player.setAudioSource(source);

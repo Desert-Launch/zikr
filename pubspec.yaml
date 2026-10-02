@@ -26,7 +26,10 @@ dependencies:
 
   # Audio
   just_audio: ^0.9.40
-  just_audio_background: ^0.0.1-beta.13
+  # The app's one media session (notification, lock screen, headset buttons,
+  # Android Auto). Used directly rather than through just_audio_background,
+  # which has no browsable library for a car to list.
+  audio_service: ^0.18.18
   audio_session: ^0.1.21
 
   # Networking + downloads

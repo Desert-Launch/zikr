@@ -1,12 +1,13 @@
 import 'dart:async';
 
+import 'package:audio_service/audio_service.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:just_audio/just_audio.dart';
-import 'package:just_audio_background/just_audio_background.dart';
 import 'package:localize_and_translate/localize_and_translate.dart';
 import 'package:quran/core/services/logging/app_logger.dart';
 import 'package:quran/core/services/media/audio_focus.dart';
 import 'package:quran/core/services/media/media_artwork.dart';
+import 'package:quran/core/services/media/media_session_binding.dart';
 import 'package:quran/modules/azkar/data/datasources/local/ds_local_azkar.dart';
 import 'package:quran/modules/azkar/data/models/m_azkar_item.dart';
 import 'package:quran/modules/azkar/data/sources/local/box_azkar_progress.dart';
@@ -137,8 +138,8 @@ class CBAzkarSession extends Cubit<SAzkarSession> {
           player.processingState != ProcessingState.idle &&
           player.processingState != ProcessingState.completed;
       if (!resumable) {
-        // `just_audio_background` allows one platform-active player app-wide,
-        // so free the slot before loading. Every source needs a MediaItem tag.
+        // One player sounds at a time app-wide, so free the slot before
+        // loading. The tag is what the media session shows.
         await AudioFocus.instance.take(this);
         await player.setAudioSource(
           AudioSource.asset(
@@ -170,7 +171,11 @@ class CBAzkarSession extends Cubit<SAzkarSession> {
     _player = player;
     // Registered on first use so the Qur'an/radio/adhan players can stop this
     // one when they claim the shared background slot.
-    AudioFocus.instance.register(this, stopAudio);
+    AudioFocus.instance.register(
+      this,
+      stopAudio,
+      session: MediaSessionBinding(player: player, onStop: stopAudio),
+    );
     _playerSub = player.processingStateStream.listen((s) {
       if (s == ProcessingState.completed && state.audioPlaying) {
         unawaited(_onClipFinished());

@@ -63,10 +63,16 @@
             android:name="flutterEmbedding"
             android:value="2" />
 
-        <!-- just_audio_background / audio_service: required foreground service
-             and media-button receiver. Without these, AudioService.init()
-             (via JustAudioBackground.init in main.dart) throws a
-             PlatformException about the Activity / FlutterEngine. -->
+        <!-- Android Auto: lists the app as a media app in the car. -->
+        <meta-data
+            android:name="com.google.android.gms.car.application"
+            android:resource="@xml/automotive_app_desc" />
+
+        <!-- audio_service: required foreground service and media-button
+             receiver. Without these, AudioService.init() (via
+             AppAudioHandler.init in main.dart) throws a PlatformException
+             about the Activity / FlutterEngine. The MediaBrowserService
+             action is also what Android Auto binds to for the browse tree. -->
         <service
             android:name="com.ryanheise.audioservice.AudioService"
             android:foregroundServiceType="mediaPlayback"
