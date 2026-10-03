@@ -11,13 +11,3 @@ enum ECalculationMode {
   /// one). That id is sent as `method` on every request.
   manual,
 }
-
-extension ECalculationModeX on ECalculationMode {
-  String get labelKey => switch (this) {
-    ECalculationMode.automatic => 'prayer_calc_method_auto',
-    ECalculationMode.manual => 'prayer_calc_method_manual',
-  };
-
-  static ECalculationMode fromIndex(int? index) =>
-      index == 1 ? ECalculationMode.manual : ECalculationMode.automatic;
-}

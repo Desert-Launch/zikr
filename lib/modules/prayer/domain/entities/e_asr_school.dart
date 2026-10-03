@@ -12,19 +12,3 @@ enum EAsrSchool {
   /// roughly an hour later. Aladhan `school=1`.
   hanafi,
 }
-
-extension EAsrSchoolX on EAsrSchool {
-  /// Flat i18n key for the picker row.
-  String get labelKey => switch (this) {
-    EAsrSchool.standard => 'prayer_calc_asr_standard',
-    EAsrSchool.hanafi => 'prayer_calc_asr_hanafi',
-  };
-
-  /// Stored index (also the legacy `MPrayerSettings.madhabIndex` value, so
-  /// existing installs keep the school they already chose).
-  int get storageIndex => index;
-
-  /// Reads a persisted index back, tolerating anything out of range.
-  static EAsrSchool fromIndex(int? index) =>
-      index == 1 ? EAsrSchool.hanafi : EAsrSchool.standard;
-}

@@ -22,17 +22,3 @@ enum EHighLatitudeRule {
   /// The night is divided in proportion to the method's own Fajr/Isha angles.
   angleBased,
 }
-
-extension EHighLatitudeRuleX on EHighLatitudeRule {
-  String get labelKey => switch (this) {
-    EHighLatitudeRule.automatic => 'prayer_calc_highlat_auto',
-    EHighLatitudeRule.middleOfTheNight => 'prayer_calc_highlat_middle',
-    EHighLatitudeRule.oneSeventh => 'prayer_calc_highlat_seventh',
-    EHighLatitudeRule.angleBased => 'prayer_calc_highlat_angle',
-  };
-
-  static EHighLatitudeRule fromIndex(int? index) =>
-      (index != null && index >= 0 && index < EHighLatitudeRule.values.length)
-      ? EHighLatitudeRule.values[index]
-      : EHighLatitudeRule.automatic;
-}

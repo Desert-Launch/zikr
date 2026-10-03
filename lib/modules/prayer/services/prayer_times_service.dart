@@ -8,6 +8,7 @@ import 'package:quran/modules/prayer/domain/entities/e_calculation_mode.dart';
 import 'package:quran/modules/prayer/domain/entities/e_daily_prayer_times.dart';
 import 'package:quran/modules/prayer/domain/entities/e_prayer_calendar.dart';
 import 'package:quran/modules/prayer/domain/entities/e_prayer_schedule.dart';
+import 'package:quran/modules/prayer/domain/entities/e_prayer_settings.dart';
 import 'package:quran/modules/prayer/domain/entities/e_prayer_source.dart';
 import 'package:quran/modules/prayer/domain/entities/param_prayer_calendar.dart';
 import 'package:quran/modules/prayer/domain/usecases/uc_get_prayer_calendar.dart';
@@ -62,7 +63,9 @@ class PrayerTimesService {
     bool cacheOnly = false,
     DateTime? now,
   }) async {
-    final settings = _settings.calculation();
+    // Calculation is not user-configurable: Aladhan picks the authority for
+    // the location, with standard Asr and no minute corrections.
+    const settings = EPrayerSettings.defaults;
     final today = now ?? DateTime.now();
     final months = PrayerRefreshPolicy.monthsToCover(today);
 

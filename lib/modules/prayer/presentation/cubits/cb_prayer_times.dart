@@ -152,14 +152,6 @@ class CBPrayerTimes extends Cubit<SPrayerTimes> {
     }
   }
 
-  /// Re-resolves everything after the user changes a calculation setting, and
-  /// rebuilds the notification window — the times that will ring have to match
-  /// the ones now on screen.
-  Future<void> onSettingsChanged() async {
-    await refresh(force: true);
-    unawaited(_scheduler.reschedule());
-  }
-
   /// A live fix, falling back to the last known one.
   ///
   /// Returns null when there is nothing to work with, having already emitted

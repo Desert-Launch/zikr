@@ -43,21 +43,6 @@ class ECalculationMethod extends Equatable {
     if (params != null) 'params': params,
   };
 
-  /// A short one-line summary of [params] for the picker subtitle, e.g.
-  /// `Fajr 19.5° · Isha 17.5°`. Empty when the method publishes none.
-  String get paramsSummary {
-    final p = params;
-    if (p == null || p.isEmpty) return '';
-    return p.entries
-        .where((e) => e.key == 'Fajr' || e.key == 'Isha' || e.key == 'Maghrib')
-        .map((e) {
-          final value = e.value;
-          // Angles arrive as numbers, intervals as strings ("90 min").
-          return value is num ? '${e.key} $value°' : '${e.key} $value';
-        })
-        .join(' · ');
-  }
-
   /// Last-resort list for a first launch with no network and an empty cache.
   ///
   /// Deliberately NOT the app's idea of what methods exist — it is a stopgap
