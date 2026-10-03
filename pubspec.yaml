@@ -178,6 +178,10 @@ flutter:
     - assets/data/khatma/
     - assets/data/notifictaions/
     - assets/audio/adhan/
+    # Hourly zekr clips, one per row of hourly_notifications.json (`sound`).
+    # Android plays the res/raw copy and iOS the CAF one — this copy is what
+    # DSHourlyTasbih probes to decide whether an hour has audio.
+    - assets/audio/hourly-notification/
     # Salawat reminder clip — previewable in the reminder sheet. The Android
     # notification plays the res/raw copy and iOS the CAF one; this is the
     # same recording, bundled for in-app playback.

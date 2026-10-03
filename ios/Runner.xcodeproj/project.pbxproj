@@ -37,6 +37,18 @@
 		FA1CBF000000000000000002 /* adhan_egypt_fajr.caf in Resources */ = {isa = PBXBuildFile; fileRef = FA1CAF000000000000000002 /* adhan_egypt_fajr.caf */; };
 		FA1CBF000000000000000003 /* adhan_madinah_fajr.caf in Resources */ = {isa = PBXBuildFile; fileRef = FA1CAF000000000000000003 /* adhan_madinah_fajr.caf */; };
 		FA1CBF000000000000000004 /* adhan_makkah_fajr.caf in Resources */ = {isa = PBXBuildFile; fileRef = FA1CAF000000000000000004 /* adhan_makkah_fajr.caf */; };
+		3AD650CE960CDE8509AB9D81 /* zikr_subhan_allah.caf in Resources */ = {isa = PBXBuildFile; fileRef = AC0789B44FFB1841F7EFA80A /* zikr_subhan_allah.caf */; };
+		E4C3F1A23238C7410E0D4447 /* zikr_alhamdulillah.caf in Resources */ = {isa = PBXBuildFile; fileRef = 67D7E615B90E5B467A4BCC32 /* zikr_alhamdulillah.caf */; };
+		BFE620117F6B0E9305B22E11 /* zikr_allahu_akbar.caf in Resources */ = {isa = PBXBuildFile; fileRef = A8710E27FC624088C64A71FA /* zikr_allahu_akbar.caf */; };
+		2D72F7934122B7BC5F90E5B1 /* zikr_la_ilaha_illa_allah.caf in Resources */ = {isa = PBXBuildFile; fileRef = 55EC024171BE0531A977D2E6 /* zikr_la_ilaha_illa_allah.caf */; };
+		1B12063E2935D2AD06B939AA /* zikr_subhan_allah_wa_bihamdih.caf in Resources */ = {isa = PBXBuildFile; fileRef = 6971C7E8EBDF61F2996C87FF /* zikr_subhan_allah_wa_bihamdih.caf */; };
+		4F29B85EDB1F4F80E1C5DADA /* zikr_subhan_allah_al_azeem.caf in Resources */ = {isa = PBXBuildFile; fileRef = CA1D04A66DC7890967472EFB /* zikr_subhan_allah_al_azeem.caf */; };
+		FE38C46D7749CB545D2867B0 /* zikr_astaghfirullah.caf in Resources */ = {isa = PBXBuildFile; fileRef = 2AD5C8ACEEEBB6D4B1199238 /* zikr_astaghfirullah.caf */; };
+		3A14CA0A263599195B1F81B8 /* zikr_la_hawla_wala_quwwata.caf in Resources */ = {isa = PBXBuildFile; fileRef = D664D2C6EE8A4D36D4D76924 /* zikr_la_hawla_wala_quwwata.caf */; };
+		8FBB350216A91F81F280965B /* zikr_allahumma_salli.caf in Resources */ = {isa = PBXBuildFile; fileRef = 968984299298CF5D6A2561AA /* zikr_allahumma_salli.caf */; };
+		21A1F1CD3B4369B7A4BC548D /* zikr_hasbi_allah.caf in Resources */ = {isa = PBXBuildFile; fileRef = 40AA154F2434E1E146346F55 /* zikr_hasbi_allah.caf */; };
+		5AB07B67992D12B0AE9896FE /* zikr_allahu_rabbi.caf in Resources */ = {isa = PBXBuildFile; fileRef = 756FD893AAD20633643A92BC /* zikr_allahu_rabbi.caf */; };
+		681EEE74092822BFBB13F152 /* zikr_ufawwidu_amri.caf in Resources */ = {isa = PBXBuildFile; fileRef = 88226FED55B55C8AD60AF31B /* zikr_ufawwidu_amri.caf */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -128,6 +140,18 @@
 		FA1CAF000000000000000003 /* adhan_madinah_fajr.caf */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = file; path = adhan_madinah_fajr.caf; sourceTree = "<group>"; };
 		FA1CAF000000000000000004 /* adhan_makkah_fajr.caf */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = file; path = adhan_makkah_fajr.caf; sourceTree = "<group>"; };
 		FB51016FDE104296819ED990 /* PrayerWidget.appex */ = {isa = PBXFileReference; explicitFileType = "wrapper.app-extension"; includeInIndex = 0; path = PrayerWidget.appex; sourceTree = BUILT_PRODUCTS_DIR; };
+		AC0789B44FFB1841F7EFA80A /* zikr_subhan_allah.caf */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = file; path = zikr_subhan_allah.caf; sourceTree = "<group>"; };
+		67D7E615B90E5B467A4BCC32 /* zikr_alhamdulillah.caf */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = file; path = zikr_alhamdulillah.caf; sourceTree = "<group>"; };
+		A8710E27FC624088C64A71FA /* zikr_allahu_akbar.caf */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = file; path = zikr_allahu_akbar.caf; sourceTree = "<group>"; };
+		55EC024171BE0531A977D2E6 /* zikr_la_ilaha_illa_allah.caf */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = file; path = zikr_la_ilaha_illa_allah.caf; sourceTree = "<group>"; };
+		6971C7E8EBDF61F2996C87FF /* zikr_subhan_allah_wa_bihamdih.caf */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = file; path = zikr_subhan_allah_wa_bihamdih.caf; sourceTree = "<group>"; };
+		CA1D04A66DC7890967472EFB /* zikr_subhan_allah_al_azeem.caf */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = file; path = zikr_subhan_allah_al_azeem.caf; sourceTree = "<group>"; };
+		2AD5C8ACEEEBB6D4B1199238 /* zikr_astaghfirullah.caf */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = file; path = zikr_astaghfirullah.caf; sourceTree = "<group>"; };
+		D664D2C6EE8A4D36D4D76924 /* zikr_la_hawla_wala_quwwata.caf */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = file; path = zikr_la_hawla_wala_quwwata.caf; sourceTree = "<group>"; };
+		968984299298CF5D6A2561AA /* zikr_allahumma_salli.caf */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = file; path = zikr_allahumma_salli.caf; sourceTree = "<group>"; };
+		40AA154F2434E1E146346F55 /* zikr_hasbi_allah.caf */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = file; path = zikr_hasbi_allah.caf; sourceTree = "<group>"; };
+		756FD893AAD20633643A92BC /* zikr_allahu_rabbi.caf */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = file; path = zikr_allahu_rabbi.caf; sourceTree = "<group>"; };
+		88226FED55B55C8AD60AF31B /* zikr_ufawwidu_amri.caf */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = file; path = zikr_ufawwidu_amri.caf; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -214,6 +238,18 @@
 				FA1CAF000000000000000002 /* adhan_egypt_fajr.caf */,
 				FA1CAF000000000000000001 /* adhan_abdulbasit_fajr.caf */,
 				A1BB6333A202165E1BB28FB1 /* salah_3la_mohamed.caf */,
+				AC0789B44FFB1841F7EFA80A /* zikr_subhan_allah.caf */,
+				67D7E615B90E5B467A4BCC32 /* zikr_alhamdulillah.caf */,
+				A8710E27FC624088C64A71FA /* zikr_allahu_akbar.caf */,
+				55EC024171BE0531A977D2E6 /* zikr_la_ilaha_illa_allah.caf */,
+				6971C7E8EBDF61F2996C87FF /* zikr_subhan_allah_wa_bihamdih.caf */,
+				CA1D04A66DC7890967472EFB /* zikr_subhan_allah_al_azeem.caf */,
+				2AD5C8ACEEEBB6D4B1199238 /* zikr_astaghfirullah.caf */,
+				D664D2C6EE8A4D36D4D76924 /* zikr_la_hawla_wala_quwwata.caf */,
+				968984299298CF5D6A2561AA /* zikr_allahumma_salli.caf */,
+				40AA154F2434E1E146346F55 /* zikr_hasbi_allah.caf */,
+				756FD893AAD20633643A92BC /* zikr_allahu_rabbi.caf */,
+				88226FED55B55C8AD60AF31B /* zikr_ufawwidu_amri.caf */,
 			);
 			path = Sounds;
 			sourceTree = "<group>";
@@ -433,6 +469,18 @@
 				FA1CBF000000000000000002 /* adhan_egypt_fajr.caf in Resources */,
 				FA1CBF000000000000000001 /* adhan_abdulbasit_fajr.caf in Resources */,
 				540ECD1748816F7DBEA8FED1 /* salah_3la_mohamed.caf in Resources */,
+				3AD650CE960CDE8509AB9D81 /* zikr_subhan_allah.caf in Resources */,
+				E4C3F1A23238C7410E0D4447 /* zikr_alhamdulillah.caf in Resources */,
+				BFE620117F6B0E9305B22E11 /* zikr_allahu_akbar.caf in Resources */,
+				2D72F7934122B7BC5F90E5B1 /* zikr_la_ilaha_illa_allah.caf in Resources */,
+				1B12063E2935D2AD06B939AA /* zikr_subhan_allah_wa_bihamdih.caf in Resources */,
+				4F29B85EDB1F4F80E1C5DADA /* zikr_subhan_allah_al_azeem.caf in Resources */,
+				FE38C46D7749CB545D2867B0 /* zikr_astaghfirullah.caf in Resources */,
+				3A14CA0A263599195B1F81B8 /* zikr_la_hawla_wala_quwwata.caf in Resources */,
+				8FBB350216A91F81F280965B /* zikr_allahumma_salli.caf in Resources */,
+				21A1F1CD3B4369B7A4BC548D /* zikr_hasbi_allah.caf in Resources */,
+				5AB07B67992D12B0AE9896FE /* zikr_allahu_rabbi.caf in Resources */,
+				681EEE74092822BFBB13F152 /* zikr_ufawwidu_amri.caf in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

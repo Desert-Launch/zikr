@@ -1,66 +1,78 @@
 {
-  "version": "1.1",
-  "sound_dir": "assets/audio/adhan",
+  "version": "1.2",
+  "sound_dir": "assets/audio/hourly-notification",
   "hourly_azkar": [
     {
       "id": 1,
       "text_ar": "سبحان الله",
       "text_en": "Glory be to Allah",
-      "sound": "zikr_01_subhan_allah"
+      "sound": "zikr_subhan_allah"
     },
     {
       "id": 2,
       "text_ar": "الحمد لله",
       "text_en": "Praise be to Allah",
-      "sound": "zikr_02_alhamdulillah"
+      "sound": "zikr_alhamdulillah"
     },
     {
       "id": 3,
       "text_ar": "الله أكبر",
       "text_en": "Allah is the Greatest",
-      "sound": "zikr_03_allahu_akbar"
+      "sound": "zikr_allahu_akbar"
     },
     {
       "id": 4,
       "text_ar": "لا إله إلا الله",
       "text_en": "There is no god but Allah",
-      "sound": "zikr_04_la_ilaha_illa_allah"
+      "sound": "zikr_la_ilaha_illa_allah"
     },
     {
       "id": 5,
       "text_ar": "سبحان الله وبحمده",
       "text_en": "Glory and praise be to Allah",
-      "sound": "zikr_05_subhan_allah_wa_bihamdih"
+      "sound": "zikr_subhan_allah_wa_bihamdih"
     },
     {
       "id": 6,
       "text_ar": "سبحان الله العظيم",
       "text_en": "Glory be to Allah, the Almighty",
-      "sound": "zikr_06_subhan_allah_al_azeem"
+      "sound": "zikr_subhan_allah_al_azeem"
     },
     {
       "id": 7,
-      "text_ar": "أستغفر الله العظيم",
-      "text_en": "I seek forgiveness from Allah, the Almighty",
-      "sound": "zikr_07_astaghfirullah_al_azeem"
+      "text_ar": "أستغفر الله العظيم وأتوب إليه",
+      "text_en": "I seek forgiveness from Allah, the Almighty, and I repent to Him",
+      "sound": "zikr_astaghfirullah"
     },
     {
       "id": 8,
       "text_ar": "لا حول ولا قوة إلا بالله",
       "text_en": "There is no power or strength except with Allah",
-      "sound": "zikr_08_la_hawla_wala_quwwata"
+      "sound": "zikr_la_hawla_wala_quwwata"
     },
     {
       "id": 9,
-      "text_ar": "اللهم صلِّ وسلم على محمد وآله وصحبه",
-      "text_en": "O Allah, send blessings and peace upon Muhammad and his family",
-      "sound": "zikr_09_allahumma_salli"
+      "text_ar": "اللهم صلِّ وسلِّم على نبينا محمد",
+      "text_en": "O Allah, send blessings and peace upon our Prophet Muhammad",
+      "sound": "zikr_allahumma_salli"
     },
     {
       "id": 10,
-      "text_ar": "حسبي الله و نعم الوكيل",
+      "text_ar": "حسبي الله ونعم الوكيل",
       "text_en": "Allah is sufficient for me, and He is the best Disposer of affairs",
-      "sound": "zikr_10_hasbi_allah"
+      "sound": "zikr_hasbi_allah"
+    },
+    {
+      "id": 11,
+      "text_ar": "الله الله ربي لا أشرك به شيئًا",
+      "text_en": "Allah, Allah is my Lord; I associate nothing with Him",
+      "sound": "zikr_allahu_rabbi"
+    },
+    {
+      "id": 12,
+      "text_ar": "وأفوض أمري إلى الله إن الله بصير بالعباد",
+      "text_en": "I entrust my affair to Allah; surely Allah sees His servants",
+      "sound": "zikr_ufawwidu_amri"
     }
   ]
 }

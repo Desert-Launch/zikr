@@ -1,17 +1,17 @@
 #!/usr/bin/env python3
 """Publish the hourly zekr clips into the two places a notification can read.
 
-`assets/audio/adhan/` is a Flutter asset directory, and neither platform's
-notification system can read one: an Android notification channel plays a
-`res/raw/` resource, and iOS plays a `.caf` from the app bundle. So every clip
-has to exist three times over. This script keeps the two native copies in sync
-with the Flutter assets, driven by the `sound` values in
-`assets/data/notifictaions/hourly_notifications.json`.
+The clips live in a Flutter asset directory (the feed's `sound_dir`,
+`assets/audio/hourly-notification/`), and the native side can't read one:
+Android plays a `res/raw/` resource, and iOS plays a `.caf` from the app
+bundle. So every clip has to exist three times over. This script keeps the two
+native copies in sync with the Flutter assets, driven by the `sound_dir` and
+`sound` values in `assets/data/notifictaions/hourly_notifications.json`.
 
     python3 tool/sync_zikr_sounds.py [--dry-run]
 
 For each `sound` slug in the JSON it:
-  1. copies `assets/audio/adhan/<slug>.mp3` to `android/app/src/main/res/raw/`
+  1. copies `<sound_dir>/<slug>.mp3` to `android/app/src/main/res/raw/`
   2. converts it to `ios/Runner/Sounds/<slug>.caf` via `afconvert` (macOS)
   3. registers that `.caf` in `ios/Runner.xcodeproj/project.pbxproj`
 
@@ -21,7 +21,7 @@ source `.mp3` is reported and skipped — `DSHourlyTasbih` falls back to the
 silent hourly channel for those, so a partial set is a working app.
 
 Adding or renaming a clip is a JSON edit plus a re-run; nothing here hard-codes
-the ten current slugs.
+the current slugs.
 
 A native resource cannot be added by hot restart — rebuild both apps after this
 runs.
@@ -40,7 +40,8 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parent.parent
 
 FEED = ROOT / "assets/data/notifictaions/hourly_notifications.json"
-ASSET_DIR = ROOT / "assets/audio/adhan"
+# Used only when the feed names no `sound_dir`.
+DEFAULT_ASSET_DIR = "assets/audio/hourly-notification"
 ANDROID_RAW = ROOT / "android/app/src/main/res/raw"
 IOS_SOUNDS = ROOT / "ios/Runner/Sounds"
 PBXPROJ = ROOT / "ios/Runner.xcodeproj/project.pbxproj"
@@ -57,15 +58,17 @@ RESOURCES_PHASE_ID = "97C146EC1CF9000F007C117D"
 ANDROID_RES_NAME = re.compile(r"^[a-z][a-z0-9_]*$")
 
 
-def load_slugs() -> list[str]:
-    """The `sound` slug of every zekr in the feed, in order, deduplicated."""
+def load_feed() -> tuple[Path, list[str]]:
+    """The clip directory, and the `sound` slug of every zekr in the feed (in
+    order, deduplicated)."""
     root = json.loads(FEED.read_text(encoding="utf-8"))
+    asset_dir = ROOT / (root.get("sound_dir") or DEFAULT_ASSET_DIR)
     slugs: list[str] = []
     for row in root.get("hourly_azkar", []):
         slug = (row or {}).get("sound")
         if slug and slug not in slugs:
             slugs.append(slug)
-    return slugs
+    return asset_dir, slugs
 
 
 def sync_android(slug: str, source: Path, dry_run: bool) -> bool:
@@ -206,7 +209,7 @@ def main() -> int:
     )
     args = parser.parse_args()
 
-    slugs = load_slugs()
+    asset_dir, slugs = load_feed()
     if not slugs:
         print(f"No `sound` slugs in {FEED.relative_to(ROOT)} — nothing to do.")
         return 0
@@ -218,7 +221,7 @@ def main() -> int:
             print(f"{slug}: INVALID — Android resource names must match [a-z][a-z0-9_]*")
             missing.append(slug)
             continue
-        source = ASSET_DIR / f"{slug}.mp3"
+        source = asset_dir / f"{slug}.mp3"
         if not source.exists():
             missing.append(slug)
             continue
@@ -232,11 +235,11 @@ def main() -> int:
 
     print()
     if missing:
-        print(f"Missing {len(missing)} of {len(slugs)} clip(s) in {ASSET_DIR.relative_to(ROOT)}:")
+        print(f"Missing {len(missing)} of {len(slugs)} clip(s) in {asset_dir.relative_to(ROOT)}:")
         for slug in missing:
             print(f"  - {slug}.mp3")
         print("Those hours stay on the silent hourly channel until the file lands.")
-        print("See assets/audio/adhan/ZIKR_SOUNDS.md for the requirements.\n")
+        print(f"See {(asset_dir / 'ZIKR_SOUNDS.md').relative_to(ROOT)} for the requirements.\n")
 
     if changed and not args.dry_run:
         print("Native resources changed — rebuild both apps (a hot restart won't pick them up).")

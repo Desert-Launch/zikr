@@ -21,9 +21,10 @@ import 'package:quran/modules/tasbih/data/sources/local/box_tasbih_counter.dart'
 /// (falling back to a hard-coded list), rotated with `hour % len`.
 ///
 /// **Per-zekr audio:** each JSON row may name a `sound` slug, whose clip is
-/// bundled three times over — `assets/audio/adhan/<slug>.mp3` for Flutter,
-/// `res/raw/<slug>.mp3` for the Android channel, and `<slug>.caf` in the iOS
-/// bundle (`tool/sync_zikr_sounds.py` publishes the two native copies). When
+/// bundled three times over — `<sound_dir>/<slug>.mp3` for Flutter (the JSON's
+/// `sound_dir`, `assets/audio/hourly-notification/`), `res/raw/<slug>.mp3` for
+/// Android, and `<slug>.caf` in the iOS bundle (`tool/sync_zikr_sounds.py`
+/// publishes the two native copies). When
 /// `MAppSettings.hourlyZikrSound` is on, iOS carries the matching sound on the
 /// notification itself, while Android posts on the silent
 /// [AppNotificationChannels.hourlyAppSound] and plays the clip through
@@ -71,21 +72,28 @@ class DSHourlyTasbih {
   static const _minuteCandidates = [0, 10, 20, 50, 40, 15, 45, 5, 25, 30];
 
   /// Fallback phrases — cycled with `hour % len` when the JSON can't be read.
+  /// Same zekr, same order as the JSON rows.
   static const _phrases = [
     'سُبْحَانَ اللَّهِ',
     'الْحَمْدُ لِلَّهِ',
-    'لَا إِلَهَ إِلَّا اللَّهُ',
     'اللَّهُ أَكْبَرُ',
-    'لَا حَوْلَ وَلَا قُوَّةَ إِلَّا بِاللَّهِ',
-    'أَسْتَغْفِرُ اللَّهَ',
-    'اللَّهُمَّ صَلِّ عَلَى مُحَمَّدٍ',
+    'لَا إِلَهَ إِلَّا اللَّهُ',
     'سُبْحَانَ اللَّهِ وَبِحَمْدِهِ',
     'سُبْحَانَ اللَّهِ الْعَظِيمِ',
+    'أَسْتَغْفِرُ اللَّهَ الْعَظِيمَ وَأَتُوبُ إِلَيْهِ',
+    'لَا حَوْلَ وَلَا قُوَّةَ إِلَّا بِاللَّهِ',
+    'اللَّهُمَّ صَلِّ وَسَلِّمْ عَلَى نَبِيِّنَا مُحَمَّدٍ',
     'حَسْبِيَ اللَّهُ وَنِعْمَ الْوَكِيلُ',
+    'اللَّهُ اللَّهُ رَبِّي لَا أُشْرِكُ بِهِ شَيْئًا',
+    'وَأُفَوِّضُ أَمْرِي إِلَى اللَّهِ إِنَّ اللَّهَ بَصِيرٌ بِالْعِبَادِ',
   ];
 
-  /// Directory holding the zekr clips, mirrored by `sound_dir` in the JSON.
-  static const _soundDir = 'assets/audio/adhan';
+  /// Where the zekr clips live when the JSON names no `sound_dir`.
+  static const _defaultSoundDir = 'assets/audio/hourly-notification';
+
+  /// Directory holding the zekr clips — the JSON's `sound_dir`, read by
+  /// [_loadAzkar].
+  String _soundDir = _defaultSoundDir;
 
   /// Cached `{ar, en, sound}` phrase rows loaded from JSON (null until first
   /// load). `sound` is the clip slug, empty when the row declares none.
@@ -183,7 +191,7 @@ class DSHourlyTasbih {
     } catch (_) {
       AppLogger.warning(
         'Zekr clip $slug.mp3 not bundled — that hour stays silent. '
-        'See assets/audio/adhan/ZIKR_SOUNDS.md',
+        'See $_soundDir/ZIKR_SOUNDS.md',
         tag: 'HourlyZekr',
       );
       return false;
@@ -288,6 +296,8 @@ class DSHourlyTasbih {
     if (_azkar != null) return;
     try {
       final root = jsonDecode(await rootBundle.loadString(_assetPath)) as Map;
+      final dir = (root['sound_dir'] ?? '').toString();
+      if (dir.isNotEmpty) _soundDir = dir;
       final rows = (root['hourly_azkar'] as List?) ?? const [];
       _azkar = [
         for (final r in rows)
