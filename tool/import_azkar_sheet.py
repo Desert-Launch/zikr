@@ -18,6 +18,7 @@ with one entry per row:
     are what the English UI shows instead.
   - Rows are written in `sort` order. A row with no `sort` is a leftover from
     the original tab, not part of the update, and is skipped (and reported).
+  - Known typos in the Arabic text are corrected through TEXT_FIXES.
   - A blank `count` takes the count the same zekr had in the current JSON —
     matched by its Arabic text with the diacritics stripped — then
     COUNT_OVERRIDES, then 1 (reported).
@@ -71,6 +72,14 @@ COUNT_OVERRIDES = {
     ("sleeping.json", "بسم الله الرحمن الرحيم قل اعوذ برب الفلق"): 3,
     ("sleeping.json", "بسم الله الرحمن الرحيم قل اعوذ برب الناس"): 3,
 }
+
+# Missing leading text in the sheet's Arabic, as (output file, start of the
+# normalized zekr, text to prepend). Matching the normalized text keeps the
+# fix independent of how the sheet orders its diacritics.
+TEXT_FIXES = [
+    # The opening alef of "اللهم" is missing in the final workbook.
+    ("sleeping.json", "للهم انت الاول", "ا"),
+]
 
 # Old-count matches below this similarity are treated as different azkar.
 MATCH_THRESHOLD = 0.9
@@ -159,6 +168,16 @@ def override_count(filename: str, zekr: str) -> int | None:
     return None
 
 
+def fix_text(filename: str, zekr: str, notes: list[str], row_id) -> str:
+    """Applies TEXT_FIXES; a fixed text no longer matches, so re-runs are safe."""
+    text = normalize(zekr)
+    for file, prefix, missing in TEXT_FIXES:
+        if file == filename and text.startswith(prefix):
+            notes.append(f"id {row_id}: prepended '{missing}' to '{prefix}'")
+            return missing + zekr
+    return zekr
+
+
 def audio_name(value, notes: list[str], row_id) -> str | None:
     name = clean(value)
     if not name:
@@ -181,6 +200,7 @@ def build(ws, filename: str, category: str) -> tuple[list[dict], list[str]]:
             notes.append(f"skipped unsorted row: {normalize(zekr)[:50]}")
             continue
         row_id = as_int(row.get("id")) or sort
+        zekr = fix_text(filename, zekr, notes, row_id)
         count = as_int(row.get("count"))
         if count is None:
             count = old_count(zekr, old) or override_count(filename, zekr)
