@@ -262,9 +262,4 @@ class AppNotificationChannels {
     'salawat_channel',
   ];
 
-  /// Prefix of the per-voice adhan channels created by
-  /// [NotificationsService.createVoiceChannel] before they moved to the alarm
-  /// stream. Their ids embed the voice id, so they're matched by prefix rather
-  /// than listed; see `AdhanScheduler._resolveChannel` for the current naming.
-  static const String legacyVoiceChannelPrefix = 'adhan_';
 }

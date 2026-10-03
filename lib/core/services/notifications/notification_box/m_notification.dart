@@ -76,6 +76,4 @@ class MLocalNotification extends HiveObject {
 
   @HiveField(10)
   bool isEnabled;
-
-  bool get isWeekly => weekday >= DateTime.monday && weekday <= DateTime.sunday;
 }

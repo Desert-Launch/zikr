@@ -14,13 +14,6 @@ class ParamAyahRef extends Equatable {
 
   String get key => '$surah:$ayah';
 
-  /// 6-digit format used by EveryAyah & co. e.g. 001001.
-  String get audioId {
-    final s = surah.toString().padLeft(3, '0');
-    final a = ayah.toString().padLeft(3, '0');
-    return '$s$a';
-  }
-
   @override
   List<Object?> get props => [surah, ayah];
 

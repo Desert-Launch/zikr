@@ -40,7 +40,6 @@ class MAppSettings extends HiveObject {
 
   /// First-run guard: true once the init_notifications.json feed (azkar +
   /// quran reminders) has been scheduled, so it isn't re-seeded on every boot.
-  /// Reset by `InitNotificationsService.resetAndReschedule`.
   @HiveField(3)
   bool initNotificationsScheduled;
 

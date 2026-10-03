@@ -35,14 +35,6 @@ class PrayerRoutes {
 
   /// Sub-routes within the prayer module ('/prayer/').
   static const String times = '/';
-  static const String calculation = '/calculation';
-  static const String methodPicker = '/method';
-  static const String adjustments = '/adjustments';
-
-  static String fullTimes() => RoutesNames.prayerBase;
-  static String fullCalculation() => '${RoutesNames.prayerBase}calculation';
-  static String fullMethodPicker() => '${RoutesNames.prayerBase}method';
-  static String fullAdjustments() => '${RoutesNames.prayerBase}adjustments';
 }
 
 class AdhanRoutes {
@@ -134,7 +126,6 @@ class QuranRoutes {
   static String reciterSurahsFor(String reciterId) =>
       '${RoutesNames.quranBase}reciter-surahs?reciter=$reciterId';
   static String fullBookmarks() => '${RoutesNames.quranBase}bookmarks';
-  static String fullSearch() => '${RoutesNames.quranBase}search';
   static String tafsirForAyah(int surah, int ayah) =>
       '${RoutesNames.quranBase}tafsir?surah=$surah&ayah=$ayah';
   static String fullTafsirLibrary() => '${RoutesNames.quranBase}tafsir-library';
@@ -165,8 +156,6 @@ class TasbihRoutes {
   static const String history = '/history';
   static const String hourly = '/hourly';
   static const String salawat = '/salawat';
-
-  static String fullCounter() => RoutesNames.tasbihBase;
   static String fullHistory() => '${RoutesNames.tasbihBase}history';
   static String fullHourly() => '${RoutesNames.tasbihBase}hourly';
   static String fullSalawat() => '${RoutesNames.tasbihBase}salawat';
@@ -177,8 +166,6 @@ class RemindersRoutes {
 
   static const String list = '/';
   static const String form = '/form';
-
-  static String fullList() => RoutesNames.remindersBase;
   static String fullForm({String? id}) =>
       '${RoutesNames.remindersBase}form${id != null ? '?id=$id' : ''}';
 }
@@ -196,8 +183,6 @@ class QiblaRoutes {
   QiblaRoutes._();
 
   static const String compass = '/';
-
-  static String fullCompass() => RoutesNames.qiblaBase;
 }
 
 class KhatmaRoutes {
@@ -225,10 +210,6 @@ class LegalRoutes {
   static const String privacy = '/privacy';
   static const String terms = '/terms';
   static const String about = '/about';
-
-  static String fullPrivacy() => '${RoutesNames.legalBase}privacy';
-  static String fullTerms() => '${RoutesNames.legalBase}terms';
-  static String fullAbout() => '${RoutesNames.legalBase}about';
 }
 
 class OnboardingRoutes {
@@ -240,8 +221,6 @@ class OnboardingRoutes {
 
   /// Android-only final step: the two OS grants the full-screen adhan needs.
   static const String alarm = '/alarm';
-
-  static String fullLanguage() => RoutesNames.onboardingBase;
   static String fullPager() => '${RoutesNames.onboardingBase}pager';
   static String fullLocation() => '${RoutesNames.onboardingBase}location';
   static String fullAlarm() => '${RoutesNames.onboardingBase}alarm';
@@ -251,8 +230,6 @@ class HomeRoutes {
   HomeRoutes._();
 
   static const String dashboard = '/';
-
-  static String fullDashboard() => RoutesNames.homeBase;
 }
 
 class SettingsRoutes {

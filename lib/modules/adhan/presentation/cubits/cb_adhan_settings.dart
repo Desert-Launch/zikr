@@ -116,20 +116,6 @@ class CBAdhanSettings extends Cubit<SAdhanSettings> {
     }
   }
 
-  /// Prompts the user to exempt the app from battery optimization (Android),
-  /// then hides the note if granted.
-  Future<void> requestBatteryExemption() async {
-    if (!Platform.isAndroid) return;
-    try {
-      await Permission.ignoreBatteryOptimizations.request();
-      final granted = await Permission.ignoreBatteryOptimizations.isGranted;
-      emit(state.copyWith(showBatteryNote: !granted));
-    } catch (_) {
-      // Some OEMs reject the direct request; leave the note so the user can
-      // still reach battery settings on a later attempt.
-    }
-  }
-
   /// The selected default voice id when it's a downloadable (remote) voice
   /// whose full file isn't on disk yet — e.g. the first-launch download failed
   /// offline. Null when nothing needs downloading (bundled voice, already
@@ -233,28 +219,6 @@ class CBAdhanSettings extends Cubit<SAdhanSettings> {
     final names = Map<String, String>.of(state.voiceNamePerPrayer);
     names[prayerKey] = voice?.nameAr ?? state.selectedVoiceNameAr;
     emit(state.copyWith(voiceIdPerPrayer: ids, voiceNamePerPrayer: names));
-    _scheduleSoon();
-  }
-
-  Future<void> setPlaybackMode(String mode) async {
-    final s = _adhanSettings.current()..playbackMode = mode;
-    await _adhanSettings.save(s);
-    emit(state.copyWith(playbackMode: mode));
-  }
-
-  /// Android-only Tier-2 toggle. Turning it on also flips [playbackMode] to
-  /// `full` so the scheduler routes notifications to the per-voice `_full`
-  /// channel (whose sound is the full adhan); off restores the short clip.
-  /// Either way the window is rescheduled so the channel switch takes effect.
-  Future<void> setAndroidBackground(bool value) async {
-    final mode = value
-        ? MAdhanSettings.playbackFull
-        : MAdhanSettings.playbackClip;
-    final s = _adhanSettings.current()
-      ..androidBackgroundFullAdhan = value
-      ..playbackMode = mode;
-    await _adhanSettings.save(s);
-    emit(state.copyWith(androidBackgroundFullAdhan: value, playbackMode: mode));
     _scheduleSoon();
   }
 

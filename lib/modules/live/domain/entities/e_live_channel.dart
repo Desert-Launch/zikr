@@ -1,7 +1,7 @@
 /// A Haramain live broadcast backed by an official Saudi YouTube channel.
 ///
 /// The CURRENT live video id is resolved at runtime from the channel's public
-/// [liveUrl] (`/channel/{id}/live`) — see `DSRemoteLive` — so the stream keeps
+/// `/channel/{id}/live` page — see `DSRemoteLive` — so the stream keeps
 /// working when a broadcast ends and the channel rolls to a new live video, with
 /// no code change. The resolved id is fed into the privacy-enhanced embed via
 /// [embedUrlFor].
@@ -36,10 +36,6 @@ class ELiveChannel {
   /// Last-known-good live video id — the resolution fallback (see class doc).
   final String videoId;
 
-  /// The channel's public "current live" page. Reading it yields whatever video
-  /// the channel is broadcasting right now (see `DSRemoteLive`).
-  String get liveUrl => 'https://www.youtube.com/channel/$channelId/live';
-
   /// Privacy-enhanced embed for a resolved live [id] (embeddable specific video).
   /// `controls=0` for an immersive surface — the app chrome overlays instead.
   static String embedUrlFor(String id) =>
@@ -50,9 +46,6 @@ class ELiveChannel {
   /// and opened externally as a last resort.
   static String watchUrlFor(String id) =>
       'https://www.youtube.com/watch?v=$id';
-
-  /// Embed for the fallback [videoId] (used before resolution completes).
-  String get embedUrl => embedUrlFor(videoId);
 
   /// Watch page for the fallback [videoId].
   String get fallbackUrl => watchUrlFor(videoId);

@@ -67,11 +67,6 @@ class SAyahShare extends Equatable {
 
   int get count => (to - from).abs() + 1;
 
-  /// Books that are downloaded but not attached yet — what the "add a book"
-  /// picker offers.
-  List<ETafsirBook> get addableBooks =>
-      availableBooks.where((b) => !bookIds.contains(b.id)).toList();
-
   bool get isImage => format == EShareFormat.image;
 
   /// Lowest verse the wheel offers for the edge it is on. The end of a range

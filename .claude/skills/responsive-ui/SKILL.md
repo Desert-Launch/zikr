@@ -16,7 +16,7 @@ Text('x', style: TextStyle(fontSize: 14.sp));
 BorderRadius.circular(8.r);
 ```
 - `ScreenUtilInit` is configured once at the app root; everywhere else just use the getters.
-- For values that must not blow up on large screens, use the project helpers in `lib/core/responsive/` (`ClampedFont` → `spCapped`/`spClamp`, `rCapped`; `ResponsiveEdgeInsets.responsive`). Reach for these instead of ad-hoc `.clamp()` chains.
+- For values that must not blow up on large screens, use the project helpers in `lib/core/responsive/` (`ClampedFont` → `spCapped`, `rCapped`; `ResponsiveEdgeInsets.responsive`). Reach for these instead of ad-hoc `.clamp()` chains.
 - Never hardcode raw pixel sizes for layout.
 
 ## Shared components (never use framework widgets directly when a wrapper exists)

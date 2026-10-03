@@ -187,69 +187,10 @@ class SNAdhanSettings extends StatelessWidget {
                           ],
                         ),
 
-                        // Only meaningful once the alarm is on — these are the
-                        // OS grants that decide whether it actually fires.
-                        // if (state.fullScreenAlarm) const WAdhanAlarmReadiness(),
                         SizedBox(height: isTab ? 10 : 12.h),
                         _TestAdhanButton(cubit: cubit),
                         SizedBox(height: isTab ? 8 : 10.h),
                         _TestAdhanButton(cubit: cubit, prayer: EPrayer.fajr, labelKey: 'adhan_test_fajr_button'),
-                        // if (defaultTargetPlatform == TargetPlatform.android) ...[
-                        //   gap,
-                        //   WAdhanSectionLabel('adhan_playback_section'.tr()),
-                        //   WAdhanGroup(
-                        //     children: [
-                        //       WAdhanSettingRow(
-                        //         icon: Icons.volume_up_outlined,
-                        //         title: 'adhan_background_full'.tr(),
-                        //         subtitle: 'adhan_background_full_hint'.tr(),
-                        //         trailing: Transform.scale(
-                        //           scale: .75,
-                        //           child: Switch(
-                        //             value: state.androidBackgroundFullAdhan,
-                        //             activeTrackColor: _green,
-                        //             thumbColor: WidgetStateProperty.all(
-                        //               state.androidBackgroundFullAdhan ? Colors.white : Colors.grey.shade400,
-                        //             ),
-                        //             onChanged: cubit.setAndroidBackground,
-                        //           ),
-                        //         ),
-                        //       ),
-                        //     ],
-                        //   ),
-                        //   // Aggressive OEM battery managers can delay/kill the
-                        //   // exact alarm that fires the full adhan — surface the
-                        //   // exemption prompt only once the feature is on.
-                        //   if (state.androidBackgroundFullAdhan && state.showBatteryNote) ...[
-                        //     SizedBox(height: isTab ? 10 : 12.h),
-                        //     _BatteryGuidanceNote(onAllow: cubit.requestBatteryExemption),
-                        //   ],
-                        // ] else if (defaultTargetPlatform == TargetPlatform.iOS) ...[
-
-                        //   gap,
-                        //   WAdhanSectionLabel('adhan_playback_section'.tr()),
-                        //   Container(
-                        //     padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 14.h),
-                        //     decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(14.r)),
-                        //     child: Row(
-                        //       crossAxisAlignment: CrossAxisAlignment.start,
-                        //       children: [
-                        //         Icon(Icons.info_outline_rounded, size: 18.r, color: const Color(0xFF858585)),
-                        //         SizedBox(width: 10.w),
-                        //         Expanded(
-                        //           child: Text(
-                        //             'adhan_ios_full_note'.tr(),
-                        //             style: GoogleFonts.cairo(
-                        //               fontSize: 11.sp,
-                        //               height: 1.5,
-                        //               color: const Color(0xFF858585),
-                        //             ),
-                        //           ),
-                        //         ),
-                        //       ],
-                        //     ),
-                        //   ),
-                        // ],
                         SizedBox(height: isTab ? 16 : 20.h),
                         const WAdhanVirtueCard(),
                       ],
@@ -440,64 +381,3 @@ class _PermissionWarning extends StatelessWidget {
   }
 }
 
-/// Android-only guidance: aggressive OEM battery managers can delay or kill
-/// exact alarms. Tapping "Allow" requests the battery-optimization exemption.
-class _BatteryGuidanceNote extends StatelessWidget {
-  const _BatteryGuidanceNote({required this.onAllow});
-
-  final VoidCallback onAllow;
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      padding: EdgeInsets.fromLTRB(16.w, 14.h, 16.w, 12.h),
-      decoration: BoxDecoration(
-        color: const Color(0xFFEFF4F2),
-        borderRadius: BorderRadius.circular(14.r),
-        border: Border.all(color: const Color(0xFFD8E4DF)),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Icon(Icons.battery_alert_outlined, size: 18.r, color: const Color(0xFF2F7E63)),
-              SizedBox(width: 10.w),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      'adhan_battery_note_title'.tr(),
-                      style: GoogleFonts.cairo(
-                        fontSize: 12.sp,
-                        fontWeight: FontWeight.w600,
-                        color: const Color(0xFF303030),
-                      ),
-                    ),
-                    SizedBox(height: 3.h),
-                    Text(
-                      'adhan_battery_note_hint'.tr(),
-                      style: GoogleFonts.cairo(fontSize: 10.sp, height: 1.5, color: const Color(0xFF6F8079)),
-                    ),
-                  ],
-                ),
-              ),
-            ],
-          ),
-          Align(
-            alignment: AlignmentDirectional.centerEnd,
-            child: TextButton(
-              onPressed: onAllow,
-              child: Text(
-                'adhan_battery_note_action'.tr(),
-                style: GoogleFonts.cairo(fontSize: 11.sp, fontWeight: FontWeight.w700, color: const Color(0xFF2F7E63)),
-              ),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-}

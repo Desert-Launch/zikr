@@ -79,25 +79,9 @@ class DSLocalQuran {
     return s.pageStart;
   }
 
-  /// Returns the plain Uthmani text for one ayah without building the full
-  /// search index.
-  Future<String> ayahText(ParamAyahRef ref) async {
-    final page = await pageOfAyah(ref.surah, ref.ayah);
-    final layout = await loadPage(page);
-    final words = <String>[];
-    for (final line in layout.lines) {
-      for (final word in line.words) {
-        if (word.surah == ref.surah && word.ayah == ref.ayah) {
-          words.add(word.word);
-        }
-      }
-    }
-    return words.join(' ');
-  }
-
   /// Full Uthmani text for one ayah, correctly aggregated even when the verse
-  /// spans more than one page. Unlike [ayahText] it keeps walking forward from
-  /// the start page until a page contributes no more words for the ayah.
+  /// spans more than one page: it keeps walking forward from the start page
+  /// until a page contributes no more words for the ayah.
   Future<String> fullAyahText(ParamAyahRef ref) async {
     final start = await pageOfAyah(ref.surah, ref.ayah);
     final words = <String>[];

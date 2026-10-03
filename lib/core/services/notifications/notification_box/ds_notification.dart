@@ -15,14 +15,6 @@ class DSNotification {
 
   MLocalNotification? get(int id) => _box.box.get(id);
 
-  List<MLocalNotification> getAll() => _box.box.values.toList(growable: false);
-
-  /// Every stored notification whose payload type matches [type] (e.g. all
-  /// `azkar` entries).
-  List<MLocalNotification> byType(String type) => _box.box.values
-      .where((n) => n.payloadType == type)
-      .toList(growable: false);
-
   Future<void> delete(int id) async => _box.box.delete(id);
 
   Future<void> deleteAll(Iterable<int> ids) async => _box.box.deleteAll(ids);

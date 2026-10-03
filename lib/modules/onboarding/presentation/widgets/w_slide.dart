@@ -26,18 +26,9 @@ class WSlide extends StatelessWidget {
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          // Faint ring encircling the icon, echoing the mockup.
           Stack(
             alignment: Alignment.center,
             children: [
-              // Container(
-              //   width: 230.r,
-              //   height: 230.r,
-              //   decoration: BoxDecoration(
-              //     shape: BoxShape.circle,
-              //     border: Border.all(color: accent.withValues(alpha: 0.10), width: 1.4),
-              //   ),
-              // ),
               SizedBox(height: 100.h),
               Container(
                 width: 104.r,

@@ -95,8 +95,4 @@ class CBSurahList extends Cubit<SSurahList> {
       emit(state.copyWith(query: q));
     }
   }
-
-  void setJuzFilter(int? juz) => juz == null
-      ? emit(state.copyWith(clearJuzFilter: true))
-      : emit(state.copyWith(juzFilter: juz));
 }

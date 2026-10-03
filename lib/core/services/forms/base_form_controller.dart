@@ -10,8 +10,4 @@ abstract class BaseFormController {
   void init();
 
   void clear();
-
-  Widget buildForm(BuildContext context) {
-    return Container();
-  }
 }

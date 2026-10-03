@@ -94,13 +94,6 @@ class CBAzkarSession extends Cubit<SAzkarSession> {
     if (state.audioPlaying) unawaited(_playCurrent());
   }
 
-  Future<void> resetCategory() async {
-    final cat = state.category;
-    if (cat == null) return;
-    await _progress.reset(cat.id);
-    emit(state.copyWith(completed: <String, int>{}, itemIndex: 0));
-  }
-
   Future<void> resetCurrent() async {
     final cat = state.category;
     final item = state.currentItem;

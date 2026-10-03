@@ -15,8 +15,7 @@ One place for common UI: `lib/core/widgets/`. If you reach for a framework widge
 | `WAppButton` | `ElevatedButton` / `TextButton` | named variants, not boolean soup (`w_app_button.dart`) |
 | `WLoadingOverlay` | `CircularProgressIndicator` | blocking/inline loading (`w_loading_overlay.dart`) |
 | `WEmptyState` | ad-hoc empty/error UI | icon + message + optional retry action |
-| `WDetailRow` | ad-hoc label/value rows | `w_detail_row.dart` |
-| `core/widgets/forms/W*Field` | raw `TextField` | `WTextField`, `WEmailField`, `WPasswordField`, `WPhoneField`, `WDateField`, `WDropdownField`, `WPinCodeField`, `WCheckboxField`, … |
+| `core/widgets/forms/W*Field` | raw `TextField` | `WTextField`, `WEmailField`, `WPasswordField`, `WConfirmPasswordField`, `WPhoneField`, `WDateField`, `WPinCodeField` |
 
 ## Rules
 1. Never use a framework widget when a `W*` wrapper exists.

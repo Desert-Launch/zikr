@@ -14,7 +14,6 @@ import 'package:quran/core/services/notifications/notification_router.dart';
 import 'package:quran/core/services/notifications/notifications_service.dart';
 import 'package:quran/core/services/notifications/scheduled_alert_registry.dart';
 import 'package:quran/core/services/routes/routes_names.dart';
-import 'package:quran/core/theme/theme_manager.dart';
 import 'package:quran/modules/adhan/adhan_module.dart';
 import 'package:quran/modules/adhan/data/datasources/local/ds_local_adhan.dart';
 import 'package:quran/modules/adhan/data/datasources/remote/ds_remote_adhan.dart';
@@ -325,7 +324,6 @@ class AppModule extends Module {
     );
 
     // App-wide cubits / managers
-    i.addLazySingleton<ThemeManager>(ThemeManager.new);
     i.addSingleton<CBTheme>(() => CBTheme(i.get<BoxThemePref>()));
     i.addSingleton<CBAuth>(
       () => CBAuth(

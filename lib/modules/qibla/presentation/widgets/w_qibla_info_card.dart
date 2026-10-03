@@ -93,12 +93,4 @@ class WQiblaInfoCard extends StatelessWidget {
     final index = (((bearing % 360) + 22.5) ~/ 45) % 8;
     return keys[index].tr();
   }
-
-  String _formatDistance(double km) {
-    final withSep = km.round().toString().replaceAllMapped(
-      RegExp(r'\B(?=(\d{3})+(?!\d))'),
-      (m) => ',',
-    );
-    return localizeQiblaDigits(withSep);
-  }
 }

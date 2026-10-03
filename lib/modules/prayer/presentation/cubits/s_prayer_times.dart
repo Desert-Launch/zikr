@@ -44,7 +44,6 @@ class SPrayerTimes extends Equatable {
   double? get latitude => schedule?.latitude;
   double? get longitude => schedule?.longitude;
   String get timezone => schedule?.timezone ?? '';
-  DateTime? get computedAt => schedule?.fetchedAt;
 
   /// The authority the times were actually calculated with, for the "why do my
   /// times differ from the mosque" question.

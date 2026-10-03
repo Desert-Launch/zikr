@@ -38,8 +38,6 @@ class AdhanFlipSilencer {
 
   DateTime? _faceDownSince;
 
-  bool get isWatching => _sub != null;
-
   /// Starts watching. [onFaceDown] fires once, after which watching stops —
   /// call [start] again for the next adhan.
   void start(void Function() onFaceDown) {

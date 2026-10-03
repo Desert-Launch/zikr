@@ -115,6 +115,4 @@ class RubStarts {
   /// 4 for the quarter, half and three-quarter marks.
   static int quarterOf(int rub) => ((rub - 1) % perHizb) + 1;
 
-  /// The hizb (1..60) a [page] belongs to.
-  static int hizbForPage(int page) => hizbOf(numberForPage(page));
 }

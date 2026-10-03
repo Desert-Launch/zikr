@@ -83,21 +83,4 @@ class WPhoneField extends BaseFormField {
     );
   }
 
-  String toApiBody() {
-    return '$countryCode${controller.text.replaceAll(' ', '')}';
-  }
-
-  /// Set raw digits (no spaces) and apply the same formatter used on input.
-  void setRawDigits(String digits) {
-    final cleaned = digits.replaceAll(RegExp(r'[^0-9]'), '');
-    final formatter = PhoneNumberFormatter();
-    final formatted = formatter.formatEditUpdate(
-      const TextEditingValue(text: ''),
-      TextEditingValue(
-        text: cleaned,
-        selection: TextSelection.collapsed(offset: cleaned.length),
-      ),
-    );
-    controller.value = formatted;
-  }
 }

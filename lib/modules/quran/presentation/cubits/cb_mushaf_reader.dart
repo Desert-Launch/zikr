@@ -361,11 +361,6 @@ class CBMushafReader extends Cubit<SMushafReader> {
     _scheduleChromeHide();
   }
 
-  void setChrome(bool visible) {
-    emit(state.copyWith(chromeVisible: visible));
-    _scheduleChromeHide();
-  }
-
   void clearSelection() {
     emit(state.copyWith(clearSelected: true, multiSelection: const {}));
     _scheduleChromeHide();
@@ -399,12 +394,6 @@ class CBMushafReader extends Cubit<SMushafReader> {
       }
       emit(state.copyWith(chromeVisible: false));
     });
-  }
-
-  void toggleMultiSelect(ParamAyahRef ref) {
-    final next = Set<String>.from(state.multiSelection);
-    if (!next.add(ref.key)) next.remove(ref.key);
-    emit(state.copyWith(multiSelection: next));
   }
 
   /// Debounced so a fast swipe through a juz' writes once, at the page the

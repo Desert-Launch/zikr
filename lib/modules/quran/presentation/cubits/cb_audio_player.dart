@@ -1004,16 +1004,6 @@ class CBAudioPlayer extends Cubit<SAudioPlayer> {
     }
   }
 
-  Future<void> repeatSingle(ParamAyahRef ref) async {
-    emit(
-      state.copyWith(
-        options: state.options.copyWith(repeatMode: RepeatMode.singleAyah),
-      ),
-    );
-    _persistOptions();
-    await playFrom(ref); // mode is singleAyah → builds a [ref] unit
-  }
-
   Future<void> pause() => _player.pause();
   Future<void> resume() => _player.play();
   Future<void> stop() async {
@@ -1172,10 +1162,6 @@ class CBAudioPlayer extends Cubit<SAudioPlayer> {
     _persistOptions();
   }
 
-  /// Sets a from–to repeat range (single surah) and starts looping it.
-  Future<void> setRepeatRange(ParamAyahRef from, ParamAyahRef to) =>
-      playRange(from, to);
-
   /// Arms, changes, or clears the sleep timer. Timed options start a countdown
   /// that fades out and stops; boundary options stop at the next ayah / surah
   /// boundary (handled in [_onPlaylistIndexChanged]) and beat an active repeat.
@@ -1214,9 +1200,6 @@ class CBAudioPlayer extends Cubit<SAudioPlayer> {
     await stop();
     await _player.setVolume(1);
   }
-
-  Stream<ParamAyahRef?> get currentAyahStream =>
-      stream.map((s) => s.currentAyah).distinct((a, b) => a?.key == b?.key);
 
   Stream<Duration> get positionStream => _player.positionStream;
 

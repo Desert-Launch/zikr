@@ -27,11 +27,4 @@ class BoxKhatmaDay extends HiveBoxBase<MKhatmaDay> {
   Future<void> clearAll() async => box.clear();
 
   int get completedCount => box.values.where((d) => d.completed).length;
-
-  int completedOn(DateTime date) {
-    final key = keyFor(date);
-    return box.values
-        .where((day) => day.completed && day.dateKey == key)
-        .length;
-  }
 }

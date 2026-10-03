@@ -51,11 +51,4 @@ class DSAudioDownloader {
   }
 
   bool isActive(String taskId) => _tokens.containsKey(taskId);
-
-  void disposeAll() {
-    for (final t in _tokens.values) {
-      t.cancel('disposed');
-    }
-    _tokens.clear();
-  }
 }

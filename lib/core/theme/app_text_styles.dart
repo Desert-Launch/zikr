@@ -14,7 +14,7 @@ import 'package:google_fonts/google_fonts.dart';
 /// * Sizes   → 12, 14, 16, 18, 20, 22, 24 (`.sp`)
 /// * Weights → w400, w500, w700, w900
 ///
-/// The older semantic getters (h1, bodyLarge, …) are kept for backwards
+/// The older semantic getters (h1, bodyMedium, …) are kept for backwards
 /// compatibility and now also resolve to Cairo.
 class AppTextStyles {
   AppTextStyles._();
@@ -155,10 +155,6 @@ class AppTextStyles {
 
   // ==================== Semantic styles (legacy, now Cairo) ====================
 
-  // ---- DISPLAY ----
-  static TextStyle get display =>
-      GoogleFonts.cairo(fontSize: 36.sp, fontWeight: FontWeight.w900, color: AppColors.faheemTextPrimary);
-
   // ---- HEADINGS ----
   static TextStyle get h1 =>
       GoogleFonts.cairo(fontSize: 28.sp, fontWeight: FontWeight.w900, color: AppColors.faheemTextPrimary);
@@ -169,102 +165,12 @@ class AppTextStyles {
   static TextStyle get h3 =>
       GoogleFonts.cairo(fontSize: 18.sp, fontWeight: FontWeight.w700, color: AppColors.faheemTextPrimary);
 
-  static TextStyle get h4 =>
-      GoogleFonts.cairo(fontSize: 16.sp, fontWeight: FontWeight.w700, color: AppColors.faheemTextPrimary);
-
   // ---- BODY ----
-  static TextStyle get bodyLarge =>
-      GoogleFonts.cairo(fontSize: 16.sp, fontWeight: FontWeight.w500, color: AppColors.faheemTextPrimary);
-
   static TextStyle get bodyMedium =>
       GoogleFonts.cairo(fontSize: 14.sp, fontWeight: FontWeight.w500, color: AppColors.faheemTextPrimary);
 
-  static TextStyle get bodySmall =>
-      GoogleFonts.cairo(fontSize: 12.sp, fontWeight: FontWeight.w500, color: AppColors.faheemTextSecondary);
-
-  // ---- LABELS ----
-  static TextStyle get labelLarge =>
-      GoogleFonts.cairo(fontSize: 14.sp, fontWeight: FontWeight.w700, color: AppColors.faheemTextPrimary);
-
-  static TextStyle get labelMedium =>
-      GoogleFonts.cairo(fontSize: 12.sp, fontWeight: FontWeight.w600, color: AppColors.faheemTextSecondary);
-
-  static TextStyle get labelSmall =>
-      GoogleFonts.cairo(fontSize: 10.sp, fontWeight: FontWeight.w600, color: AppColors.faheemTextLight);
-
-  // ---- BUTTONS ----
-  static TextStyle get buttonLarge =>
-      GoogleFonts.cairo(fontSize: 18.sp, fontWeight: FontWeight.w700, color: AppColors.faheemBgWhite);
-
-  static TextStyle get buttonMedium =>
-      GoogleFonts.cairo(fontSize: 15.sp, fontWeight: FontWeight.w700, color: AppColors.faheemBgWhite);
-
-  static TextStyle get buttonSmall =>
-      GoogleFonts.cairo(fontSize: 12.sp, fontWeight: FontWeight.w700, color: AppColors.faheemBgWhite);
-
   // ---- SPECIAL ----
-  static TextStyle get mascotTitle => GoogleFonts.cairo(
-    fontSize: 28.sp,
-    fontWeight: FontWeight.w900,
-    color: Colors.white,
-    shadows: [Shadow(color: Colors.black.withValues(alpha: 0.2), blurRadius: 10, offset: const Offset(0, 2))],
-  );
-
-  static TextStyle get mascotSubtitle =>
-      GoogleFonts.cairo(fontSize: 13.sp, fontWeight: FontWeight.w500, color: Colors.white.withValues(alpha: 0.9));
-
-  static TextStyle get cardTitle =>
-      GoogleFonts.cairo(fontSize: 16.sp, fontWeight: FontWeight.w800, color: AppColors.faheemTextPrimary);
-
-  static TextStyle get cardSubtitle =>
-      GoogleFonts.cairo(fontSize: 11.sp, fontWeight: FontWeight.w500, color: AppColors.faheemTextSecondary);
-
-  static TextStyle get statValue =>
-      GoogleFonts.cairo(fontSize: 15.sp, fontWeight: FontWeight.w800, color: AppColors.faheemTextPrimary);
-
-  static TextStyle get statLabel =>
-      GoogleFonts.cairo(fontSize: 9.sp, fontWeight: FontWeight.w500, color: AppColors.faheemTextSecondary);
-
   static TextStyle get badge => GoogleFonts.cairo(fontSize: 10.sp, fontWeight: FontWeight.w700, color: Colors.white);
-
-  static TextStyle get progressPercent =>
-      GoogleFonts.cairo(fontSize: 8.sp, fontWeight: FontWeight.w700, color: AppColors.faheemTextSecondary);
-
-  static TextStyle get modeTitle => GoogleFonts.cairo(fontSize: 22.sp, fontWeight: FontWeight.w800);
-
-  static TextStyle get modeDescription => GoogleFonts.cairo(
-    fontSize: 14.sp,
-    fontWeight: FontWeight.w500,
-    color: AppColors.faheemTextSecondary,
-    height: 1.6,
-  );
-
-  static TextStyle get featureTag => GoogleFonts.cairo(fontSize: 12.sp, fontWeight: FontWeight.w600);
-
-  static TextStyle get inputHint =>
-      GoogleFonts.cairo(fontSize: 14.sp, fontWeight: FontWeight.w500, color: AppColors.faheemTextLight);
-
-  static TextStyle get chatMessage => GoogleFonts.cairo(fontSize: 15.sp, fontWeight: FontWeight.w500, height: 1.7);
-
-  static TextStyle get timerDisplay =>
-      GoogleFonts.cairo(fontSize: 24.sp, fontWeight: FontWeight.w800, color: Colors.white);
-
-  static TextStyle get scoreDisplay =>
-      GoogleFonts.cairo(fontSize: 48.sp, fontWeight: FontWeight.w900, color: AppColors.faheemBoard);
-
-  // ---- KEYWORD CHIP ----
-  static TextStyle get keywordTerm => GoogleFonts.cairo(
-    fontSize: 13.sp,
-    fontWeight: FontWeight.w600,
-    color: AppColors.brandPurple.withValues(alpha: 0.7),
-  );
-
-  static TextStyle get keywordDefinition => GoogleFonts.cairo(
-    fontSize: 12.sp,
-    fontWeight: FontWeight.w500,
-    height: 1.5,
-    color: AppColors.faheemTextSecondary,
-  );
 
   // ==================== HELPER METHODS ====================
 

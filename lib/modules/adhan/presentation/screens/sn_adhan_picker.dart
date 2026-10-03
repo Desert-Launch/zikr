@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_modular/flutter_modular.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
-import 'package:google_fonts/google_fonts.dart';
 import 'package:localize_and_translate/localize_and_translate.dart';
 import 'package:quran/core/utils/helper/app_alert.dart';
 import 'package:quran/core/widgets/w_gradient_app_bar.dart';
@@ -123,14 +122,6 @@ class SNAdhanPicker extends StatelessWidget {
                                   );
                                 },
                               ),
-                              // if (defaultTargetPlatform == TargetPlatform.iOS) ...[
-                              //   SizedBox(height: 14.h),
-                              //   const _PlaybackNote(textKey: 'adhan_ios_full_note'),
-                              // ] else if (defaultTargetPlatform == TargetPlatform.android &&
-                              //     !settingsState.androidBackgroundFullAdhan) ...[
-                              //   SizedBox(height: 14.h),
-                              //   const _PlaybackNote(textKey: 'adhan_full_background_hint'),
-                              // ],
                               SizedBox(height: 30.h),
                               const WAdhanVirtueCard(),
                             ],
@@ -184,32 +175,3 @@ class SNAdhanPicker extends StatelessWidget {
   };
 }
 
-/// Small grey info card explaining how the full adhan plays at prayer time.
-/// Shown on the picker so the clip-vs-full behaviour is discoverable here,
-/// where the user is choosing a voice.
-class _PlaybackNote extends StatelessWidget {
-  const _PlaybackNote({required this.textKey});
-
-  final String textKey;
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 14.h),
-      decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(14.r)),
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Icon(Icons.info_outline_rounded, size: 18.r, color: const Color(0xFF858585)),
-          SizedBox(width: 10.w),
-          Expanded(
-            child: Text(
-              textKey.tr(),
-              style: GoogleFonts.cairo(fontSize: 11.sp, height: 1.5, color: const Color(0xFF858585)),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-}

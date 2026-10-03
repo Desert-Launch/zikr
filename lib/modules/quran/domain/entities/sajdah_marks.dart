@@ -25,11 +25,4 @@ class SajdahMarks {
     return false;
   }
 
-  /// Whether the given ayah is a sajdah ayah.
-  static bool isSajdahAyah(int surah, int ayah) {
-    for (final row in rows) {
-      if (row[0] == surah && row[1] == ayah) return true;
-    }
-    return false;
-  }
 }

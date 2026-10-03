@@ -226,12 +226,6 @@ class CBAdhanPlayer extends Cubit<SAdhanPlayer> {
     emit(state.copyWith(status: AdhanPlayerStatus.idle, clearPreview: true));
   }
 
-  Future<void> selectDefault(String adhanId) async {
-    await _prefs.setDefault(adhanId);
-    final adhan = await _local.byId(adhanId);
-    if (adhan != null) emit(state.copyWith(defaultAdhan: adhan));
-  }
-
   Future<void> selectFajr(
     String? adhanId, {
     required bool useFajrSpecific,

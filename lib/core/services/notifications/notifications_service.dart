@@ -373,22 +373,6 @@ class NotificationsService {
     );
   }
 
-  /// Creates (or updates in place) a channel that isn't part of the boot set in
-  /// [AppNotificationChannels.all].
-  ///
-  /// For channels whose existence depends on user state — the per-zekr hourly
-  /// audio channels, which only exist while that setting is on. Re-creating an
-  /// existing id is a safe no-op that preserves the user's own tweaks to it;
-  /// only sound, vibration and audio attributes are frozen at first creation.
-  Future<void> createChannel(AndroidNotificationChannel channel) async {
-    final android = _plugin
-        .resolvePlatformSpecificImplementation<
-          AndroidFlutterLocalNotificationsPlugin
-        >();
-    if (android == null) return;
-    await android.createNotificationChannel(channel);
-  }
-
   /// Removes a channel by id. Used to retire a channel whose sound or audio
   /// attributes changed (both immutable after creation, so the replacement
   /// needs a new id). Safe when the channel doesn't exist.

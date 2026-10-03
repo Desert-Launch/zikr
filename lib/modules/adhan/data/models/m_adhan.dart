@@ -110,16 +110,6 @@ class MAdhan extends Equatable {
   final String? author;
   final String? sourceUrl;
 
-  /// One-line attribution, e.g. "CC BY-SA 4.0 · Fraguando". Empty when the
-  /// voice carries no license metadata.
-  String get attribution {
-    final parts = [
-      if (license?.isNotEmpty ?? false) license,
-      if (author?.isNotEmpty ?? false) author,
-    ];
-    return parts.join(' · ');
-  }
-
   /// Whether this voice can be fetched from the network — i.e. it isn't
   /// already bundled and has a remote URL. Bundled voices never show a
   /// download affordance.

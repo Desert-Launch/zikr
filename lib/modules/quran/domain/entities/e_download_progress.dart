@@ -59,8 +59,6 @@ class AllSurahsDownloadProgress extends Equatable {
   /// How many surahs have finished so far (0..114).
   final int completedSurahs;
 
-  double get overallFraction => (completedSurahs / 114).clamp(0.0, 1.0);
-
   @override
   List<Object?> get props =>
       [currentSurah, currentSurahProgress, completedSurahs];
@@ -83,8 +81,6 @@ class ReciterStats extends Equatable {
   final int downloadedSurahs;
   final int totalSurahs;
   final int totalBytes;
-
-  bool get hasDownloads => totalBytes > 0 || downloadedSurahs > 0;
   double get megabytes => totalBytes / 1024 / 1024;
 
   @override

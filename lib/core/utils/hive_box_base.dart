@@ -54,8 +54,6 @@ abstract class HiveBoxBase<T> {
     }
   }
 
-  String get getBoxName => boxName;
-
   Box<T> get box {
     if (!Hive.isBoxOpen(boxName)) {
       throw StateError('Box $boxName is not open. Call init() first.');

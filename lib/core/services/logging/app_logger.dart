@@ -6,8 +6,6 @@ class AppLogger {
 
   static Talker? _talker;
 
-  static Talker? get talker => _talker;
-
   static void init() {
     _talker = TalkerFlutter.init();
   }

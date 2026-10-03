@@ -14,15 +14,11 @@ extension BuildContextExtension on BuildContext {
 
   Orientation get orientation => MediaQuery.of(this).orientation;
 
-  bool get isPortrait => MediaQuery.of(this).orientation == Orientation.portrait;
-
   bool get isLandscape => MediaQuery.of(this).orientation == Orientation.landscape;
 
   double get scale => MediaQuery.devicePixelRatioOf(this);
 
   double get aspectRatio => MediaQuery.sizeOf(this).aspectRatio;
-
-  void get hideKeyboard => FocusScope.of(this).requestFocus(FocusNode());
 
   bool get canGoBack => Modular.to.canPop();
 

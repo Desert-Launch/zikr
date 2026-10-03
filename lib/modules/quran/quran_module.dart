@@ -402,17 +402,6 @@ class QuranModule extends Module {
     );
   }
 
-  /// Eagerly opens the Hive boxes the module needs. Call from a screen `initState`
-  /// or just rely on lazy `.init()` inside the data-sources.
-  static Future<void> ensureBoxesOpen() async {
-    await Modular.get<BoxBookmarks>().init();
-    await Modular.get<BoxLastRead>().init();
-    await Modular.get<BoxReciterPref>().init();
-    await Modular.get<BoxReaderSettings>().init();
-    await Modular.get<BoxPlaybackPrefs>().init();
-    await Modular.get<BoxTafsir>().init();
-  }
-
   @override
   void routes(RouteManager r) {
     r.child(QuranRoutes.surahList, child: (_) => const SNSurahList());

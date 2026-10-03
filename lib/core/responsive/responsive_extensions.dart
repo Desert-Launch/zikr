@@ -16,9 +16,6 @@ extension ClampedFont on num {
   /// Scaled font with upper bound to prevent giant text on tablets
   double spCapped(double max) => toDouble().sp.clamp(0, max);
 
-  /// Scaled font with both min and max bounds
-  double spClamp(double min, double max) => toDouble().sp.clamp(min, max);
-
   /// Scaled radius with upper bound to prevent balloon corners on tablets
   double rCapped(double max) => toDouble().r.clamp(0, max);
 }

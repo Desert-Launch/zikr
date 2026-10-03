@@ -17,8 +17,6 @@ import 'package:quran/core/services/routes/routes_names.dart';
 /// for anything unrecognised.
 class HomeWidgetRouter {
   HomeWidgetRouter();
-
-  static const String scheme = 'zikr';
   static const String prayerHost = 'prayer';
 
   static const String _tag = 'HomeWidgetRouter';

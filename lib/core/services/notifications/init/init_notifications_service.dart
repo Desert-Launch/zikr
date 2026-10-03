@@ -72,21 +72,6 @@ class InitNotificationsService {
     return placed;
   }
 
-  /// Cancels + clears the stored init notifications and reschedules from JSON.
-  /// Used when the user re-enables the feed from settings.
-  Future<void> resetAndReschedule() async {
-    for (final n in _store.byType('azkar')) {
-      await _notifications.cancel(n.id);
-      await _store.delete(n.id);
-    }
-    for (final n in _store.byType('quran')) {
-      await _notifications.cancel(n.id);
-      await _store.delete(n.id);
-    }
-    await _scheduleAll();
-    await _appSettings.setInitNotificationsScheduled(true);
-  }
-
   /// Schedules every entry in the feed, returning the times placed today.
   Future<List<DateTime>> _scheduleAll({
     bool preferStoredTimes = false,
