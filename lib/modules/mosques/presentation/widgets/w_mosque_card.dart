@@ -130,9 +130,9 @@ class _Details extends StatelessWidget {
       children: [
         Text(
           mosque.name,
-          maxLines: 1,
+          maxLines: 2,
           overflow: TextOverflow.ellipsis,
-          style: AppTextStyles.ink16W500.copyWith(color: brand.onSurface),
+          style: AppTextStyles.ink14W500.copyWith(color: brand.onSurface),
         ),
         if (mosque.address.isNotEmpty) ...[
           SizedBox(height: 2.h),
