@@ -20,8 +20,8 @@ class WSettingsRow extends StatelessWidget {
   final IconData icon;
   final String title;
 
-  /// One-line hint under [title]. Omit for rows that read on their own (a
-  /// frequency choice, a picked time) — the row then centres the title.
+  /// Hint under [title], up to two lines. Omit for rows that read on their own
+  /// (a frequency choice, a picked time) — the row then centres the title.
   final String? subtitle;
   final String? value;
 
@@ -64,14 +64,17 @@ class WSettingsRow extends StatelessWidget {
                     ),
                     if (subtitle != null) ...[
                       SizedBox(height: isTab ? 3 : 4.h),
+                      // Two lines, as on WSettingsVolumeRow: the longer hints
+                      // (silent-mode, sound, volume) don't fit one line on a
+                      // phone. 1.3 keeps the wrapped Arabic lines from touching.
                       Text(
                         subtitle,
-                        maxLines: 1,
+                        maxLines: 2,
                         overflow: TextOverflow.ellipsis,
                         style: GoogleFonts.cairo(
                           fontSize: isTab ? 11.5 : 9.sp,
                           color: const Color(0xFF858585),
-                          height: 1,
+                          height: 1.3,
                         ),
                       ),
                     ],

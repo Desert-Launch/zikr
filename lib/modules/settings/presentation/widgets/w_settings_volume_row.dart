@@ -25,7 +25,7 @@ class WSettingsVolumeRow extends StatefulWidget {
 
   final String title;
 
-  /// One-line hint under [title].
+  /// Hint under [title], up to two lines.
   final String? subtitle;
 
   /// Persisted level, 0–100. Also the value the local preview resets to when
