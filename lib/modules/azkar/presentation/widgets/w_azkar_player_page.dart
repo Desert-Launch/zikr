@@ -5,16 +5,23 @@ import 'package:quran/modules/azkar/data/models/m_azkar_item.dart';
 import 'package:quran/modules/azkar/presentation/widgets/w_azkar_virtue_card.dart';
 import 'package:quran/modules/azkar/presentation/widgets/w_azkar_zekr_text.dart';
 
-/// One page of the azkar pager: the zekr text up top, its virtue card resting
-/// at the bottom, and the whole surface counting a tap.
+/// One page of the azkar pager: the zekr text on a white card up top, its
+/// virtue card resting at the bottom, and the whole surface counting a tap.
 ///
 /// The page is at least as tall as the viewport so the virtue card sits low on
 /// short azkar, yet everything scrolls together once a long zekr (or a long
 /// virtue) needs the room.
 class WAzkarPlayerPage extends StatelessWidget {
-  const WAzkarPlayerPage({super.key, required this.item, required this.gold, required this.onTap});
+  const WAzkarPlayerPage({
+    super.key,
+    required this.item,
+    required this.green,
+    required this.gold,
+    required this.onTap,
+  });
 
   final MAzkarItem item;
+  final Color green;
   final Color gold;
   final VoidCallback onTap;
 
@@ -35,10 +42,7 @@ class WAzkarPlayerPage extends StatelessWidget {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
-                  Padding(
-                    padding: EdgeInsets.symmetric(horizontal: 8.w),
-                    child: WAzkarZekrText(text: item.text(language)),
-                  ),
+                  _ZekrCard(green: green, child: WAzkarZekrText(text: item.text(language))),
                   const Spacer(),
                   if (virtue != null && virtue.isNotEmpty) ...[
                     SizedBox(height: 24.h),
@@ -51,6 +55,54 @@ class WAzkarPlayerPage extends StatelessWidget {
               ),
             ),
           ),
+        ),
+      ),
+    );
+  }
+}
+
+/// The white sheet the zekr is read from: a soft lift off the canvas and a
+/// faint ring in the corner echoing the one on the virtue card.
+class _ZekrCard extends StatelessWidget {
+  const _ZekrCard({required this.green, required this.child});
+
+  final Color green;
+  final Widget child;
+
+  @override
+  Widget build(BuildContext context) {
+    final radius = BorderRadius.circular(22.r);
+    return Container(
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: radius,
+        border: Border.all(color: const Color(0xFFEDEBE4)),
+        boxShadow: const [
+          BoxShadow(color: Color(0x0F000000), blurRadius: 24, offset: Offset(0, 8)),
+          BoxShadow(color: Color(0x08000000), blurRadius: 4, offset: Offset(0, 1)),
+        ],
+      ),
+      child: ClipRRect(
+        borderRadius: radius,
+        child: Stack(
+          children: [
+            Positioned(
+              top: -40.r,
+              left: -36.r,
+              child: Container(
+                width: 110.r,
+                height: 110.r,
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  border: Border.all(color: green.withValues(alpha: 0.07), width: 3),
+                ),
+              ),
+            ),
+            Padding(
+              padding: EdgeInsets.fromLTRB(20.w, 26.h, 20.w, 22.h),
+              child: child,
+            ),
+          ],
         ),
       ),
     );

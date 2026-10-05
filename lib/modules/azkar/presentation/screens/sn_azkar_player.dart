@@ -103,8 +103,12 @@ class _SNAzkarPlayerState extends State<SNAzkarPlayer> {
                     controller: _pageController,
                     itemCount: category.items.length,
                     onPageChanged: _cubit.jumpTo,
-                    itemBuilder: (_, index) =>
-                        WAzkarPlayerPage(item: category.items[index], gold: _gold, onTap: _cubit.tap),
+                    itemBuilder: (_, index) => WAzkarPlayerPage(
+                      item: category.items[index],
+                      green: _green,
+                      gold: _gold,
+                      onTap: _cubit.tap,
+                    ),
                   ),
                 ),
                 WAzkarPlayerBar(
