@@ -533,23 +533,19 @@ Color? ayahTint({
   required Brightness brightness,
   bool isWirdBound = false,
 }) {
-  if (isSelected) {
-    return brightness == Brightness.dark
-        ? AppColors.surfaceLightGreen.withValues(alpha: 0.22)
-        : AppColors.surfaceLightGreen;
-  }
+  if (isSelected) return selectedAyahTint(brightness);
   if (isPlaying) return AppColors.accentGoldAmber.withValues(alpha: 0.15);
-  if (isWirdBound) return wirdBoundTint(brightness);
+  // A wird's first and last ayah wear the selection green: the reader opens
+  // with the tapped end selected, so the other end must match it.
+  if (isWirdBound) return selectedAyahTint(brightness);
   if (hasBookmark) return bookmarkHighlightFromHex(bookmarkHex);
   return null;
 }
 
-/// Tint on the first and last ayah of the wird being read — the blue the page
-/// already uses for its sajdah marks, so it reads as a landmark rather than a
-/// selection.
-Color wirdBoundTint(Brightness brightness) => brightness == Brightness.dark
-    ? const Color(0xFF8AB4F8).withValues(alpha: 0.22)
-    : const Color(0xFF1A4F9C).withValues(alpha: 0.14);
+/// Fill behind a selected ayah, also used for both ends of an open wird.
+Color selectedAyahTint(Brightness brightness) => brightness == Brightness.dark
+    ? AppColors.surfaceLightGreen.withValues(alpha: 0.22)
+    : AppColors.surfaceLightGreen;
 
 String arabicAyahDigits(int value) {
   const digits = '٠١٢٣٤٥٦٧٨٩';
