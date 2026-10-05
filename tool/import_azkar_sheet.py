@@ -62,6 +62,7 @@ SHEETS = [
     ("أذكار بعد الصلاة", "after_pray.json", "أذكار بعد الصلاة"),
     ("أذكار المسجد", "masged.json", "أذكار المسجد"),
     ("دليل العمره", "umrah_guide.json", "دليل العمرة"),
+    ("مفاتيح الفرج", "faraj_keys.json", "مفاتيح الفرج العشرة"),
 ]
 
 # Blank counts the text match cannot recover, keyed by output file and the
@@ -116,9 +117,9 @@ def as_int(value) -> int | None:
 
 
 def header_key(header) -> str:
-    """Folds the header spellings the tabs use ("Zikr ( English)", "Zikr(Arabic)", …)."""
+    """Folds the header spellings the tabs use ("Zikr ( English)", "zekr (Arabic)", …)."""
     h = re.sub(r"[\s()]+", "", str(header or "")).lower()
-    return {"zekr": "zikrarabic"}.get(h, h)
+    return {"zekr": "zikrarabic", "zekrarabic": "zikrarabic"}.get(h, h)
 
 
 def find_sheet(workbook, name: str):
