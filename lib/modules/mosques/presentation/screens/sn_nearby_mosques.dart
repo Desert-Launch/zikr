@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_modular/flutter_modular.dart';
-import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:localize_and_translate/localize_and_translate.dart';
+import 'package:quran/core/services/config/app_config.dart';
 import 'package:quran/core/theme/brand_colors.dart';
 import 'package:quran/core/utils/helper/app_alert.dart';
 import 'package:quran/core/widgets/w_shared_scaffold.dart';
@@ -10,14 +10,16 @@ import 'package:quran/modules/mosques/domain/entities/e_mosque.dart';
 import 'package:quran/modules/mosques/presentation/cubits/cb_nearby_mosques.dart';
 import 'package:quran/modules/mosques/presentation/cubits/s_nearby_mosques.dart';
 import 'package:quran/modules/mosques/presentation/widgets/w_maps_app_sheet.dart';
-import 'package:quran/modules/mosques/presentation/widgets/w_mosque_card.dart';
+import 'package:quran/modules/mosques/presentation/widgets/w_mosques_failure.dart';
 import 'package:quran/modules/mosques/presentation/widgets/w_mosques_hero.dart';
+import 'package:quran/modules/mosques/presentation/widgets/w_mosques_list.dart';
+import 'package:quran/modules/mosques/presentation/widgets/w_mosques_map.dart';
 import 'package:quran/modules/mosques/presentation/widgets/w_mosques_message.dart';
 import 'package:quran/modules/mosques/services/maps_launcher.dart';
 import 'package:quran/modules/prayer/domain/entities/e_location_failure.dart';
 
-/// The mosques nearest to the reader, each with a hand-off to a map app for
-/// directions.
+/// The mosques nearest to the reader on a map and in a list, each with a
+/// hand-off to a map app for directions. A pin and its card select together.
 class SNNearbyMosques extends StatefulWidget {
   const SNNearbyMosques({super.key});
 
@@ -33,6 +35,12 @@ class _SNNearbyMosquesState extends State<SNNearbyMosques>
   /// list reloads on their way back. Only then: reloading on every resume
   /// would re-trigger the permission dialog the reader just answered.
   bool _sentToSettings = false;
+
+  /// One per card, so a tapped pin can scroll its card into view.
+  final Map<String, GlobalKey> _cardKeys = {};
+
+  GlobalKey _cardKey(String mosqueId) =>
+      _cardKeys.putIfAbsent(mosqueId, GlobalKey.new);
 
   @override
   void initState() {
@@ -61,6 +69,19 @@ class _SNNearbyMosquesState extends State<SNNearbyMosques>
       _sentToSettings = true;
     }
     _cubit.recover();
+  }
+
+  /// A pin was tapped: light up its card and bring it into view.
+  void _onPinTap(EMosque mosque) {
+    _cubit.selectMosque(mosque.id);
+    final card = _cardKeys[mosque.id]?.currentContext;
+    if (card == null) return;
+    Scrollable.ensureVisible(
+      card,
+      duration: const Duration(milliseconds: 350),
+      curve: Curves.easeOutCubic,
+      alignment: 0.05,
+    );
   }
 
   Future<void> _directions(EMosque mosque) async {
@@ -92,20 +113,38 @@ class _SNNearbyMosquesState extends State<SNNearbyMosques>
       padding: EdgeInsets.zero,
       body: BlocProvider.value(
         value: _cubit,
-        child: RefreshIndicator(
-          color: brand.primary,
-          onRefresh: _cubit.load,
-          child: CustomScrollView(
-            physics: const AlwaysScrollableScrollPhysics(),
-            slivers: [
-              SliverToBoxAdapter(child: _Hero(onViewOnMap: _viewOnMap)),
-              _Body(
+        // The map stays put above the list, so a card tapped anywhere down
+        // the list still has its pin in view.
+        child: Column(
+          children: [
+            _Hero(
+              onViewOnMap: _viewOnMap,
+              map: (hidden) => _Map(
+                hidden: hidden,
+                onPinTap: _onPinTap,
                 onDirections: _directions,
-                onRecover: _recover,
-                onRetry: _cubit.load,
+                onClearSelection: () => _cubit.selectMosque(null),
               ),
-            ],
-          ),
+            ),
+            Expanded(
+              child: RefreshIndicator(
+                color: brand.primary,
+                onRefresh: _cubit.load,
+                child: CustomScrollView(
+                  physics: const AlwaysScrollableScrollPhysics(),
+                  slivers: [
+                    _Body(
+                      cardKey: _cardKey,
+                      onSelect: _cubit.selectMosque,
+                      onDirections: _directions,
+                      onRecover: _recover,
+                      onRetry: _cubit.load,
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ],
         ),
       ),
     );
@@ -113,9 +152,14 @@ class _SNNearbyMosquesState extends State<SNNearbyMosques>
 }
 
 class _Hero extends StatelessWidget {
-  const _Hero({required this.onViewOnMap});
+  const _Hero({required this.onViewOnMap, required this.map});
 
   final VoidCallback onViewOnMap;
+  final Widget Function(EdgeInsets hidden) map;
+
+  /// Without a key the Maps SDK can't start (and on Android would crash the
+  /// app), so the photo stays. The native side reads the same define.
+  static bool get _mapsAvailable => AppConfig.googleMapsApiKey.isNotEmpty;
 
   @override
   Widget build(BuildContext context) {
@@ -135,6 +179,44 @@ class _Hero extends StatelessWidget {
         return WMosquesHero(
           subtitle: subtitle,
           onViewOnMap: hasLocation ? onViewOnMap : null,
+          mapBuilder: hasLocation && _mapsAvailable ? map : null,
+        );
+      },
+    );
+  }
+}
+
+/// The map, fed from the cubit. Rebuilds for the fix, the list and the pick.
+class _Map extends StatelessWidget {
+  const _Map({
+    required this.hidden,
+    required this.onPinTap,
+    required this.onDirections,
+    required this.onClearSelection,
+  });
+
+  final EdgeInsets hidden;
+  final ValueChanged<EMosque> onPinTap;
+  final ValueChanged<EMosque> onDirections;
+  final VoidCallback onClearSelection;
+
+  @override
+  Widget build(BuildContext context) {
+    return BlocSelector<CBNearbyMosques, SNearbyMosques,
+        (double?, double?, List<EMosque>, String?)>(
+      selector: (s) => (s.latitude, s.longitude, s.mosques, s.selectedMosqueId),
+      builder: (context, selected) {
+        final (lat, lng, mosques, selectedId) = selected;
+        if (lat == null || lng == null) return const SizedBox.shrink();
+        return WMosquesMap(
+          latitude: lat,
+          longitude: lng,
+          mosques: mosques,
+          selectedId: selectedId,
+          padding: hidden,
+          onMosqueTap: onPinTap,
+          onDirections: onDirections,
+          onClearSelection: onClearSelection,
         );
       },
     );
@@ -143,11 +225,15 @@ class _Hero extends StatelessWidget {
 
 class _Body extends StatelessWidget {
   const _Body({
+    required this.cardKey,
+    required this.onSelect,
     required this.onDirections,
     required this.onRecover,
     required this.onRetry,
   });
 
+  final GlobalKey Function(String mosqueId) cardKey;
+  final ValueChanged<String> onSelect;
   final void Function(EMosque mosque) onDirections;
   final VoidCallback onRecover;
   final VoidCallback onRetry;
@@ -159,6 +245,7 @@ class _Body extends StatelessWidget {
       buildWhen: (a, b) =>
           a.status != b.status ||
           a.mosques != b.mosques ||
+          a.selectedMosqueId != b.selectedMosqueId ||
           a.locationFailure != b.locationFailure ||
           a.errorKey != b.errorKey,
       builder: (context, state) {
@@ -174,7 +261,7 @@ class _Body extends StatelessWidget {
             return SliverFillRemaining(
               hasScrollBody: false,
               child: Center(
-                child: _Failure(
+                child: WMosquesFailure(
                   state: state,
                   onRecover: onRecover,
                   onRetry: onRetry,
@@ -196,73 +283,15 @@ class _Body extends StatelessWidget {
                 ),
               );
             }
-            final bottomInset = MediaQuery.paddingOf(context).bottom;
-            return SliverPadding(
-              padding: EdgeInsets.fromLTRB(16.w, 16.h, 16.w, 24.h + bottomInset),
-              sliver: SliverList.separated(
-                itemCount: state.mosques.length,
-                separatorBuilder: (_, _) => SizedBox(height: 12.h),
-                itemBuilder: (_, index) {
-                  final mosque = state.mosques[index];
-                  return WMosqueCard(
-                    rank: index + 1,
-                    mosque: mosque,
-                    onDirections: () => onDirections(mosque),
-                  );
-                },
-              ),
+            return WMosquesList(
+              mosques: state.mosques,
+              selectedId: state.selectedMosqueId,
+              cardKey: cardKey,
+              onSelect: onSelect,
+              onDirections: onDirections,
             );
         }
       },
-    );
-  }
-}
-
-/// Explains why the list is missing and offers the one action that can fix it.
-class _Failure extends StatelessWidget {
-  const _Failure({
-    required this.state,
-    required this.onRecover,
-    required this.onRetry,
-  });
-
-  final SNearbyMosques state;
-  final VoidCallback onRecover;
-  final VoidCallback onRetry;
-
-  @override
-  Widget build(BuildContext context) {
-    final locationFailure = state.locationFailure;
-    if (locationFailure != null) {
-      return WMosquesMessage(
-        icon: Icons.location_off_outlined,
-        title: 'mosques_location_title'.tr(),
-        body: switch (locationFailure) {
-          ELocationFailure.serviceDisabled => 'mosques_location_service_off',
-          ELocationFailure.denied => 'mosques_location_denied',
-          ELocationFailure.deniedForever => 'mosques_location_denied_forever',
-        }
-            .tr(),
-        actionLabel: locationFailure.needsSystemSettings
-            ? 'mosques_open_settings'.tr()
-            : 'mosques_allow_location'.tr(),
-        onAction: onRecover,
-      );
-    }
-
-    final key = state.errorKey ?? 'mosques_error_generic';
-    return WMosquesMessage(
-      icon: switch (key) {
-        'mosques_error_network' => Icons.wifi_off_rounded,
-        'mosques_no_location' => Icons.location_searching_rounded,
-        _ => Icons.error_outline_rounded,
-      },
-      title: key == 'mosques_no_location'
-          ? 'mosques_location_title'.tr()
-          : 'mosques_error_title'.tr(),
-      body: key.tr(),
-      actionLabel: 'common_retry'.tr(),
-      onAction: onRetry,
     );
   }
 }

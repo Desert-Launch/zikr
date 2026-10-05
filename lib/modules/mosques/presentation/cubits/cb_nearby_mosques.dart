@@ -67,11 +67,23 @@ class CBNearbyMosques extends Cubit<SNearbyMosques> {
           status: NearbyMosquesStatus.success,
           mosques: mosques,
           clearError: true,
+          // A refresh keeps the pick only while that mosque is still listed.
+          clearSelection:
+              !mosques.any((m) => m.id == state.selectedMosqueId),
         )),
       );
     } finally {
       _busy = false;
     }
+  }
+
+  /// Marks [mosqueId] as the one the reader is looking at; null clears it.
+  /// See [SNearbyMosques.selectedMosqueId].
+  void selectMosque(String? mosqueId) {
+    if (mosqueId == state.selectedMosqueId) return;
+    emit(mosqueId == null
+        ? state.copyWith(clearSelection: true)
+        : state.copyWith(selectedMosqueId: mosqueId));
   }
 
   /// The recovery for [SNearbyMosques.locationFailure] that can actually work:

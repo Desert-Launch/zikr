@@ -1,9 +1,23 @@
+import java.util.Base64
+
 plugins {
     id("com.android.application")
     id("kotlin-android")
     // The Flutter Gradle Plugin must be applied after the Android and Kotlin Gradle plugins.
     id("dev.flutter.flutter-gradle-plugin")
 }
+
+// The values passed with --dart-define(-from-file). The flutter tool hands them
+// to Gradle as one comma-separated list of base64 `KEY=value` entries.
+val dartDefines: Map<String, String> =
+    (project.findProperty("dart-defines") as String?)
+        ?.split(",")
+        ?.mapNotNull { entry ->
+            val pair = String(Base64.getDecoder().decode(entry)).split("=", limit = 2)
+            if (pair.size == 2) pair[0] to pair[1] else null
+        }
+        ?.toMap()
+        ?: emptyMap()
 
 android {
     namespace = "com.zikr.mapp"
@@ -29,6 +43,11 @@ android {
         targetSdk = flutter.targetSdkVersion
         versionCode = flutter.versionCode
         versionName = flutter.versionName
+
+        // The Maps SDK reads its key from the manifest, so the same key the Dart
+        // side uses for Places is injected there. Empty without the define; the
+        // mosques screen then never creates a map (see AppConfig).
+        manifestPlaceholders["googleMapsApiKey"] = dartDefines["GOOGLE_MAPS_API_KEY"] ?: ""
     }
 
     buildTypes {

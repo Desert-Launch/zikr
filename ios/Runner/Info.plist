@@ -16,6 +16,11 @@
 		<string>Zikr</string>
 		<key>CFBundlePackageType</key>
 		<string>APPL</string>
+		<!-- The base64 dart-defines the flutter tool writes into
+		     Generated.xcconfig. AppDelegate reads GOOGLE_MAPS_API_KEY from it
+		     for the Maps SDK, so the key lives only in dart_defines.json. -->
+		<key>DartDefines</key>
+		<string>$(DART_DEFINES)</string>
 		<key>CFBundleShortVersionString</key>
 		<string>$(FLUTTER_BUILD_NAME)</string>
 		<key>CFBundleSignature</key>

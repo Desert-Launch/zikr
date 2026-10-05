@@ -9,12 +9,14 @@ import 'package:quran/core/widgets/w_app_button.dart';
 import 'package:quran/modules/mosques/domain/entities/e_mosque.dart';
 
 /// One row of the nearby-mosques list: rank, name, address and distance, with
-/// a directions button underneath.
+/// a directions button underneath. Tapping it shows the mosque on the map.
 class WMosqueCard extends StatelessWidget {
   const WMosqueCard({
     required this.rank,
     required this.mosque,
     required this.onDirections,
+    this.selected = false,
+    this.onTap,
     super.key,
   });
 
@@ -23,65 +25,77 @@ class WMosqueCard extends StatelessWidget {
   final EMosque mosque;
   final VoidCallback onDirections;
 
+  /// Outlined in the brand colour while its pin is the one picked on the map.
+  final bool selected;
+  final VoidCallback? onTap;
+
   @override
   Widget build(BuildContext context) {
     final brand = context.brand;
-    return Container(
-      padding: EdgeInsets.fromLTRB(14.w, 14.h, 14.w, 12.h),
-      decoration: BoxDecoration(
-        color: brand.surface,
-        borderRadius: BorderRadius.circular(16.r),
-        border: Border.all(color: brand.border.withValues(alpha: 0.6)),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: 0.04),
-            blurRadius: 10,
-            offset: const Offset(0, 4),
-          ),
-        ],
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.stretch,
-        children: [
-          Row(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              _RankBadge(rank: rank),
-              SizedBox(width: 12.w),
-              Expanded(child: _Details(mosque: mosque)),
-              SizedBox(width: 8.w),
-              Text(
-                _distanceLabel(mosque.distanceMeters),
-                style: AppTextStyles.ink12W500.copyWith(color: brand.primary),
-              ),
-            ],
-          ),
-          Padding(
-            padding: EdgeInsets.symmetric(vertical: 10.h),
-            child: Divider(height: 1, thickness: 1, color: brand.border.withValues(alpha: 0.6)),
-          ),
-          Align(
-            alignment: AlignmentDirectional.centerEnd,
-            child: WAppButton(
-              title: 'mosques_directions'.tr(),
-              onTap: onDirections,
-              isExpanded: false,
-              width: 96.w,
-              height: 32.h,
-              radius: 16.r,
-              withShadow: false,
-              style: AppTextStyles.white12W500,
-              leading: Icon(Icons.near_me_outlined, size: 15.r, color: Colors.white),
+    return GestureDetector(
+      onTap: onTap,
+      behavior: HitTestBehavior.opaque,
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 200),
+        padding: EdgeInsets.fromLTRB(14.w, 14.h, 14.w, 12.h),
+        decoration: BoxDecoration(
+          color: brand.surface,
+          borderRadius: BorderRadius.circular(16.r),
+          border: selected
+              ? Border.all(color: brand.primary, width: 1.5)
+              : Border.all(color: brand.border.withValues(alpha: 0.6)),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withValues(alpha: 0.04),
+              blurRadius: 10,
+              offset: const Offset(0, 4),
             ),
-          ),
-        ],
+          ],
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                _RankBadge(rank: rank),
+                SizedBox(width: 12.w),
+                Expanded(child: _Details(mosque: mosque)),
+                SizedBox(width: 8.w),
+                Text(
+                  distanceLabel(mosque.distanceMeters),
+                  style: AppTextStyles.ink12W500.copyWith(color: brand.primary),
+                ),
+              ],
+            ),
+            Padding(
+              padding: EdgeInsets.symmetric(vertical: 10.h),
+              child: Divider(height: 1, thickness: 1, color: brand.border.withValues(alpha: 0.6)),
+            ),
+            Align(
+              alignment: AlignmentDirectional.centerEnd,
+              child: WAppButton(
+                title: 'mosques_directions'.tr(),
+                onTap: onDirections,
+                isExpanded: false,
+                width: 96.w,
+                height: 32.h,
+                radius: 16.r,
+                withShadow: false,
+                style: AppTextStyles.white12W500,
+                leading: Icon(Icons.near_me_outlined, size: 15.r, color: Colors.white),
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }
 
   /// Metres up to a kilometre (rounded to 10 m — finer is GPS noise), then
-  /// kilometres with one decimal, whole kilometres from 10 km on.
-  static String _distanceLabel(double meters) {
+  /// kilometres with one decimal, whole kilometres from 10 km on. Shared with
+  /// the map's pin labels.
+  static String distanceLabel(double meters) {
     if (meters < 1000) {
       final m = math.max(10, (meters / 10).round() * 10);
       return 'mosques_distance_m'.tr().replaceFirst('{{m}}', '$m');

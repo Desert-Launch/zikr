@@ -1,4 +1,5 @@
 import Flutter
+import GoogleMaps
 import UIKit
 import flutter_local_notifications
 import workmanager_apple
@@ -21,6 +22,13 @@ import workmanager_apple
       UNUserNotificationCenter.current().delegate = self as? UNUserNotificationCenterDelegate
     }
 
+    // Maps SDK key for the nearby-mosques map — must be set before any map
+    // view exists. Without the define the Dart side never creates a map (see
+    // AppConfig.googleMapsApiKey), so skipping it here is safe.
+    if let key = Self.dartDefine("GOOGLE_MAPS_API_KEY"), !key.isEmpty {
+      GMSServices.provideAPIKey(key)
+    }
+
     GeneratedPluginRegistrant.register(with: self)
 
     // Adhan alarm bridge (AlarmKit on iOS 26+, critical alerts below that).
@@ -40,5 +48,20 @@ import workmanager_apple
     )
 
     return super.application(application, didFinishLaunchingWithOptions: launchOptions)
+  }
+
+  /// One `--dart-define` value, read from Info.plist's `DartDefines`: a
+  /// comma-separated list of base64 `KEY=value` entries.
+  private static func dartDefine(_ name: String) -> String? {
+    guard let raw = Bundle.main.object(forInfoDictionaryKey: "DartDefines") as? String
+    else { return nil }
+    for entry in raw.split(separator: ",") {
+      guard let data = Data(base64Encoded: String(entry)),
+            let pair = String(data: data, encoding: .utf8)
+      else { continue }
+      let parts = pair.split(separator: "=", maxSplits: 1, omittingEmptySubsequences: false)
+      if parts.count == 2, parts[0] == name { return String(parts[1]) }
+    }
+    return nil
   }
 }

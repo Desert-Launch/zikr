@@ -101,6 +101,7 @@ dependencies:
   # docs/plans/Prayer_Home_Widget_Plan.md. Pinned below 0.9.3, which needs
   # Flutter 3.38 / Dart 3.10.
   home_widget: ^0.9.2
+  google_maps_flutter: ^2.14.2
 
 dev_dependencies:
   flutter_test:

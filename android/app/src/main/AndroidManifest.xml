@@ -63,6 +63,12 @@
             android:name="flutterEmbedding"
             android:value="2" />
 
+        <!-- Maps SDK key for the nearby-mosques map. Filled from the
+             GOOGLE_MAPS_API_KEY dart-define by app/build.gradle.kts. -->
+        <meta-data
+            android:name="com.google.android.geo.API_KEY"
+            android:value="${googleMapsApiKey}" />
+
         <!-- just_audio_background / audio_service: required foreground service
              and media-button receiver. Without these, AudioService.init()
              (via JustAudioBackground.init in main.dart) throws a

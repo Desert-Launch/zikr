@@ -17,6 +17,7 @@ class SNearbyMosques extends Equatable {
     this.longitude,
     this.locationFailure,
     this.errorKey,
+    this.selectedMosqueId,
   });
 
   final NearbyMosquesStatus status;
@@ -39,10 +40,15 @@ class SNearbyMosques extends Equatable {
   /// i18n key for any other failure (no fix in time, network, Google error).
   final String? errorKey;
 
+  /// [EMosque.id] of the mosque the reader picked on the map or the list, so
+  /// its pin and its card light up together. Null when none is.
+  final String? selectedMosqueId;
+
   bool get hasLocation => latitude != null && longitude != null;
 
   /// [clearError] drops both error fields; pass the new one alongside it to
-  /// replace whichever was set before.
+  /// replace whichever was set before. [clearSelection] drops
+  /// [selectedMosqueId].
   SNearbyMosques copyWith({
     NearbyMosquesStatus? status,
     List<EMosque>? mosques,
@@ -51,7 +57,9 @@ class SNearbyMosques extends Equatable {
     double? longitude,
     ELocationFailure? locationFailure,
     String? errorKey,
+    String? selectedMosqueId,
     bool clearError = false,
+    bool clearSelection = false,
   }) {
     return SNearbyMosques(
       status: status ?? this.status,
@@ -62,6 +70,8 @@ class SNearbyMosques extends Equatable {
       locationFailure:
           locationFailure ?? (clearError ? null : this.locationFailure),
       errorKey: errorKey ?? (clearError ? null : this.errorKey),
+      selectedMosqueId: selectedMosqueId ??
+          (clearSelection ? null : this.selectedMosqueId),
     );
   }
 
@@ -74,5 +84,6 @@ class SNearbyMosques extends Equatable {
         longitude,
         locationFailure,
         errorKey,
+        selectedMosqueId,
       ];
 }

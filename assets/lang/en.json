@@ -522,6 +522,7 @@
   "mosques_current_location_unknown": "Your current location",
   "mosques_locating": "Finding your location…",
   "mosques_view_on_map": "View on map",
+  "mosques_recenter": "Show me and the nearest mosques",
   "mosques_directions": "Directions",
   "mosques_distance_km": "{{km}} km",
   "mosques_distance_m": "{{m}} m",
