@@ -4,14 +4,16 @@
         "sort": 1,
         "description": "",
         "count": 3,
-        "zekr": "اللّهُـمَّ ما أَصْبَـَحَ بي مِـنْ نِعْـمَةٍ أَوْ بِأَحَـدٍ مِـنْ خَلْـقِك، فَمِـنْكَ وَحْـدَكَ لا شَرِيكَ لَـك، فَلَـكَ الْحَمْـدُ وَلَـكَ الشُّكْـر.",
-        "zekr_en": "اللّهُـمَّ ما أَصْبَـَحَ بي مِـنْ نِعْـمَةٍ أَوْ بِأَحَـدٍ مِـنْ خَلْـقِك، فَمِـنْكَ وَحْـدَكَ لا شَرِيكَ لَـك، فَلَـكَ الْحَمْـدُ وَلَـكَ الشُّكْـر.\n\nAllāhumma mā aṣbaha bī min ni`matin aw bi aḥadin min khalqik, fa minka waḥdaka lā sharīka lak, falaka ‘l-ḥamdu wa lakash-shukr\n\nO Allah, whatever blessing has been received by me or anyone of Your creation is from You alone, You have no partner. All praise is for you and thanks is to You",
-        "reference": "Reference: When you say this in the evening, you should say: Allāhumma mā 'amsā bī...: \"O Allah, as I... enter this evening...\" 2 Whoever recites this in the morning, has completed his obligation to thank Allah for that day; and whoever says it in the evening, has completed his obligation for that night. Abu Dawud 4/318, An-Nasa'i 'Amalul-Yawm wal-Laylah (no. 7), Ibn As-Sunni (no. 41), Ibn Hibban (no. 2361). Its chain of transmission is good (Hasan), Ibn Baz, p. 24.\n\nHisn al-Muslim 81\nChapter 27: In the morning and evening, Book: Fortress of the Muslim (Hisn al-Muslim)",
+        "zekr": "اللّهُـمَّ ما أَصْبَـَحَ بي مِـنْ نِعْـمَةٍ أَوْ بِأَحَـدٍ مِـنْ خَلْـقِك، فَمِـنْكَ وَحْـدَكَ لا شَرِيكَ لَـك، فَلَـكَ الْحَمْـدُ وَلَـكَ الشُّكْـر",
+        "zekr_en": "اللّهُـمَّ ما أَصْبَـَحَ بي مِـنْ نِعْـمَةٍ أَوْ بِأَحَـدٍ مِـنْ خَلْـقِك، فَمِـنْكَ وَحْـدَكَ لا شَرِيكَ لَـك، فَلَـكَ الْحَمْـدُ وَلَـكَ الشُّكْـر\n\nAllāhumma mā aṣbaha bī min ni`matin aw bi aḥadin min khalqik, fa minka waḥdaka lā sharīka lak, falaka ‘l-ḥamdu wa lakash-shukr\n\nO Allah, whatever blessing has been received by me or anyone of Your creation is from You alone, You have no partner All praise is for you and thanks is to You",
+        "reference": "Source: Hisn al-Muslim (Fortress of the Muslim), Chapter 27, Supplication No 81\nPrimary Hadith Authorities: Abu Dawud (4/318), An-Nasa'i ('Amalul-Yawm wal-Laylah, No 7), Ibn As-Sunni (No 41), and Ibn Hibban (No 2361)\nAuthentication: Chain of transmission graded Hasan (Good) by Sheikh Ibn Baz (Tuhfat al-Akhyar, p 24)",
         "fadel_zeker": [
-            "المرجع: أخرجه أبو داود (رقم 5073)، والنسائي في \"السنن الكبرى\" (رقم 9832)، وابن حبان (رقم 861) عن عبد الله بن غنام البياضي رضي الله عنه",
-            "الكتاب: حصن المسلم",
-            "الباب: أذكار الصباح والمساء (باب رقم 27)",
-            "الذِّكْر رقم: 81"
+            "فضل الذكر",
+            "أداء شكر اليوم والليلة: مَن قاله في الصباح فقد أدّى شكر يومه كاملًا، ومَن قاله في المساء فقد أدّى شكر ليلته",
+            "الاعتراف بالمنعم: إقرار العبد بأن كل النعم التي يتقلب فيها هو أو سائر الخلائق هي محض فضل وكرم من الله وحده",
+            "📚 التوثيق المعتمد",
+            "المصدر: أخرجه أبو داود (رقم 5073)، والنسائي في السنن الكبرى (رقم 9835/9832)، وابن حبان (رقم 861)، عن عبد الله بن غنام البياضي رضي الله عنه",
+            "الكتاب المتداول: حصن المسلم، الباب 27 (أذكار الصباح والمساء)"
         ],
         "audio": "Zikr-Estikaz-1",
         "category": "أذكار الاستيقاظ"
@@ -21,13 +23,16 @@
         "sort": 2,
         "description": "",
         "count": 1,
-        "zekr": "لا إِلهَ إِلاَّ اللهُ وَحْدَهُ لا شَرِيكَ لَهُ، لَهُ المُلْكُ وَلَهُ الحَمْدُ، وَهُوَ عَلَى كُلِّ شَيْءٍ قَدِيرٌ.",
-        "zekr_en": "لا إِلهَ إِلاَّ اللهُ وَحْدَهُ لا شَرِيكَ لَهُ، لَهُ المُلْكُ وَلَهُ الحَمْدُ، وَهُوَ عَلَى كُلِّ شَيْءٍ قَدِيرٌ.\n\nLā 'ilāha 'illallāhu waḥdahu la sharīka lahu\nlahul-mulku wa lahul-ḥamdu,\nwa huwa 'alā kulli shay'in qadīr\n\nThere is none worthy of worship but Allah alone, Who has no partner\nHis is the dominion and to Him belongs all praise\nand He is able to do all things",
-        "reference": "Reference: Al-Bukhari 7/67, Muslim 4/2071, see also invocation no. 93 of this book.\n\nHisn al-Muslim\nChapter 130: Excellence of Tasbih, Tahmid, Tahlil, and Takbir, Book: Fortress of the Muslim (Hisn al-Muslim)",
+        "zekr": "لا إِلهَ إِلاَّ اللهُ وَحْدَهُ لا شَرِيكَ لَهُ، لَهُ المُلْكُ وَلَهُ الحَمْدُ، وَهُوَ عَلَى كُلِّ شَيْءٍ قَدِيرٌ",
+        "zekr_en": "لا إِلهَ إِلاَّ اللهُ وَحْدَهُ لا شَرِيكَ لَهُ، لَهُ المُلْكُ وَلَهُ الحَمْدُ، وَهُوَ عَلَى كُلِّ شَيْءٍ قَدِيرٌ\n\nLā 'ilāha 'illallāhu waḥdahu la sharīka lahu lahul-mulku wa lahul-ḥamdu, wa huwa 'alā kulli shay'in qadīr\n\nThere is none worthy of worship but Allah alone, Who has no partner His is the dominion and to Him belongs all praise and He is able to do all things",
+        "reference": "Source: Hisn al-Muslim (Fortress of the Muslim), Chapter 130, Supplication No 255 (Cross-referenced with No 93)\nPrimary Hadith Authorities: Sahih al-Bukhari (7/67) and Sahih Muslim (4/2071)\nAuthentication: Structurally authenticated and universally accepted across both Sahih al-Bukhari and Sahih Muslim (Muttafaqun Alayh / Agreed Upon)",
         "fadel_zeker": [
-            "وَقَالَ صلى الله عليه وسلم: مَنْ قَالَ (لاَ إِلَهَ إِلاَّ اللَّهُ وَحْدَهُ لاَ شَرِيكَ لَهُ، لَهُ الْمُلْكُ، وَلَهُ الْحَمْدُ، وَهُوَ عَلَى كُلِّ شَيْءٍ قَدِيرٌ) عَشْرَ مِرَارٍ، كَانَ كَمَنْ أَعْتَقَ أَرْبَعَةَ أَنْفُسٍ مِنْ وَلَدِ إِسْمَاعِيلَ",
-            "الكتاب: حصن المسلم",
-            "الباب: من فضل التسبيح والتحميد، والتهليل، والتكبير (باب رقم 130)"
+            "فضل الذكر",
+            "أجر عتق الرقاب: نيل ثواب عظيم يُعادل عتق أربعة أنفس حرّة من ذرية النبي إسماعيل عليه السلام",
+            "تحقيق التوحيد الخالص: تجديد العهد مع الله بإثبات الألوهية، والملك، والحمد، والقدرة المطلقة له وحده لا شريك له",
+            "📚 التوثيق المعتمد",
+            "المصدر: صحيح البخاري (حديث رقم 6404) وصحيح مسلم (حديث رقم 2693)",
+            "الكتاب المتداول: حصن المسلم، الباب 130 (باب فضل التسبيح والتحميد، والتهليل، والتكبير)"
         ],
         "audio": "Zikr-Estikaz-2",
         "category": "أذكار الاستيقاظ"
@@ -37,13 +42,16 @@
         "sort": 3,
         "description": "",
         "count": 1,
-        "zekr": "الحَمْدُ للهِ الَّذِي عَافَانِي فِي جَسَدِي، وَرَدَّ عَلَيَّ رُوحِي، وَأَذِنَ لِي بِذِكْرِهِ.",
-        "zekr_en": "الحَمْدُ للهِ الَّذِي عَافَانِي فِي جَسَدِي، وَرَدَّ عَلَيَّ رُوحِي، وَأَذِنَ لِي بِذِكْرِهِ.\n\nAl-ḥamdu lillāhil-ladhī `āfānī fī jasadī, wa radda `alayya rūḥī, wa 'adhina lī bidhikrihi\n\nPraise is to Allah Who gave strength to my body and returned my soul to me and permitted me to remember Him",
-        "reference": "Reference: At-Tirmidhi 5/473. See Al-Albani's Sahih Tirmidhi 3/144.\n\nHisn al-Muslim\nChapter 1: When waking up, Book: Fortress of the Muslim (Hisn al-Muslim)",
+        "zekr": "الحَمْدُ للهِ الَّذِي عَافَانِي فِي جَسَدِي، وَرَدَّ عَلَيَّ رُوحِي، وَأَذِنَ لِي بِذِكْرِهِ",
+        "zekr_en": "الحَمْدُ للهِ الَّذِي عَافَانِي فِي جَسَدِي، وَرَدَّ عَلَيَّ رُوحِي، وَأَذِنَ لِي بِذِكْرِهِ\n\nAl-ḥamdu lillāhil-ladhī `āfānī fī jasadī, wa radda `alayya rūḥī, wa 'adhina lī bidhikrihi\n\nPraise is to Allah Who gave strength to my body and returned my soul to me and permitted me to remember Him",
+        "reference": "Source: Hisn al-Muslim (Fortress of the Muslim), Chapter 1, Supplication No 3\nPrimary Hadith Authorities: Jami' at-Tirmidhi (5/473)\nAuthentication: Authenticated in Sheikh Al-Albani's Sahih Jami' at-Tirmidhi (3/144)",
         "fadel_zeker": [
-            "المرجع: الترمذي 5/473. انظر صحيح الترمذي للألباني",
-            "الكتاب: حصن المسلم من أذكار الكتاب والسنة",
-            "الباب الأول: أذكار الاستيقاظ من النوم"
+            "🤲 فضل الذكر",
+            "شكر نعمة العافية والبعث: اعتراف بفضل الله المتمثل في سلامة البدن بعد النوم، وحمده على ردّ الروح التي هي في حكم المتوفاة عند النوم لتستأنف طاعته",
+            "التوفيق لملازمة الذكر: الثناء على الله الذي تفضل بفتح باب مناجاته والإذن للعبد بذكره وحمده فور استيقاظه، وجعل بداية اليوم منفتحة على العبودية",
+            "📚 التوثيق المعتمد",
+            "المصدر: أخرجه الإمام الترمذي في سننه (المجلد 5، صفحة 473، رقم 3401)، وحسنه الإمام الألباني في صحيح سنن الترمذي (3/144)",
+            "الكتاب المتداول: حصن المسلم، الباب الأول (أذكار الاستيقاظ من النوم)"
         ],
         "audio": "Zikr-Estikaz-3",
         "category": "أذكار الاستيقاظ"
@@ -53,13 +61,16 @@
         "sort": 4,
         "description": "",
         "count": 3,
-        "zekr": "الحَمْدُ للهِ الَّذِي أَحْيَانَا بَعْدَ مَا أَمَاتَنَا وَإِلَيْهِ النُّشُورُ.",
-        "zekr_en": "الحَمْدُ للهِ الَّذِي أَحْيَانَا بَعْدَ مَا أَمَاتَنَا وَإِلَيْهِ النُّشُورُ.\n\nAlḥamdu lillāhil-ladhī 'aḥyānā ba`da mā 'amātanā wa 'ilayhin-nushūr\n\nPraise is to Allah Who gives us life after He has caused us to die and to Him is the return",
-        "reference": "Reference: Al-Bukhari, cf. Al-Asqalani, Fathul-Bari 11/113; Muslim 4/2083\n\nHisn al-Muslim\nChapter 1: When waking up, Book: Fortress of the Muslim (Hisn al-Muslim)",
+        "zekr": "الحَمْدُ للهِ الَّذِي أَحْيَانَا بَعْدَ مَا أَمَاتَنَا وَإِلَيْهِ النُّشُورُ",
+        "zekr_en": "الحَمْدُ للهِ الَّذِي أَحْيَانَا بَعْدَ مَا أَمَاتَنَا وَإِلَيْهِ النُّشُورُ\n\nAlḥamdu lillāhil-ladhī 'aḥyānā ba`da mā 'amātanā wa 'ilayhin-nushūr\n\nPraise is to Allah Who gives us life after He has caused us to die and to Him is the return",
+        "reference": "Source: Hisn al-Muslim (Fortress of the Muslim), Chapter 1, Supplication No 4\nPrimary Hadith Authorities: Sahih al-Bukhari (referenced with Ibn Hajar Al-Asqalani's commentary, Fathul-Bari, 11/113) and Sahih Muslim (4/2083)\nAuthentication: Structurally authenticated and universally accepted across both Sahih al-Bukhari and Sahih Muslim (Muttafaqun Alayh / Agreed Upon)",
         "fadel_zeker": [
-            "المرجع: صحيح البخاري: (انظر فتح الباري لابن حجر العسقلاني، المجلد 11، صفحة 113).",
-            "الكتاب: حصن المسلم من أذكار الكتاب والسنة",
-            "الباب الأول: أذكار الاستيقاظ من النوم"
+            "فضل الذكر",
+            "تجديد التوحيد والشكر: حمد الله على بعث البدن وردّ الروح بعد النوم (الموت الأصغر)",
+            "التذكير بالآخرة: الاستعداد للبعث والنشور الحقيقي بالعمل الصالح منذ أول دقيقة في اليوم",
+            "📚 التوثيق المعتمد",
+            "المصدر: صحيح البخاري، كتاب الدعوات (انظر فتح الباري لابن حجر، مجلد 11، ص 113)",
+            "الكتاب المتداول: حصن المسلم، الباب الأول (أذكار الاستيقاظ من النوم، الحديث الأول)"
         ],
         "audio": "Zikr-Estikaz-4",
         "category": "أذكار الاستيقاظ"
@@ -69,13 +80,17 @@
         "sort": 5,
         "description": "",
         "count": 1,
-        "zekr": "لا إِلهَ إِلاَّ اللهُ وَحْدَهُ لا شَرِيكَ لَهُ، لَهُ المُلْكُ وَلَهُ الحَمْدُ، وَهُوَ عَلَى كُلِّ شَيْءٍ قَدِيرٌ، سُبْحَانَ اللهِ، وَالحَمْدُ للهِ، وَلا إِلهَ إِلاَّ اللهُ وَاللهُ أَكْبَرُ، وَلا حَوْلَ وَلا قُوَّةَ إِلاَّ بِاللهِ العَلِيِّ العَظِيمِ. رَبِّ اغْفِرْ لِي.",
-        "zekr_en": "لا إِلهَ إِلاَّ اللهُ وَحْدَهُ لا شَرِيكَ لَهُ، لَهُ المُلْكُ وَلَهُ الحَمْدُ، وَهُوَ عَلَى كُلِّ شَيْءٍ قَدِيرٌ، سُبْحَانَ اللهِ، وَالحَمْدُ للهِ، وَلا إِلهَ إِلاَّ اللهُ وَاللهُ أَكْبَرُ، وَلا حَوْلَ وَلا قُوَّةَ إِلاَّ بِاللهِ العَلِيِّ العَظِيمِ. رَبِّ اغْفِرْ لِي.\n\nLā 'ilāha 'illallāhu waḥdahu la sharīka lahu, lahul-mulku wa lahul-ḥamdu, wa huwa 'alā kulli shay'in qadīr Subḥānallāhi, walḥamdu lillāhi, wa lā 'ilāha 'illallāhu, wallāhu 'akbar, wa lā ḥaula wa lā quwwata 'illā billāhil-`aliyyil-`aẓīm, rabbighfir lī\n\nThere is none worthy of worship but Allah alone, Who has no partner, His is the dominion and to Him belongs all praise, and He is able to do all things. Glory is to Allah. Praise is to Allah. There is none worthy of worship but Allah. Allah is the Most Great There is no might and no power except by Allah's leave the Exalted, the Mighty. My Lord forgive me",
-        "reference": "Reference: Whoever says this will be forgiven, and if he supplicates Allah, his prayer will be answered; if he performs ablution and prays, his prayer will be accepted. Al-Bukhari, cf. Al-Asqalani, Fathul-Bari 3/39, among others. The wording here is from Ibn Majah 2/335.\n\nHisn al-Muslim\nChapter 1: When waking up, Book: Fortress of the Muslim (Hisn al-Muslim)",
+        "zekr": "لا إِلهَ إِلاَّ اللهُ وَحْدَهُ لا شَرِيكَ لَهُ، لَهُ المُلْكُ وَلَهُ الحَمْدُ، وَهُوَ عَلَى كُلِّ شَيْءٍ قَدِيرٌ، سُبْحَانَ اللهِ، وَالحَمْدُ للهِ، وَلا إِلهَ إِلاَّ اللهُ وَاللهُ أَكْبَرُ، وَلا حَوْلَ وَلا قُوَّةَ إِلاَّ بِاللهِ العَلِيِّ العَظِيمِ رَبِّ اغْفِرْ لِي",
+        "zekr_en": "لا إِلهَ إِلاَّ اللهُ وَحْدَهُ لا شَرِيكَ لَهُ، لَهُ المُلْكُ وَلَهُ الحَمْدُ، وَهُوَ عَلَى كُلِّ شَيْءٍ قَدِيرٌ، سُبْحَانَ اللهِ، وَالحَمْدُ للهِ، وَلا إِلهَ إِلاَّ اللهُ وَاللهُ أَكْبَرُ، وَلا حَوْلَ وَلا قُوَّةَ إِلاَّ بِاللهِ العَلِيِّ العَظِيمِ رَبِّ اغْفِرْ لِي\n\nLā 'ilāha 'illallāhu waḥdahu la sharīka lahu, lahul-mulku wa lahul-ḥamdu, wa huwa 'alā kulli shay'in qadīr Subḥānallāhi, walḥamdu lillāhi, wa lā 'ilāha 'illallāhu, wallāhu 'akbar, wa lā ḥaula wa lā quwwata 'illā billāhil-`aliyyil-`aẓīm, rabbighfir lī\n\nThere is none worthy of worship but Allah alone, Who has no partner, His is the dominion and to Him belongs all praise, and He is able to do all things Glory is to Allah Praise is to Allah There is none worthy of worship but Allah Allah is the Most Great There is no might and no power except by Allah's leave the Exalted, the Mighty My Lord forgive me",
+        "reference": "Source: Hisn al-Muslim (Fortress of the Muslim), Chapter 1, Supplication No 5\nPrimary Hadith Authorities: Sahih al-Bukhari (referenced with Ibn Hajar Al-Asqalani's commentary, Fathul-Bari, 3/39) and Sunan Ibn Majah (2/335)\nAuthentication: The primary virtue is authenticated in Sahih al-Bukhari, with the specific textual wording utilized coming from Sunan Ibn Majah",
         "fadel_zeker": [
-            "المرجع: مَن قال هذا غُفِر له، وإن دعا استُجيب له، فإن توضأ وصلى قُبِلت صلاته. [رواه البخاري]، وانظر: [فتح الباري] لابن حجر العسقلاني 3/39، وغيرهما. واللفظ هنا لابن ماجه 2/335.",
-            "الكتاب: حصن المسلم من أذكار الكتاب والسنة",
-            "الباب الأول: أذكار الاستيقاظ من النوم"
+            "فضل الذكر",
+            "مغفرة الذنوب: تنقية العبد من الخطايا فور استيقاظه من النوم وتعاره بالليل",
+            "إجابة الدعاء: فرصة عظيمة لاستجابة أي دعاء يدعو به العبد في تلك اللحظة",
+            "قبول الصلاة: تضمن قبول صلاته إذا توضأ وصلى بعد قراءة هذا الذكر",
+            "📚 التوثيق المعتمد",
+            "المصدر: صحيح البخاري، كتاب التهجد، مع لفظ ابن ماجه في سننه (انظر فتح الباري لابن حجر، مجلد 3، ص 39)",
+            "الكتاب المتداول: حصن المسلم، الباب الأول (أذكار الاستيقاظ من النوم، الحديث الثاني)"
         ],
         "audio": "Zikr-Estikaz-5",
         "category": "أذكار الاستيقاظ"
