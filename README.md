@@ -1,16 +1,32 @@
-# quran
+# قرآن — Quran companion app
 
-A new Flutter project.
+Arabic-first (RTL) Flutter app for Android and iOS: Mushaf reader with per-ayah
+audio and tafsir, prayer times with adhan alerts, azkar, tasbih, khatma,
+Qibla, reminders, and nearby mosques.
 
-## Getting Started
+**Stack:** Flutter (Dart `^3.9.2`) · Clean Architecture · Cubit (`flutter_bloc`)
+· `flutter_modular` · `hive_ce` · `dio` · `dartz`.
 
-This project is a starting point for a Flutter application.
+## Getting started
 
-A few resources to get you started if this is your first Flutter project:
+```bash
+flutter pub get
+flutter run --dart-define-from-file=dart_defines.json
+```
 
-- [Lab: Write your first Flutter app](https://docs.flutter.dev/get-started/codelab)
-- [Cookbook: Useful Flutter samples](https://docs.flutter.dev/cookbook)
+`dart_defines.json` holds local build-time secrets (e.g. the Google Maps key)
+and is gitignored. Without it, drop the flag — the mosques screen falls back to
+photos instead of a map.
 
-For help getting started with Flutter development, view the
-[online documentation](https://docs.flutter.dev/), which offers tutorials,
-samples, guidance on mobile development, and a full API reference.
+## Checks
+
+```bash
+flutter analyze   # must report zero errors
+flutter test
+```
+
+## Docs
+
+- [`CLAUDE.md`](./CLAUDE.md) — conventions and architecture rules (start here)
+- [`.claude/instructions.md`](./.claude/instructions.md) — long-form developer guide
+- [`docs/plans/`](./docs/plans) — module plans
