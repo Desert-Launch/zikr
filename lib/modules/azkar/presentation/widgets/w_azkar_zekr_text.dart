@@ -8,8 +8,8 @@ import 'package:quran/core/theme/app_text_styles.dart';
 ///
 /// The English text interleaves the Arabic with a transliteration and a
 /// translation, so each blank-line separated paragraph takes its own direction
-/// and size: Arabic large, in Amiri and right-aligned; Latin at a reading size
-/// and left-aligned. A plain Arabic zekr is a single paragraph.
+/// and size: Arabic large, in Amiri; Latin at a reading size. All of it is
+/// centred. A plain Arabic zekr is a single paragraph.
 class WAzkarZekrText extends StatelessWidget {
   const WAzkarZekrText({super.key, required this.text});
 
@@ -42,15 +42,15 @@ class _Paragraph extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final rtl = Bidi.detectRtlDirectionality(text);
-    // `start` follows the paragraph's own direction: Arabic hugs the right,
-    // the transliteration and translation the left.
+    // Every paragraph is centred; the direction still follows the paragraph so
+    // Arabic and Latin text each wrap and order correctly.
     return Text(
       text,
-      textAlign: TextAlign.start,
+      textAlign: TextAlign.center,
       textDirection: rtl ? TextDirection.rtl : TextDirection.ltr,
       style: rtl
-          ? GoogleFonts.amiri(textStyle: AppTextStyles.ink24W400, fontSize: 24.sp, height: 1.9)
-          : AppTextStyles.ink16W400.copyWith(fontSize: 16.sp, height: 1.7),
+          ? GoogleFonts.amiri(textStyle: AppTextStyles.ink22W400, fontSize: 22.sp, height: 1.9)
+          : AppTextStyles.ink16W400.copyWith(fontSize: 15.sp, height: 1.7),
     );
   }
 }

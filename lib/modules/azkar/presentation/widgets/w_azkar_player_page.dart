@@ -32,7 +32,7 @@ class WAzkarPlayerPage extends StatelessWidget {
     final vertical = 24.h + 16.h;
     return LayoutBuilder(
       builder: (_, constraints) => SingleChildScrollView(
-        padding: EdgeInsets.fromLTRB(16.w, 24.h, 16.w, 16.h),
+        padding: EdgeInsets.fromLTRB(8.w, 24.h, 8.w, 16.h),
         child: GestureDetector(
           behavior: HitTestBehavior.opaque,
           onTap: onTap,
@@ -46,10 +46,7 @@ class WAzkarPlayerPage extends StatelessWidget {
                   const Spacer(),
                   if (virtue != null && virtue.isNotEmpty) ...[
                     SizedBox(height: 24.h),
-                    Padding(
-                      padding: EdgeInsets.symmetric(horizontal: 12.w),
-                      child: WAzkarVirtueCard(text: virtue, gold: gold),
-                    ),
+                    WAzkarVirtueCard(text: virtue, gold: gold),
                   ],
                 ],
               ),
