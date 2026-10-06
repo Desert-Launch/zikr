@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_modular/flutter_modular.dart';
 import 'package:localize_and_translate/localize_and_translate.dart';
-import 'package:quran/core/services/config/app_config.dart';
 import 'package:quran/core/theme/brand_colors.dart';
 import 'package:quran/core/utils/helper/app_alert.dart';
 import 'package:quran/core/widgets/w_shared_scaffold.dart';
@@ -46,7 +45,9 @@ class _SNNearbyMosquesState extends State<SNNearbyMosques>
   void initState() {
     super.initState();
     WidgetsBinding.instance.addObserver(this);
-    _cubit.load();
+    _cubit
+      ..load()
+      ..checkMaps();
   }
 
   @override
@@ -157,20 +158,18 @@ class _Hero extends StatelessWidget {
   final VoidCallback onViewOnMap;
   final Widget Function(EdgeInsets hidden) map;
 
-  /// Without a key the Maps SDK can't start (and on Android would crash the
-  /// app), so the photo stays. The native side reads the same define.
-  static bool get _mapsAvailable => AppConfig.googleMapsApiKey.isNotEmpty;
-
   @override
   Widget build(BuildContext context) {
-    return BlocSelector<CBNearbyMosques, SNearbyMosques, (String, bool, bool)>(
+    return BlocSelector<CBNearbyMosques, SNearbyMosques,
+        (String, bool, bool, bool)>(
       selector: (s) => (
         s.locationLabel,
         s.hasLocation,
         s.status == NearbyMosquesStatus.loading,
+        s.mapsReady,
       ),
       builder: (_, selected) {
-        final (label, hasLocation, loading) = selected;
+        final (label, hasLocation, loading, mapsReady) = selected;
         final subtitle = label.isNotEmpty
             ? 'mosques_current_location'.tr().replaceFirst('{{city}}', label)
             : (loading
@@ -179,7 +178,9 @@ class _Hero extends StatelessWidget {
         return WMosquesHero(
           subtitle: subtitle,
           onViewOnMap: hasLocation ? onViewOnMap : null,
-          mapBuilder: hasLocation && _mapsAvailable ? map : null,
+          // Without a key the Maps SDK can't start a map — it crashes the app
+          // instead — so the photo stays until the SDK is ready.
+          mapBuilder: hasLocation && mapsReady ? map : null,
         );
       },
     );

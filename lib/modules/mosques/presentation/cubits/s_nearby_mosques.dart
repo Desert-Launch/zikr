@@ -18,6 +18,7 @@ class SNearbyMosques extends Equatable {
     this.locationFailure,
     this.errorKey,
     this.selectedMosqueId,
+    this.mapsReady = false,
   });
 
   final NearbyMosquesStatus status;
@@ -44,6 +45,10 @@ class SNearbyMosques extends Equatable {
   /// its pin and its card light up together. Null when none is.
   final String? selectedMosqueId;
 
+  /// Whether the native Maps SDK has its key, so the map may be built. Until
+  /// then the header keeps its photo — a map without a key crashes the app.
+  final bool mapsReady;
+
   bool get hasLocation => latitude != null && longitude != null;
 
   /// [clearError] drops both error fields; pass the new one alongside it to
@@ -58,6 +63,7 @@ class SNearbyMosques extends Equatable {
     ELocationFailure? locationFailure,
     String? errorKey,
     String? selectedMosqueId,
+    bool? mapsReady,
     bool clearError = false,
     bool clearSelection = false,
   }) {
@@ -72,6 +78,7 @@ class SNearbyMosques extends Equatable {
       errorKey: errorKey ?? (clearError ? null : this.errorKey),
       selectedMosqueId: selectedMosqueId ??
           (clearSelection ? null : this.selectedMosqueId),
+      mapsReady: mapsReady ?? this.mapsReady,
     );
   }
 
@@ -85,5 +92,6 @@ class SNearbyMosques extends Equatable {
         locationFailure,
         errorKey,
         selectedMosqueId,
+        mapsReady,
       ];
 }

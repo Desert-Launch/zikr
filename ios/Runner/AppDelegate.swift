@@ -22,14 +22,12 @@ import workmanager_apple
       UNUserNotificationCenter.current().delegate = self as? UNUserNotificationCenterDelegate
     }
 
-    // Maps SDK key for the nearby-mosques map — must be set before any map
-    // view exists. Without the define the Dart side never creates a map (see
-    // AppConfig.googleMapsApiKey), so skipping it here is safe.
-    if let key = Self.dartDefine("GOOGLE_MAPS_API_KEY"), !key.isEmpty {
-      GMSServices.provideAPIKey(key)
-    }
-
     GeneratedPluginRegistrant.register(with: self)
+
+    // Dart hands the Maps SDK its key before the nearby-mosques map is built.
+    if let registrar = registrar(forPlugin: "MapsSdkChannel") {
+      Self.registerMapsSdk(with: registrar.messenger())
+    }
 
     // Adhan alarm bridge (AlarmKit on iOS 26+, critical alerts below that).
     // Registered after GeneratedPluginRegistrant so it can't be clobbered by a
@@ -50,18 +48,27 @@ import workmanager_apple
     return super.application(application, didFinishLaunchingWithOptions: launchOptions)
   }
 
-  /// One `--dart-define` value, read from Info.plist's `DartDefines`: a
-  /// comma-separated list of base64 `KEY=value` entries.
-  private static func dartDefine(_ name: String) -> String? {
-    guard let raw = Bundle.main.object(forInfoDictionaryKey: "DartDefines") as? String
-    else { return nil }
-    for entry in raw.split(separator: ",") {
-      guard let data = Data(base64Encoded: String(entry)),
-            let pair = String(data: data, encoding: .utf8)
-      else { continue }
-      let parts = pair.split(separator: "=", maxSplits: 1, omittingEmptySubsequences: false)
-      if parts.count == 2, parts[0] == name { return String(parts[1]) }
+  /// `ensureReady({apiKey})` gives `GMSServices` the key Dart was built with and
+  /// answers whether a map may now be created. A map view created without a
+  /// key aborts the app inside the SDK, so Dart never builds one on `false`.
+  ///
+  /// The key comes from Dart, not the native build, so the two can't disagree:
+  /// the Codemagic build only compiles the key into Dart (see MapsSdk).
+  private static func registerMapsSdk(with messenger: FlutterBinaryMessenger) {
+    let channel = FlutterMethodChannel(name: "com.zikr.mapp/maps_sdk", binaryMessenger: messenger)
+    // The SDK takes a key once per launch; a hot restart asks again.
+    var provided = false
+    channel.setMethodCallHandler { call, result in
+      guard call.method == "ensureReady" else {
+        result(FlutterMethodNotImplemented)
+        return
+      }
+      if !provided,
+         let key = (call.arguments as? [String: Any])?["apiKey"] as? String,
+         !key.isEmpty {
+        provided = GMSServices.provideAPIKey(key)
+      }
+      result(provided)
     }
-    return nil
   }
 }

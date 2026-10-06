@@ -6,6 +6,7 @@ import 'package:quran/modules/mosques/domain/repos/r_mosques.dart';
 import 'package:quran/modules/mosques/domain/usecases/uc_get_nearby_mosques.dart';
 import 'package:quran/modules/mosques/presentation/cubits/cb_nearby_mosques.dart';
 import 'package:quran/modules/mosques/presentation/screens/sn_nearby_mosques.dart';
+import 'package:quran/modules/mosques/services/maps_sdk.dart';
 import 'package:quran/modules/prayer/data/datasources/local/ds_last_location.dart';
 import 'package:quran/modules/prayer/data/datasources/local/ds_location.dart';
 
@@ -23,6 +24,9 @@ class MosquesModule extends Module {
     // Use case.
     i.add(() => UCGetNearbyMosques(i.get<RMosques>()));
 
+    // Native Maps SDK bridge.
+    i.add<MapsSdk>(MapsSdk.new);
+
     // Per-screen cubit. DSLocation and DSLastLocation are AppModule singletons
     // and must be read through `Modular.get` — the local injector does not
     // traverse up into AppModule's binds (see PrayerModule).
@@ -31,6 +35,7 @@ class MosquesModule extends Module {
         location: Modular.get<DSLocation>(),
         lastLocation: Modular.get<DSLastLocation>(),
         getNearby: i.get<UCGetNearbyMosques>(),
+        mapsSdk: i.get<MapsSdk>(),
       ),
     );
   }

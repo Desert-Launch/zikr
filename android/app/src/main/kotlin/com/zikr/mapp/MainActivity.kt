@@ -3,6 +3,7 @@ package com.zikr.mapp
 import com.ryanheise.audioservice.AudioServiceActivity
 import com.zikr.mapp.adhan.AdhanAlarmPlugin
 import com.zikr.mapp.adhan.AdhanAlarmVolume
+import com.zikr.mapp.maps.MapsSdkPlugin
 import com.zikr.mapp.reminder.ReminderSoundPlugin
 import io.flutter.embedding.engine.FlutterEngine
 import io.flutter.plugin.common.MethodChannel
@@ -25,5 +26,9 @@ class MainActivity : AudioServiceActivity() {
         // sound can't (see ReminderSoundScheduler).
         MethodChannel(flutterEngine.dartExecutor.binaryMessenger, ReminderSoundPlugin.CHANNEL)
             .setMethodCallHandler(ReminderSoundPlugin(applicationContext))
+        // Lets the mosques screen check the manifest has a Maps SDK key before
+        // it builds a map — a map without one crashes the app.
+        MethodChannel(flutterEngine.dartExecutor.binaryMessenger, MapsSdkPlugin.CHANNEL)
+            .setMethodCallHandler(MapsSdkPlugin(applicationContext))
     }
 }

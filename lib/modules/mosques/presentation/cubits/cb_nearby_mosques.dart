@@ -4,6 +4,7 @@ import 'package:quran/core/errors/failure.dart';
 import 'package:quran/core/services/logging/app_logger.dart';
 import 'package:quran/modules/mosques/domain/usecases/uc_get_nearby_mosques.dart';
 import 'package:quran/modules/mosques/presentation/cubits/s_nearby_mosques.dart';
+import 'package:quran/modules/mosques/services/maps_sdk.dart';
 import 'package:quran/modules/prayer/data/datasources/local/ds_last_location.dart';
 import 'package:quran/modules/prayer/data/datasources/local/ds_location.dart';
 import 'package:quran/modules/prayer/domain/entities/e_location_failure.dart';
@@ -14,14 +15,17 @@ class CBNearbyMosques extends Cubit<SNearbyMosques> {
     required DSLocation location,
     required DSLastLocation lastLocation,
     required UCGetNearbyMosques getNearby,
+    required MapsSdk mapsSdk,
   })  : _location = location,
         _lastLocation = lastLocation,
         _getNearby = getNearby,
+        _mapsSdk = mapsSdk,
         super(const SNearbyMosques());
 
   final DSLocation _location;
   final DSLastLocation _lastLocation;
   final UCGetNearbyMosques _getNearby;
+  final MapsSdk _mapsSdk;
 
   /// A pull-to-refresh and a return from settings can both ask at once; one
   /// lookup at a time is enough (each one is a billed Places request).
@@ -75,6 +79,13 @@ class CBNearbyMosques extends Cubit<SNearbyMosques> {
     } finally {
       _busy = false;
     }
+  }
+
+  /// Readies the Maps SDK and lets the map in once it is. See
+  /// [SNearbyMosques.mapsReady].
+  Future<void> checkMaps() async {
+    final ready = await _mapsSdk.ensureReady();
+    if (ready && !isClosed) emit(state.copyWith(mapsReady: true));
   }
 
   /// Marks [mosqueId] as the one the reader is looking at; null clears it.

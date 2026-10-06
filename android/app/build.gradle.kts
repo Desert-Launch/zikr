@@ -45,9 +45,14 @@ android {
         versionName = flutter.versionName
 
         // The Maps SDK reads its key from the manifest, so the same key the Dart
-        // side uses for Places is injected there. Empty without the define; the
-        // mosques screen then never creates a map (see AppConfig).
-        manifestPlaceholders["googleMapsApiKey"] = dartDefines["GOOGLE_MAPS_API_KEY"] ?: ""
+        // side uses for Places is injected there: from the define locally, from
+        // the environment on Codemagic (whose pre-build script puts the key in
+        // the Dart source, not in the defines). Empty without either; the
+        // mosques screen then never creates a map (see MapsSdkPlugin).
+        manifestPlaceholders["googleMapsApiKey"] =
+            dartDefines["GOOGLE_MAPS_API_KEY"]?.takeIf { it.isNotBlank() }
+                ?: System.getenv("GOOGLE_MAPS_API_KEY")
+                ?: ""
     }
 
     buildTypes {
