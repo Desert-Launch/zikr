@@ -5,7 +5,8 @@ import 'package:quran/core/theme/app_text_styles.dart';
 
 /// The white control bar pinned under the azkar pager:
 /// previous · play/pause · counter ring · reset · next. The play button is
-/// left out for a zekr that has no recitation.
+/// left out for a zekr that has no recitation, and next is hidden on the last
+/// zekr.
 ///
 /// The row inherits the ambient direction, so in Arabic "previous" lands on
 /// the right edge; the chevrons are mirrored icons and follow it.
@@ -18,7 +19,7 @@ class WAzkarPlayerBar extends StatelessWidget {
     required this.onTap,
     required this.onReset,
     required this.onPrevious,
-    required this.onNext,
+    this.onNext,
     this.onPlay,
     this.playing = false,
   });
@@ -31,7 +32,9 @@ class WAzkarPlayerBar extends StatelessWidget {
   final VoidCallback onTap;
   final VoidCallback onReset;
   final VoidCallback onPrevious;
-  final VoidCallback onNext;
+
+  /// Moves to the next zekr; `null` hides the button (the last zekr).
+  final VoidCallback? onNext;
 
   /// Toggles the recitation; `null` hides the button (the zekr has no clip).
   final VoidCallback? onPlay;
@@ -71,7 +74,15 @@ class WAzkarPlayerBar extends StatelessWidget {
                     ),
                   _CounterRing(completed: completed, total: total, green: green, onTap: onTap),
                   _RoundButton.soft(icon: Icons.replay_rounded, iconColor: _ink, iconSize: 22, onTap: onReset),
-                  _RoundButton.filled(green: green, icon: Icons.arrow_forward_ios_rounded, onTap: onNext),
+                  // Keeps its slot when hidden, so the ring doesn't shift on
+                  // reaching the last zekr.
+                  Visibility(
+                    visible: onNext != null,
+                    maintainSize: true,
+                    maintainAnimation: true,
+                    maintainState: true,
+                    child: _RoundButton.filled(green: green, icon: Icons.arrow_forward_ios_rounded, onTap: onNext),
+                  ),
                 ],
               ),
             ),

@@ -114,7 +114,7 @@ class _SNAzkarPlayerState extends State<SNAzkarPlayer> {
                   onTap: _cubit.tap,
                   onReset: _cubit.resetCurrent,
                   onPrevious: _cubit.previous,
-                  onNext: _cubit.next,
+                  onNext: state.itemIndex < category.items.length - 1 ? _cubit.next : null,
                   onPlay: current.hasAudio ? _cubit.toggleAudio : null,
                   playing: state.audioPlaying,
                 ),
