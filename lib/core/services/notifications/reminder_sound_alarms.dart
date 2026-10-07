@@ -78,6 +78,44 @@ class ReminderSoundAlarms {
     }
   }
 
+  /// Arms [id] to play `res/raw/[rawRes]` once, at [when], replacing any alarm
+  /// already armed under that id. Same [volume] / [throughSilent] semantics as
+  /// [scheduleDaily].
+  ///
+  /// For a clip that changes from one day to the next — the hourly zekr when
+  /// its azkar rotate over several days — so, unlike [scheduleDaily], the
+  /// alarm does NOT re-arm itself after it plays; the caller re-arms the next
+  /// few days whenever it reschedules. A [when] already past arms nothing.
+  Future<bool> scheduleAt({
+    required int id,
+    required DateTime when,
+    required String rawRes,
+    required int volume,
+    required bool throughSilent,
+  }) async {
+    if (!Platform.isAndroid || !when.isAfter(DateTime.now())) return false;
+    try {
+      final armed = await _channel.invokeMethod<bool>('scheduleOnce', {
+        'id': id,
+        'triggerAtMillis': when.millisecondsSinceEpoch,
+        'rawRes': rawRes,
+        'volume': volume.clamp(0, 100),
+        'throughSilent': throughSilent,
+      });
+      return armed ?? false;
+    } on MissingPluginException {
+      // Background isolate — or a build whose native side predates this
+      // method; either way nothing is armed and the caller stays silent.
+      return false;
+    } catch (e) {
+      AppLogger.warning(
+        'Reminder sound one-shot failed (id=$id): $e',
+        tag: 'ReminderSoundAlarms',
+      );
+      return false;
+    }
+  }
+
   /// Cancels a single armed clip.
   Future<void> cancel(int id) async {
     if (!Platform.isAndroid) return;

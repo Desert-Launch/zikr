@@ -393,7 +393,6 @@ class AppModule extends Module {
         counterBox: i.get<BoxTasbihCounter>(),
         historyBox: i.get<BoxTasbihHistory>(),
         reminder: i.get<DSSalawatReminder>(),
-        hourly: i.get<DSHourlyTasbih>(),
         appSettings: i.get<BoxAppSettings>(),
       ),
     );

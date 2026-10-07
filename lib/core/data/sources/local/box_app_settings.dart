@@ -44,8 +44,9 @@ class BoxAppSettings extends HiveBoxBase<MAppSettings> {
     await r.save();
   }
 
-  /// The window the salawat reminder and hourly zekr fire in — and nothing
-  /// else; see [MAppSettings.reminderWindowStartHour].
+  /// The window the salawat reminder fires in — and nothing else; see
+  /// [MAppSettings.reminderWindowStartHour]. The hourly zekr has its own,
+  /// [hourlyWindow].
   NotificationWindow reminderWindow() {
     final r = current();
     return NotificationWindow(
@@ -61,6 +62,31 @@ class BoxAppSettings extends HiveBoxBase<MAppSettings> {
     r
       ..reminderWindowStartHour = window.startHour % 24
       ..reminderWindowEndHour = window.endHour % 24;
+    await r.save();
+  }
+
+  /// The range the hourly zekr fires in; see
+  /// [MAppSettings.hourlyWindowStartHour].
+  NotificationWindow hourlyWindow() {
+    final r = current();
+    return NotificationWindow(
+      startHour: r.hourlyWindowStartHour,
+      endHour: r.hourlyWindowEndHour,
+    );
+  }
+
+  /// Saves the hourly zekr's range, and [rotationAnchorDay] as the day its
+  /// rotation counts from — a new range starts the azkar over from the first.
+  /// Hours are stored modulo 24, as in [setReminderWindow].
+  Future<void> setHourlyWindow(
+    NotificationWindow window, {
+    required int rotationAnchorDay,
+  }) async {
+    final r = current();
+    r
+      ..hourlyWindowStartHour = window.startHour % 24
+      ..hourlyWindowEndHour = window.endHour % 24
+      ..hourlyRotationAnchorDay = rotationAnchorDay;
     await r.save();
   }
 

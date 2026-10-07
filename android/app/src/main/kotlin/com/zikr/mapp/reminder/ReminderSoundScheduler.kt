@@ -43,9 +43,10 @@ import org.json.JSONObject
  * `AdhanBootReceiver` can re-arm the still-future ones after a reboot (the OS
  * clears pending alarms on boot). The mirror is separate from the adhan's, so
  * the adhan's `cancelAll` — which runs on every prayer-window rebuild — can
- * never sweep these away. Each alarm also re-arms itself for the next day when
- * it fires, so the reminders keep sounding even if the app is never opened
- * again.
+ * never sweep these away. Each daily alarm also re-arms itself for the next
+ * day when it fires, so the reminders keep sounding even if the app is never
+ * opened again. A one-shot ([scheduleOnce]) plays once and is then dropped
+ * from the mirror.
  *
  * # Volume
  *
@@ -66,6 +67,7 @@ object ReminderSoundScheduler {
     const val EXTRA_MINUTE = "minute"
     const val EXTRA_VOLUME = "volume"
     const val EXTRA_THROUGH_SILENT = "throughSilent"
+    const val EXTRA_ONCE = "once"
 
     /** Volume sentinel: leave the ALARM stream where the user has it. Also what
      *  alarms mirrored before the volume setting existed decode to. */
@@ -96,8 +98,48 @@ object ReminderSoundScheduler {
         throughSilent: Boolean,
     ) {
         val trigger = nextOccurrence(hour, minute)
-        arm(context, id, trigger, hour, minute, rawRes, volume, throughSilent)
-        persist(context, id, trigger, hour, minute, rawRes, volume, throughSilent)
+        arm(context, id, trigger, hour, minute, rawRes, volume, throughSilent, once = false)
+        persist(context, id, trigger, hour, minute, rawRes, volume, throughSilent, once = false)
+    }
+
+    /**
+     * Arms [id] to play `res/raw/[rawRes]` once, at [triggerAtMillis], replacing
+     * any alarm already armed under that id. A trigger already past arms
+     * nothing.
+     *
+     * For a clip that differs from one day to the next (the hourly zekr when
+     * its azkar rotate over several days), so it is NOT re-armed after it
+     * plays — Dart re-arms the next few days each time it reschedules. It is
+     * still mirrored, so a reboot before it fires doesn't lose it.
+     */
+    fun scheduleOnce(
+        context: Context,
+        id: Int,
+        triggerAtMillis: Long,
+        rawRes: String,
+        volume: Int,
+        throughSilent: Boolean,
+    ) {
+        if (triggerAtMillis <= System.currentTimeMillis()) return
+        arm(context, id, triggerAtMillis, -1, -1, rawRes, volume, throughSilent, once = true)
+        persist(context, id, triggerAtMillis, -1, -1, rawRes, volume, throughSilent, once = true)
+    }
+
+    /**
+     * Drops one-shot alarms whose time has passed from the mirror, so a reboot
+     * doesn't try to re-arm them and the mirror doesn't grow by a day's worth
+     * of entries every day. Called by the receiver when a one-shot plays.
+     */
+    fun forgetPlayedOnce(context: Context) {
+        val now = System.currentTimeMillis()
+        val all = read(context)
+        val out = JSONArray()
+        for (i in 0 until all.length()) {
+            val o = all.getJSONObject(i)
+            if (o.optBoolean("once", false) && o.optLong("trigger", 0L) <= now) continue
+            out.put(o)
+        }
+        write(context, out)
     }
 
     fun cancel(context: Context, id: Int) {
@@ -136,14 +178,32 @@ object ReminderSoundScheduler {
      * reboot or an app update, when the OS has dropped the pending alarms but
      * the user's reminder settings are unchanged.
      *
-     * Rolls past times forward to tomorrow rather than dropping them — these
-     * are daily repeats, so a stored time that has already passed today is
-     * still wanted tomorrow.
+     * Daily repeats roll a past time forward to tomorrow rather than dropping
+     * it — a stored time that has already passed today is still wanted
+     * tomorrow. One-shots are re-armed only while still ahead; a passed one is
+     * dropped, since the clip it carried belonged to that day alone.
      */
     fun reArmAll(context: Context) {
+        val now = System.currentTimeMillis()
         val all = read(context)
         for (i in 0 until all.length()) {
             val o = all.getJSONObject(i)
+            if (o.optBoolean("once", false)) {
+                val trigger = o.optLong("trigger", 0L)
+                if (trigger > now) {
+                    scheduleOnce(
+                        context,
+                        o.getInt("id"),
+                        trigger,
+                        o.getString("raw"),
+                        o.optInt("volume", NO_VOLUME),
+                        o.optBoolean("throughSilent", true),
+                    )
+                } else {
+                    write(context, withoutId(read(context), o.getInt("id")))
+                }
+                continue
+            }
             scheduleDaily(
                 context,
                 o.getInt("id"),
@@ -185,9 +245,10 @@ object ReminderSoundScheduler {
         rawRes: String,
         volume: Int,
         throughSilent: Boolean,
+        once: Boolean,
     ) {
         val am = context.getSystemService(Context.ALARM_SERVICE) as AlarmManager
-        val pi = receiverPendingIntent(context, id, hour, minute, rawRes, volume, throughSilent)
+        val pi = receiverPendingIntent(context, id, hour, minute, rawRes, volume, throughSilent, once)
         try {
             // ...AndAllowWhileIdle so Doze delays it by seconds rather than
             // holding it until the next maintenance window. Reminders sit hours
@@ -216,6 +277,7 @@ object ReminderSoundScheduler {
         rawRes: String,
         volume: Int,
         throughSilent: Boolean,
+        once: Boolean,
     ): PendingIntent = PendingIntent.getBroadcast(
         context,
         id,
@@ -229,6 +291,7 @@ object ReminderSoundScheduler {
             putExtra(EXTRA_MINUTE, minute)
             putExtra(EXTRA_VOLUME, volume)
             putExtra(EXTRA_THROUGH_SILENT, throughSilent)
+            putExtra(EXTRA_ONCE, once)
         },
         pendingIntentFlags(),
     )
@@ -270,6 +333,7 @@ object ReminderSoundScheduler {
         raw: String,
         volume: Int,
         throughSilent: Boolean,
+        once: Boolean,
     ) {
         val out = withoutId(read(context), id)
         out.put(
@@ -281,6 +345,7 @@ object ReminderSoundScheduler {
                 put("raw", raw)
                 put("volume", volume)
                 put("throughSilent", throughSilent)
+                put("once", once)
             },
         )
         write(context, out)

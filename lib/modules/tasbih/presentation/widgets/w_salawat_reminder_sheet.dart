@@ -308,9 +308,10 @@ class WSalawatReminderSheet extends StatelessWidget {
     await cubit.setReminderTime(picked.hour, picked.minute);
   }
 
-  /// Picks one end of the reminder window. Only the hour is kept — both feeds
-  /// schedule per hour and choose their own minute to dodge collisions, so
-  /// offering minutes would promise a precision neither honours.
+  /// Picks one end of the reminder window. Only the hour is kept — the
+  /// reminder schedules per hour and chooses its own minute to dodge
+  /// collisions, so offering minutes would promise a precision it doesn't
+  /// honour.
   Future<void> _pickWindow(
     BuildContext context,
     STasbih state, {

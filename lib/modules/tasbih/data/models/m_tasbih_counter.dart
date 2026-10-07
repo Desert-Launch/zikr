@@ -30,8 +30,9 @@ class MTasbihCounter extends HiveObject {
   @HiveField(1)
   int target;
 
-  /// Live count of the salawat record. The general tasbih record keeps its
-  /// tally in [phraseCounts] instead, one entry per phrase.
+  /// Today's count on the salawat record, dated by [countsDay]. The general
+  /// tasbih record keeps its tally in [phraseCounts] instead, one entry per
+  /// phrase.
   @HiveField(2)
   int count;
 
@@ -74,9 +75,10 @@ class MTasbihCounter extends HiveObject {
   @HiveField(9)
   Map<String, int> phraseCounts;
 
-  /// `yyyyMMdd` the [phraseCounts] were counted on. [BoxTasbihCounter.today]
-  /// wipes the map once this falls behind the calendar, which is what makes
-  /// the masbaha start from zero each day.
+  /// `yyyyMMdd` the tally ([phraseCounts] on the tasbih record, [count] on the
+  /// salawat one) was counted on. [BoxTasbihCounter.today] wipes the tally once
+  /// this falls behind the calendar, which is what makes both counters start
+  /// from zero each day.
   @HiveField(10)
   String? countsDay;
 }

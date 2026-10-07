@@ -1,7 +1,11 @@
+import 'dart:async';
 import 'dart:math';
 
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:quran/core/data/sources/local/box_app_settings.dart';
+import 'package:quran/core/services/notifications/hourly_rotation.dart';
+import 'package:quran/core/services/notifications/notification_window.dart';
+import 'package:quran/core/utils/helper/day_change_watcher.dart';
 import 'package:quran/core/utils/helper/haptics_helper.dart';
 import 'package:quran/modules/tasbih/data/datasources/local/ds_hourly_tasbih.dart';
 
@@ -25,7 +29,9 @@ class CBTasbih extends Cubit<STasbih> {
         _appSettings = appSettings,
         super(const STasbih()) {
     _hydrate();
+    unawaited(_loadZikrCount());
     HapticsHelper.prepare();
+    _dayWatcher = DayChangeWatcher(_syncToday);
   }
 
   final BoxTasbihCounter _counter;
@@ -33,18 +39,39 @@ class CBTasbih extends Cubit<STasbih> {
   final DSHourlyTasbih _hourly;
   final BoxAppSettings _appSettings;
   final _uuid = const Uuid();
+  late final DayChangeWatcher _dayWatcher;
 
   void _hydrate() {
     final c = _counter.today();
+    final app = _appSettings.current();
     emit(STasbih(
       zekrAr: c.zekrAr,
       target: c.target,
       count: _todayCount(zekrAr: c.zekrAr, target: c.target),
       vibrate: c.vibrate,
       hourlyEnabled: c.hourlyEnabled,
-      hourlyZikrSound: _appSettings.current().hourlyZikrSound,
-      hourlyZikrVolume: _appSettings.current().hourlyZikrVolume,
+      hourlyZikrSound: app.hourlyZikrSound,
+      hourlyZikrVolume: app.hourlyZikrVolume,
+      hourlyStartHour: app.hourlyWindowStartHour,
+      hourlyEndHour: app.hourlyWindowEndHour,
     ));
+  }
+
+  /// The azkar live in a bundled JSON, so their count arrives a beat after the
+  /// rest of the state.
+  Future<void> _loadZikrCount() async {
+    final count = await _hourly.zikrCount();
+    if (!isClosed) emit(state.copyWith(hourlyZikrCount: count));
+  }
+
+  /// Brings the on-screen count in line with today's tally. Taps already read
+  /// the box, so this is only about the number shown: without it, a screen
+  /// left open overnight (or an app resumed next morning) keeps showing
+  /// yesterday's count until the first tap.
+  void _syncToday() {
+    if (isClosed) return;
+    final count = _todayCount();
+    if (count != state.count) emit(state.copyWith(count: count));
   }
 
   Future<void> _persist() async {
@@ -149,6 +176,28 @@ class CBTasbih extends Cubit<STasbih> {
     await _hourly.rescheduleFromSettings();
   }
 
+  /// Moves the hourly zekr's range and re-arms the feed.
+  ///
+  /// Also restarts the rotation: the range the user is in, or about to enter,
+  /// becomes day 1 and opens on the first zekr — see
+  /// [HourlyRotation.currentWindowDay].
+  Future<void> setHourlyWindow(int startHour, int endHour) async {
+    final window = NotificationWindow(
+      startHour: startHour % 24,
+      endHour: endHour % 24,
+    );
+    emit(state.copyWith(
+      hourlyStartHour: window.startHour,
+      hourlyEndHour: window.endHour,
+    ));
+    final dayOne = HourlyRotation.currentWindowDay(window, DateTime.now());
+    await _appSettings.setHourlyWindow(
+      window,
+      rotationAnchorDay: HourlyRotation.epochDay(dayOne),
+    );
+    await _hourly.rescheduleFromSettings();
+  }
+
   /// Sets the hourly zekr's loudness (0–100) and re-arms the feed — on Android
   /// the level is baked into each armed clip. See [MAppSettings.hourlyZikrVolume].
   Future<void> setHourlyZikrVolume(int value) async {
@@ -157,5 +206,11 @@ class CBTasbih extends Cubit<STasbih> {
     emit(state.copyWith(hourlyZikrVolume: clamped));
     await _appSettings.setHourlyZikrVolume(clamped);
     await _hourly.rescheduleFromSettings();
+  }
+
+  @override
+  Future<void> close() {
+    _dayWatcher.dispose();
+    return super.close();
   }
 }

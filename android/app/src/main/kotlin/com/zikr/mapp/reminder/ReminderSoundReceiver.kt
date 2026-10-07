@@ -21,7 +21,8 @@ import java.util.concurrent.atomic.AtomicBoolean
  *
  * The matching notification is posted separately by Dart (on a silent channel),
  * so this receiver never touches the notification tray: it plays four seconds
- * of audio, re-arms itself for tomorrow, and gets out of the way. No foreground
+ * of audio, re-arms itself for tomorrow (unless it was a one-shot), and gets
+ * out of the way. No foreground
  * service, and therefore no second notification — playing audio from the
  * background is unrestricted; only *starting a foreground service* from the
  * background is, and a clip this short doesn't need one.
@@ -43,10 +44,15 @@ class ReminderSoundReceiver : BroadcastReceiver() {
             ReminderSoundScheduler.NO_VOLUME,
         )
         val throughSilent = intent.getBooleanExtra(ReminderSoundScheduler.EXTRA_THROUGH_SILENT, true)
+        val once = intent.getBooleanExtra(ReminderSoundScheduler.EXTRA_ONCE, false)
 
         // Re-arm first: a failure in playback must not break the daily chain,
-        // and the app may never be opened again to rebuild it.
-        if (id != 0 && hour in 0..23 && minute in 0..59) {
+        // and the app may never be opened again to rebuild it. A one-shot has
+        // no chain — its clip belongs to today alone — so it only clears
+        // itself out of the reboot mirror.
+        if (once) {
+            ReminderSoundScheduler.forgetPlayedOnce(context)
+        } else if (id != 0 && hour in 0..23 && minute in 0..59) {
             ReminderSoundScheduler.scheduleDaily(
                 context,
                 id,

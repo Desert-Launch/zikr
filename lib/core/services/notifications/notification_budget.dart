@@ -26,8 +26,11 @@ class NotificationBudget {
   /// Apple's hard limit on pending requests per app.
   static const int iosPendingCap = 64;
 
-  /// Hourly zekr — one repeating request per hour of the reminder window
-  /// (`BoxAppSettings.reminderWindow`, 08:00–22:00 by default). Default ON.
+  /// Hourly zekr — one repeating request per hour of its range
+  /// (`BoxAppSettings.hourlyWindow`, 08:00–22:00 by default), or, when the
+  /// range is shorter than the azkar list, that many dated one-shots across
+  /// the next few days. `DSHourlyTasbih` never arms more than this on iOS.
+  /// Default ON.
   static const int hourlyZikr = 15;
 
   /// Azkar + Quran feed (`init_notifications.json`) — see [NotificationIds].

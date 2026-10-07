@@ -10,8 +10,8 @@ import 'package:quran/core/services/media/audio_focus.dart';
 import 'package:quran/core/services/media/call_interruption.dart';
 import 'package:quran/core/services/media/media_artwork.dart';
 import 'package:quran/core/services/notifications/notification_window.dart';
+import 'package:quran/core/utils/helper/day_change_watcher.dart';
 import 'package:quran/core/utils/helper/haptics_helper.dart';
-import 'package:quran/modules/tasbih/data/datasources/local/ds_hourly_tasbih.dart';
 import 'package:quran/modules/tasbih/data/datasources/local/ds_salawat_reminder.dart';
 import 'package:quran/modules/tasbih/data/models/m_tasbih_history.dart';
 import 'package:quran/modules/tasbih/data/sources/local/box_tasbih_counter.dart';
@@ -28,27 +28,23 @@ class CBSalawat extends Cubit<STasbih> {
     required BoxTasbihCounter counterBox,
     required BoxTasbihHistory historyBox,
     required DSSalawatReminder reminder,
-    required DSHourlyTasbih hourly,
     required BoxAppSettings appSettings,
   }) : _counter = counterBox,
        _history = historyBox,
        _reminder = reminder,
-       _hourly = hourly,
        _appSettings = appSettings,
        super(const STasbih(target: 100)) {
     _hydrate();
     HapticsHelper.prepare();
+    _dayWatcher = DayChangeWatcher(_syncToday);
   }
 
   final BoxTasbihCounter _counter;
   final BoxTasbihHistory _history;
   final DSSalawatReminder _reminder;
-
-  /// The hourly zekr shares the reminder window, so a window change has to
-  /// rebuild its schedule too — it is the only other feed the window governs.
-  final DSHourlyTasbih _hourly;
   final BoxAppSettings _appSettings;
   final _uuid = const Uuid();
+  late final DayChangeWatcher _dayWatcher;
 
   /// The reminder clip, previewable from the settings sheet. Same recording the
   /// notification uses (`res/raw/salah_3la_mohamed.mp3` on Android, its CAF copy
@@ -67,7 +63,7 @@ class CBSalawat extends Cubit<STasbih> {
       STasbih(
         zekrAr: 'salawat_phrase'.tr(),
         target: c.target,
-        count: c.count,
+        count: _todayCount(),
         vibrate: c.vibrate,
         reminderEnabled: c.reminderEnabled,
         reminderIntervalHours: c.reminderIntervalHours,
@@ -82,10 +78,29 @@ class CBSalawat extends Cubit<STasbih> {
     );
   }
 
+  /// Today's salawat tally. Read from the box rather than from state so a
+  /// session left open across midnight sees the wipe instead of carrying
+  /// yesterday's count forward.
+  int _todayCount() => _counter.today(BoxTasbihCounter.salawatKey).count;
+
+  Future<void> _saveCount(int count) async {
+    final c = _counter.today(BoxTasbihCounter.salawatKey)..count = count;
+    await c.save();
+  }
+
+  /// Brings the on-screen count in line with today's tally — see
+  /// [DayChangeWatcher].
+  void _syncToday() {
+    if (isClosed) return;
+    final count = _todayCount();
+    if (count != state.count) emit(state.copyWith(count: count));
+  }
+
+  /// Settings only — the count is written by [_saveCount], so a settings
+  /// change made after midnight can't write yesterday's count back.
   Future<void> _persist() async {
     final c = _counter.current(BoxTasbihCounter.salawatKey)
       ..target = state.target
-      ..count = state.count
       ..vibrate = state.vibrate
       ..reminderEnabled = state.reminderEnabled
       ..reminderIntervalHours = state.reminderIntervalHours
@@ -105,13 +120,16 @@ class CBSalawat extends Cubit<STasbih> {
       !(state.pauseOnCall && CallInterruption.instance.isInterrupted);
 
   Future<void> tap() async {
-    final wasComplete = state.isComplete;
-    final next = state.count + 1;
+    final count = _todayCount();
+    final next = count + 1;
     emit(state.copyWith(count: next));
     if (_feedbackAllowed) {
       HapticsHelper.tick();
     }
-    if (!wasComplete && next >= state.target) {
+    // Written before anything yields, so a tap landing while the completion
+    // below is still logging reads this count rather than the one before it.
+    final saved = _saveCount(next);
+    if (count < state.target && next >= state.target) {
       if (_feedbackAllowed) HapticsHelper.complete();
       await _history.log(
         MTasbihHistory(
@@ -122,12 +140,12 @@ class CBSalawat extends Cubit<STasbih> {
         ),
       );
     }
-    await _persist();
+    await saved;
   }
 
   Future<void> reset() async {
     emit(state.copyWith(count: 0));
-    await _persist();
+    await _saveCount(0);
   }
 
   /// Enables/disables the reminder and reschedules it from current settings.
@@ -190,19 +208,18 @@ class CBSalawat extends Cubit<STasbih> {
     await _reschedule();
   }
 
-  /// (c) Moves the window the salawat interval reminders and the hourly zekr
-  /// fire in. Both feeds are rebuilt, since both read it.
+  /// (c) Moves the window the salawat interval reminders fire in.
   ///
-  /// Deliberately NOT applied to adhan, prayer times, the azkar/quran feed,
-  /// khatma or the user's own reminders — a prayer has to fire at its time
-  /// whatever hours the user sleeps.
+  /// Deliberately NOT applied to the hourly zekr, which has its own range
+  /// (`CBTasbih.setHourlyWindow`), nor to adhan, prayer times, the
+  /// azkar/quran feed, khatma or the user's own reminders — a prayer has to
+  /// fire at its time whatever hours the user sleeps.
   Future<void> setReminderWindow(int startHour, int endHour) async {
     emit(state.copyWith(windowStartHour: startHour, windowEndHour: endHour));
     await _appSettings.setReminderWindow(
       NotificationWindow(startHour: startHour, endHour: endHour),
     );
     await _reschedule();
-    await _hourly.rescheduleFromSettings();
   }
 
   /// Plays the reminder clip once, or stops it if it is already playing, so the
@@ -276,6 +293,7 @@ class CBSalawat extends Cubit<STasbih> {
 
   @override
   Future<void> close() {
+    _dayWatcher.dispose();
     AudioFocus.instance.unregister(this);
     _previewSub?.cancel();
     _preview?.dispose();

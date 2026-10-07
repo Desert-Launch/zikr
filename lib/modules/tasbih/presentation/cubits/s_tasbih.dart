@@ -10,6 +10,9 @@ class STasbih extends Equatable {
     this.hourlyEnabled = true,
     this.hourlyZikrSound = true,
     this.hourlyZikrVolume = MAppSettings.defaultReminderVolume,
+    this.hourlyStartHour = 8,
+    this.hourlyEndHour = 22,
+    this.hourlyZikrCount = 0,
     this.reminderEnabled = true,
     this.reminderIntervalHours = 3,
     this.reminderHour = 9,
@@ -35,6 +38,15 @@ class STasbih extends Equatable {
   /// Hourly zekr loudness, 0–100. See [MAppSettings.hourlyZikrVolume].
   final int hourlyZikrVolume;
 
+  /// The hourly zekr's own range (inclusive hours). See
+  /// [MAppSettings.hourlyWindowStartHour].
+  final int hourlyStartHour;
+  final int hourlyEndHour;
+
+  /// How many azkar the hourly feed rotates through — 0 until they've loaded.
+  /// Lets the screen say when a short range spreads them over several days.
+  final int hourlyZikrCount;
+
   /// Salawat reminder settings (used by the salawat screen only).
   final bool reminderEnabled;
 
@@ -45,8 +57,7 @@ class STasbih extends Equatable {
   final int reminderMinute;
 
   /// Reminder-window bounds (inclusive hours). Governs the salawat interval
-  /// reminders and the hourly zekr — and nothing else. See
-  /// [MAppSettings.reminderWindowStartHour].
+  /// reminders — and nothing else. See [MAppSettings.reminderWindowStartHour].
   final int windowStartHour;
   final int windowEndHour;
 
@@ -77,6 +88,9 @@ class STasbih extends Equatable {
     bool? hourlyEnabled,
     bool? hourlyZikrSound,
     int? hourlyZikrVolume,
+    int? hourlyStartHour,
+    int? hourlyEndHour,
+    int? hourlyZikrCount,
     bool? reminderEnabled,
     int? reminderIntervalHours,
     int? reminderHour,
@@ -96,6 +110,9 @@ class STasbih extends Equatable {
       hourlyEnabled: hourlyEnabled ?? this.hourlyEnabled,
       hourlyZikrSound: hourlyZikrSound ?? this.hourlyZikrSound,
       hourlyZikrVolume: hourlyZikrVolume ?? this.hourlyZikrVolume,
+      hourlyStartHour: hourlyStartHour ?? this.hourlyStartHour,
+      hourlyEndHour: hourlyEndHour ?? this.hourlyEndHour,
+      hourlyZikrCount: hourlyZikrCount ?? this.hourlyZikrCount,
       reminderEnabled: reminderEnabled ?? this.reminderEnabled,
       reminderIntervalHours:
           reminderIntervalHours ?? this.reminderIntervalHours,
@@ -119,6 +136,9 @@ class STasbih extends Equatable {
     hourlyEnabled,
     hourlyZikrSound,
     hourlyZikrVolume,
+    hourlyStartHour,
+    hourlyEndHour,
+    hourlyZikrCount,
     reminderEnabled,
     reminderIntervalHours,
     reminderHour,

@@ -2,9 +2,10 @@ import 'package:equatable/equatable.dart';
 
 /// The hours of the day in which a repeating reminder feed is allowed to fire.
 ///
-/// Scoped deliberately: only the salawat reminder and the hourly zekr consult
-/// it. Prayer times, the adhan, the azkar/quran feed, khatma and the user's own
-/// reminders are NOT windowed — a prayer that falls outside it must still fire.
+/// Scoped deliberately: only the salawat reminder and the hourly zekr use one,
+/// each its own (`BoxAppSettings.reminderWindow` / `hourlyWindow`). Prayer
+/// times, the adhan, the azkar/quran feed, khatma and the user's own reminders
+/// are NOT windowed — a prayer that falls outside it must still fire.
 ///
 /// Both bounds are inclusive hours (`8`–`22` means 08:00 through 22:59), which
 /// matches the fixed window this replaced. A [startHour] later than [endHour]

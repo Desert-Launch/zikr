@@ -40,6 +40,27 @@ class ReminderSoundPlugin(private val context: Context) : MethodChannel.MethodCa
                 )
                 result.success(true)
             }
+            "scheduleOnce" -> {
+                val id = call.argument<Int>("id")
+                // A Dart int arrives as Integer or Long depending on its size.
+                val trigger = call.argument<Number>("triggerAtMillis")?.toLong()
+                val rawRes = call.argument<String>("rawRes")
+                if (id == null || trigger == null || rawRes.isNullOrEmpty()) {
+                    result.error("bad_args", "id, triggerAtMillis and rawRes are required", null)
+                    return
+                }
+                val volume = call.argument<Int>("volume") ?: ReminderSoundScheduler.NO_VOLUME
+                val throughSilent = call.argument<Boolean>("throughSilent") ?: true
+                ReminderSoundScheduler.scheduleOnce(
+                    context,
+                    id,
+                    trigger,
+                    rawRes,
+                    volume,
+                    throughSilent,
+                )
+                result.success(true)
+            }
             "cancel" -> {
                 val id = call.argument<Int>("id")
                 if (id == null) {

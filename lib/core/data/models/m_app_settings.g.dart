@@ -16,6 +16,12 @@ class MAppSettingsAdapter extends TypeAdapter<MAppSettings> {
     final fields = <int, dynamic>{
       for (int i = 0; i < numOfFields; i++) reader.readByte(): reader.read(),
     };
+    final reminderWindowStartHour = fields[5] == null
+        ? 8
+        : (fields[5] as num).toInt();
+    final reminderWindowEndHour = fields[6] == null
+        ? 22
+        : (fields[6] as num).toInt();
     return MAppSettings(
       hasSeenOnboarding: fields[0] == null ? false : fields[0] as bool,
       lastLanguageCode: fields[1] as String?,
@@ -24,12 +30,8 @@ class MAppSettingsAdapter extends TypeAdapter<MAppSettings> {
       hourlyTasbihSeeded: fields[4] == null ? false : fields[4] as bool,
       // Absent on every record predating the configurable window — those
       // decode to 08:00–22:00, exactly the window they already had.
-      reminderWindowStartHour: fields[5] == null
-          ? 8
-          : (fields[5] as num).toInt(),
-      reminderWindowEndHour: fields[6] == null
-          ? 22
-          : (fields[6] as num).toInt(),
+      reminderWindowStartHour: reminderWindowStartHour,
+      reminderWindowEndHour: reminderWindowEndHour,
       salawatIgnoreSilent: fields[7] == null ? false : fields[7] as bool,
       salawatPauseOnCall: fields[8] == null ? true : fields[8] as bool,
       // Absent on every record predating the per-zekr audio — those decode to
@@ -43,13 +45,24 @@ class MAppSettingsAdapter extends TypeAdapter<MAppSettings> {
       hourlyZikrVolume: fields[11] == null
           ? MAppSettings.defaultReminderVolume
           : (fields[11] as num).toInt(),
+      // Absent on every record from when the hourly zekr shared the salawat
+      // window — those inherit that window, so the hours don't move on upgrade.
+      hourlyWindowStartHour: fields[12] == null
+          ? reminderWindowStartHour
+          : (fields[12] as num).toInt(),
+      hourlyWindowEndHour: fields[13] == null
+          ? reminderWindowEndHour
+          : (fields[13] as num).toInt(),
+      hourlyRotationAnchorDay: fields[14] == null
+          ? 0
+          : (fields[14] as num).toInt(),
     );
   }
 
   @override
   void write(BinaryWriter writer, MAppSettings obj) {
     writer
-      ..writeByte(12)
+      ..writeByte(15)
       ..writeByte(0)
       ..write(obj.hasSeenOnboarding)
       ..writeByte(1)
@@ -73,7 +86,13 @@ class MAppSettingsAdapter extends TypeAdapter<MAppSettings> {
       ..writeByte(10)
       ..write(obj.salawatVolume)
       ..writeByte(11)
-      ..write(obj.hourlyZikrVolume);
+      ..write(obj.hourlyZikrVolume)
+      ..writeByte(12)
+      ..write(obj.hourlyWindowStartHour)
+      ..writeByte(13)
+      ..write(obj.hourlyWindowEndHour)
+      ..writeByte(14)
+      ..write(obj.hourlyRotationAnchorDay);
   }
 
   @override

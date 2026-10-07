@@ -21,6 +21,9 @@ class MAppSettings extends HiveObject {
     this.hourlyZikrSound = true,
     this.salawatVolume = defaultReminderVolume,
     this.hourlyZikrVolume = defaultReminderVolume,
+    this.hourlyWindowStartHour = 8,
+    this.hourlyWindowEndHour = 22,
+    this.hourlyRotationAnchorDay = 0,
   });
 
   /// Default for [salawatVolume] and [hourlyZikrVolume]. Gentler than the
@@ -51,10 +54,11 @@ class MAppSettings extends HiveObject {
   @HiveField(4)
   bool hourlyTasbihSeeded;
 
-  /// Start of the window (inclusive hour) in which the salawat reminder and the
-  /// hourly zekr may fire. Previously the hard-coded `8` in both datasources.
+  /// Start of the window (inclusive hour) in which the salawat reminder may
+  /// fire. Previously the hard-coded `8`.
   ///
-  /// SCOPE: these two feeds only. Adhan, prayer times, the azkar/quran feed,
+  /// SCOPE: the salawat reminder only — the hourly zekr has its own range
+  /// ([hourlyWindowStartHour]). Adhan, prayer times, the azkar/quran feed,
   /// khatma and user reminders ignore the window entirely — a prayer must fire
   /// at its time regardless of when the user sleeps.
   @HiveField(5)
@@ -111,4 +115,30 @@ class MAppSettings extends HiveObject {
   /// [salawatVolume]; only meaningful while [hourlyZikrSound] is on.
   @HiveField(11)
   int hourlyZikrVolume;
+
+  /// First hour (inclusive) of the hourly zekr's own range — one notification
+  /// per hour from here to [hourlyWindowEndHour].
+  ///
+  /// The hourly zekr used to share the salawat window
+  /// ([reminderWindowStartHour]), so a record written before this field
+  /// existed decodes to that window's values: an upgrade leaves the hours the
+  /// user already had untouched.
+  @HiveField(12)
+  int hourlyWindowStartHour;
+
+  /// Last hour (inclusive) of the hourly zekr's range. A value below
+  /// [hourlyWindowStartHour] wraps past midnight.
+  @HiveField(13)
+  int hourlyWindowEndHour;
+
+  /// Day the hourly zekr rotation counts from (days since 1970-01-01, see
+  /// `HourlyRotation.epochDay`) — its "day 1".
+  ///
+  /// Only matters when the range has fewer hours than there are azkar, so they
+  /// spread over several days. Re-stamped whenever the range changes, so the
+  /// first range after a change opens on the first zekr. `0` (the epoch) on
+  /// records from before the rotation existed: any fixed day works, it just
+  /// decides which part of the cycle today falls on.
+  @HiveField(14)
+  int hourlyRotationAnchorDay;
 }
