@@ -5,7 +5,6 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_modular/flutter_modular.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:localize_and_translate/localize_and_translate.dart';
-import 'package:package_info_plus/package_info_plus.dart';
 import 'package:quran/core/extension/build_context.dart';
 import 'package:quran/core/services/routes/routes_names.dart';
 import 'package:quran/core/widgets/w_gradient_app_bar.dart';
@@ -17,6 +16,7 @@ import 'package:quran/modules/adhan/services/adhan_audio_alarms.dart';
 import 'package:quran/modules/prayer/services/prayer_widget_publisher.dart';
 import 'package:quran/modules/settings/presentation/widgets/w_app_footer.dart';
 import 'package:quran/modules/settings/presentation/widgets/w_profile_card.dart';
+import 'package:quran/modules/settings/presentation/widgets/w_settings_about_section.dart';
 import 'package:quran/modules/settings/presentation/widgets/w_settings_group.dart';
 import 'package:quran/modules/settings/presentation/widgets/w_settings_row.dart';
 import 'package:quran/modules/settings/presentation/widgets/w_settings_section_label.dart';
@@ -39,15 +39,6 @@ class SNSettings extends StatefulWidget {
 
 class _SNSettingsState extends State<SNSettings> {
   static const _canvas = Color(0xFFFAF9F7);
-  String _version = '';
-
-  @override
-  void initState() {
-    super.initState();
-    PackageInfo.fromPlatform().then((info) {
-      if (mounted) setState(() => _version = info.version);
-    });
-  }
 
   @override
   Widget build(BuildContext context) {
@@ -148,18 +139,7 @@ class _SNSettingsState extends State<SNSettings> {
                     ],
                   ),
                   gap,
-                  WSettingsSectionLabel('settings_about_app'.tr()),
-                  WSettingsGroup(
-                    children: [
-                      WSettingsRow(
-                        icon: Icons.info_outline_rounded,
-                        title: 'settings_version'.tr(),
-                        subtitle: 'settings_version_hint'.tr(),
-                        value: _version,
-                        showChevron: false,
-                      ),
-                    ],
-                  ),
+                  const WSettingsAboutSection(),
                   SizedBox(height: isTab ? 16 : 19.h),
                   const WAppFooter(),
                 ],

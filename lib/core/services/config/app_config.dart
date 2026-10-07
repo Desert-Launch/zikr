@@ -50,4 +50,11 @@ class AppConfig {
   /// TODO: point at the real landing page once it ships — this is a
   /// placeholder, and it goes out on every shared verse.
   static const String shareAppUrl = 'https://zikr.app';
+
+  /// Where Settings › Contact us addresses its email.
+  ///
+  /// TODO: replace with the real support inbox — this is the placeholder the
+  /// privacy policy already quotes (`assets/legal/privacy_*.md`), so change
+  /// both together.
+  static const String supportEmail = 'support@quran.app';
 }

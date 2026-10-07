@@ -210,6 +210,10 @@ class LegalRoutes {
   static const String privacy = '/privacy';
   static const String terms = '/terms';
   static const String about = '/about';
+
+  static String fullPrivacy() => '${RoutesNames.legalBase}privacy';
+  static String fullTerms() => '${RoutesNames.legalBase}terms';
+  static String fullAbout() => '${RoutesNames.legalBase}about';
 }
 
 class OnboardingRoutes {
