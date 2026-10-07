@@ -279,5 +279,24 @@
         ],
         "audio": null,
         "category": "أذكار بعد الصلاة"
+    },
+    {
+        "id": 16,
+        "sort": 16,
+        "description": "",
+        "count": 1,
+        "zekr": "📖💡 اكْـتَـمَـلَ\n\n🤲 الحَمْدُ لِلَّهِ الَّذِي بِنِعْمَتِهِ تَتِمُّ الصَّالِحَاتُ",
+        "zekr_en": "📖💡 Completed\n🤲 All praise is due to Allah, by Whose grace good deeds are completed",
+        "reference": "May Allah accept from us and from you all righteous deeds\nWe ask Allah the Magnificent to keep us firm upon His obedience, and to make us among the men and women who remember Allah frequently May Allah bless your time and your efforts, and assist you in perseverance and completing your remembrance (dhikr)\n🤲 All praise is due to Allah, by Whose grace good deeds are completed",
+        "fadel_zeker": [
+            "تَقَبَّلَ اللَّهُ مِنَّا وَمِنْكُمْ صَالِحَ الأَعْمَالِ",
+            "نَسْأَلُ اللَّهَ العَظِيمَ أَنْ يُثَبِّتَنَا عَلَى طَاعَتِهِ",
+            "وَأَنْ يَجْعَلَنَا مِنَ الذَّاكِرِينَ اللَّهَ كَثِيرًا وَالذَّاكِرَاتِ",
+            "بَارَكَ اللَّهُ فِي وَقْتِكُمْ وَجُهْدِكُمْ",
+            "وَأَعَانَكُمْ عَلَى المُوَاظَبَةِ وَإِتْمَامِ الذِّكْرِ",
+            "🤲 الحَمْدُ لِلَّهِ الَّذِي بِنِعْمَتِهِ تَتِمُّ الصَّالِحَاتُ"
+        ],
+        "audio": null,
+        "category": "أذكار بعد الصلاة"
     }
 ]
