@@ -20,19 +20,22 @@ class MAzkarProgressAdapter extends TypeAdapter<MAzkarProgress> {
       dayKey: fields[0] as String,
       completedCounts: (fields[1] as Map).cast<String, int>(),
       updatedAt: fields[2] as DateTime,
+      lastItemId: fields[3] as String?,
     );
   }
 
   @override
   void write(BinaryWriter writer, MAzkarProgress obj) {
     writer
-      ..writeByte(3)
+      ..writeByte(4)
       ..writeByte(0)
       ..write(obj.dayKey)
       ..writeByte(1)
       ..write(obj.completedCounts)
       ..writeByte(2)
-      ..write(obj.updatedAt);
+      ..write(obj.updatedAt)
+      ..writeByte(3)
+      ..write(obj.lastItemId);
   }
 
   @override

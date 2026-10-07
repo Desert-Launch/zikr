@@ -32,6 +32,27 @@ class _SNAzkarCategoryState extends State<SNAzkarCategory> {
   late final BoxAzkarProgress _progress = Modular.get<BoxAzkarProgress>();
 
   @override
+  void initState() {
+    super.initState();
+    _resumeTodaySession();
+  }
+
+  /// Reopening a category the same day picks up where the user stopped:
+  /// straight into the player on that zekr, with this list underneath for
+  /// back. A new day (or a finished session) shows the list as usual.
+  Future<void> _resumeTodaySession() async {
+    final category = await _future;
+    if (!mounted || category == null) return;
+    final index = _progress.resumeIndex(category);
+    if (index != null) await _openPlayer(category, index);
+  }
+
+  Future<void> _openPlayer(MAzkarCategory category, int itemIndex) async {
+    await Modular.to.pushNamed(AzkarRoutes.fullPlayer(category.id, item: itemIndex));
+    if (mounted) setState(() {});
+  }
+
+  @override
   Widget build(BuildContext context) {
     return WSharedScaffold(
       backgroundColor: _canvas,
@@ -82,12 +103,7 @@ class _SNAzkarCategoryState extends State<SNAzkarCategory> {
                         );
                         if (mounted) setState(() {});
                       },
-                      onTap: () async {
-                        await Modular.to.pushNamed(
-                          AzkarRoutes.fullPlayer(category.id, item: itemIndex),
-                        );
-                        if (mounted) setState(() {});
-                      },
+                      onTap: () => _openPlayer(category, itemIndex),
                     );
                   },
                 ),

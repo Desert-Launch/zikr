@@ -45,11 +45,7 @@ class _SNAzkarPlayerState extends State<SNAzkarPlayer> {
     super.dispose();
   }
 
-  Future<void> _open() async {
-    await _cubit.open(widget.categoryId);
-    if (!mounted) return;
-    _cubit.jumpTo(widget.itemIndex);
-  }
+  Future<void> _open() => _cubit.open(widget.categoryId, itemIndex: widget.itemIndex);
 
   @override
   Widget build(BuildContext context) {

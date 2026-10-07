@@ -38,18 +38,21 @@ class CBAzkarSession extends Cubit<SAzkarSession> {
   /// or a pause overtook never starts playing.
   int _audioRequest = 0;
 
-  Future<void> open(String categoryId) async {
+  /// Loads [categoryId] with today's counts, on the zekr at [itemIndex].
+  Future<void> open(String categoryId, {int itemIndex = 0}) async {
     final cat = await _local.category(categoryId);
     // The screen closes this cubit on dispose — it may be gone by now.
-    if (cat == null || isClosed) return;
+    if (cat == null || cat.items.isEmpty || isClosed) return;
     final stored = _progress.today(categoryId);
+    final index = itemIndex.clamp(0, cat.items.length - 1);
     emit(
       state.copyWith(
         category: cat,
-        itemIndex: 0,
+        itemIndex: index,
         completed: Map<String, int>.from(stored.completedCounts),
       ),
     );
+    unawaited(_progress.setLastItem(cat.id, cat.items[index].id));
   }
 
   Future<void> tap() async {
@@ -83,14 +86,17 @@ class CBAzkarSession extends Cubit<SAzkarSession> {
 
   void previous() => jumpTo(state.itemIndex - 1);
 
-  /// Moves to [index]. While the recitation runs it follows the zekr on
-  /// screen, stopping on one that has no clip.
+  /// Moves to [index] and remembers it for reopening later today — saved on
+  /// every move, since a killed app never gets to save on close. While the
+  /// recitation runs it follows the zekr on screen, stopping on one that has
+  /// no clip.
   void jumpTo(int index) {
     final cat = state.category;
     if (cat == null || cat.items.isEmpty) return;
     final target = index.clamp(0, cat.items.length - 1);
     if (target == state.itemIndex) return;
     emit(state.copyWith(itemIndex: target));
+    unawaited(_progress.setLastItem(cat.id, cat.items[target].id));
     if (state.audioPlaying) unawaited(_playCurrent());
   }
 
