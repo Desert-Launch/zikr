@@ -4,9 +4,10 @@ import 'package:localize_and_translate/localize_and_translate.dart';
 import 'package:quran/core/theme/app_text_styles.dart';
 
 /// The white control bar pinned under the azkar pager:
-/// previous · play/pause · counter ring · reset · next. The play button is
-/// left out for a zekr that has no recitation, the ring and reset for the
-/// closing card (nothing to count), and next is hidden on the last zekr.
+/// previous · play/pause · counter ring · reset · next. A zekr with no
+/// recitation drops play and reset together, leaving previous · ring · next
+/// so the ring stays centred; the closing card drops the ring and reset
+/// (nothing to count), and next is hidden on the last zekr.
 ///
 /// The row inherits the ambient direction, so in Arabic "previous" lands on
 /// the right edge; the chevrons are mirrored icons and follow it.
@@ -33,13 +34,16 @@ class WAzkarPlayerBar extends StatelessWidget {
 
   /// Tapping the counter ring counts, same as tapping the page.
   final VoidCallback onTap;
+
+  /// Starts the zekr over — its count and its recitation.
   final VoidCallback onReset;
   final VoidCallback onPrevious;
 
   /// Moves to the next zekr; `null` hides the button (the last zekr).
   final VoidCallback? onNext;
 
-  /// Toggles the recitation; `null` hides the button (the zekr has no clip).
+  /// Toggles the recitation; `null` hides it, and reset with it (the zekr has
+  /// no clip).
   final VoidCallback? onPlay;
 
   /// Whether the recitation is running — shows pause instead of play.
@@ -77,7 +81,10 @@ class WAzkarPlayerBar extends StatelessWidget {
                     ),
                   if (showCounter) ...[
                     _CounterRing(completed: completed, total: total, green: green, onTap: onTap),
-                    _RoundButton.soft(icon: Icons.replay_rounded, iconColor: _ink, iconSize: 22, onTap: onReset),
+                    // Paired with play: one without the other leaves the row
+                    // lopsided around the ring.
+                    if (onPlay != null)
+                      _RoundButton.soft(icon: Icons.replay_rounded, iconColor: _ink, iconSize: 22, onTap: onReset),
                   ],
                   // Keeps its slot when hidden, so the ring doesn't shift on
                   // reaching the last zekr.

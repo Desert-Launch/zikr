@@ -102,13 +102,27 @@ class CBAzkarSession extends Cubit<SAzkarSession> {
     if (state.audioPlaying) unawaited(_playCurrent());
   }
 
+  /// Starts the zekr on screen over: clears today's count and, when it has a
+  /// recitation, plays it again from the beginning — whether it was playing,
+  /// paused, or never started.
   Future<void> resetCurrent() async {
     final cat = state.category;
     final item = state.currentItem;
     if (cat == null || item == null) return;
     await _progress.resetItem(cat.id, item.id);
+    if (isClosed) return;
     final updated = Map<String, int>.from(state.completed)..remove(item.id);
     emit(state.copyWith(completed: updated));
+    // A swipe during the save moved on — don't start the new zekr's clip.
+    if (!item.hasAudio || state.currentItem?.id != item.id) return;
+    if (_loadedItemId == item.id) {
+      try {
+        await _player?.seek(Duration.zero);
+      } catch (e) {
+        AppLogger.warning('Azkar audio rewind failed: $e', tag: 'CBAzkarSession');
+      }
+    }
+    await _playCurrent();
   }
 
   /// Play / pause for the zekr on screen. Each playthrough counts as one
