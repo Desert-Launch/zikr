@@ -30,12 +30,14 @@ class WAzkarPlayerPage extends StatelessWidget {
     final language = LocalizeAndTranslate.getLanguageCode();
     final virtue = item.virtue(language);
     final vertical = 24.h + 16.h;
-    return LayoutBuilder(
-      builder: (_, constraints) => SingleChildScrollView(
-        padding: EdgeInsets.fromLTRB(8.w, 24.h, 8.w, 16.h),
-        child: GestureDetector(
-          behavior: HitTestBehavior.opaque,
-          onTap: onTap,
+    // Outside the scroll view, so the margins round the cards count too —
+    // otherwise a tap there falls through to the scaffold's unfocus handler.
+    return GestureDetector(
+      behavior: HitTestBehavior.opaque,
+      onTap: onTap,
+      child: LayoutBuilder(
+        builder: (_, constraints) => SingleChildScrollView(
+          padding: EdgeInsets.fromLTRB(8.w, 24.h, 8.w, 16.h),
           child: ConstrainedBox(
             constraints: BoxConstraints(minHeight: (constraints.maxHeight - vertical).clamp(0, double.infinity)),
             child: IntrinsicHeight(
