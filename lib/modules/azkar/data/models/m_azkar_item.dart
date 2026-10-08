@@ -11,15 +11,18 @@ class MAzkarItem extends Equatable {
     this.virtueAr,
     this.virtueEn,
     this.audioAsset,
+    this.isClosing = false,
   });
 
   /// Builds an item from the bundled schema (written by
   /// `tool/import_azkar_sheet.py`):
-  /// `{ id, sort, count, zekr, zekr_en, reference, fadel_zeker[], audio }`.
+  /// `{ id, sort, count, zekr, zekr_en, reference, fadel_zeker[], audio,
+  /// closing }`.
   ///
   /// `zekr` + `fadel_zeker` are the Arabic text and virtue; `zekr_en` (the
   /// Arabic plus a transliteration and a translation) + `reference` are their
-  /// English counterparts. Older files carry only the Arabic pair.
+  /// English counterparts. Older files carry only the Arabic pair, and no
+  /// `closing`.
   ///
   /// [categoryId] is prefixed onto the raw numeric id so item ids stay globally
   /// unique (the raw ids restart at 1 in every daily file).
@@ -36,6 +39,7 @@ class MAzkarItem extends Equatable {
       virtueAr: (virtue?.isEmpty ?? true) ? null : virtue,
       virtueEn: _text(json['reference']),
       audioAsset: _audioAsset(json['audio']),
+      isClosing: json['closing'] == true,
     );
   }
 
@@ -69,6 +73,11 @@ class MAzkarItem extends Equatable {
 
   bool get hasAudio => audioAsset != null;
 
+  /// The "اكتمل" card a daily list ends on — a closing message, not a zekr.
+  /// It has nothing to count: no counter, and it never takes part in the
+  /// day's progress (see [MAzkarCategory.countedItems]).
+  final bool isClosing;
+
   /// The zekr body for the UI language, falling back to the Arabic.
   String text(String languageCode) =>
       languageCode == 'ar' ? textAr : (textEn ?? textAr);
@@ -94,6 +103,10 @@ class MAzkarCategory extends Equatable {
   final String nameAr;
   final String nameEn;
   final List<MAzkarItem> items;
+
+  /// The azkar that are counted — every item but the closing card. What
+  /// "done today" and "finished" are measured against.
+  Iterable<MAzkarItem> get countedItems => items.where((item) => !item.isClosing);
 
   @override
   List<Object?> get props => [id];

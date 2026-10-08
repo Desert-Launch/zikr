@@ -113,6 +113,29 @@ void main() {
     expect(progress.resumeIndex(evening), isNull);
   });
 
+  test('a finished session ending on the uncounted closing card shows the list', () async {
+    final closed = MAzkarCategory(
+      id: 'evening',
+      nameAr: 'أذكار المساء',
+      nameEn: 'Evening',
+      items: [
+        ...evening.items,
+        const MAzkarItem(id: 'evening_13', textAr: 'اكتمل', repeat: 1, isClosing: true),
+      ],
+    );
+    for (final item in evening.items) {
+      for (var n = 0; n < item.repeat; n++) {
+        await progress.increment('evening', item.id);
+      }
+    }
+    // The last zekr's auto-advance lands on the closing card, which is never
+    // counted.
+    await progress.setLastItem('evening', 'evening_13');
+
+    expect(closed.countedItems.length, 12);
+    expect(progress.resumeIndex(closed), isNull);
+  });
+
   test('opening the first zekr without counting is not a session', () async {
     await progress.setLastItem('evening', 'evening_1');
     expect(progress.resumeIndex(evening), isNull);

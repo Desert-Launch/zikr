@@ -5,14 +5,15 @@ import 'package:quran/core/theme/app_text_styles.dart';
 
 /// The white control bar pinned under the azkar pager:
 /// previous · play/pause · counter ring · reset · next. The play button is
-/// left out for a zekr that has no recitation, and next is hidden on the last
-/// zekr.
+/// left out for a zekr that has no recitation, the ring and reset for the
+/// closing card (nothing to count), and next is hidden on the last zekr.
 ///
 /// The row inherits the ambient direction, so in Arabic "previous" lands on
 /// the right edge; the chevrons are mirrored icons and follow it.
 class WAzkarPlayerBar extends StatelessWidget {
   const WAzkarPlayerBar({
     super.key,
+    this.showCounter = true,
     required this.completed,
     required this.total,
     required this.green,
@@ -24,6 +25,8 @@ class WAzkarPlayerBar extends StatelessWidget {
     this.playing = false,
   });
 
+  /// The counter ring and reset button; off on the closing card.
+  final bool showCounter;
   final int completed;
   final int total;
   final Color green;
@@ -72,8 +75,10 @@ class WAzkarPlayerBar extends StatelessWidget {
                       iconSize: 26,
                       onTap: onPlay,
                     ),
-                  _CounterRing(completed: completed, total: total, green: green, onTap: onTap),
-                  _RoundButton.soft(icon: Icons.replay_rounded, iconColor: _ink, iconSize: 22, onTap: onReset),
+                  if (showCounter) ...[
+                    _CounterRing(completed: completed, total: total, green: green, onTap: onTap),
+                    _RoundButton.soft(icon: Icons.replay_rounded, iconColor: _ink, iconSize: 22, onTap: onReset),
+                  ],
                   // Keeps its slot when hidden, so the ring doesn't shift on
                   // reaching the last zekr.
                   Visibility(

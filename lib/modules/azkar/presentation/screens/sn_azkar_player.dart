@@ -108,6 +108,7 @@ class _SNAzkarPlayerState extends State<SNAzkarPlayer> {
                   ),
                 ),
                 WAzkarPlayerBar(
+                  showCounter: !current.isClosing,
                   completed: state.countFor(current.id),
                   total: current.repeat,
                   green: _green,

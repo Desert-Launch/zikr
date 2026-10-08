@@ -121,7 +121,7 @@ class _SNAzkarHomeState extends State<SNAzkarHome> {
     var completed = 0;
     for (final category in categories) {
       final counts = _progress.today(category.id).completedCounts;
-      for (final item in category.items) {
+      for (final item in category.countedItems) {
         if ((counts[item.id] ?? 0) >= item.repeat) completed++;
       }
     }

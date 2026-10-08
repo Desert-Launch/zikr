@@ -11,7 +11,7 @@ update tabs are read (see SHEETS). For each one it rewrites the category file
 with one entry per row:
 
     { id, sort, description, count, zekr, zekr_en, reference,
-      fadel_zeker[], audio, category }
+      fadel_zeker[], audio, category, closing }
 
   - `zekr` / `fadel_zeker` are the Arabic text and virtue; `zekr_en` (the
     Arabic again, plus a transliteration and a translation) and `reference`
@@ -25,6 +25,9 @@ with one entry per row:
   - `audio` is the sheet's `Audio` name (e.g. `Zikr-S-1`); the app plays
     `assets/audio/zike-audios/Zikr-S/Zikr-S-1.mp3`. A name with no file there
     is reported and dropped, so the player hides instead of failing.
+  - `closing` marks the "اكتمل" card every tab ends on — a closing message,
+    not a zekr — so the app shows it without a counter and leaves it out of
+    the day's progress. See CLOSING_MARK.
 
 Item ids are the sheet's ids, and the app keys favorites and daily progress by
 `<file>_<id>` — renumbering a tab re-points those.
@@ -81,6 +84,9 @@ TEXT_FIXES = [
     # The opening alef of "اللهم" is missing in the final workbook.
     ("sleeping.json", "للهم انت الاول", "ا"),
 ]
+
+# Normalized start of the closing card ("📖💡 اكْـتَـمَـلَ …") each tab ends on.
+CLOSING_MARK = "اكتمل"
 
 # Old-count matches below this similarity are treated as different azkar.
 MATCH_THRESHOLD = 0.9
@@ -223,12 +229,17 @@ def build(ws, filename: str, category: str) -> tuple[list[dict], list[str]]:
                 "fadel_zeker": [line for line in virtue.split("\n") if line.strip()],
                 "audio": audio_name(row.get("audio"), notes, row_id),
                 "category": category,
+                "closing": normalize(zekr).startswith(CLOSING_MARK),
                 "_row": index,
             }
         )
     items.sort(key=lambda it: (it["sort"], it["_row"]))
     for it in items:
         del it["_row"]
+
+    closing = [it["id"] for it in items if it["closing"]]
+    if items and closing != [items[-1]["id"]]:
+        notes.append(f"closing card ids {closing} — expected only the last item")
 
     ids = [it["id"] for it in items]
     dupes = sorted({i for i in ids if ids.count(i) > 1})

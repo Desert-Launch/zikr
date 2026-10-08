@@ -38,7 +38,8 @@ class WAzkarFavoriteTile extends StatelessWidget {
             (isAr ? located?.category.nameAr : located?.category.nameEn);
         final categoryId = fav.categoryId ?? located?.category.id;
         final itemIndex = fav.itemIndex ?? located?.index;
-        final repeat = item?.repeat ?? 0;
+        // The closing card has no count to show.
+        final repeat = (item == null || item.isClosing) ? 0 : item.repeat;
 
         return Card(
           margin: EdgeInsets.symmetric(vertical: 6.h, horizontal: 4.w),

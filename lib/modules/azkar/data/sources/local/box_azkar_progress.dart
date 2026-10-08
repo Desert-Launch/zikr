@@ -44,7 +44,8 @@ class BoxAzkarProgress extends HiveBoxBase<MAzkarProgress> {
 
   /// Index of the zekr today's session of [category] was left on, or null when
   /// there's nothing to pick up: no session today, one that never got past
-  /// the first zekr untouched, or every zekr already done.
+  /// the first zekr untouched, or every zekr already done (the closing card
+  /// has nothing to do, so it doesn't hold a session open).
   int? resumeIndex(MAzkarCategory category) {
     // `box.get`, not `today()` — only checking, so don't create a record.
     final r = box.get(keyFor(category.id, DateTime.now()));
@@ -53,7 +54,7 @@ class BoxAzkarProgress extends HiveBoxBase<MAzkarProgress> {
     final index = category.items.indexWhere((item) => item.id == lastItemId);
     if (index < 0) return null;
     if (index == 0 && r.completedCounts.isEmpty) return null;
-    final finished = category.items.every((item) => (r.completedCounts[item.id] ?? 0) >= item.repeat);
+    final finished = category.countedItems.every((item) => (r.completedCounts[item.id] ?? 0) >= item.repeat);
     return finished ? null : index;
   }
 

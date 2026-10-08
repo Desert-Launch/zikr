@@ -55,10 +55,12 @@ class CBAzkarSession extends Cubit<SAzkarSession> {
     unawaited(_progress.setLastItem(cat.id, cat.items[index].id));
   }
 
+  /// One repetition of the zekr on screen. The closing card has no counter,
+  /// so a tap there does nothing.
   Future<void> tap() async {
     final item = state.currentItem;
     final cat = state.category;
-    if (item == null || cat == null) return;
+    if (item == null || cat == null || item.isClosing) return;
     if (state.isComplete(item)) {
       next();
       return;

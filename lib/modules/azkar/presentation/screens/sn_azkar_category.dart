@@ -73,7 +73,7 @@ class _SNAzkarCategoryState extends State<SNAzkarCategory> {
                 child: WAzkarHeader(
                   green: _green,
                   title: _categoryName(category),
-                  categoryCount: category.items.length,
+                  categoryCount: category.countedItems.length,
                   completedToday: completed,
                   favorites: _favorites.all().length,
                   onBack: NavHelper.back,
@@ -123,7 +123,7 @@ class _SNAzkarCategoryState extends State<SNAzkarCategory> {
 
   int _completedCount(MAzkarCategory category) {
     final counts = _progress.today(category.id).completedCounts;
-    return category.items
+    return category.countedItems
         .where((item) => (counts[item.id] ?? 0) >= item.repeat)
         .length;
   }

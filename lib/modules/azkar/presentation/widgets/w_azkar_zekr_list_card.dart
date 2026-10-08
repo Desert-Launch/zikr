@@ -6,7 +6,8 @@ import 'package:quran/modules/azkar/data/models/m_azkar_item.dart';
 import 'package:quran/modules/azkar/presentation/widgets/w_azkar_tag.dart';
 
 /// A zekr row in the category list: favorite toggle, the Arabic text, an
-/// optional virtue tag, and the repeat count.
+/// optional virtue tag, and the repeat count — left off the closing card,
+/// which has nothing to count.
 class WAzkarZekrListCard extends StatelessWidget {
   const WAzkarZekrListCard({
     super.key,
@@ -43,15 +44,17 @@ class WAzkarZekrListCard extends StatelessWidget {
         child: Row(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            CircleAvatar(
-              radius: 17.r,
-              backgroundColor: const Color(0xFFFF7A21),
-              child: Text(
-                '${item.repeat}',
-                style: TextStyle(color: Colors.white, fontSize: 11.sp),
+            if (!item.isClosing) ...[
+              CircleAvatar(
+                radius: 17.r,
+                backgroundColor: const Color(0xFFFF7A21),
+                child: Text(
+                  '${item.repeat}',
+                  style: TextStyle(color: Colors.white, fontSize: 11.sp),
+                ),
               ),
-            ),
-            SizedBox(width: 8.w),
+              SizedBox(width: 8.w),
+            ],
             Expanded(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
