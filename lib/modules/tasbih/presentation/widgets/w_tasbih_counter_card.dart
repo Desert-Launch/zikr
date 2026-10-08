@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:localize_and_translate/localize_and_translate.dart';
+import 'package:quran/core/theme/app_colors.dart';
 import 'package:quran/core/theme/app_text_styles.dart';
 import 'package:quran/modules/tasbih/presentation/cubits/s_tasbih.dart';
 
@@ -77,7 +78,7 @@ class WTasbihCounterCard extends StatelessWidget {
               child: Row(
                 children: [
                   InkWell(
-                    onTap: onReset,
+                    onTap: () => _confirmReset(context),
                     child: Container(
                       width: 120.w,
                       height: 32.h,
@@ -132,5 +133,32 @@ class WTasbihCounterCard extends StatelessWidget {
         ),
       ),
     );
+  }
+
+  /// Asks before wiping the count; a zero count has nothing to lose, so it
+  /// skips the prompt.
+  Future<void> _confirmReset(BuildContext context) async {
+    if (state.count == 0) return onReset();
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (dialogContext) => AlertDialog(
+        title: Text('tasbih_reset_confirm_title'.tr(), style: AppTextStyles.ink18W700),
+        content: Text('tasbih_reset_confirm_body'.tr(), style: AppTextStyles.grey14W400),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(dialogContext, false),
+            child: Text('common_cancel'.tr(), style: AppTextStyles.grey14W500),
+          ),
+          TextButton(
+            onPressed: () => Navigator.pop(dialogContext, true),
+            child: Text(
+              'tasbih_reset_counter'.tr(),
+              style: AppTextStyles.ink14W700.copyWith(color: AppColorsLight.error),
+            ),
+          ),
+        ],
+      ),
+    );
+    if (confirmed == true) onReset();
   }
 }

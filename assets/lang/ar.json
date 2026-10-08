@@ -436,6 +436,8 @@
   "tasbih_digital_subtitle": "سبّح واذكر الله في كل وقت",
   "tasbih_of": "من",
   "tasbih_reset_counter": "إعادة تعيين",
+  "tasbih_reset_confirm_title": "إعادة تعيين العداد؟",
+  "tasbih_reset_confirm_body": "سيعود العداد إلى الصفر.",
   "tasbih_virtue_title": "فضل التسبيح",
   "tasbih_virtue_body": "مَنْ قَالَ سُبْحَانَ اللَّهِ وَبِحَمْدِهِ فِي يَوْمٍ مِائَةَ مَرَّةٍ حُطَّتْ خَطَايَاهُ",
   "tasbih_virtue_source": "رواه البخاري ومسلم",
