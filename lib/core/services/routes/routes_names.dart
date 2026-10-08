@@ -240,8 +240,14 @@ class SettingsRoutes {
   SettingsRoutes._();
 
   static const String main = '/';
+  static const String contact = '/contact';
+  static const String share = '/share';
+  static const String rate = '/rate';
 
   static String fullMain() => RoutesNames.settingsBase;
+  static String fullContact() => '${RoutesNames.settingsBase}contact';
+  static String fullShare() => '${RoutesNames.settingsBase}share';
+  static String fullRate() => '${RoutesNames.settingsBase}rate';
 }
 
 class AuthRoutes {

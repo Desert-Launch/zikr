@@ -45,16 +45,35 @@ class AppConfig {
   static const String shareAppNameAr = 'ذِكر';
   static const String shareAppNameEn = 'Zikr';
 
-  /// Where the badge sends whoever receives the share.
-  ///
-  /// TODO: point at the real landing page once it ships — this is a
-  /// placeholder, and it goes out on every shared verse.
-  static const String shareAppUrl = 'https://zikr.app';
+  /// Where the badge sends whoever receives the share, and the link the
+  /// Settings › Share the app message carries. It goes out on every shared
+  /// verse, so it is the app's website rather than one store.
+  static const String shareAppUrl = websiteUrl;
 
-  /// Where Settings › Contact us addresses its email.
-  ///
-  /// TODO: replace with the real support inbox — this is the placeholder the
-  /// privacy policy already quotes (`assets/legal/privacy_*.md`), so change
+  // ── Settings › Contact us ────────────────────────────────────────────────
+
+  static const String websiteUrl = 'https://www.Zikrapp.app';
+
+  /// Also quoted by the privacy policy (`assets/legal/privacy_*.md`) — change
   /// both together.
-  static const String supportEmail = 'support@quran.app';
+  static const String supportEmail = 'support@Zikrapp.app';
+
+  static const String facebookUrl = 'https://www.facebook.com/Zikrapp';
+  static const String instagramHandle = 'zikrapp';
+  static const String instagramUrl = 'https://www.instagram.com/$instagramHandle';
+
+  // ── Settings › Rate the app ──────────────────────────────────────────────
+
+  /// The Play listing — the Android application id.
+  static const String playStoreUrl = 'https://play.google.com/store/apps/details?id=com.zikr.mapp';
+
+  /// The numeric App Store id (App Store Connect › App Information › Apple ID).
+  ///
+  /// TODO: fill in once the app is created on App Store Connect — until then
+  /// the rate button on iOS says the store page isn't available yet.
+  static const String appStoreId = '';
+
+  /// The App Store's write-a-review page, or null while [appStoreId] is unset.
+  static String? get appStoreReviewUrl =>
+      appStoreId.isEmpty ? null : 'https://apps.apple.com/app/id$appStoreId?action=write-review';
 }

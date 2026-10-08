@@ -1,6 +1,6 @@
 # Privacy Policy
 
-At Holy Quran, your privacy comes first. This policy explains what the app
+At Zikr, your privacy comes first. This policy explains what the app
 collects and how it's used.
 
 ## What we collect
@@ -25,4 +25,4 @@ visits to them are governed by their respective privacy policies.
 
 ## Contact
 
-Privacy questions: support@quran.app.
+Privacy questions: support@Zikrapp.app.
