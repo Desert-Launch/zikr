@@ -14,6 +14,11 @@ class AppConfig {
   /// by flipping this flag and pointing [apiBaseUrl] at the real server.
   static const bool useMockBackend = true;
 
+  /// Whether the account UI shows: the profile card atop Settings and the
+  /// profile button on the Home header — the only ways into sign-in and
+  /// registration. Hidden until accounts go live; flip to bring both back.
+  static const bool showAccount = false;
+
   /// Used as the Dio base URL. With [useMockBackend] true, the host is never
   /// hit — the [MockInterceptor] resolves matching requests locally.
   static const String apiBaseUrl = 'https://api.quran.app';

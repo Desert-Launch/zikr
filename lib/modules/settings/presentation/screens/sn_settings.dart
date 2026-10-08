@@ -6,6 +6,7 @@ import 'package:flutter_modular/flutter_modular.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:localize_and_translate/localize_and_translate.dart';
 import 'package:quran/core/extension/build_context.dart';
+import 'package:quran/core/services/config/app_config.dart';
 import 'package:quran/core/services/routes/routes_names.dart';
 import 'package:quran/core/widgets/w_gradient_app_bar.dart';
 import 'package:quran/core/widgets/w_shared_scaffold.dart';
@@ -61,8 +62,10 @@ class _SNSettingsState extends State<SNSettings> {
               padding: EdgeInsets.fromLTRB(19.w, isTab ? 14 : 18.h, 19.w, isTab ? 20 : 24.h),
               sliver: SliverList.list(
                 children: [
-                  const WProfileCard(),
-                  gap,
+                  if (AppConfig.showAccount) ...[
+                    const WProfileCard(),
+                    gap,
+                  ],
                   WSettingsSectionLabel('settings_general'.tr()),
                   WSettingsGroup(
                     children: [

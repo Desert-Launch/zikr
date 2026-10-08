@@ -4,6 +4,7 @@ import 'package:flutter_modular/flutter_modular.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:localize_and_translate/localize_and_translate.dart';
+import 'package:quran/core/services/config/app_config.dart';
 import 'package:quran/core/services/routes/routes_names.dart';
 import 'package:quran/modules/auth/presentation/cubits/cb_auth.dart';
 import 'package:quran/modules/auth/presentation/cubits/s_auth.dart';
@@ -66,18 +67,20 @@ class WHomeHeaderBanner extends StatelessWidget {
                   ),
                 ),
                 const Spacer(),
-                BlocBuilder<CBAuth, SAuth>(
-                  bloc: Modular.get<CBAuth>(),
-                  builder: (_, state) => WHomeHeaderButton(
-                    icon: Icons.person_outline_rounded,
-                    onTap: () => Modular.to.pushNamed(
-                      state.isLoggedIn
-                          ? SettingsRoutes.fullMain()
-                          : AuthRoutes.fullLogin(),
+                if (AppConfig.showAccount) ...[
+                  BlocBuilder<CBAuth, SAuth>(
+                    bloc: Modular.get<CBAuth>(),
+                    builder: (_, state) => WHomeHeaderButton(
+                      icon: Icons.person_outline_rounded,
+                      onTap: () => Modular.to.pushNamed(
+                        state.isLoggedIn
+                            ? SettingsRoutes.fullMain()
+                            : AuthRoutes.fullLogin(),
+                      ),
                     ),
                   ),
-                ),
-                SizedBox(width: 8.w),
+                  SizedBox(width: 8.w),
+                ],
                 WHomeHeaderButton(
                   icon: Icons.settings_outlined,
                   onTap: () => Modular.to.pushNamed(SettingsRoutes.fullMain()),
