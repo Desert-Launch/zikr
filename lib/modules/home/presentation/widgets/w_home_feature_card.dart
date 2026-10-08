@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_modular/flutter_modular.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:localize_and_translate/localize_and_translate.dart';
 import 'package:quran/core/extension/build_context.dart';
 import 'package:quran/core/theme/app_text_styles.dart';
 import 'package:quran/modules/home/presentation/widgets/w_home_icon_box.dart';
@@ -16,6 +17,7 @@ class WHomeFeatureCard extends StatelessWidget {
     required this.color,
     this.route,
     this.onTap,
+    this.comingSoon = false,
   });
 
   final String icon;
@@ -29,7 +31,13 @@ class WHomeFeatureCard extends StatelessWidget {
   /// Overrides the default route push — e.g. to open a picker sheet instead.
   final VoidCallback? onTap;
 
+  /// A feature that isn't ready yet: the tile carries a "coming soon" badge
+  /// and doesn't open anything. Keep [route] set so turning this off is all
+  /// it takes to ship it.
+  final bool comingSoon;
+
   VoidCallback? get _handleTap {
+    if (comingSoon) return null;
     if (onTap != null) return onTap;
     final r = route;
     if (r != null) return () => Modular.to.pushNamed(r);
@@ -62,7 +70,13 @@ class WHomeFeatureCard extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            WHomeIconBox(icon: icon, color: color),
+            Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                WHomeIconBox(icon: icon, color: color),
+                if (comingSoon) ...[const Spacer(), const _ComingSoonBadge()],
+              ],
+            ),
             const Spacer(),
             Text(
               title,
@@ -79,6 +93,26 @@ class WHomeFeatureCard extends StatelessWidget {
             ),
           ],
         ),
+      ),
+    );
+  }
+}
+
+/// Gold pill in the tile's top corner, across from the icon.
+class _ComingSoonBadge extends StatelessWidget {
+  const _ComingSoonBadge();
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: EdgeInsets.symmetric(horizontal: 8.w, vertical: 2.h),
+      decoration: BoxDecoration(
+        color: const Color(0xFFD6A72C),
+        borderRadius: BorderRadius.circular(20.r),
+      ),
+      child: Text(
+        'home_coming_soon'.tr(),
+        style: AppTextStyles.white12W700.copyWith(fontSize: 10.sp, height: 1.6),
       ),
     );
   }
