@@ -53,7 +53,7 @@ class _SNContactUsState extends State<SNContactUs> {
             WSettingsRow(
               icon: Icons.facebook_rounded,
               title: 'settings_contact_facebook'.tr(),
-              subtitle: AppConfig.facebookUrl.split('/').last,
+              subtitle: AppConfig.facebookName,
               onTap: () => LinkHelper.open(Uri.parse(AppConfig.facebookUrl)),
             ),
             WSettingsRow(

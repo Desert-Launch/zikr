@@ -63,8 +63,10 @@ class AppConfig {
   /// both together.
   static const String supportEmail = 'support@Zikrapp.app';
 
-  static const String facebookUrl = 'https://www.facebook.com/Zikrapp';
-  static const String instagramHandle = 'zikrapp';
+  /// A share link, so its path says nothing — the row shows [facebookName].
+  static const String facebookUrl = 'https://www.facebook.com/share/1Dpm3BDb86/';
+  static const String facebookName = 'Zikrapp';
+  static const String instagramHandle = 'zikrapp.app';
   static const String instagramUrl = 'https://www.instagram.com/$instagramHandle';
 
   // ── Settings › Rate the app ──────────────────────────────────────────────
