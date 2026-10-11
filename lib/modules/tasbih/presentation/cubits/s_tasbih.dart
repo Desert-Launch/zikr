@@ -12,6 +12,7 @@ class STasbih extends Equatable {
     this.hourlyZikrVolume = MAppSettings.defaultReminderVolume,
     this.hourlyStartHour = 8,
     this.hourlyEndHour = 22,
+    this.hourlyIntervalHours = 1,
     this.hourlyZikrCount = 0,
     this.reminderEnabled = true,
     this.reminderIntervalHours = 3,
@@ -42,6 +43,10 @@ class STasbih extends Equatable {
   /// [MAppSettings.hourlyWindowStartHour].
   final int hourlyStartHour;
   final int hourlyEndHour;
+
+  /// Hours between hourly zekr notifications — 1, 2 or 3. See
+  /// [MAppSettings.hourlyIntervalHours].
+  final int hourlyIntervalHours;
 
   /// How many azkar the hourly feed rotates through — 0 until they've loaded.
   /// Lets the screen say when a short range spreads them over several days.
@@ -90,6 +95,7 @@ class STasbih extends Equatable {
     int? hourlyZikrVolume,
     int? hourlyStartHour,
     int? hourlyEndHour,
+    int? hourlyIntervalHours,
     int? hourlyZikrCount,
     bool? reminderEnabled,
     int? reminderIntervalHours,
@@ -112,6 +118,7 @@ class STasbih extends Equatable {
       hourlyZikrVolume: hourlyZikrVolume ?? this.hourlyZikrVolume,
       hourlyStartHour: hourlyStartHour ?? this.hourlyStartHour,
       hourlyEndHour: hourlyEndHour ?? this.hourlyEndHour,
+      hourlyIntervalHours: hourlyIntervalHours ?? this.hourlyIntervalHours,
       hourlyZikrCount: hourlyZikrCount ?? this.hourlyZikrCount,
       reminderEnabled: reminderEnabled ?? this.reminderEnabled,
       reminderIntervalHours:
@@ -138,6 +145,7 @@ class STasbih extends Equatable {
     hourlyZikrVolume,
     hourlyStartHour,
     hourlyEndHour,
+    hourlyIntervalHours,
     hourlyZikrCount,
     reminderEnabled,
     reminderIntervalHours,

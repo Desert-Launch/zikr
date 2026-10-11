@@ -27,6 +27,7 @@ class MAppSettings extends HiveObject {
     this.firstOpenedAt,
     this.reviewLastRequestedAt,
     this.reviewDone = false,
+    this.hourlyIntervalHours = 1,
   });
 
   /// Default for [salawatVolume] and [hourlyZikrVolume] — half the ALARM
@@ -159,4 +160,11 @@ class MAppSettings extends HiveObject {
   /// sign of a review the app can see, so the automatic asks stop for good.
   @HiveField(17)
   bool reviewDone;
+
+  /// Hours between hourly zekr notifications — 1, 2 or 3 — counted from
+  /// [hourlyWindowStartHour], so 08:00–22:00 every 3 hours fires at 8, 11, 14,
+  /// 17 and 20. Records from before the setting existed decode to 1, the
+  /// every-hour feed they already had.
+  @HiveField(18)
+  int hourlyIntervalHours;
 }

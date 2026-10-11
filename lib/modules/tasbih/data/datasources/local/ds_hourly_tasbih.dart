@@ -17,16 +17,17 @@ import 'package:quran/core/services/notifications/notifications_service.dart';
 import 'package:quran/core/services/notifications/reminder_sound_alarms.dart';
 import 'package:quran/modules/tasbih/data/sources/local/box_tasbih_counter.dart';
 
-/// Schedules the hourly zekr notifications (Decision 2). One per hour of the
-/// hourly range (08:00–22:00 until the user changes it — see
-/// `BoxAppSettings.hourlyWindow`), silent + low importance — see
-/// [AppNotificationChannels.hourly].
+/// Schedules the hourly zekr notifications (Decision 2). One every 1, 2 or 3
+/// hours of the hourly range, counted from its start (every hour of
+/// 08:00–22:00 until the user changes either — see
+/// `BoxAppSettings.hourlyHours`), silent + low importance — see
+/// [AppNotificationChannels.hourly]. Each slot below is one of those hours.
 ///
 /// Phrases are loaded from `assets/data/notifictaions/hourly_notifications.json`
 /// (falling back to a hard-coded list) and handed out in order from the start
 /// of the range — see [HourlyRotation]:
 ///
-///  * **The azkar fit in one day** (the range has at least as many hours):
+///  * **The azkar fit in one day** (the range has at least as many slots):
 ///    daily repeats, ids `_baseId + hour`. They keep firing whether or not the
 ///    app is ever opened again.
 ///  * **The range is shorter**: each day continues where the previous one
@@ -159,18 +160,19 @@ class DSHourlyTasbih {
     return loaded > 0 ? loaded : _phrases.length;
   }
 
-  /// (Re)schedules every hour of the range. [reservedTimes] are times already
+  /// (Re)schedules every slot of the range. [reservedTimes] are times already
   /// claimed by other feeds today; any hour that would collide is shifted off
   /// `:00`. Omit it to reuse the set from the last coordinated run.
   Future<void> enable({List<DateTime>? reservedTimes}) async {
     final reserved = reservedTimes ?? _lastReserved;
     _lastReserved = reserved;
     await _loadAzkar();
-    // Clear the previous schedule first: narrowing the range (or wrapping it
-    // past midnight, or switching between the daily and rolling modes) would
-    // otherwise leave hours it no longer covers armed and firing.
+    // Clear the previous schedule first: narrowing the range, widening the
+    // interval (or wrapping it past midnight, or switching between the daily
+    // and rolling modes) would otherwise leave hours it no longer covers armed
+    // and firing.
     await disable();
-    final hours = _appSettings.hourlyWindow().hours;
+    final hours = _appSettings.hourlyHours();
     // One minute per hour, picked against today's reserved times and reused
     // on every day the rolling mode arms — prayer times drift a minute or two
     // a day, well inside the 10-minute gap. Each placed slot joins the
@@ -403,7 +405,7 @@ class DSHourlyTasbih {
   /// last coordinated run.
   ///
   /// For settings changes that carry no prayer-time context — the on/off switch,
-  /// the audio settings or a range move. Passing an empty list to
+  /// the audio settings, a range move or a new interval. Passing an empty list to
   /// [rescheduleWithReservedTimes] instead would work, but would also overwrite
   /// the cached reserved set with nothing, so the rebuilt slots would drop back
   /// onto times the prayer and azkar feeds have already claimed.

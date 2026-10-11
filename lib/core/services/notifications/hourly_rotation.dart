@@ -80,8 +80,15 @@ class HourlyRotation {
   /// Saving 09:00–13:00 in the evening therefore opens tomorrow's range on
   /// zekr 1, instead of counting the finished range as day 1 and starting
   /// tomorrow on zekr 6.
-  static DateTime currentWindowDay(NotificationWindow window, DateTime now) {
-    final hours = window.hours;
+  ///
+  /// With an interval of [every] hours the range ends at its last slot, not
+  /// its last hour: 08:00–22:00 every 3 hours is over once 20:00 has passed.
+  static DateTime currentWindowDay(
+    NotificationWindow window,
+    DateTime now, {
+    int every = 1,
+  }) {
+    final hours = window.hoursEvery(every);
     final wraps = hours.last < hours.first;
     for (var offset = -1; offset <= 1; offset++) {
       final start = DateTime(now.year, now.month, now.day + offset);

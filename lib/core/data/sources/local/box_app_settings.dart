@@ -90,6 +90,26 @@ class BoxAppSettings extends HiveBoxBase<MAppSettings> {
     await r.save();
   }
 
+  /// The hours the hourly zekr actually fires on: every
+  /// [MAppSettings.hourlyIntervalHours]-th hour of [hourlyWindow], from its
+  /// start.
+  List<int> hourlyHours() =>
+      hourlyWindow().hoursEvery(current().hourlyIntervalHours);
+
+  /// Saves the hours between hourly zekr notifications, and restarts the
+  /// rotation from [rotationAnchorDay] as [setHourlyWindow] does — a new
+  /// cadence changes how many azkar fit in a day.
+  Future<void> setHourlyInterval(
+    int hours, {
+    required int rotationAnchorDay,
+  }) async {
+    final r = current();
+    r
+      ..hourlyIntervalHours = hours.clamp(1, 24)
+      ..hourlyRotationAnchorDay = rotationAnchorDay;
+    await r.save();
+  }
+
   Future<void> setSalawatIgnoreSilent(bool value) async {
     final r = current();
     r.salawatIgnoreSilent = value;

@@ -134,5 +134,18 @@ void main() {
         DateTime(2026, 10, 8),
       );
     });
+
+    test('with an interval the range ends at its last slot', () {
+      const day = NotificationWindow(startHour: 8, endHour: 22);
+      // Every 3 hours: 8, 11, 14, 17, 20 — nothing left once 20:00 is over.
+      expect(
+        HourlyRotation.currentWindowDay(day, DateTime(2026, 10, 7, 20, 30), every: 3),
+        DateTime(2026, 10, 7),
+      );
+      expect(
+        HourlyRotation.currentWindowDay(day, DateTime(2026, 10, 7, 21), every: 3),
+        DateTime(2026, 10, 8),
+      );
+    });
   });
 }

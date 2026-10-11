@@ -24,16 +24,17 @@ class WHourlyRangeSection extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return BlocSelector<CBTasbih, STasbih, (bool, int, int, int)>(
+    return BlocSelector<CBTasbih, STasbih, (bool, int, int, int, int)>(
       bloc: cubit,
       selector: (s) => (
         s.hourlyEnabled,
         s.hourlyStartHour,
         s.hourlyEndHour,
+        s.hourlyIntervalHours,
         s.hourlyZikrCount,
       ),
       builder: (context, values) {
-        final (enabled, startHour, endHour, zikrCount) = values;
+        final (enabled, startHour, endHour, interval, zikrCount) = values;
         return Column(
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -59,21 +60,21 @@ class WHourlyRangeSection extends StatelessWidget {
                 ),
               ],
             ),
-            WSettingsNote(_note(startHour, endHour, zikrCount)),
+            WSettingsNote(_note(startHour, endHour, interval, zikrCount)),
           ],
         );
       },
     );
   }
 
-  /// The rotation explainer when the range can't hold every zekr in a day,
-  /// otherwise the plain description of the range.
-  String _note(int startHour, int endHour, int zikrCount) {
-    final hours = NotificationWindow(
+  /// The rotation explainer when the range can't hold every zekr in a day at
+  /// the chosen interval, otherwise the plain description of the range.
+  String _note(int startHour, int endHour, int interval, int zikrCount) {
+    final slots = NotificationWindow(
       startHour: startHour,
       endHour: endHour,
-    ).hours.length;
-    final rotation = HourlyRotation(slotsPerDay: hours, zikrCount: zikrCount);
+    ).hoursEvery(interval).length;
+    final rotation = HourlyRotation(slotsPerDay: slots, zikrCount: zikrCount);
     if (zikrCount == 0 || rotation.fitsInOneDay) {
       return 'tasbih_hourly_range_hint'.tr();
     }

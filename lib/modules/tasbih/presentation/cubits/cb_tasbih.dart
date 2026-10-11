@@ -54,6 +54,7 @@ class CBTasbih extends Cubit<STasbih> {
       hourlyZikrVolume: app.hourlyZikrVolume,
       hourlyStartHour: app.hourlyWindowStartHour,
       hourlyEndHour: app.hourlyWindowEndHour,
+      hourlyIntervalHours: app.hourlyIntervalHours,
     ));
   }
 
@@ -190,13 +191,37 @@ class CBTasbih extends Cubit<STasbih> {
       hourlyStartHour: window.startHour,
       hourlyEndHour: window.endHour,
     ));
-    final dayOne = HourlyRotation.currentWindowDay(window, DateTime.now());
     await _appSettings.setHourlyWindow(
       window,
-      rotationAnchorDay: HourlyRotation.epochDay(dayOne),
+      rotationAnchorDay: _rotationAnchor(window, state.hourlyIntervalHours),
     );
     await _hourly.rescheduleFromSettings();
   }
+
+  /// Sets how many hours apart the hourly zekr fires (1, 2 or 3), then cancels
+  /// the whole schedule and re-arms it on the new cadence.
+  ///
+  /// Restarts the rotation like a range change does: the number of azkar a
+  /// day holds changes with the interval.
+  Future<void> setHourlyInterval(int hours) async {
+    if (hours == state.hourlyIntervalHours) return;
+    emit(state.copyWith(hourlyIntervalHours: hours));
+    final window = NotificationWindow(
+      startHour: state.hourlyStartHour,
+      endHour: state.hourlyEndHour,
+    );
+    await _appSettings.setHourlyInterval(
+      hours,
+      rotationAnchorDay: _rotationAnchor(window, hours),
+    );
+    await _hourly.rescheduleFromSettings();
+  }
+
+  /// Day 1 of a rotation restarted now — see [HourlyRotation.currentWindowDay].
+  int _rotationAnchor(NotificationWindow window, int every) =>
+      HourlyRotation.epochDay(
+        HourlyRotation.currentWindowDay(window, DateTime.now(), every: every),
+      );
 
   /// Sets the hourly zekr's loudness (0–100) and re-arms the feed — on Android
   /// the level is baked into each armed clip. See [MAppSettings.hourlyZikrVolume].

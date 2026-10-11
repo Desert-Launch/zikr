@@ -59,13 +59,18 @@ class MAppSettingsAdapter extends TypeAdapter<MAppSettings> {
       firstOpenedAt: fields[15] as DateTime?,
       reviewLastRequestedAt: fields[16] as DateTime?,
       reviewDone: fields[17] == null ? false : fields[17] as bool,
+      // Absent on every record predating the interval setting — those decode
+      // to every hour, the cadence they already had.
+      hourlyIntervalHours: fields[18] == null
+          ? 1
+          : (fields[18] as num).toInt(),
     );
   }
 
   @override
   void write(BinaryWriter writer, MAppSettings obj) {
     writer
-      ..writeByte(18)
+      ..writeByte(19)
       ..writeByte(0)
       ..write(obj.hasSeenOnboarding)
       ..writeByte(1)
@@ -101,7 +106,9 @@ class MAppSettingsAdapter extends TypeAdapter<MAppSettings> {
       ..writeByte(16)
       ..write(obj.reviewLastRequestedAt)
       ..writeByte(17)
-      ..write(obj.reviewDone);
+      ..write(obj.reviewDone)
+      ..writeByte(18)
+      ..write(obj.hourlyIntervalHours);
   }
 
   @override

@@ -8,6 +8,7 @@ import 'package:quran/core/extension/build_context.dart';
 import 'package:quran/core/services/notifications/notifications_service.dart';
 import 'package:quran/core/widgets/w_gradient_app_bar.dart';
 import 'package:quran/core/widgets/w_shared_scaffold.dart';
+import 'package:quran/modules/settings/presentation/widgets/w_settings_check.dart';
 import 'package:quran/modules/settings/presentation/widgets/w_settings_group.dart';
 import 'package:quran/modules/settings/presentation/widgets/w_settings_note.dart';
 import 'package:quran/modules/settings/presentation/widgets/w_settings_row.dart';
@@ -18,8 +19,8 @@ import 'package:quran/modules/tasbih/presentation/cubits/cb_tasbih.dart';
 import 'package:quran/modules/tasbih/presentation/cubits/s_tasbih.dart';
 import 'package:quran/modules/tasbih/presentation/widgets/w_hourly_range_section.dart';
 
-/// Tasbih preferences: the hourly notification (on/off, audio and its own
-/// start/end range) and the counter's haptics.
+/// Tasbih preferences: the hourly notification (on/off, audio, how often and
+/// its own start/end range) and the counter's haptics.
 ///
 /// Laid out with the shared settings primitives so it reads as one surface
 /// with [SNSettings], which links here rather than repeating the toggles.
@@ -27,6 +28,9 @@ class SNTasbihHourly extends StatelessWidget {
   const SNTasbihHourly({super.key});
 
   static const _canvas = Color(0xFFFAF9F7);
+
+  /// Hours between hourly zekr notifications the user can pick from.
+  static const _intervals = [1, 2, 3];
 
   @override
   Widget build(BuildContext context) {
@@ -119,6 +123,31 @@ class SNTasbihHourly extends StatelessWidget {
                     ),
                     WSettingsNote('tasbih_hourly_explainer'.tr()),
                     SizedBox(height: isTab ? 12 : 15.h),
+                    WSettingsSectionLabel('tasbih_hourly_frequency'.tr()),
+                    // Picking one cancels the whole schedule and re-arms it on
+                    // the new cadence — see [CBTasbih.setHourlyInterval].
+                    BlocSelector<CBTasbih, STasbih, (bool, int)>(
+                      selector: (s) => (s.hourlyEnabled, s.hourlyIntervalHours),
+                      builder: (context, values) {
+                        final (enabled, interval) = values;
+                        return WSettingsGroup(
+                          children: [
+                            for (final hours in _intervals)
+                              WSettingsRow(
+                                icon: Icons.schedule_rounded,
+                                title: _intervalLabel(hours),
+                                trailing: WSettingsCheck(
+                                  selected: interval == hours,
+                                ),
+                                onTap: enabled
+                                    ? () => cb.setHourlyInterval(hours)
+                                    : null,
+                              ),
+                          ],
+                        );
+                      },
+                    ),
+                    SizedBox(height: isTab ? 12 : 15.h),
                     WHourlyRangeSection(cubit: cb),
                     SizedBox(height: isTab ? 12 : 15.h),
                     WSettingsSectionLabel('tasbih_counter_section'.tr()),
@@ -160,4 +189,10 @@ class SNTasbihHourly extends StatelessWidget {
     }
     await cb.setHourlyEnabled(value);
   }
+
+  String _intervalLabel(int hours) => switch (hours) {
+    2 => 'tasbih_hourly_every_2h'.tr(),
+    3 => 'tasbih_hourly_every_3h'.tr(),
+    _ => 'tasbih_hourly_every_1h'.tr(),
+  };
 }
