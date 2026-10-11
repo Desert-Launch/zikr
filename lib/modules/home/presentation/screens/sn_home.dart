@@ -187,7 +187,6 @@ class _SNHomeState extends State<SNHome> {
           subtitle: 'home_live_hint'.tr(),
           color: _green,
           route: LiveRoutes.fullHome(),
-          comingSoon: true,
         ),
         WHomeFeatureCard(
           icon: Assets.icons.signal.path,
@@ -209,6 +208,7 @@ class _SNHomeState extends State<SNHome> {
           subtitle: 'home_podcast_hint'.tr(),
           color: _gold,
           route: RoutesNames.adhanBase,
+          comingSoon: true,
         ),
       ]),
       gap(),
