@@ -1,8 +1,10 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_modular/flutter_modular.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:localize_and_translate/localize_and_translate.dart';
 import 'package:quran/core/services/config/app_config.dart';
+import 'package:quran/core/services/review/review_prompter.dart';
 import 'package:quran/core/theme/app_colors.dart';
 import 'package:quran/core/utils/helper/app_alert.dart';
 import 'package:quran/core/utils/helper/link_helper.dart';
@@ -43,6 +45,9 @@ class SNRateApp extends StatelessWidget {
 
   /// The App Store's write-a-review page on iOS, the Play listing elsewhere.
   /// Until the app has an App Store id there is no iOS page to open.
+  ///
+  /// Reaching the store page is taken as the review: neither store reports
+  /// one, so this is the signal that stops the automatic asks.
   Future<void> _openStore() async {
     final isIOS = defaultTargetPlatform == TargetPlatform.iOS;
     final url = isIOS ? AppConfig.appStoreReviewUrl : AppConfig.playStoreUrl;
@@ -50,6 +55,7 @@ class SNRateApp extends StatelessWidget {
       AppAlert.error('settings_rate_unavailable'.tr());
       return;
     }
-    await LinkHelper.open(Uri.parse(url));
+    final opened = await LinkHelper.open(Uri.parse(url));
+    if (opened) await Modular.get<ReviewPrompter>().markReviewed();
   }
 }

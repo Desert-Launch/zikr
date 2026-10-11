@@ -24,6 +24,9 @@ class MAppSettings extends HiveObject {
     this.hourlyWindowStartHour = 8,
     this.hourlyWindowEndHour = 22,
     this.hourlyRotationAnchorDay = 0,
+    this.firstOpenedAt,
+    this.reviewLastRequestedAt,
+    this.reviewDone = false,
   });
 
   /// Default for [salawatVolume] and [hourlyZikrVolume] — half the ALARM
@@ -139,4 +142,21 @@ class MAppSettings extends HiveObject {
   /// decides which part of the cycle today falls on.
   @HiveField(14)
   int hourlyRotationAnchorDay;
+
+  /// The first launch this field was seen absent on — the clock the store
+  /// review ask counts from (see `ReviewSchedule`). Installs from before it
+  /// existed start counting from the update that added it.
+  @HiveField(15)
+  DateTime? firstOpenedAt;
+
+  /// When the store review dialog was last asked for; null until the first
+  /// ask. An ask, not a showing: neither store says whether the dialog
+  /// actually appeared.
+  @HiveField(16)
+  DateTime? reviewLastRequestedAt;
+
+  /// The user opened the store listing from Settings › Rate the app — the only
+  /// sign of a review the app can see, so the automatic asks stop for good.
+  @HiveField(17)
+  bool reviewDone;
 }

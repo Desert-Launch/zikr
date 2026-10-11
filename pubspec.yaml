@@ -61,6 +61,8 @@ dependencies:
   # Platform utils
   package_info_plus: ^8.1.2
   url_launcher: ^6.3.1
+  # Native store review dialog (StoreKit / Play In-App Review) — see ReviewPrompter.
+  in_app_review: ^2.0.12
 
   # In-app web view — embeds the Haramain live YouTube streams (see modules/live).
   # The platform packages are pulled in explicitly so the live screen can enable

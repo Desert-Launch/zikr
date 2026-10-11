@@ -19,6 +19,7 @@ import 'package:quran/core/services/media/media_artwork.dart';
 import 'package:quran/core/services/notifications/in_app_notification_watcher.dart';
 import 'package:quran/core/services/notifications/notification_box/m_notification.dart';
 import 'package:quran/core/services/notifications/notifications_service.dart';
+import 'package:quran/core/services/review/review_prompter.dart';
 import 'package:quran/core/services/time/app_timezone.dart';
 import 'package:quran/core/services/routes/app_module.dart';
 import 'package:quran/core/theme/app_themes.dart';
@@ -295,7 +296,14 @@ class _RootState extends State<_Root> with WidgetsBindingObserver {
     // Wire notification channels + tap router (silent if not granted yet), then
     // rebuild every schedule so they survive reboots / timezone changes / an OS
     // cleanup, run the one-time adhan bootstrap, and rebuild the adhan window.
-    _bootNotifications();
+    // The store review ask waits for all of it, so the notification permission
+    // dialog has been answered before the review prompt can appear.
+    _bootNotifications().whenComplete(
+      () => _bootStep(
+        'review prompt',
+        Modular.get<ReviewPrompter>().maybeRequest,
+      ),
+    );
   }
 
   @override

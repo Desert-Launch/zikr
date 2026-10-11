@@ -119,4 +119,22 @@ class BoxAppSettings extends HiveBoxBase<MAppSettings> {
     r.hourlyZikrVolume = value.clamp(0, 100);
     await r.save();
   }
+
+  Future<void> setFirstOpenedAt(DateTime value) async {
+    final r = current();
+    r.firstOpenedAt = value;
+    await r.save();
+  }
+
+  Future<void> setReviewLastRequestedAt(DateTime value) async {
+    final r = current();
+    r.reviewLastRequestedAt = value;
+    await r.save();
+  }
+
+  Future<void> setReviewDone() async {
+    final r = current();
+    r.reviewDone = true;
+    await r.save();
+  }
 }

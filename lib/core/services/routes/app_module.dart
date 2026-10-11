@@ -13,6 +13,7 @@ import 'package:quran/core/services/notifications/notification_box/ds_notificati
 import 'package:quran/core/services/notifications/notification_router.dart';
 import 'package:quran/core/services/notifications/notifications_service.dart';
 import 'package:quran/core/services/notifications/scheduled_alert_registry.dart';
+import 'package:quran/core/services/review/review_prompter.dart';
 import 'package:quran/core/services/routes/routes_names.dart';
 import 'package:quran/modules/adhan/adhan_module.dart';
 import 'package:quran/modules/adhan/data/datasources/local/ds_local_adhan.dart';
@@ -253,6 +254,9 @@ class AppModule extends Module {
       () => PrayerWidgetPublisher(widget: i.get<DSPrayerWidget>()),
     );
     i.addSingleton<HomeWidgetRouter>(HomeWidgetRouter.new);
+
+    // Automatic store review ask, run once per cold start from main.dart.
+    i.addSingleton<ReviewPrompter>(ReviewPrompter.new);
 
     // Adhan catalog + download (own Dio, falls back to bundled adhans.json).
     i.addSingleton<DSRemoteAdhan>(DSRemoteAdhan.new);

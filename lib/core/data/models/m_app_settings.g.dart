@@ -56,13 +56,16 @@ class MAppSettingsAdapter extends TypeAdapter<MAppSettings> {
       hourlyRotationAnchorDay: fields[14] == null
           ? 0
           : (fields[14] as num).toInt(),
+      firstOpenedAt: fields[15] as DateTime?,
+      reviewLastRequestedAt: fields[16] as DateTime?,
+      reviewDone: fields[17] == null ? false : fields[17] as bool,
     );
   }
 
   @override
   void write(BinaryWriter writer, MAppSettings obj) {
     writer
-      ..writeByte(15)
+      ..writeByte(18)
       ..writeByte(0)
       ..write(obj.hasSeenOnboarding)
       ..writeByte(1)
@@ -92,7 +95,13 @@ class MAppSettingsAdapter extends TypeAdapter<MAppSettings> {
       ..writeByte(13)
       ..write(obj.hourlyWindowEndHour)
       ..writeByte(14)
-      ..write(obj.hourlyRotationAnchorDay);
+      ..write(obj.hourlyRotationAnchorDay)
+      ..writeByte(15)
+      ..write(obj.firstOpenedAt)
+      ..writeByte(16)
+      ..write(obj.reviewLastRequestedAt)
+      ..writeByte(17)
+      ..write(obj.reviewDone);
   }
 
   @override
