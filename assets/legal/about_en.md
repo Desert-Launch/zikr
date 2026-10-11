@@ -13,21 +13,25 @@ seamlessly keep your heart connected to remembrance.
 To simplify daily worship through trusted Islamic sources and intuitive
 technology, fostering peace and spirituality in every moment.
 
-## Content sources
+## Content Sources
 
-- **Quranic text**: Madani Mushaf (King Fahd Complex edition).
-- **Recitations**: EveryAyah.com and master reciters.
-- **Fonts**: QPC V1 from the King Fahd Complex; AmiriQuran (SIL Open Font
-  License 1.1) for Tajweed mode.
-- **Tajweed rules**: cpfair/quran-tajweed, licensed under
-  Creative Commons Attribution 4.0 (CC BY 4.0).
-- **Adhan audio**: Internet Archive and Assabile (open-license).
+At Zikr, we are committed to providing verified and authentic content sourced
+from globally recognized Islamic authorities and open-source platforms:
 
-## Thanks
-
-To everyone who has helped make these resources available to the ummah. May
-Allah accept it from them and from us.
-
-## Version
-
-Build version is shown on the Settings screen.
+- **Quranic Text:** King Fahd Glorious Quran Printing Complex (Madinah Mushaf
+  edition).
+- **Recitations:** Powered by EveryAyah.com platform featuring a selection of
+  renowned reciters.
+- **Typography & Fonts:** QPC V1 fonts issued by King Fahd Complex, and
+  AmiriQuran font (licensed under SIL OFL 1.1) to support classic script and
+  Tajweed rendering.
+- **Tajweed Rules:** cpfair/quran-tajweed project (licensed under Creative
+  Commons CC BY 4.0).
+- **Adhan (Call to Prayer):** Audio files licensed and hosted via Internet
+  Archive and Assabile.
+- **Adhkar & Supplications:** Hisn al-Muslim (Fortress of the Muslim) and
+  authenticated prophetic supplications grounded in validated Hadith sources.
+- **Hadith & Chain of Transmission:** Major Hadith collections (The Six Books:
+  Sahih al-Bukhari, Sahih Muslim, Sunan Abi Dawud, Jami' at-Tirmidhi, Sunan
+  an-Nasa'i, and Sunan Ibn Majah) along with trusted canonical Sunan
+  literature.
