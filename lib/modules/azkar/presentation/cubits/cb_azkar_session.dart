@@ -7,6 +7,7 @@ import 'package:localize_and_translate/localize_and_translate.dart';
 import 'package:quran/core/services/logging/app_logger.dart';
 import 'package:quran/core/services/media/audio_focus.dart';
 import 'package:quran/core/services/media/media_artwork.dart';
+import 'package:quran/core/utils/helper/haptics_helper.dart';
 import 'package:quran/modules/azkar/data/datasources/local/ds_local_azkar.dart';
 import 'package:quran/modules/azkar/data/models/m_azkar_item.dart';
 import 'package:quran/modules/azkar/data/sources/local/box_azkar_progress.dart';
@@ -21,7 +22,10 @@ class CBAzkarSession extends Cubit<SAzkarSession> {
     required BoxAzkarProgress progress,
   }) : _local = local,
        _progress = progress,
-       super(const SAzkarSession());
+       super(const SAzkarSession()) {
+    // Resolve the motor capabilities now so the first advance buzz isn't late.
+    HapticsHelper.prepare();
+  }
 
   final DSLocalAzkar _local;
   final BoxAzkarProgress _progress;
@@ -68,11 +72,15 @@ class CBAzkarSession extends Cubit<SAzkarSession> {
     await _count(cat, item);
 
     // Reached the last count → pause briefly, then auto-advance to the next zekr.
+    // Individual counts stay silent; only the advance gets a light buzz.
     if (state.isComplete(item)) {
       await Future.delayed(const Duration(milliseconds: 200));
       if (isClosed) return;
       // Only advance if we're still sitting on the zekr that just completed.
-      if (state.currentItem?.id == item.id) next();
+      if (state.currentItem?.id == item.id) {
+        unawaited(HapticsHelper.tick());
+        next();
+      }
     }
   }
 
