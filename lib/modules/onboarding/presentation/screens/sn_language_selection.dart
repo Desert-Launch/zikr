@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_modular/flutter_modular.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:localize_and_translate/localize_and_translate.dart';
 import 'package:quran/core/services/routes/routes_names.dart';
 import 'package:quran/modules/onboarding/presentation/cubits/cb_onboarding.dart';
 import 'package:quran/modules/onboarding/presentation/cubits/s_onboarding.dart';
@@ -9,8 +10,6 @@ import 'package:quran/modules/onboarding/presentation/widgets/w_lang_tile.dart';
 import 'package:quran/modules/onboarding/presentation/widgets/w_onboarding_backdrop.dart';
 import 'package:quran/modules/onboarding/presentation/widgets/w_onboarding_continue_button.dart';
 import 'package:quran/modules/onboarding/presentation/widgets/w_onboarding_header.dart';
-import 'package:quran/modules/onboarding/presentation/widgets/w_privacy_accept_tile.dart';
-import 'package:quran/modules/onboarding/presentation/widgets/w_privacy_policy_card.dart';
 
 class SNLanguageSelection extends StatefulWidget {
   const SNLanguageSelection({super.key});
@@ -45,7 +44,11 @@ class _SNLanguageSelectionState extends State<SNLanguageSelection> {
                       crossAxisAlignment: CrossAxisAlignment.stretch,
                       children: [
                         SizedBox(height: 32.h),
-                        const WOnboardingHeader(),
+                        WOnboardingHeader(
+                          icon: Icons.language_rounded,
+                          title: 'onboarding_language_title'.tr(),
+                          subtitle: 'onboarding_language_subtitle'.tr(),
+                        ),
                         SizedBox(height: 24.h),
                         ..._languages.map(
                           (l) => WLangTile(
@@ -54,17 +57,9 @@ class _SNLanguageSelectionState extends State<SNLanguageSelection> {
                             onTap: () => _cubit.setLanguage(l.code),
                           ),
                         ),
-                        Expanded(child: WPrivacyPolicyCard(languageCode: state.languageCode)),
-                        SizedBox(height: 8.h),
-                        WPrivacyAcceptTile(
-                          value: state.privacyAccepted,
-                          onChanged: _cubit.setPrivacyAccepted,
-                        ),
-                        SizedBox(height: 12.h),
+                        const Spacer(),
                         WOnboardingContinueButton(
-                          onTap: state.privacyAccepted
-                              ? () => Modular.to.pushNamed(OnboardingRoutes.fullPager())
-                              : null,
+                          onTap: () => Modular.to.pushNamed(OnboardingRoutes.fullPager()),
                         ),
                         SizedBox(height: 24.h),
                       ],

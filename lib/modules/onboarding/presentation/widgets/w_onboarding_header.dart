@@ -1,12 +1,20 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:localize_and_translate/localize_and_translate.dart';
 import 'package:quran/core/theme/app_colors.dart';
 import 'package:quran/core/theme/brand_colors.dart';
 
 class WOnboardingHeader extends StatelessWidget {
-  const WOnboardingHeader({super.key});
+  const WOnboardingHeader({
+    super.key,
+    required this.icon,
+    required this.title,
+    required this.subtitle,
+  });
+
+  final IconData icon;
+  final String title;
+  final String subtitle;
 
   @override
   Widget build(BuildContext context) {
@@ -30,16 +38,17 @@ class WOnboardingHeader extends StatelessWidget {
               ),
             ],
           ),
-          child: Icon(Icons.language_rounded, color: Colors.white, size: 42.r),
+          child: Icon(icon, color: Colors.white, size: 42.r),
         ),
         SizedBox(height: 26.h),
         Text(
-          'onboarding_language_title'.tr(),
+          title,
           style: GoogleFonts.cairo(fontSize: 24.sp, fontWeight: FontWeight.w800),
         ),
         SizedBox(height: 4.h),
         Text(
-          'onboarding_language_subtitle'.tr(),
+          subtitle,
+          textAlign: TextAlign.center,
           style: TextStyle(fontSize: 13.sp, color: context.brand.muted),
         ),
       ],

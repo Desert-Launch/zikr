@@ -219,12 +219,15 @@ class LegalRoutes {
 class OnboardingRoutes {
   OnboardingRoutes._();
 
-  static const String language = '/';
+  /// First step: the privacy policy, which must be accepted to go on.
+  static const String privacy = '/';
+  static const String language = '/language';
   static const String pager = '/pager';
   static const String location = '/location';
 
   /// Android-only final step: the two OS grants the full-screen adhan needs.
   static const String alarm = '/alarm';
+  static String fullLanguage() => '${RoutesNames.onboardingBase}language';
   static String fullPager() => '${RoutesNames.onboardingBase}pager';
   static String fullLocation() => '${RoutesNames.onboardingBase}location';
   static String fullAlarm() => '${RoutesNames.onboardingBase}alarm';
