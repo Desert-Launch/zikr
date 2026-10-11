@@ -19,7 +19,7 @@ class MAdhanSettings extends HiveObject {
     this.fullScreenAlarm = true,
     this.alarmDefaultsApplied = false,
     this.vibrate = false,
-    this.adhanVolume = 100,
+    this.adhanVolume = 50,
     this.duaAfterAdhan = true,
   });
 
@@ -103,7 +103,7 @@ class MAdhanSettings extends HiveObject {
   /// path at the system volume and `AVAudioPlayer.volume` can only attenuate,
   /// so nothing here can make a killed-app adhan louder.
   ///
-  /// Defaults to 100 — the loudest, which is what a call to prayer wants.
+  /// Defaults to 50 — half the ALARM stream's maximum.
   @HiveField(9)
   int adhanVolume;
 

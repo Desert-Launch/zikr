@@ -12,7 +12,7 @@ class SAdhanSettings extends Equatable {
     this.alarmPermissions = const AdhanAlarmPermissions(),
     this.manufacturer = '',
     this.vibrate = false,
-    this.adhanVolume = 100,
+    this.adhanVolume = 50,
     this.duaAfterAdhan = true,
     this.preNotifyMinutesPerPrayer = const {},
     this.selectedVoiceNameAr = '',

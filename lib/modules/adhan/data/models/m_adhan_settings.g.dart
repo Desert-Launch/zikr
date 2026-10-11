@@ -29,7 +29,7 @@ class MAdhanSettingsAdapter extends TypeAdapter<MAdhanSettings> {
       // ones written while vibration was removed outright) — those decode to
       // the off default rather than throwing.
       vibrate: fields[8] == null ? false : fields[8] as bool,
-      adhanVolume: fields[9] == null ? 100 : (fields[9] as num).toInt(),
+      adhanVolume: fields[9] == null ? 50 : (fields[9] as num).toInt(),
       // Absent on every record written before field 10 existed — those decode
       // to the on default, matching the constructor.
       duaAfterAdhan: fields[10] == null ? true : fields[10] as bool,

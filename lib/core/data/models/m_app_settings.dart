@@ -26,11 +26,9 @@ class MAppSettings extends HiveObject {
     this.hourlyRotationAnchorDay = 0,
   });
 
-  /// Default for [salawatVolume] and [hourlyZikrVolume]. Gentler than the
-  /// adhan's 100: these are short reminders that fire many times a day, and the
-  /// level is a share of the ALARM stream's maximum, which is built to wake a
-  /// sleeper.
-  static const int defaultReminderVolume = 60;
+  /// Default for [salawatVolume] and [hourlyZikrVolume] — half the ALARM
+  /// stream's maximum, the same as the adhan's default.
+  static const int defaultReminderVolume = 50;
 
   @HiveField(0)
   bool hasSeenOnboarding;
