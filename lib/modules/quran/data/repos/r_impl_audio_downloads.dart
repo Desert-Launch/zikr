@@ -15,7 +15,6 @@ import 'package:quran/modules/quran/domain/entities/e_download_progress.dart';
 import 'package:quran/modules/quran/domain/entities/e_surah_download_status.dart';
 import 'package:quran/modules/quran/domain/repos/r_audio_downloads.dart';
 import 'package:quran/modules/quran/domain/repos/r_reciter.dart';
-import 'package:quran/modules/quran/domain/services/download_notifier.dart';
 
 /// Tracks one in-flight surah download so concurrent callers (the manager UI
 /// and the audio player's background warm) share a single download.
@@ -32,28 +31,21 @@ class RImplAudioDownloads implements RAudioDownloads {
     required DSRemoteAudio remote,
     required DSAudioDownloader downloader,
     required RReciter reciter,
-    DownloadNotifier? notifier,
   }) : _files = files,
        _remote = remote,
        _downloader = downloader,
-       _reciter = reciter,
-       _notifier = notifier;
+       _reciter = reciter;
 
   final DSLocalAudioFiles _files;
   final DSRemoteAudio _remote;
   final DSAudioDownloader _downloader;
   final RReciter _reciter;
-  final DownloadNotifier? _notifier;
 
   /// Max ayat fetched in parallel per surah — gentle on the free CDN.
   static const int _concurrency = 3;
 
   final Map<String, _ActiveSurahDownload> _active = {};
   bool _cancelAllRequested = false;
-
-  /// True while a "download all" run is in progress, so the progress
-  /// notification isn't dismissed in the brief gap between surahs.
-  bool _allActive = false;
 
   String _key(String reciterId, int surah) => '${reciterId}_$surah';
 
@@ -168,11 +160,6 @@ class RImplAudioDownloads implements RAudioDownloads {
   void _safeAdd(_ActiveSurahDownload active, SurahDownloadProgress p) {
     active.last = p;
     if (!active.controller.isClosed) active.controller.add(p);
-    _notifier?.notifySurahProgress(
-      surah: p.surahNumber,
-      onDisk: p.onDisk,
-      total: p.total,
-    );
   }
 
   Future<void> _runSurah(
@@ -257,7 +244,6 @@ class RImplAudioDownloads implements RAudioDownloads {
     } finally {
       _active.remove(key);
       if (!active.controller.isClosed) await active.controller.close();
-      if (_active.isEmpty && !_allActive) _notifier?.notifyIdle();
     }
   }
 
@@ -268,23 +254,17 @@ class RImplAudioDownloads implements RAudioDownloads {
   @override
   Stream<AllSurahsDownloadProgress> downloadAllSurahs(String reciterId) async* {
     _cancelAllRequested = false;
-    _allActive = true;
     var completed = 0;
-    try {
-      for (int surah = 1; surah <= AyahCounts.surahCount; surah++) {
-        if (_cancelAllRequested) break;
-        await for (final p in downloadSurah(reciterId, surah)) {
-          yield AllSurahsDownloadProgress(
-            currentSurah: surah,
-            currentSurahProgress: p,
-            completedSurahs: completed,
-          );
-        }
-        completed++;
+    for (int surah = 1; surah <= AyahCounts.surahCount; surah++) {
+      if (_cancelAllRequested) break;
+      await for (final p in downloadSurah(reciterId, surah)) {
+        yield AllSurahsDownloadProgress(
+          currentSurah: surah,
+          currentSurahProgress: p,
+          completedSurahs: completed,
+        );
       }
-    } finally {
-      _allActive = false;
-      if (_active.isEmpty) _notifier?.notifyIdle();
+      completed++;
     }
   }
 

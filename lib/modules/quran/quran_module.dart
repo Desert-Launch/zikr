@@ -42,7 +42,6 @@ import 'package:quran/modules/quran/domain/repos/r_tafsir.dart';
 import 'package:quran/modules/quran/domain/repos/r_tajweed.dart';
 import 'package:quran/modules/quran/domain/entities/param_ayah_range.dart';
 import 'package:quran/modules/quran/domain/entities/param_ayah_ref.dart';
-import 'package:quran/modules/quran/domain/services/download_notifier.dart';
 import 'package:quran/modules/quran/domain/usecases/uc_delete_reciter_downloads.dart';
 import 'package:quran/modules/quran/domain/usecases/uc_delete_surah_download.dart';
 import 'package:quran/modules/quran/domain/usecases/uc_build_ayah_share.dart';
@@ -117,7 +116,6 @@ import 'package:quran/modules/quran/presentation/screens/sn_reciter_surahs.dart'
 import 'package:quran/modules/quran/presentation/screens/sn_surah_list.dart';
 import 'package:quran/modules/quran/presentation/screens/sn_tafsir.dart';
 import 'package:quran/modules/quran/presentation/screens/sn_tafsir_library.dart';
-import 'package:quran/modules/quran/presentation/services/quran_download_notifier.dart';
 
 class QuranModule extends Module {
   @override
@@ -172,16 +170,12 @@ class QuranModule extends Module {
         i.get<RReciter>(),
       ),
     );
-    i.addSingleton<DownloadNotifier>(
-      () => QuranDownloadNotifier(i.get<UCGetSurahList>()),
-    );
     i.addSingleton<RAudioDownloads>(
       () => RImplAudioDownloads(
         files: i.get<DSLocalAudioFiles>(),
         remote: i.get<DSRemoteAudio>(),
         downloader: i.get<DSAudioDownloader>(),
         reciter: i.get<RReciter>(),
-        notifier: i.get<DownloadNotifier>(),
       ),
     );
     i.addSingleton<RBookmarks>(() => RImplBookmarks(i.get<DSLocalBookmarks>()));

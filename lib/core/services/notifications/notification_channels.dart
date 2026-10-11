@@ -215,17 +215,6 @@ class AppNotificationChannels {
     importance: Importance.defaultImportance,
   );
 
-  /// Ongoing progress notification while reciter audio downloads run. Low
-  /// importance + silent so live progress updates never buzz or pop a heads-up.
-  static const downloads = AndroidNotificationChannel(
-    'downloads_channel',
-    'Downloads',
-    description: 'Quran audio download progress',
-    importance: Importance.low,
-    playSound: false,
-    enableVibration: false,
-  );
-
   /// All channels in registration order. [NotificationsService.init] iterates
   /// this list once at boot.
   static const List<AndroidNotificationChannel> all = [
@@ -242,7 +231,6 @@ class AppNotificationChannels {
     salawatSilent,
     reminders,
     quranReminders,
-    downloads,
   ];
 
   /// Channel ids replaced by a re-created version above. A channel's sound,
@@ -260,6 +248,8 @@ class AppNotificationChannels {
     // Sounding salawat channel, replaced by [salawatAppSound] + the app-played
     // clip so the reminder can have a volume of its own.
     'salawat_channel',
+    // Reciter download progress — the progress notification was removed.
+    'downloads_channel',
   ];
 
 }
