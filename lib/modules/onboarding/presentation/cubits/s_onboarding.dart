@@ -7,6 +7,7 @@ class SOnboarding extends Equatable {
     this.didRequestLocation = false,
     this.locationGranted = false,
     this.isLoading = false,
+    this.privacyAccepted = false,
   });
 
   final int pageIndex;
@@ -15,12 +16,16 @@ class SOnboarding extends Equatable {
   final bool locationGranted;
   final bool isLoading;
 
+  /// The privacy-policy checkbox on the first screen; gates moving on.
+  final bool privacyAccepted;
+
   SOnboarding copyWith({
     int? pageIndex,
     String? languageCode,
     bool? didRequestLocation,
     bool? locationGranted,
     bool? isLoading,
+    bool? privacyAccepted,
   }) {
     return SOnboarding(
       pageIndex: pageIndex ?? this.pageIndex,
@@ -28,10 +33,17 @@ class SOnboarding extends Equatable {
       didRequestLocation: didRequestLocation ?? this.didRequestLocation,
       locationGranted: locationGranted ?? this.locationGranted,
       isLoading: isLoading ?? this.isLoading,
+      privacyAccepted: privacyAccepted ?? this.privacyAccepted,
     );
   }
 
   @override
-  List<Object?> get props =>
-      [pageIndex, languageCode, didRequestLocation, locationGranted, isLoading];
+  List<Object?> get props => [
+        pageIndex,
+        languageCode,
+        didRequestLocation,
+        locationGranted,
+        isLoading,
+        privacyAccepted,
+      ];
 }

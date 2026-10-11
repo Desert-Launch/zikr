@@ -37,6 +37,9 @@ class CBOnboarding extends Cubit<SOnboarding> {
 
   void setPage(int index) => emit(state.copyWith(pageIndex: index));
 
+  void setPrivacyAccepted(bool accepted) =>
+      emit(state.copyWith(privacyAccepted: accepted));
+
   Future<void> setLanguage(String code) async {
     await _settings.setLanguageCode(code);
     await LocalizeAndTranslate.setLanguageCode(code);

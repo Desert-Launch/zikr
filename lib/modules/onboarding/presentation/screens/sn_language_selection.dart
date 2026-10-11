@@ -9,6 +9,8 @@ import 'package:quran/modules/onboarding/presentation/widgets/w_lang_tile.dart';
 import 'package:quran/modules/onboarding/presentation/widgets/w_onboarding_backdrop.dart';
 import 'package:quran/modules/onboarding/presentation/widgets/w_onboarding_continue_button.dart';
 import 'package:quran/modules/onboarding/presentation/widgets/w_onboarding_header.dart';
+import 'package:quran/modules/onboarding/presentation/widgets/w_privacy_accept_tile.dart';
+import 'package:quran/modules/onboarding/presentation/widgets/w_privacy_policy_card.dart';
 
 class SNLanguageSelection extends StatefulWidget {
   const SNLanguageSelection({super.key});
@@ -42,9 +44,9 @@ class _SNLanguageSelectionState extends State<SNLanguageSelection> {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.stretch,
                       children: [
-                        SizedBox(height: 62.h),
+                        SizedBox(height: 32.h),
                         const WOnboardingHeader(),
-                        SizedBox(height: 28.h),
+                        SizedBox(height: 24.h),
                         ..._languages.map(
                           (l) => WLangTile(
                             opt: l,
@@ -52,8 +54,18 @@ class _SNLanguageSelectionState extends State<SNLanguageSelection> {
                             onTap: () => _cubit.setLanguage(l.code),
                           ),
                         ),
-                        const Spacer(),
-                        WOnboardingContinueButton(onTap: () => Modular.to.pushNamed(OnboardingRoutes.fullPager())),
+                        Expanded(child: WPrivacyPolicyCard(languageCode: state.languageCode)),
+                        SizedBox(height: 8.h),
+                        WPrivacyAcceptTile(
+                          value: state.privacyAccepted,
+                          onChanged: _cubit.setPrivacyAccepted,
+                        ),
+                        SizedBox(height: 12.h),
+                        WOnboardingContinueButton(
+                          onTap: state.privacyAccepted
+                              ? () => Modular.to.pushNamed(OnboardingRoutes.fullPager())
+                              : null,
+                        ),
                         SizedBox(height: 24.h),
                       ],
                     ),

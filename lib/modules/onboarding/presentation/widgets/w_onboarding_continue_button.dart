@@ -5,7 +5,9 @@ import 'package:quran/core/theme/app_colors.dart';
 
 class WOnboardingContinueButton extends StatelessWidget {
   const WOnboardingContinueButton({super.key, required this.onTap});
-  final VoidCallback onTap;
+
+  /// Null disables the button.
+  final VoidCallback? onTap;
 
   @override
   Widget build(BuildContext context) {
@@ -15,6 +17,8 @@ class WOnboardingContinueButton extends StatelessWidget {
         onPressed: onTap,
         style: FilledButton.styleFrom(
           backgroundColor: AppColorsLight.primary,
+          disabledBackgroundColor: AppColorsLight.primary.withValues(alpha: 0.35),
+          disabledForegroundColor: Colors.white,
           padding: EdgeInsets.symmetric(vertical: 16.h),
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(16.r),
