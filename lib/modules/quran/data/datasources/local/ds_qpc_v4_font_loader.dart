@@ -10,9 +10,10 @@ import 'package:quran/core/services/logging/app_logger.dart';
 /// Registers the QPC-V4 colored-tajweed page fonts on demand.
 ///
 /// Each Mushaf page ships as a gzipped COLR/CPAL font
-/// (`assets/fonts/qpc_v4/QCF4{NNN}_COLOR-Regular.ttf.gz`). On first use for a
-/// page we decompress it once and register four families via [loadFontFromList]
-/// — a colored-tajweed pair and a plain (non-tajweed) pair, each in light/dark:
+/// (`assets/fonts/qpc_v4/QCF4{NNN}_COLOR-Regular.ttf.gz`). A page can be drawn
+/// in four families — a colored-tajweed pair and a plain (non-tajweed) pair,
+/// each in light/dark — and each is registered via [loadFontFromList] only
+/// when something asks to paint with it:
 /// - `qcf4_p{page}`   — tajweed, light: the font's own baked colours (black base).
 /// - `qcf4_p{page}d`  — tajweed, dark:  base black re-palettized to white, colours kept.
 /// - `qcf4_p{page}n`  — plain,   light: every CPAL colour collapsed to black.
@@ -23,7 +24,14 @@ import 'package:quran/core/services/logging/app_logger.dart';
 ///
 /// Families are namespaced (`qcf4_`) so they never collide with the existing
 /// QPC-V2 families (`QCF_V2_P{page}`). Fonts cannot be unloaded by Flutter, so
-/// this only tracks what has been registered.
+/// this only tracks what has been registered — which is why this is an
+/// app-wide singleton: a per-visit instance forgot what it had registered and
+/// registered every page again on the next visit.
+///
+/// It is also why only the variant in use is registered. All four per page
+/// cost ~1 MB of native memory for every page read, for the life of the
+/// process; the rest of a page's variants are decoded if the reader switches
+/// theme or tajweed (a short spinner on the visible pages, once).
 ///
 /// ## Why this is shaped for the scroll loop
 ///
@@ -36,10 +44,8 @@ import 'package:quran/core/services/logging/app_logger.dart';
 ///    is pure byte work with no engine calls, so there is no reason for it to
 ///    sit on the UI isolate — and it was previously the single largest stall in
 ///    a fast scroll.
-/// 2. **Only the variant actually being rendered is awaited.** The other three
-///    are registered afterwards, one page at a time, through [_enqueue] — so a
-///    page costs one `loadFontFromList` on the critical path instead of four,
-///    and a theme or tajweed toggle still finds its family already there.
+/// 2. **Only the variant actually being rendered is decoded and registered**,
+///    so a page costs one `loadFontFromList` instead of four.
 class DSQpcV4FontLoader {
   DSQpcV4FontLoader();
 
@@ -49,14 +55,13 @@ class DSQpcV4FontLoader {
   /// variant whose family is in its set — see [isPageReady].
   final Map<int, Set<String>> _registered = <int, Set<String>>{};
 
-  /// One in-flight [_loadInternal] per page, so a page swiped across twice does
-  /// not decompress twice.
-  final Map<int, Future<void>> _inFlight = <int, Future<void>>{};
+  /// One in-flight [_loadInternal] per family, so a page swiped across twice
+  /// does not decompress twice.
+  final Map<String, Future<void>> _inFlight = <String, Future<void>>{};
 
-  /// Serialises the background work — neighbour warmups and the three
-  /// off-screen variants — into a single chain. Without it a fast scroll fans
-  /// out a dozen concurrent isolates and font registrations, which is slower
-  /// than doing them one at a time and far jerkier.
+  /// Serialises the neighbour warmups into a single chain. Without it a fast
+  /// scroll fans out a dozen concurrent isolates and font registrations, which
+  /// is slower than doing them one at a time and far jerkier.
   Future<void> _queue = Future<void>.value();
 
   /// Font family for [page] (1-based) in the given brightness + tajweed mode.
@@ -74,9 +79,8 @@ class DSQpcV4FontLoader {
       ) ??
       false;
 
-  /// Registers the fonts for [page], resolving as soon as the variant named by
-  /// [dark] / [tajweed] can be painted. The remaining three are registered in
-  /// the background afterwards.
+  /// Registers the variant of [page] named by [dark] / [tajweed], resolving once
+  /// it can be painted.
   Future<void> loadPage(
     int page, {
     required bool dark,
@@ -86,11 +90,12 @@ class DSQpcV4FontLoader {
     if (isPageReady(page, dark: dark, tajweed: tajweed)) {
       return Future<void>.value();
     }
-    final existing = _inFlight[page];
+    final family = familyFor(page, dark: dark, tajweed: tajweed);
+    final existing = _inFlight[family];
     if (existing != null) return existing;
     final f = _loadInternal(page, dark: dark, tajweed: tajweed);
-    _inFlight[page] = f;
-    return f.whenComplete(() => _inFlight.remove(page));
+    _inFlight[family] = f;
+    return f.whenComplete(() => _inFlight.remove(family));
   }
 
   /// Registers the visible [center] page (awaited) and warms a small neighbour
@@ -135,27 +140,10 @@ class DSQpcV4FontLoader {
   }) async {
     try {
       final gz = await _readAsset(page);
-      // Ungzip + the three CPAL patches, off the UI isolate. What comes back is
-      // four ready-to-register TTF byte arrays in [_QpcVariant] order.
-      final variants = await compute(_decodeAndPatch, gz);
-
-      // The variant on screen goes first and is the only one this future waits
-      // on — the page can paint the moment it lands.
-      final wanted = _variantIndex(dark: dark, tajweed: tajweed);
-      await _register(page, wanted, variants[wanted]);
-
-      // The other three ride the background chain. They are what makes a theme
-      // or tajweed toggle instant later on, but nothing on screen needs them
-      // now.
-      final pending = <int, Uint8List>{
-        for (var i = 0; i < variants.length; i++)
-          if (i != wanted) i: variants[i],
-      };
-      _enqueue(() async {
-        for (final entry in pending.entries) {
-          await _register(page, entry.key, entry.value);
-        }
-      });
+      final variant = _variantIndex(dark: dark, tajweed: tajweed);
+      // Ungzip + this variant's CPAL patch, off the UI isolate.
+      final bytes = await compute(_decodeVariant, (gz: gz, variant: variant));
+      await _register(page, variant, bytes);
     } catch (e, st) {
       AppLogger.error(
         'Failed loading QPC-V4 font page $page',
@@ -199,8 +187,8 @@ class DSQpcV4FontLoader {
 
 // --- Variant indexing ------------------------------------------------------
 //
-// The four families are addressed by index so the isolate can return them as a
-// plain list. Order is fixed and shared with [_decodeAndPatch].
+// The four families are addressed by index so a variant can be named across
+// the isolate boundary — see [_decodeVariant].
 
 const int _kTajweedLight = 0;
 const int _kTajweedDark = 1;
@@ -220,20 +208,20 @@ bool _variantIsTajweed(int variant) =>
 
 // --- Background isolate work ----------------------------------------------
 
-/// Ungzips one page font and produces all four CPAL variants of it.
+/// Ungzips one page font and produces the requested CPAL variant of it.
 ///
 /// Top-level and pure so it can run under [compute]: it touches no engine API,
-/// only bytes. Returns the four TTFs in `_kTajweedLight … _kPlainDark` order.
-List<Uint8List> _decodeAndPatch(Uint8List gzBytes) {
-  final base = Uint8List.fromList(const GZipDecoder().decodeBytes(gzBytes));
-  return <Uint8List>[
+/// only bytes.
+Uint8List _decodeVariant(({Uint8List gz, int variant}) job) {
+  final base = Uint8List.fromList(const GZipDecoder().decodeBytes(job.gz));
+  return switch (job.variant) {
+    _kTajweedDark => _modifyCpalBaseColor(base, _kWhite),
+    _kPlainLight => _modifyCpalAllColors(base, _kBlack),
+    _kPlainDark => _modifyCpalAllColors(base, _kWhite),
     // Tajweed light is the font exactly as shipped — black base layer, the
     // font's own tajweed colours.
-    base,
-    _modifyCpalBaseColor(Uint8List.fromList(base), _kWhite),
-    _modifyCpalAllColors(Uint8List.fromList(base), _kBlack),
-    _modifyCpalAllColors(Uint8List.fromList(base), _kWhite),
-  ];
+    _ => base,
+  };
 }
 
 const Color _kWhite = Color(0xFFFFFFFF);

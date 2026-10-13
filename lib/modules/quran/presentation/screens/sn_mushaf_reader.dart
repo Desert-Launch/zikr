@@ -235,9 +235,9 @@ class _SNMushafReaderState extends State<SNMushafReader> with OrientationOverrid
         initialAyah.surah,
         initialAyah.ayah,
       );
-      if (mounted) {
-        _seekToPage(target);
-      }
+      // Left before the lookup came back: the cubit is closed by now.
+      if (!mounted) return;
+      _seekToPage(target);
     }
     _cubit.openPage(target);
     if (initialAyah != null) {
@@ -255,6 +255,11 @@ class _SNMushafReaderState extends State<SNMushafReader> with OrientationOverrid
     _scrollController.removeListener(_onVerticalScroll);
     _scrollController.dispose();
     _pageController.dispose();
+    // A factory bind handed over through BlocProvider.value, so nothing else
+    // closes it. Left open it stays registered as a lifecycle observer (with
+    // its bookmark watch and the page data it loaded) for the rest of the
+    // process. Closing also flushes the last-read page right away.
+    _cubit.close();
     super.dispose();
   }
 

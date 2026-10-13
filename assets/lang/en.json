@@ -50,6 +50,8 @@
   "tafsir_linked_note": "This commentary covers a group of ayat (from {{ayah}}).",
   "reciter_picker_title": "Choose reciter",
   "reciter_picker_preview": "Preview",
+  "reciter_picker_preview_stop": "Stop preview",
+  "reciter_preview_failed": "Couldn't play the preview. Check your internet connection.",
   "quran_settings_title": "Quran settings",
   "quran_settings_audio_downloads": "Audio downloads",
   "quran_settings_audio_downloads_hint": "Manage offline reciter audio",

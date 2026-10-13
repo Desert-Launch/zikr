@@ -1,6 +1,8 @@
 import 'dart:convert';
+import 'dart:typed_data';
 
 import 'package:archive/archive.dart' show GZipDecoder;
+import 'package:flutter/foundation.dart' show compute;
 import 'package:flutter/services.dart' show rootBundle;
 import 'package:quran/modules/quran/data/models/m_qpc_v4_page.dart';
 
@@ -12,8 +14,10 @@ import 'package:quran/modules/quran/data/models/m_qpc_v4_page.dart';
 /// - `qpc_v4_ayah_info.json.gz` — per-page line layout (line type + word-id range).
 /// - `qpc-v4.json.gz` — the glyph text of every word, keyed by word id.
 ///
-/// The store is parsed once (lazily) and cached for the app session. Methods let
-/// exceptions bubble; the repository converts them to [Failure] (CLAUDE.md §6).
+/// The store is parsed once (lazily), in a background isolate, and cached for
+/// the app session — this is an app-wide singleton, so leaving and reopening
+/// the reader reuses it. Methods let exceptions bubble; the repository converts
+/// them to [Failure] (CLAUDE.md §6).
 class DSQpcV4Data {
   DSQpcV4Data();
 
@@ -31,40 +35,20 @@ class DSQpcV4Data {
   }
 
   Future<void> _load() async {
-    final ayahInfo = await _decodeGzJson(_ayahInfoAsset);
-    if (ayahInfo is! List) {
-      throw const FormatException('qpc_v4_ayah_info.json must be a JSON List');
-    }
-    final linesByPage = <int, List<_QpcV4AyahInfoLine>>{};
-    for (final item in ayahInfo) {
-      if (item is! Map) continue;
-      final line = _QpcV4AyahInfoLine.fromJson(Map<String, dynamic>.from(item));
-      (linesByPage[line.pageNumber] ??= <_QpcV4AyahInfoLine>[]).add(line);
-    }
-    for (final lines in linesByPage.values) {
-      lines.sort((a, b) => a.lineNumber.compareTo(b.lineNumber));
-    }
-
-    final words = await _decodeGzJson(_wordsAsset);
-    if (words is! Map) {
-      throw const FormatException('qpc-v4.json must be a JSON Map');
-    }
-    final wordsById = <int, _QpcV4Word>{};
-    for (final value in words.values) {
-      if (value is! Map) continue;
-      final word = _QpcV4Word.fromJson(Map<String, dynamic>.from(value));
-      wordsById[word.id] = word;
-    }
-
-    _linesByPage = linesByPage;
-    _wordsById = wordsById;
+    // Only the asset reads stay here (the bundle lives on this isolate). The
+    // ~16 MB of JSON they inflate to — and the 83k words built from it — are
+    // decoded off the UI isolate; doing it here froze the first reader frame.
+    final store = await compute(
+      _parseStore,
+      (ayahInfoGz: await _readAsset(_ayahInfoAsset), wordsGz: await _readAsset(_wordsAsset)),
+    );
+    _linesByPage = store.linesByPage;
+    _wordsById = store.wordsById;
   }
 
-  Future<dynamic> _decodeGzJson(String asset) async {
+  Future<Uint8List> _readAsset(String asset) async {
     final data = await rootBundle.load(asset);
-    final gz = data.buffer.asUint8List(data.offsetInBytes, data.lengthInBytes);
-    final bytes = const GZipDecoder().decodeBytes(gz);
-    return jsonDecode(utf8.decode(bytes));
+    return data.buffer.asUint8List(data.offsetInBytes, data.lengthInBytes);
   }
 
   /// The page the basmala's own glyphs are lifted from.
@@ -352,6 +336,40 @@ class DSQpcV4Data {
 }
 
 // --- Internal parse models --------------------------------------------------
+
+/// Inflates and indexes both QPC stores. Top-level and pure so it can run under
+/// [compute]; the maps it returns are handed back without a copy.
+({Map<int, List<_QpcV4AyahInfoLine>> linesByPage, Map<int, _QpcV4Word> wordsById}) _parseStore(
+  ({Uint8List ayahInfoGz, Uint8List wordsGz}) assets,
+) {
+  final ayahInfo = _decodeGzJson(assets.ayahInfoGz);
+  if (ayahInfo is! List) {
+    throw const FormatException('qpc_v4_ayah_info.json must be a JSON List');
+  }
+  final linesByPage = <int, List<_QpcV4AyahInfoLine>>{};
+  for (final item in ayahInfo) {
+    if (item is! Map) continue;
+    final line = _QpcV4AyahInfoLine.fromJson(Map<String, dynamic>.from(item));
+    (linesByPage[line.pageNumber] ??= <_QpcV4AyahInfoLine>[]).add(line);
+  }
+  for (final lines in linesByPage.values) {
+    lines.sort((a, b) => a.lineNumber.compareTo(b.lineNumber));
+  }
+
+  final words = _decodeGzJson(assets.wordsGz);
+  if (words is! Map) {
+    throw const FormatException('qpc-v4.json must be a JSON Map');
+  }
+  final wordsById = <int, _QpcV4Word>{};
+  for (final value in words.values) {
+    if (value is! Map) continue;
+    final word = _QpcV4Word.fromJson(Map<String, dynamic>.from(value));
+    wordsById[word.id] = word;
+  }
+  return (linesByPage: linesByPage, wordsById: wordsById);
+}
+
+dynamic _decodeGzJson(Uint8List gz) => jsonDecode(utf8.decode(const GZipDecoder().decodeBytes(gz)));
 
 int? _tryParseOptionalInt(dynamic value) {
   if (value == null) return null;

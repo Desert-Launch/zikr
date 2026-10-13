@@ -135,11 +135,17 @@ class CBAudioPlayer extends Cubit<SAudioPlayer> {
   /// Last seen processing state, to log only on transitions.
   ProcessingState? _lastProcessingState;
 
+  /// How often [SAudioPlayer.position] is refreshed while audio plays — enough
+  /// for a progress bar, and the only periodic work the player does.
+  static const Duration _positionTick = Duration(milliseconds: 200);
+
+  /// Runs only while the platform is actually playing; see [_syncPositionTicker].
+  Timer? _positionTicker;
+
   StreamSubscription<PlayerState>? _stateSub;
   StreamSubscription<int?>? _idxSub;
-  StreamSubscription<Duration>? _posSub;
   StreamSubscription<Duration?>? _durSub;
-  StreamSubscription<PlaybackEvent>? _errSub;
+  StreamSubscription<PlaybackEvent>? _eventSub;
   StreamSubscription<void>? _noisySub;
   StreamSubscription<AudioInterruptionEvent>? _interruptSub;
 
@@ -165,6 +171,7 @@ class CBAudioPlayer extends Cubit<SAudioPlayer> {
 
   void _wireStreams() {
     _stateSub = _player.playerStateStream.listen((ps) {
+      _syncPositionTicker(ps);
       // Trace processing-state transitions to diagnose auto-advance issues.
       if (ps.processingState != _lastProcessingState) {
         _lastProcessingState = ps.processingState;
@@ -198,16 +205,16 @@ class CBAudioPlayer extends Cubit<SAudioPlayer> {
 
     _idxSub = _player.currentIndexStream.listen(_onPlaylistIndexChanged);
 
-    _posSub = _player.positionStream.listen(
-      (p) => emit(state.copyWith(position: p)),
-    );
     _durSub = _player.durationStream.listen((d) {
       emit(state.copyWith(duration: d ?? Duration.zero));
     });
+    // Playback events cover every position jump the ticker can't see — a seek
+    // or ayah change while paused, a stop resetting to zero.
+    //
     // just_audio 0.9.x surfaces playback errors through `playbackEventStream`'s
     // error channel — there is no dedicated `errorStream` until 0.10.x.
-    _errSub = _player.playbackEventStream.listen(
-      (_) {},
+    _eventSub = _player.playbackEventStream.listen(
+      (_) => _emitPosition(),
       onError: (Object e, StackTrace st) {
         if (e is PlayerException) {
           unawaited(_handlePlaybackError(e));
@@ -218,6 +225,31 @@ class CBAudioPlayer extends Cubit<SAudioPlayer> {
     );
 
     unawaited(_configureSession());
+  }
+
+  /// Polls the position only while audio is audibly advancing.
+  ///
+  /// Deliberately not `AudioPlayer.positionStream`: in just_audio 0.9.x that
+  /// stream's timer starts with the first loaded clip and runs until the player
+  /// is disposed — paused, stopped or not — at clip-length / 800, floored at
+  /// 16 ms. Ayah clips are a few seconds long, so it woke the app ~60 times a
+  /// second for as long as the process lived, and redrew the player as often.
+  void _syncPositionTicker(PlayerState ps) {
+    final advancing = ps.playing && ps.processingState == ProcessingState.ready;
+    if (advancing) {
+      _positionTicker ??= Timer.periodic(_positionTick, (_) => _emitPosition());
+      return;
+    }
+    _positionTicker?.cancel();
+    _positionTicker = null;
+    // Settle on where playback actually stopped rather than the last tick.
+    _emitPosition();
+  }
+
+  void _emitPosition() {
+    if (isClosed) return;
+    final position = _player.position;
+    if (position != state.position) emit(state.copyWith(position: position));
   }
 
   Future<void> _configureSession() async {
@@ -1045,7 +1077,7 @@ class CBAudioPlayer extends Cubit<SAudioPlayer> {
     // Restart the current clip if we're well into it, otherwise step back —
     // to the first copy of this ayah while a later one is playing, else to the
     // first copy of the previous ayah.
-    if (idx == 0 || state.position > const Duration(seconds: 3)) {
+    if (idx == 0 || _player.position > const Duration(seconds: 3)) {
       await _player.seek(Duration.zero);
       if (!_player.playing) await _player.play();
       return;
@@ -1201,14 +1233,12 @@ class CBAudioPlayer extends Cubit<SAudioPlayer> {
     await _player.setVolume(1);
   }
 
-  Stream<Duration> get positionStream => _player.positionStream;
-
   @override
   Future<void> close() async {
+    _positionTicker?.cancel();
     await _stateSub?.cancel();
-    await _posSub?.cancel();
     await _durSub?.cancel();
-    await _errSub?.cancel();
+    await _eventSub?.cancel();
     await _idxSub?.cancel();
     await _noisySub?.cancel();
     await _interruptSub?.cancel();

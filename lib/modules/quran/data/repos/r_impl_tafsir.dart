@@ -124,9 +124,7 @@ class RImplTafsir implements RTafsir {
       // Catalogue order keeps a stable tab order across books.
       for (final book in TafsirCatalog.books) {
         if (!downloaded.contains(book.id)) continue;
-        final map = _local.bookMap(book.id);
-        if (map == null) continue;
-        final resolved = _resolve(map, ref.key);
+        final resolved = await _resolve(book.id, ref.key);
         if (resolved == null) continue;
         entries.add(ETafsirEntry(
           book: book,
@@ -141,13 +139,17 @@ class RImplTafsir implements RTafsir {
     }
   }
 
-  /// Resolves the commentary text for [key], following up to a few range
-  /// pointers. Returns null when the ayah has no entry or the text is empty.
-  ({String text, String? linkedFrom})? _resolve(Map<String, dynamic> map, String key) {
+  /// Resolves [bookId]'s commentary text for [key], following up to a few
+  /// range pointers — each read from the surah slice it names, since a range
+  /// can start in an earlier surah. Returns null when the ayah has no entry or
+  /// the text is empty.
+  Future<({String text, String? linkedFrom})?> _resolve(String bookId, String key) async {
     String current = key;
     String? linkedFrom;
     for (var hop = 0; hop < 5; hop++) {
-      final node = map[current];
+      final surah = int.tryParse(current.split(':').first);
+      if (surah == null) return null;
+      final node = (await _local.surahEntries(bookId, surah))?[current];
       final text = node is Map ? node['text'] as String? : null;
       if (text == null || text.isEmpty) return null;
       if (_pointer.hasMatch(text.trim())) {

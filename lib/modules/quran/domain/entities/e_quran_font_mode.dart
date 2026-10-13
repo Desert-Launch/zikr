@@ -8,8 +8,9 @@
 /// - [tajweedV4] coloured Tajweed — the same per-page QPC-V4 font with its baked
 ///   CPAL tajweed palette, so the letters carry their tajweed colours.
 ///
-/// Both selectable modes share the same page data and both font variants are
-/// registered per page by `DSQpcV4FontLoader`, so switching is instant.
+/// Both selectable modes share the same page data. `DSQpcV4FontLoader`
+/// registers only the variant in use, so switching decodes the visible pages'
+/// other variant on demand.
 enum EQuranFontMode {
   plainV1,
   plainV2,

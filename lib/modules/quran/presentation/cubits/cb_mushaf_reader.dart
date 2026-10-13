@@ -151,7 +151,7 @@ class CBMushafReader extends Cubit<SMushafReader> {
   final Set<int> _inFlight = <int>{};
 
   Future<void> openPage(int page) async {
-    if (page < _firstPage || page > _lastPage) return;
+    if (isClosed || page < _firstPage || page > _lastPage) return;
     final cached = state.pages[page];
     emit(
       state.copyWith(
@@ -167,9 +167,8 @@ class CBMushafReader extends Cubit<SMushafReader> {
     // Register the page's QPC-V4 colour font (+ background neighbour warmup) in
     // parallel with the layout resolve so glyphs are ready when we paint.
     //
-    // Only the variant this reader is actually painting with is awaited; the
-    // loader registers the other three in the background (see
-    // `DSQpcV4FontLoader`), which is what keeps a page turn to one font
+    // Only the variant this reader is actually painting with is registered
+    // (see `DSQpcV4FontLoader`), which keeps a page turn to one font
     // registration instead of four.
     final preloadFut = _fonts.preloadWindow(
       page,
@@ -178,11 +177,13 @@ class CBMushafReader extends Cubit<SMushafReader> {
     );
     final ok = cached != null ? true : await _resolve(page);
     await preloadFut;
-    if (state.currentPage != page) return;
+    // The reader may have closed while this page resolved (the screen closes
+    // this cubit on the way out) — nothing left to emit to.
+    if (isClosed || state.currentPage != page) return;
     if (ok) {
       final surahNo = state.pages[page]?.allAyahRefs.firstOrNull?.surah ?? 1;
       final surahName = await _surahName(surahNo);
-      if (state.currentPage != page) return;
+      if (isClosed || state.currentPage != page) return;
       emit(state.copyWith(status: LoadStatus.success, surahName: surahName));
       _scheduleLastReadSave(page);
     }

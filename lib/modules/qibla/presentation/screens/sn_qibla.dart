@@ -35,6 +35,10 @@ class _SNQiblaState extends State<SNQibla> with WidgetsBindingObserver {
   /// Degrees of heading error still treated as "facing the Qibla".
   static const _tolerance = 5.0;
 
+  /// Smallest heading change worth redrawing — the readout shows whole
+  /// degrees, and sensor noise jitters a device lying still by fractions of one.
+  static const _minHeadingStep = 1.0;
+
   // Kaaba coordinates (decimal degrees).
   static const _kaabaLat = 21.4225;
   static const _kaabaLng = 39.8262;
@@ -53,7 +57,10 @@ class _SNQiblaState extends State<SNQibla> with WidgetsBindingObserver {
 
   bool get _hasError => _locationFailure != null || _errorKey != null;
   StreamSubscription<CompassEvent>? _compassSub;
-  double _heading = 0;
+
+  /// Device heading, kept apart from widget state so a compass tick redraws
+  /// only the parts that read it, not the whole screen.
+  final ValueNotifier<double> _heading = ValueNotifier<double>(0);
   bool _hasMagnetometer = true;
   // Tracks the previous alignment so we only buzz on the not-aligned → aligned edge.
   bool _wasAligned = false;
@@ -70,15 +77,29 @@ class _SNQiblaState extends State<SNQibla> with WidgetsBindingObserver {
   void dispose() {
     WidgetsBinding.instance.removeObserver(this);
     _compassSub?.cancel();
+    _heading.dispose();
     super.dispose();
   }
 
   /// Picks the location up again when the user returns from the settings page
   /// [_retryLocation] sent them to — otherwise the screen would still be
   /// showing the same error they had just gone and fixed.
+  ///
+  /// Also parks the compass while the app is out of sight: the sensor stream
+  /// otherwise keeps running (and redrawing) for as long as this screen is on
+  /// the stack — a media service can keep the process busy in the background.
   @override
   void didChangeAppLifecycleState(AppLifecycleState state) {
-    if (state == AppLifecycleState.resumed && _hasError) _loadLocation();
+    switch (state) {
+      case AppLifecycleState.resumed:
+        if (_hasError) _loadLocation();
+        _wireCompass();
+      case AppLifecycleState.hidden || AppLifecycleState.paused:
+        _compassSub?.cancel();
+        _compassSub = null;
+      case _:
+        break;
+    }
   }
 
   /// Retry behind the error state's button — the same reasoning as
@@ -142,6 +163,7 @@ class _SNQiblaState extends State<SNQibla> with WidgetsBindingObserver {
   }
 
   void _wireCompass() {
+    if (_compassSub != null || !_hasMagnetometer) return;
     final stream = FlutterCompass.events;
     if (stream == null) {
       setState(() => _hasMagnetometer = false);
@@ -151,8 +173,15 @@ class _SNQiblaState extends State<SNQibla> with WidgetsBindingObserver {
       final h = event.heading;
       if (h == null || !mounted) return;
       _maybeBuzz(h);
-      setState(() => _heading = h);
+      if (_angleBetween(h, _heading.value) >= _minHeadingStep) _heading.value = h;
     });
+  }
+
+  /// Unsigned difference between two headings in degrees (0..180), so 359° and
+  /// 1° count as 2° apart.
+  static double _angleBetween(double a, double b) {
+    final d = (a - b).abs() % 360;
+    return d > 180 ? 360 - d : d;
   }
 
   /// Fires a light haptic tick the moment the device crosses into Qibla alignment.
@@ -244,18 +273,40 @@ class _SNQiblaState extends State<SNQibla> with WidgetsBindingObserver {
     }
 
     final bearing = _qiblaBearing ?? 0;
+    return Column(
+      children: [
+        ValueListenableBuilder<double>(
+          valueListenable: _heading,
+          builder: (context, heading, _) => _buildHeadingDependent(bearing, heading),
+        ),
+        SizedBox(height: 10.h),
+        WQiblaStatusPill(
+          text: 'qibla_tip'.tr(),
+          background: const Color(0xFFF3EEDE),
+          foreground: const Color(0xFF8A7A45),
+          leadingEmoji: '💡',
+        ),
+      ],
+    );
+  }
+
+  /// Everything that follows the device heading: the dial, the readout and the
+  /// turn/aligned pill.
+  Widget _buildHeadingDependent(double bearing, double heading) {
     // Pointer angle relative to the device's current facing direction.
-    final qiblaAngle = (bearing - _heading) * math.pi / 180.0;
+    final qiblaAngle = (bearing - heading) * math.pi / 180.0;
     // Signed heading error in (-180, 180]: + means the Qibla is to the right.
-    var delta = (bearing - _heading) % 360;
+    var delta = (bearing - heading) % 360;
     if (delta > 180) delta -= 360;
     final isAligned = delta.abs() <= _tolerance;
     final turnRight = delta > 0;
     return Column(
       children: [
-        WCompassDial(heading: _heading, qiblaAngle: qiblaAngle, isAligned: isAligned, green: _green, gold: _gold),
+        RepaintBoundary(
+          child: WCompassDial(heading: heading, qiblaAngle: qiblaAngle, isAligned: isAligned, green: _green, gold: _gold),
+        ),
         SizedBox(height: 26.h),
-        WQiblaInfoCard(heading: _heading, distanceKm: _distanceKm ?? 0, green: _green, gold: _gold),
+        WQiblaInfoCard(heading: heading, distanceKm: _distanceKm ?? 0, green: _green, gold: _gold),
         SizedBox(height: 14.h),
         if (isAligned)
           WQiblaStatusPill(
@@ -273,13 +324,6 @@ class _SNQiblaState extends State<SNQibla> with WidgetsBindingObserver {
             dotColor: _red,
             leadingEmoji: turnRight ? '➡️' : '⬅️',
           ),
-        SizedBox(height: 10.h),
-        WQiblaStatusPill(
-          text: 'qibla_tip'.tr(),
-          background: const Color(0xFFF3EEDE),
-          foreground: const Color(0xFF8A7A45),
-          leadingEmoji: '💡',
-        ),
       ],
     );
   }
