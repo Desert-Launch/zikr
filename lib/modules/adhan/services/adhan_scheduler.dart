@@ -14,6 +14,7 @@ import 'package:quran/modules/adhan/data/models/m_adhan_settings.dart';
 import 'package:quran/modules/adhan/data/sources/local/box_adhan_preference.dart';
 import 'package:quran/modules/adhan/data/sources/local/box_adhan_settings.dart';
 import 'package:quran/modules/adhan/services/adhan_audio_alarms.dart';
+import 'package:quran/modules/adhan/services/adhan_window_diff.dart';
 import 'package:quran/modules/prayer/data/datasources/local/ds_last_location.dart';
 import 'package:quran/modules/prayer/data/datasources/local/ds_location.dart';
 import 'package:quran/modules/prayer/data/models/m_prayer_settings.dart';
@@ -137,7 +138,39 @@ class AdhanScheduler {
     EPrayer.isha,
   ];
 
-  bool _running = false;
+  /// The rebuild loop in progress, and the call(s) waiting for the next pass
+  /// of it — see [reschedule].
+  Future<bool>? _draining;
+  _RescheduleArgs? _queuedArgs;
+
+  /// Bumped whenever what a window entry carries changes in a way its inputs
+  /// don't show (e.g. new notification details), so every entry re-arms once.
+  static const int _planVersion = 1;
+
+  /// Whether this instance has armed the window itself since it was created.
+  /// Until it has, the pending list can't be trusted to mean "armed" — see
+  /// [AdhanWindowDiff.between].
+  bool _windowTrusted = false;
+
+  /// Fingerprint of each native full-adhan alarm armed by this process. The
+  /// native side has no read-back, so this is how a later rebuild knows an
+  /// alarm is already armed exactly as planned.
+  final Map<int, String> _armedAudio = {};
+
+  /// Voice channels already created, and voices whose retired channel ids were
+  /// already deleted, in this process — see [_resolveChannel].
+  final Set<String> _readyChannels = {};
+  final Set<String> _retiredVoiceChannels = {};
+
+  /// Whether the old scheduler's today-only ids were cleared in this process.
+  bool _legacyIdsCleared = false;
+
+  /// Today's prayer times the companion feeds were last placed around, and
+  /// when — lets a rebuild that lands seconds after another (boot, then Home's
+  /// live fix) skip placing them again around the very same times.
+  String? _companionTimingsKey;
+  DateTime? _companionPlacedAt;
+  static const Duration _companionFreshFor = Duration(hours: 1);
 
   /// Debug-only registry of `notification id → resolved fire time`, populated
   /// as the window is (re)built. The OS pending list doesn't expose the fire
@@ -148,8 +181,11 @@ class AdhanScheduler {
   /// Read-only view of the scheduled fire times (see [_scheduledTimes]).
   Map<int, DateTime> get scheduledTimes => Map.unmodifiable(_scheduledTimes);
 
-  /// Cancels the current adhan window and rebuilds it from prayer times.
-  /// Safe to call repeatedly; concurrent calls are coalesced.
+  /// Rebuilds the adhan window from prayer times, touching only what changed.
+  /// Safe to call repeatedly. A call that arrives mid-run is not dropped: the
+  /// run in progress read its inputs before it, so it is followed by one more
+  /// pass (cheap — it diffs against what the first pass just armed), and every
+  /// waiting caller completes after that pass.
   ///
   /// [useCachedLocation] skips the live GPS fix and uses the last-known
   /// location instead — required from the weekly background isolate, which
@@ -159,203 +195,395 @@ class AdhanScheduler {
   /// background auto-play). Only the UI isolate can reach the native channel,
   /// so the weekly background isolate passes `false` and relies on the alarms
   /// the UI isolate / boot receiver already armed.
-  Future<void> reschedule({
+  /// [force] re-arms every entry even when the pending list says it is already
+  /// queued as planned — the explicit "refresh" paths use it to heal a
+  /// schedule the OS may have dropped.
+  ///
+  /// Returns whether the companion feeds (azkar, salawat, hourly zekr) were
+  /// placed around today's prayer times by this run — when not, a caller that
+  /// needs them armed regardless runs [reconcileCompanionNotifications].
+  Future<bool> reschedule({
     bool useCachedLocation = false,
     bool armAudioAlarms = true,
-  }) async {
-    if (_running) return;
-    _running = true;
+    bool force = false,
+  }) {
+    final args = _RescheduleArgs(
+      useCachedLocation: useCachedLocation,
+      armAudioAlarms: armAudioAlarms,
+      force: force,
+    );
+    final queued = _queuedArgs;
+    _queuedArgs = queued == null ? args : queued.merge(args);
+    return _draining ??= _drain();
+  }
+
+  /// Runs passes until no call is waiting. Cleared in `finally`, before its
+  /// future completes, so a call can never latch onto a finished loop.
+  Future<bool> _drain() async {
+    var placedCompanions = false;
     try {
-      await _cancelWindow();
-      // Clear previously-armed native alarms before rebuilding. Also clears them
-      // when the master switch / full-adhan mode is off (handled by the early
-      // returns / mode check below never re-arming).
-      //
-      // [_testId] is spared for the same reason [_cancelWindow] skips it: the
-      // test alarm is not part of the window and is never re-armed below, so a
-      // rebuild would just delete it. Rebuilds run on every prayer refresh, so
-      // that reliably killed any test armed moments earlier — taking the audio,
-      // the playback service and the full-screen alarm with it.
-      if (armAudioAlarms) await _audioAlarms.cancelAll(except: const {_testId});
-
-      final settings = _adhanSettings.current();
-      if (!settings.enabled) {
-        // The sweep above spared a pending test; nothing may ring once the
-        // master switch is off, so drop it here instead.
-        await _notifications.cancel(_testId);
-        if (armAudioAlarms) await _audioAlarms.cancel(_testId);
-        _scheduledTimes.remove(_testId);
-        AppLogger.info(
-          'Adhan disabled — window cleared',
-          tag: 'AdhanScheduler',
+      while (true) {
+        final args = _queuedArgs;
+        if (args == null) break;
+        _queuedArgs = null;
+        placedCompanions = await _reschedule(
+          useCachedLocation: args.useCachedLocation,
+          armAudioAlarms: args.armAudioAlarms,
+          force: args.force,
         );
-        await _mirrorWidgetFromCache();
-        return;
-      }
-
-      if (!await _notifications.hasPermission()) {
-        AppLogger.warning(
-          'No notification permission — adhan scheduling skipped (0 queued)',
-          tag: 'AdhanScheduler',
-        );
-        await _mirrorWidgetFromCache();
-        return;
-      }
-
-      LocationResult? loc;
-      if (useCachedLocation) {
-        loc = _lastLocation.read();
-      } else {
-        try {
-          loc = await _location.currentPosition();
-          if (loc != null) await _lastLocation.write(loc);
-        } catch (e) {
-          AppLogger.warning(
-            'Adhan scheduling: live location failed ($e) — using cached',
-            tag: 'AdhanScheduler',
-          );
-          loc = _lastLocation.read();
-        }
-      }
-      if (loc == null) {
-        AppLogger.warning(
-          'Adhan scheduling: no location available — skipped (0 queued)',
-          tag: 'AdhanScheduler',
-        );
-        return;
-      }
-
-      final prayer = _prayerSettings.current();
-      final notify = prayer.notifyForPrayer;
-      final pref = _adhanPrefs.current();
-
-      // One resolve for the whole window, through the same service the prayer
-      // screen uses — so what rings and what is displayed are the same numbers,
-      // calculated by the same authority, in the same timezone. It normally
-      // costs no network: the months are cached.
-      EPrayerSchedule? schedule;
-      (await _times.scheduleFor(loc)).fold(
-        (failure) => AppLogger.warning(
-          'Adhan scheduling: prayer times unavailable (${failure.message}) '
-          '— skipped (0 queued)',
-          tag: 'AdhanScheduler',
-        ),
-        (value) => schedule = value,
-      );
-      final resolved = schedule;
-      if (resolved == null || resolved.isEmpty) return;
-
-      // The widget reads the same resolution, on every path this runs from —
-      // boot, resume, and the headless weekly refresh — which is what keeps
-      // it valid on a phone whose owner never opens the app.
-      unawaited(_widget.publish(resolved));
-
-      // Android background full-adhan: when on, the near-window prayers get a
-      // SILENT notification + a native alarm that plays the full adhan via the
-      // foreground service. Days beyond the audio window (and all non-Android /
-      // mode-off cases) fall back to the short-clip notification. iOS always
-      // uses the short .caf (Apple's 30s cap) — no native audio is possible.
-      final fullAndroid =
-          Platform.isAndroid &&
-          settings.androidBackgroundFullAdhan &&
-          settings.playbackMode == MAdhanSettings.playbackFull;
-
-      // Effective Fajr voice (a per-prayer override still wins per day below).
-      String? fajrVoiceId;
-      if (pref.useFajrSpecific) {
-        final explicit = pref.fajrAdhanId;
-        fajrVoiceId = (explicit != null && explicit.isNotEmpty)
-            ? explicit
-            : (await _local.fajrDefault()).id;
-      }
-
-      // Voices that ship a separate Fajr recording. Whichever voice Fajr ends
-      // up on, if it's in this set the sound name picks up a `_fajr` suffix and
-      // resolves to the Fajr take instead of the daytime one. Voices outside it
-      // (remote/downloaded ones) keep their single recording, so a missing
-      // variant can never leave Fajr silent.
-      final fajrVariants = {
-        for (final adhan in await _local.all())
-          if (adhan.hasFajrVariant) adhan.id,
-      };
-
-      // Window: today → end of next week (weeks run Saturday–Friday), trimmed
-      // to the iOS budget; Android schedules the whole window. Pure integer
-      // day-counting keeps the horizon DST-safe.
-      //
-      // "Today" is taken in the LOCATION's timezone, not the device's: a
-      // traveller whose phone hasn't caught up must still have the window
-      // start on the right day.
-      final now = DateTime.now();
-      final startDay = resolved.localDay(now);
-      final daysIntoWeek =
-          (startDay.weekday - DateTime.saturday) % 7; // 0 = Saturday
-      final totalDays = 14 - daysIntoWeek; // 8..14
-      _remaining = Platform.isIOS ? _iosBudget : 1 << 30;
-
-      // Today's prayer times, captured for the companion-notification
-      // reconciliation (azkar re-timing + hourly-zekr conflict avoidance).
-      EDailyPrayerTimes? todayTimings;
-
-      for (var dayOffset = 0; dayOffset < totalDays; dayOffset++) {
-        if (_remaining <= 0) break;
-        final date = DateTime(
-          startDay.year,
-          startDay.month,
-          startDay.day + dayOffset,
-        );
-        final timings = resolved.dayFor(date);
-        if (timings == null) continue; // no data for this day, keep going
-        if (dayOffset == 0) todayTimings = timings;
-
-        await _scheduleDay(
-          date: date,
-          timings: timings,
-          notify: notify,
-          vibrate: settings.vibrate,
-          volume: settings.adhanVolume,
-          duaAfter: settings.duaAfterAdhan,
-          voiceIdPerPrayer: prayer.adhanIdPerPrayer ?? const {},
-          preNotifyPerPrayer: prayer.preNotifyMinutesPerPrayer ?? const {},
-          defaultVoiceId: pref.defaultAdhanId,
-          fajrVoiceId: fajrVoiceId,
-          fajrVariants: fajrVariants,
-          fullAndroid: fullAndroid,
-          fullScreen: settings.fullScreenAlarm,
-          armAudioAlarms: armAudioAlarms,
-          dayOffset: dayOffset,
-          scheduledPre: dayOffset < _preWindowDays,
-          now: now,
-        );
-      }
-
-      // Diagnostic: surface how many adhan notifications are actually queued
-      // after a rebuild. A 0 here (with permission + location present) points
-      // at prayer-time fetches failing; a healthy run shows tens of pending.
-      final pending = await _notifications.pending();
-      final adhanPending = pending
-          .where(
-            (r) =>
-                (r.id >= _mainBandStart && r.id < _mainBandEnd) ||
-                (r.id >= _preBandStart && r.id < _preBandEnd),
-          )
-          .length;
-      AppLogger.info(
-        'Adhan window rebuilt — $adhanPending adhan notifications pending '
-        '(app total: ${pending.length})',
-        tag: 'AdhanScheduler',
-      );
-
-      // Re-time the azkar to today's prayer times and reschedule the hourly
-      // zekr around the now-known prayer/azkar slots. UI-isolate only — the
-      // weekly background isolate (armAudioAlarms=false) may not have the
-      // companion Hive boxes open, and the UI isolate redoes this on next open.
-      if (armAudioAlarms && todayTimings != null) {
-        await reconcileCompanionNotifications(timings: todayTimings);
       }
     } finally {
-      _running = false;
+      _draining = null;
     }
+    return placedCompanions;
+  }
+
+  Future<bool> _reschedule({
+    required bool useCachedLocation,
+    required bool armAudioAlarms,
+    required bool force,
+  }) async {
+    final settings = _adhanSettings.current();
+    if (!settings.enabled) {
+      await _clearWindow(armAudioAlarms: armAudioAlarms);
+      // The sweep above spared a pending test; nothing may ring once the
+      // master switch is off, so drop it here instead.
+      await _notifications.cancel(_testId);
+      if (armAudioAlarms) await _audioAlarms.cancel(_testId);
+      _scheduledTimes.remove(_testId);
+      AppLogger.info('Adhan disabled — window cleared', tag: 'AdhanScheduler');
+      await _mirrorWidgetFromCache();
+      return false;
+    }
+
+    if (!await _notifications.hasPermission()) {
+      await _clearWindow(armAudioAlarms: armAudioAlarms);
+      AppLogger.warning(
+        'No notification permission — adhan scheduling skipped (0 queued)',
+        tag: 'AdhanScheduler',
+      );
+      await _mirrorWidgetFromCache();
+      return false;
+    }
+
+    LocationResult? loc;
+    if (useCachedLocation) {
+      loc = _lastLocation.read();
+    } else {
+      try {
+        loc = await _location.currentPosition();
+        if (loc != null) await _lastLocation.write(loc);
+      } catch (e) {
+        AppLogger.warning(
+          'Adhan scheduling: live location failed ($e) — using cached',
+          tag: 'AdhanScheduler',
+        );
+        loc = _lastLocation.read();
+      }
+    }
+    if (loc == null) {
+      await _clearWindow(armAudioAlarms: armAudioAlarms);
+      AppLogger.warning(
+        'Adhan scheduling: no location available — skipped (0 queued)',
+        tag: 'AdhanScheduler',
+      );
+      return false;
+    }
+
+    final prayer = _prayerSettings.current();
+    final notify = prayer.notifyForPrayer;
+    final pref = _adhanPrefs.current();
+
+    // One resolve for the whole window, through the same service the prayer
+    // screen uses — so what rings and what is displayed are the same numbers,
+    // calculated by the same authority, in the same timezone. It normally
+    // costs no network: the months are cached.
+    EPrayerSchedule? schedule;
+    (await _times.scheduleFor(loc)).fold(
+      (failure) => AppLogger.warning(
+        'Adhan scheduling: prayer times unavailable (${failure.message}) '
+        '— skipped (0 queued)',
+        tag: 'AdhanScheduler',
+      ),
+      (value) => schedule = value,
+    );
+    final resolved = schedule;
+    if (resolved == null || resolved.isEmpty) {
+      await _clearWindow(armAudioAlarms: armAudioAlarms);
+      return false;
+    }
+
+    // The widget reads the same resolution, on every path this runs from —
+    // boot, resume, and the headless weekly refresh — which is what keeps
+    // it valid on a phone whose owner never opens the app.
+    unawaited(_widget.publish(resolved));
+
+    // Android background full-adhan: when on, the near-window prayers get a
+    // SILENT notification + a native alarm that plays the full adhan via the
+    // foreground service. Days beyond the audio window (and all non-Android /
+    // mode-off cases) fall back to the short-clip notification. iOS always
+    // uses the short .caf (Apple's 30s cap) — no native audio is possible.
+    final fullAndroid =
+        Platform.isAndroid &&
+        settings.androidBackgroundFullAdhan &&
+        settings.playbackMode == MAdhanSettings.playbackFull;
+
+    // Effective Fajr voice (a per-prayer override still wins per day below).
+    String? fajrVoiceId;
+    if (pref.useFajrSpecific) {
+      final explicit = pref.fajrAdhanId;
+      fajrVoiceId = (explicit != null && explicit.isNotEmpty)
+          ? explicit
+          : (await _local.fajrDefault()).id;
+    }
+
+    // Voices that ship a separate Fajr recording. Whichever voice Fajr ends
+    // up on, if it's in this set the sound name picks up a `_fajr` suffix and
+    // resolves to the Fajr take instead of the daytime one. Voices outside it
+    // (remote/downloaded ones) keep their single recording, so a missing
+    // variant can never leave Fajr silent.
+    final fajrVariants = {
+      for (final adhan in await _local.all())
+        if (adhan.hasFajrVariant) adhan.id,
+    };
+
+    // Window: today → end of next week (weeks run Saturday–Friday), trimmed
+    // to the iOS budget; Android schedules the whole window. Pure integer
+    // day-counting keeps the horizon DST-safe.
+    //
+    // "Today" is taken in the LOCATION's timezone, not the device's: a
+    // traveller whose phone hasn't caught up must still have the window
+    // start on the right day.
+    final now = DateTime.now();
+    final startDay = resolved.localDay(now);
+    final daysIntoWeek =
+        (startDay.weekday - DateTime.saturday) % 7; // 0 = Saturday
+    final totalDays = 14 - daysIntoWeek; // 8..14
+    _remaining = Platform.isIOS ? _iosBudget : 1 << 30;
+
+    // Today's prayer times, captured for the companion-notification
+    // reconciliation (azkar re-timing + hourly-zekr conflict avoidance).
+    EDailyPrayerTimes? todayTimings;
+
+    final plan = <_PlannedAlert>[];
+    for (var dayOffset = 0; dayOffset < totalDays; dayOffset++) {
+      if (_remaining <= 0) break;
+      final date = DateTime(
+        startDay.year,
+        startDay.month,
+        startDay.day + dayOffset,
+      );
+      final timings = resolved.dayFor(date);
+      if (timings == null) continue; // no data for this day, keep going
+      if (dayOffset == 0) todayTimings = timings;
+
+      await _planDay(
+        plan: plan,
+        date: date,
+        timings: timings,
+        notify: notify,
+        vibrate: settings.vibrate,
+        volume: settings.adhanVolume,
+        duaAfter: settings.duaAfterAdhan,
+        voiceIdPerPrayer: prayer.adhanIdPerPrayer ?? const {},
+        preNotifyPerPrayer: prayer.preNotifyMinutesPerPrayer ?? const {},
+        defaultVoiceId: pref.defaultAdhanId,
+        fajrVoiceId: fajrVoiceId,
+        fajrVariants: fajrVariants,
+        fullAndroid: fullAndroid,
+        fullScreen: settings.fullScreenAlarm,
+        dayOffset: dayOffset,
+        scheduledPre: dayOffset < _preWindowDays,
+        now: now,
+      );
+    }
+
+    await _applyPlan(plan, armAudioAlarms: armAudioAlarms, force: force);
+
+    // Re-time the azkar to today's prayer times and reschedule the hourly
+    // zekr around the now-known prayer/azkar slots. UI-isolate only — the
+    // weekly background isolate (armAudioAlarms=false) may not have the
+    // companion Hive boxes open, and the UI isolate redoes this on next open.
+    if (!armAudioAlarms || todayTimings == null) return false;
+    await _placeCompanionsAround(todayTimings);
+    return true;
+  }
+
+  /// Makes the queued window match [plan], doing only the work that differs.
+  ///
+  /// Entries already queued exactly as planned are left alone, everything else
+  /// is (re)scheduled in place — the same id replaces, so nothing is cancelled
+  /// first — and only ids the plan no longer holds are cancelled. The first
+  /// pass of a process (and a [force]d one) re-arms every entry anyway, since
+  /// only then can a force-stop's lost alarms be told apart from armed ones.
+  Future<void> _applyPlan(
+    List<_PlannedAlert> plan, {
+    required bool armAudioAlarms,
+    required bool force,
+  }) async {
+    final trusted = _windowTrusted && !force;
+    if (!trusted) {
+      // Native alarms have no read-back to diff against, so an untrusted pass
+      // re-arms them from scratch. [_testId] is spared for the same reason
+      // [_cancelWindow] skips it: the test alarm is not part of the window and
+      // is never re-armed here, so clearing it would just delete it. Rebuilds
+      // run on every prayer refresh, so that reliably killed any test armed
+      // moments earlier — taking the audio, the playback service and the
+      // full-screen alarm with it.
+      if (armAudioAlarms) {
+        await _audioAlarms.cancelAll(except: const {_testId});
+        _armedAudio.clear();
+      }
+      await _clearLegacyIds();
+    }
+
+    final queued = <int, String?>{};
+    for (final request in await _notifications.pending()) {
+      if (_inWindow(request.id)) {
+        queued[request.id] = _fingerprintOf(request.payload);
+      }
+    }
+    final diff = AdhanWindowDiff.between(
+      planned: {for (final alert in plan) alert.id: alert.fingerprint},
+      queued: queued,
+      trustQueued: trusted,
+    );
+
+    // Stale entries go first: on iOS a new id added while the queue is at its
+    // 64-request cap is dropped silently, and these free their slots.
+    for (final id in diff.toCancel) {
+      await _notifications.cancel(id);
+    }
+
+    var armed = 0;
+    for (final alert in plan) {
+      final audioStale =
+          armAudioAlarms &&
+          alert.audio != null &&
+          _armedAudio[alert.id] != alert.fingerprint;
+      if (diff.toSchedule.contains(alert.id) || audioStale) {
+        await _arm(alert, armAudioAlarms: armAudioAlarms);
+        armed++;
+      }
+    }
+
+    // Native alarms this process armed for entries that no longer carry one —
+    // the prayer was switched off, or full-adhan mode was turned off.
+    if (armAudioAlarms) {
+      final plannedAudio = {
+        for (final alert in plan)
+          if (alert.audio != null) alert.id,
+      };
+      final orphans = _armedAudio.keys
+          .where((id) => !plannedAudio.contains(id))
+          .toList();
+      for (final id in orphans) {
+        await _audioAlarms.cancel(id);
+        _armedAudio.remove(id);
+      }
+    }
+
+    _scheduledTimes.removeWhere((id, _) => _inWindow(id));
+    for (final alert in plan) {
+      _scheduledTimes[alert.id] = alert.when;
+    }
+    _windowTrusted = true;
+
+    // Diagnostic: surface how many adhan notifications are actually queued
+    // after a rebuild. A 0 here (with permission + location present) points
+    // at prayer-time fetches failing; a healthy run shows tens of pending.
+    final pending = await _notifications.pending();
+    final adhanPending = pending.where((r) => _inWindow(r.id)).length;
+    AppLogger.info(
+      'Adhan window ${trusted ? 'updated' : 'rebuilt'} — $armed armed, '
+      '${plan.length - armed} already queued, ${diff.toCancel.length} '
+      'cancelled; $adhanPending adhan notifications pending '
+      '(app total: ${pending.length})',
+      tag: 'AdhanScheduler',
+    );
+  }
+
+  /// Schedules [alert]'s notification and, when it plays the full adhan
+  /// natively, its alarm — replacing whatever was queued under the same id.
+  Future<void> _arm(_PlannedAlert alert, {required bool armAudioAlarms}) async {
+    await _notifications.scheduleAt(
+      id: alert.id,
+      when: alert.when,
+      title: alert.title,
+      body: alert.body,
+      channel: alert.channel,
+      iosSound: alert.iosSound,
+      alarm: alert.alarm,
+      payload: alert.stampedPayload,
+    );
+
+    final audio = alert.audio;
+    if (audio == null || !armAudioAlarms) return;
+    final armed = await _audioAlarms.schedule(
+      id: alert.id,
+      when: alert.when,
+      rawRes: audio.rawRes,
+      title: audio.title,
+      body: audio.body,
+      stopLabel: audio.stopLabel,
+      openLabel: audio.openLabel,
+      prayerKey: audio.prayerKey,
+      fullScreen: audio.fullScreen,
+      volume: audio.volume,
+      vibrate: audio.vibrate,
+      duaAfter: audio.duaAfter,
+    );
+    if (armed) {
+      _armedAudio[alert.id] = alert.fingerprint;
+    } else {
+      _armedAudio.remove(alert.id);
+    }
+  }
+
+  /// Places the companion feeds around [timings] unless this process did so
+  /// for the very same times within [_companionFreshFor]. Cold start runs the
+  /// window twice in quick succession (boot on the cached location, then Home
+  /// on the live fix) — the second placement would only redo the first.
+  Future<void> _placeCompanionsAround(EDailyPrayerTimes timings) async {
+    final placedAt = _companionPlacedAt;
+    if (_companionTimingsKey == _timingsKey(timings) &&
+        placedAt != null &&
+        DateTime.now().difference(placedAt) < _companionFreshFor) {
+      return;
+    }
+    await reconcileCompanionNotifications(timings: timings);
+  }
+
+  String _timingsKey(EDailyPrayerTimes t) => [
+    t.fajr,
+    t.dhuhr,
+    t.asr,
+    t.maghrib,
+    t.isha,
+  ].map((time) => time.millisecondsSinceEpoch).join(',');
+
+  /// Cancels the whole window — notifications and, when this isolate owns
+  /// them, the native alarms — for the paths that end with nothing queued.
+  Future<void> _clearWindow({required bool armAudioAlarms}) async {
+    await _cancelWindow();
+    if (armAudioAlarms) {
+      await _audioAlarms.cancelAll(except: const {_testId});
+      _armedAudio.clear();
+    }
+    _windowTrusted = false;
+  }
+
+  bool _inWindow(int id) =>
+      (id >= _mainBandStart && id < _mainBandEnd) ||
+      (id >= _preBandStart && id < _preBandEnd);
+
+  /// The fingerprint a queued window entry was armed with, read back from its
+  /// payload — `null` for entries armed before fingerprints existed.
+  String? _fingerprintOf(String? payload) {
+    if (payload == null) return null;
+    return NotificationPayload.fromJson(
+      payload,
+    ).data[AdhanWindowDiff.payloadKey]?.toString();
   }
 
   /// Feeds the home-screen widget on the paths that bail out of [reschedule]
@@ -392,6 +620,10 @@ class AdhanScheduler {
   Future<void> reconcileCompanionNotifications({
     EDailyPrayerTimes? timings,
   }) async {
+    // Whatever happens below, the feeds are no longer known to sit around the
+    // last recorded times; only a completed placement with timings says so.
+    _companionTimingsKey = null;
+    _companionPlacedAt = null;
     try {
       final prayers = <DateTime>[
         if (timings != null) ...[
@@ -419,6 +651,10 @@ class AdhanScheduler {
         ...reserved,
         ...salawatTimes,
       ]);
+      if (timings != null) {
+        _companionTimingsKey = _timingsKey(timings);
+        _companionPlacedAt = DateTime.now();
+      }
     } catch (e, st) {
       AppLogger.error(
         'Companion notification reconciliation failed',
@@ -440,6 +676,8 @@ class AdhanScheduler {
     // alarm still took over the phone, at the next prayer. No exception list
     // here: off means nothing rings, the test alarm included.
     await _audioAlarms.cancelAll();
+    _armedAudio.clear();
+    _windowTrusted = false;
     _scheduledTimes.remove(_testId);
   }
 
@@ -548,7 +786,10 @@ class AdhanScheduler {
     return when;
   }
 
-  Future<void> _scheduleDay({
+  /// Appends [date]'s adhan, pre-adhan and sunrise entries to [plan]. Plans
+  /// only — nothing is scheduled until [_applyPlan] diffs the whole window.
+  Future<void> _planDay({
+    required List<_PlannedAlert> plan,
     required DateTime date,
     required EDailyPrayerTimes timings,
     required List<bool> notify,
@@ -564,7 +805,6 @@ class AdhanScheduler {
     required Set<String> fajrVariants,
     required bool fullAndroid,
     required bool fullScreen,
-    required bool armAudioAlarms,
     required int dayOffset,
     required bool scheduledPre,
     required DateTime now,
@@ -599,79 +839,81 @@ class AdhanScheduler {
 
       final id = _mainBandStart + doy * 10 + i;
       final prayerName = 'prayer_${prayer.key}'.tr();
-
-      final channel = useFullAdhan
-          ? _silentChannel(vibrate: vibrate)
-          : await _resolveChannel(soundId, vibrate: vibrate);
-      final iosSound = _iosClipFor(soundId);
-
-      await _notifications.scheduleAt(
-        id: id,
-        when: time,
-        title: 'adhan_notif_title'.tr().replaceFirst('{{prayer}}', prayerName),
-        body: 'adhan_notif_body'.tr(),
-        channel: channel,
-        iosSound: iosSound,
-        // A silent full-adhan companion shouldn't raise a full-screen alarm
-        // intent; the service's own notification carries the Stop control.
-        alarm: !useFullAdhan,
-        payload: NotificationPayload(
-          type: 'adhan',
-          data: {'prayer': prayer.key},
-        ),
+      final title = 'adhan_notif_title'.tr().replaceFirst(
+        '{{prayer}}',
+        prayerName,
       );
 
-      if (useFullAdhan && armAudioAlarms) {
-        await _audioAlarms.schedule(
+      plan.add(
+        _PlannedAlert(
           id: id,
           when: time,
-          rawRes: '${soundId}_full',
-          title: 'adhan_playing_title'.tr(),
-          body: 'adhan_notif_title'.tr().replaceFirst(
-            '{{prayer}}',
-            prayerName,
+          title: title,
+          body: 'adhan_notif_body'.tr(),
+          channel: useFullAdhan
+              ? _silentChannel(vibrate: vibrate)
+              : await _resolveChannel(soundId, vibrate: vibrate),
+          iosSound: _iosClipFor(soundId),
+          // A silent full-adhan companion shouldn't raise a full-screen alarm
+          // intent; the service's own notification carries the Stop control.
+          alarm: !useFullAdhan,
+          payload: NotificationPayload(
+            type: 'adhan',
+            data: {'prayer': prayer.key},
           ),
-          stopLabel: 'adhan_stop'.tr(),
-          openLabel: 'adhan_alarm_open'.tr(),
-          prayerKey: prayer.key,
-          fullScreen: fullScreen,
-          volume: volume,
-          vibrate: vibrate,
-          duaAfter: duaAfter,
-        );
-      }
-      _scheduledTimes[id] = time;
+          audio: useFullAdhan
+              ? _PlannedAudio(
+                  rawRes: '${soundId}_full',
+                  title: 'adhan_playing_title'.tr(),
+                  body: title,
+                  stopLabel: 'adhan_stop'.tr(),
+                  openLabel: 'adhan_alarm_open'.tr(),
+                  prayerKey: prayer.key,
+                  fullScreen: fullScreen,
+                  volume: volume,
+                  vibrate: vibrate,
+                  duaAfter: duaAfter,
+                )
+              : null,
+        ),
+      );
       _remaining--;
 
       final preMinutes = preNotifyPerPrayer[prayer.key] ?? 0;
       if (scheduledPre && preMinutes > 0 && _remaining > 0) {
         final preTime = time.subtract(Duration(minutes: preMinutes));
-        final preId = _preBandStart + doy * 10 + i;
         if (preTime.isAfter(now)) {
-          await _notifications.scheduleAt(
-            id: preId,
-            when: preTime,
-            title: 'adhan_notif_pre_title'.tr().replaceFirst(
-              '{{prayer}}',
-              prayerName,
-            ),
-            body: 'adhan_notif_pre_body'.tr().replaceFirst(
-              '{{m}}',
-              '$preMinutes',
-            ),
-            channel: AppNotificationChannels.adhanPre,
-            payload: NotificationPayload(
-              type: 'prayer',
-              data: {'prayer': prayer.key},
+          plan.add(
+            _PlannedAlert(
+              id: _preBandStart + doy * 10 + i,
+              when: preTime,
+              title: 'adhan_notif_pre_title'.tr().replaceFirst(
+                '{{prayer}}',
+                prayerName,
+              ),
+              body: 'adhan_notif_pre_body'.tr().replaceFirst(
+                '{{m}}',
+                '$preMinutes',
+              ),
+              channel: AppNotificationChannels.adhanPre,
+              payload: NotificationPayload(
+                type: 'prayer',
+                data: {'prayer': prayer.key},
+              ),
             ),
           );
-          _scheduledTimes[preId] = preTime;
           _remaining--;
         }
       }
     }
 
-    await _scheduleSunrise(doy: doy, timings: timings, notify: notify, now: now);
+    _planSunrise(
+      plan: plan,
+      doy: doy,
+      timings: timings,
+      notify: notify,
+      now: now,
+    );
   }
 
   /// The sunrise marker.
@@ -687,12 +929,13 @@ class AdhanScheduler {
   /// everything else and it needs no band or budget reservation of its own. It
   /// draws from the same [_remaining] as the prayers, so an iOS queue that is
   /// nearly full drops the tail of the horizon rather than overflowing.
-  Future<void> _scheduleSunrise({
+  void _planSunrise({
+    required List<_PlannedAlert> plan,
     required int doy,
     required EDailyPrayerTimes timings,
     required List<bool> notify,
     required DateTime now,
-  }) async {
+  }) {
     if (_remaining <= 0) return;
     // A record written before sunrise existed is five long — absent reads off.
     if (_sunriseIndex >= notify.length || !notify[_sunriseIndex]) return;
@@ -700,19 +943,19 @@ class AdhanScheduler {
     final time = timings.timeFor(EPrayer.sunrise);
     if (time.isBefore(now)) return;
 
-    final id = _mainBandStart + doy * 10 + _sunriseIndex;
-    await _notifications.scheduleAt(
-      id: id,
-      when: time,
-      title: 'adhan_sunrise_title'.tr(),
-      body: 'adhan_sunrise_body'.tr(),
-      channel: AppNotificationChannels.prayer,
-      payload: const NotificationPayload(
-        type: 'prayer',
-        data: {'prayer': 'sunrise'},
+    plan.add(
+      _PlannedAlert(
+        id: _mainBandStart + doy * 10 + _sunriseIndex,
+        when: time,
+        title: 'adhan_sunrise_title'.tr(),
+        body: 'adhan_sunrise_body'.tr(),
+        channel: AppNotificationChannels.prayer,
+        payload: const NotificationPayload(
+          type: 'prayer',
+          data: {'prayer': 'sunrise'},
+        ),
       ),
     );
-    _scheduledTimes[id] = time;
     _remaining--;
   }
 
@@ -759,21 +1002,23 @@ class AdhanScheduler {
   Future<void> _cancelWindow() async {
     final pending = await _notifications.pending();
     for (final r in pending) {
-      final inMain = r.id >= _mainBandStart && r.id < _mainBandEnd;
-      final inPre = r.id >= _preBandStart && r.id < _preBandEnd;
-      if (inMain || inPre) await _notifications.cancel(r.id);
+      if (_inWindow(r.id)) await _notifications.cancel(r.id);
     }
     // Drop stale window entries from the debug registry (the test id lives
     // outside these bands, so it survives).
-    _scheduledTimes.removeWhere(
-      (id, _) =>
-          (id >= _mainBandStart && id < _mainBandEnd) ||
-          (id >= _preBandStart && id < _preBandEnd),
-    );
-    // Clear the legacy today-only ids (1000–1004) from the old scheduler.
+    _scheduledTimes.removeWhere((id, _) => _inWindow(id));
+    await _clearLegacyIds();
+  }
+
+  /// Clears the legacy today-only ids (1000–1004) from the old scheduler —
+  /// once per process: every cancel rewrites the plugin's whole stored
+  /// schedule, and these never come back once gone.
+  Future<void> _clearLegacyIds() async {
+    if (_legacyIdsCleared) return;
     for (var id = 1000; id <= 1004; id++) {
       await _notifications.cancel(id);
     }
+    _legacyIdsCleared = true;
   }
 
   int _dayOfYear(DateTime d) => d.difference(DateTime(d.year)).inDays + 1;
@@ -807,14 +1052,21 @@ class AdhanScheduler {
     final channelId = vibrate
         ? 'adhan_${voiceId}_alarm2_vib'
         : 'adhan_${voiceId}_alarm2';
-    await _notifications.deleteChannel('adhan_$voiceId');
-    await _notifications.deleteChannel('adhan_${voiceId}_alarm');
-    await _notifications.createVoiceChannel(
-      id: channelId,
-      name: vibrate ? 'Adhan (vibrate)' : 'Adhan',
-      rawResource: voiceId,
-      enableVibration: vibrate,
-    );
+    // Each call is a binder round trip, and a window resolves the same one or
+    // two voices for every prayer in it — so both steps run once per voice per
+    // process rather than once per notification.
+    if (_retiredVoiceChannels.add(voiceId)) {
+      await _notifications.deleteChannel('adhan_$voiceId');
+      await _notifications.deleteChannel('adhan_${voiceId}_alarm');
+    }
+    if (_readyChannels.add(channelId)) {
+      await _notifications.createVoiceChannel(
+        id: channelId,
+        name: vibrate ? 'Adhan (vibrate)' : 'Adhan',
+        rawResource: voiceId,
+        enableVibration: vibrate,
+      );
+    }
     return AndroidNotificationChannel(
       channelId,
       vibrate ? 'Adhan (vibrate)' : 'Adhan',
@@ -835,4 +1087,116 @@ class AdhanScheduler {
   /// in the bundle, so returning the name unconditionally is safe.
   String? _iosClipFor(String? voiceId) =>
       (voiceId == null || voiceId.isEmpty) ? null : '$voiceId.caf';
+}
+
+/// One window entry exactly as it would be handed to the OS — everything that
+/// decides how and when it rings, so [fingerprint] changes whenever any of it
+/// does.
+class _PlannedAlert {
+  _PlannedAlert({
+    required this.id,
+    required this.when,
+    required this.title,
+    required this.body,
+    required this.channel,
+    required this.payload,
+    this.iosSound,
+    this.alarm = false,
+    this.audio,
+  });
+
+  final int id;
+  final DateTime when;
+  final String title;
+  final String body;
+  final AndroidNotificationChannel channel;
+  final NotificationPayload payload;
+  final String? iosSound;
+  final bool alarm;
+
+  /// The native full-adhan alarm paired with this entry, when it plays one.
+  final _PlannedAudio? audio;
+
+  late final String fingerprint = AdhanWindowDiff.fingerprint([
+    AdhanScheduler._planVersion,
+    id,
+    when.millisecondsSinceEpoch,
+    title,
+    body,
+    channel.id,
+    iosSound,
+    alarm,
+    payload.type,
+    ...(payload.data.entries.map((e) => '${e.key}=${e.value}').toList()
+      ..sort()),
+    ...?audio?.parts,
+  ]);
+
+  /// [payload] carrying [fingerprint], so the next rebuild can read back what
+  /// this entry was armed with straight from the pending list.
+  NotificationPayload get stampedPayload => NotificationPayload(
+    type: payload.type,
+    data: {...payload.data, AdhanWindowDiff.payloadKey: fingerprint},
+  );
+}
+
+/// The native full-adhan alarm half of a [_PlannedAlert].
+class _PlannedAudio {
+  const _PlannedAudio({
+    required this.rawRes,
+    required this.title,
+    required this.body,
+    required this.stopLabel,
+    required this.openLabel,
+    required this.prayerKey,
+    required this.fullScreen,
+    required this.volume,
+    required this.vibrate,
+    required this.duaAfter,
+  });
+
+  final String rawRes;
+  final String title;
+  final String body;
+  final String stopLabel;
+  final String openLabel;
+  final String prayerKey;
+  final bool fullScreen;
+  final int volume;
+  final bool vibrate;
+  final bool duaAfter;
+
+  List<Object> get parts => [
+    rawRes,
+    title,
+    body,
+    stopLabel,
+    openLabel,
+    prayerKey,
+    fullScreen,
+    volume,
+    vibrate,
+    duaAfter,
+  ];
+}
+
+/// What a [AdhanScheduler.reschedule] call asked for, merged across calls that
+/// arrive while a pass is already running.
+class _RescheduleArgs {
+  const _RescheduleArgs({
+    required this.useCachedLocation,
+    required this.armAudioAlarms,
+    required this.force,
+  });
+
+  final bool useCachedLocation;
+  final bool armAudioAlarms;
+  final bool force;
+
+  /// The most demanding of both: a live fix, the native alarms, a full re-arm.
+  _RescheduleArgs merge(_RescheduleArgs other) => _RescheduleArgs(
+    useCachedLocation: useCachedLocation && other.useCachedLocation,
+    armAudioAlarms: armAudioAlarms || other.armAudioAlarms,
+    force: force || other.force,
+  );
 }

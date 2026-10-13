@@ -141,9 +141,13 @@ class CBPrayerTimes extends Cubit<SPrayerTimes> {
           );
           _logResolution(schedule);
           unawaited(_widget.publish(schedule));
-          if (_shouldReschedule(previous, schedule)) {
+          // A forced refresh (pull-to-refresh, a prayer-settings change) also
+          // re-arms the whole adhan window — the user's way to heal a schedule
+          // the OS dropped. Otherwise the window is only revisited when the
+          // times could have moved.
+          if (force || _shouldReschedule(previous, schedule)) {
             // Don't block the screen on a fortnight of notification work.
-            unawaited(_scheduler.reschedule());
+            unawaited(_scheduler.reschedule(force: force));
           }
         },
       );

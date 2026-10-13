@@ -217,14 +217,6 @@ Future<void> _bootNotifications() async {
     'reminders reschedule',
     Modular.get<CBReminders>().rescheduleAll,
   );
-  // Re-register the azkar/quran feed, the salawat reminders and the hourly
-  // zekr, spaced apart from one another. Prayer times aren't known yet on a
-  // cold start, so this runs without them and the adhan reschedule below
-  // repeats it with live timings to fine-tune the minutes.
-  await _bootStep(
-    'companion notifications',
-    Modular.get<AdhanScheduler>().reconcileCompanionNotifications,
-  );
   // Fetch the basmalah (Al-Fatiha 1:1) for every reciter once, so the lead-in
   // before ayah 1 of any surah is instant and works offline whichever reciter
   // the user picks. ~1 MB total, skipped entirely once it's on disk. Detached
@@ -246,10 +238,17 @@ Future<void> _bootNotifications() async {
   // depends solely on opening Home or an app-resume event — the resume callback
   // does NOT fire on the initial launch. Cached location only (no premature GPS
   // prompt); Home requests a live fix and reschedules again on success.
-  await _bootStep(
-    'adhan window',
-    () => Modular.get<AdhanScheduler>().reschedule(useCachedLocation: true),
-  );
+  //
+  // The rebuild also re-registers the azkar/quran feed, the salawat reminders
+  // and the hourly zekr around today's prayer times. When it can't get that far
+  // (no cached location yet, adhan off, no permission), they are registered
+  // here without prayer times instead — once, not before and after.
+  await _bootStep('adhan window', () async {
+    final scheduler = Modular.get<AdhanScheduler>();
+    if (!await scheduler.reschedule(useCachedLocation: true)) {
+      await scheduler.reconcileCompanionNotifications();
+    }
+  });
   // The khatma wird reminder is armed by CBKhatma itself at module commit —
   // long before this, when the queue still holds the previous session's
   // schedule. On iOS that attempt can be dropped silently against the pending
