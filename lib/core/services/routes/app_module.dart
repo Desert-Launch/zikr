@@ -480,7 +480,7 @@ class AppModule extends Module {
       () => CBReciter(
         getReciters: UCGetReciters(i.get<RReciter>()),
         setActive: UCSetActiveReciter(i.get<RReciter>()),
-        remote: i.get<DSRemoteAudio>(),
+        resolve: UCResolveAyahSource(i.get<RAudioDownloads>()),
         audioPlayer: i.get<CBAudioPlayer>(),
       ),
     );

@@ -50,6 +50,8 @@
   "tafsir_linked_note": "هذا التفسير يشمل مجموعة من الآيات (بدءًا من {{ayah}}).",
   "reciter_picker_title": "اختر القارئ",
   "reciter_picker_preview": "معاينة",
+  "reciter_picker_preview_stop": "إيقاف المعاينة",
+  "reciter_preview_failed": "تعذّر تشغيل المعاينة. تحقّق من اتصالك بالإنترنت.",
   "quran_settings_title": "إعدادات القرآن",
   "quran_settings_audio_downloads": "تنزيلات الصوت",
   "quran_settings_audio_downloads_hint": "إدارة تنزيل تلاوات القرّاء للاستماع دون اتصال",
