@@ -108,9 +108,9 @@ class QuranModule extends Module {
   @override
   void binds(Injector i) {
     // The recitation player, the reciter picker's cubit and their data stack
-    // (Qur'an text, reciters, audio files and downloads, playback prefs) are
-    // app-wide — see AppModule. This injector only sees its own binds, so
-    // they're reached via Modular.get.
+    // (Qur'an text, reciters, audio files and downloads, playback prefs), and
+    // the QPC page data + page fonts are app-wide — see AppModule. This
+    // injector only sees its own binds, so they're reached via Modular.get.
 
     // Hive box wrappers — singletons since they manage open boxes.
     i.addSingleton<BoxBookmarks>(BoxBookmarks.new);
@@ -125,8 +125,6 @@ class QuranModule extends Module {
     i.addSingleton<DSLocalReaderSettings>(
       () => DSLocalReaderSettings(i.get<BoxReaderSettings>()),
     );
-    i.addSingleton<DSQpcV4Data>(DSQpcV4Data.new);
-    i.addSingleton<DSQpcV4FontLoader>(DSQpcV4FontLoader.new);
     i.addSingleton<DSLocalTajweed>(DSLocalTajweed.new);
     i.addSingleton<DSLocalTafsir>(() => DSLocalTafsir(i.get<BoxTafsir>()));
 
@@ -135,7 +133,10 @@ class QuranModule extends Module {
 
     // Repositories (interface → impl)
     i.addSingleton<RQuranV4>(
-      () => RImplQuranV4(i.get<DSQpcV4Data>(), i.get<DSQpcV4FontLoader>()),
+      () => RImplQuranV4(
+        Modular.get<DSQpcV4Data>(),
+        Modular.get<DSQpcV4FontLoader>(),
+      ),
     );
     i.addSingleton<RTajweed>(() => RImplTajweed(i.get<DSLocalTajweed>()));
     i.addSingleton<RAudio>(
@@ -281,7 +282,7 @@ class QuranModule extends Module {
       () => CBMushafReader(
         i.get<UCGetQpcV4Page>(),
         i.get<UCSaveLastRead>(),
-        i.get<DSQpcV4FontLoader>(),
+        Modular.get<DSQpcV4FontLoader>(),
         Modular.get<DSLocalQuran>(),
         i.get<RBookmarks>(),
         i.get<CBReaderSettings>(),

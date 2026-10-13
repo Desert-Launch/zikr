@@ -81,6 +81,8 @@ import 'package:quran/modules/quran/data/datasources/local/ds_local_quran.dart';
 import 'package:quran/modules/quran/data/datasources/local/ds_local_reciters.dart';
 import 'package:quran/modules/quran/data/datasources/local/ds_local_settings.dart';
 import 'package:quran/modules/quran/data/datasources/local/ds_local_tafsir.dart';
+import 'package:quran/modules/quran/data/datasources/local/ds_qpc_v4_data.dart';
+import 'package:quran/modules/quran/data/datasources/local/ds_qpc_v4_font_loader.dart';
 import 'package:quran/modules/quran/data/datasources/remote/ds_audio_downloader.dart';
 import 'package:quran/modules/quran/data/datasources/remote/ds_remote_audio.dart';
 import 'package:quran/modules/quran/data/datasources/remote/ds_remote_tafsir.dart';
@@ -445,6 +447,12 @@ class AppModule extends Module {
     i.addLazySingleton<DSLocalAudioFiles>(DSLocalAudioFiles.new);
     i.addLazySingleton<DSRemoteAudio>(DSRemoteAudio.new);
     i.addLazySingleton<DSAudioDownloader>(DSAudioDownloader.new);
+    // QPC page data and page fonts, app-wide for the same reason: the data
+    // takes a large parse and registered fonts can never be unloaded, so a
+    // per-visit copy re-parsed the data and re-registered every font on each
+    // trip into the reader.
+    i.addLazySingleton<DSQpcV4Data>(DSQpcV4Data.new);
+    i.addLazySingleton<DSQpcV4FontLoader>(DSQpcV4FontLoader.new);
     i.addLazySingleton<RQuran>(() => RImplQuran(i.get<DSLocalQuran>()));
     i.addLazySingleton<RReciter>(
       () => RImplReciter(i.get<DSLocalSettings>(), i.get<DSLocalReciters>()),
