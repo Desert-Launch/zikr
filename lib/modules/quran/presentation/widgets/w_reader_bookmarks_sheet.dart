@@ -124,6 +124,7 @@ class _WReaderBookmarksSheetState extends State<WReaderBookmarksSheet> {
                                 ? surah?.arabic ?? ''
                                 : '${'quran_surah_label'.tr()} ${b.surah}',
                             subtitle: '${'quran_ayah_label'.tr()} ${b.ayah}',
+                            savedAt: b.createdAt,
                             onTap: () => _open(
                               ParamAyahRef(surah: b.surah, ayah: b.ayah),
                             ),
@@ -188,6 +189,7 @@ class _BookmarkRow extends StatelessWidget {
     required this.color,
     required this.title,
     required this.subtitle,
+    required this.savedAt,
     required this.onTap,
     required this.onDelete,
   });
@@ -195,6 +197,7 @@ class _BookmarkRow extends StatelessWidget {
   final Color color;
   final String title;
   final String subtitle;
+  final DateTime savedAt;
   final VoidCallback onTap;
   final VoidCallback onDelete;
 
@@ -239,6 +242,8 @@ class _BookmarkRow extends StatelessWidget {
                   ],
                 ),
               ),
+              SizedBox(width: 8.w),
+              _SavedAt(savedAt: savedAt, color: color),
               IconButton(
                 onPressed: onDelete,
                 visualDensity: VisualDensity.compact,
@@ -252,6 +257,66 @@ class _BookmarkRow extends StatelessWidget {
           ),
         ),
       ),
+    );
+  }
+}
+
+/// When a bookmark was saved — day over time, each behind a small glyph in the
+/// bookmark's colour — on an inset chip so it stays distinct from the verse name.
+class _SavedAt extends StatelessWidget {
+  const _SavedAt({required this.savedAt, required this.color});
+
+  final DateTime savedAt;
+  final Color color;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: EdgeInsets.symmetric(horizontal: 10.w, vertical: 5.h),
+      decoration: BoxDecoration(
+        color: context.brand.surface,
+        borderRadius: BorderRadius.circular(10.r),
+        border: Border.all(color: context.brand.border.withValues(alpha: 0.6)),
+      ),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          _SavedAtLine(
+            icon: Icons.calendar_today_rounded,
+            color: color,
+            label: bookmarkSavedDay(savedAt),
+            style: AppTextStyles.grey12W700.copyWith(color: context.brand.onSurface, height: 1.4),
+          ),
+          _SavedAtLine(
+            icon: Icons.schedule_rounded,
+            color: color,
+            label: bookmarkSavedTime(savedAt),
+            style: AppTextStyles.grey12W400.copyWith(height: 1.4),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _SavedAtLine extends StatelessWidget {
+  const _SavedAtLine({required this.icon, required this.color, required this.label, required this.style});
+
+  final IconData icon;
+  final Color color;
+  final String label;
+  final TextStyle style;
+
+  @override
+  Widget build(BuildContext context) {
+    return Row(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        Icon(icon, size: 12.r, color: color),
+        SizedBox(width: 5.w),
+        Text(label, maxLines: 1, style: style),
+      ],
     );
   }
 }

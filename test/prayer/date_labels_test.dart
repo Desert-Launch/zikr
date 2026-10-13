@@ -27,6 +27,21 @@ void main() {
       );
     });
 
+    test('relativeDay: today, yesterday, then a short date', () {
+      final now = DateTime(2026, 10, 12, 0, 10);
+      expect(DateLabels.relativeDay(DateTime(2026, 10, 12, 0, 5), now: now, lang: 'ar'), 'اليوم');
+      expect(DateLabels.relativeDay(DateTime(2026, 10, 11, 23, 50), now: now, lang: 'en'), 'Yesterday');
+      expect(DateLabels.relativeDay(DateTime(2026, 10, 11, 0, 1), now: now, lang: 'ar'), 'أمس');
+      expect(DateLabels.relativeDay(DateTime(2026, 10, 10, 9), now: now, lang: 'ar'), '10 أكتوبر');
+      expect(DateLabels.relativeDay(DateTime(2026, 3, 1), now: now, lang: 'en'), '1 March');
+    });
+
+    test('relativeDay: other years keep the year', () {
+      final now = DateTime(2026, 1, 1, 8);
+      expect(DateLabels.relativeDay(DateTime(2025, 12, 31, 22), now: now, lang: 'en'), 'Yesterday');
+      expect(DateLabels.relativeDay(DateTime(2025, 12, 30), now: now, lang: 'ar'), '30 ديسمبر 2025');
+    });
+
     test('hijri matches the mock', () {
       expect(DateLabels.hijri(mockDay, lang: 'ar'), '15 ربيع الأول 1448 هـ');
       expect(DateLabels.hijri(mockDay, lang: 'en'), '15 Rabi al-Awwal 1448 AH');

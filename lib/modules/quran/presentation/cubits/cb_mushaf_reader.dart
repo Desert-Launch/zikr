@@ -103,17 +103,20 @@ class CBMushafReader extends Cubit<SMushafReader> {
   void _watchBookmarks() {
     _bookmarks.list().then((res) {
       res.fold((_) {}, (all) {
-        if (!isClosed) emit(state.copyWith(bookmarks: _mapOf(all)));
+        if (!isClosed) _emitBookmarks(all);
       });
     });
     _bookmarkSub = _bookmarks.watch().listen((all) {
-      if (!isClosed) emit(state.copyWith(bookmarks: _mapOf(all)));
+      if (!isClosed) _emitBookmarks(all);
     });
   }
 
-  Map<String, String?> _mapOf(List<MBookmark> all) => {
-    for (final b in all) b.ayahKey: b.colorHex,
-  };
+  void _emitBookmarks(List<MBookmark> all) => emit(
+    state.copyWith(
+      bookmarks: {for (final b in all) b.ayahKey: b.colorHex},
+      bookmarkSavedAt: {for (final b in all) b.ayahKey: b.createdAt},
+    ),
+  );
 
   /// First page of every juz' in the 604-page Madani Mushaf. Index 0 → juz' 1.
   static const List<int> _juzStartPages = [

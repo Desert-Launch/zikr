@@ -26,6 +26,7 @@ class SMushafReader extends Equatable {
     this.chromeVisible = false,
     this.searchOpen = false,
     this.bookmarks = const <String, String?>{},
+    this.bookmarkSavedAt = const <String, DateTime>{},
     this.jumpRequest,
     this.wirdRange,
   });
@@ -80,6 +81,10 @@ class SMushafReader extends Equatable {
   /// so saved ayahs stay highlighted in their colour.
   final Map<String, String?> bookmarks;
 
+  /// When each entry in [bookmarks] was saved, keyed the same way. Feeds the
+  /// date/time captions in the colour picker.
+  final Map<String, DateTime> bookmarkSavedAt;
+
   /// A verse some widget deep in the reader (bookmarks sheet, colour picker)
   /// asked to navigate to. Only [SNMushafReader] owns the `PageController`, so
   /// it watches this, jumps, and clears it via
@@ -110,6 +115,7 @@ class SMushafReader extends Equatable {
     bool? chromeVisible,
     bool? searchOpen,
     Map<String, String?>? bookmarks,
+    Map<String, DateTime>? bookmarkSavedAt,
     ParamAyahRef? jumpRequest,
     bool clearJumpRequest = false,
     ParamAyahRange? wirdRange,
@@ -131,6 +137,7 @@ class SMushafReader extends Equatable {
       chromeVisible: chromeVisible ?? this.chromeVisible,
       searchOpen: searchOpen ?? this.searchOpen,
       bookmarks: bookmarks ?? this.bookmarks,
+      bookmarkSavedAt: bookmarkSavedAt ?? this.bookmarkSavedAt,
       jumpRequest: clearJumpRequest ? null : (jumpRequest ?? this.jumpRequest),
       wirdRange: wirdRange ?? this.wirdRange,
     );
@@ -154,6 +161,7 @@ class SMushafReader extends Equatable {
     chromeVisible,
     searchOpen,
     bookmarks,
+    bookmarkSavedAt,
     jumpRequest,
     wirdRange,
   ];

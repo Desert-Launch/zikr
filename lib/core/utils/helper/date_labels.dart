@@ -99,6 +99,23 @@ class DateLabels {
     return '${date.day} $month ${date.year}';
   }
 
+  /// A short, recency-aware day label for timestamps such as "saved at":
+  /// `اليوم` / `Today`, `أمس` / `Yesterday`, otherwise `12 أكتوبر` /
+  /// `12 October` — with the year appended only when it isn't [now]'s year.
+  static String relativeDay(DateTime date, {DateTime? now, String? lang}) {
+    final isArabic = _isArabic(lang);
+    final today = now ?? DateTime.now();
+    // Calendar-day difference, built from date-only values so DST shifts and
+    // the time of day can't push "yesterday 23:50" into "today".
+    final days = DateTime.utc(today.year, today.month, today.day)
+        .difference(DateTime.utc(date.year, date.month, date.day))
+        .inDays;
+    if (days == 0) return isArabic ? 'اليوم' : 'Today';
+    if (days == 1) return isArabic ? 'أمس' : 'Yesterday';
+    final month = (isArabic ? _arMonths : _enMonths)[date.month - 1];
+    return date.year == today.year ? '${date.day} $month' : '${date.day} $month ${date.year}';
+  }
+
   /// Weekday and Gregorian date on one line, as the widget's date row reads:
   /// `السبت، 29 أغسطس 2026` / `Saturday, 29 August 2026`.
   static String weekdayAndGregorian(DateTime date, {String? lang}) {

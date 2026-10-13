@@ -6,6 +6,8 @@ import 'package:localize_and_translate/localize_and_translate.dart';
 import 'package:quran/core/theme/app_text_styles.dart';
 import 'package:quran/core/theme/brand_colors.dart';
 import 'package:quran/core/utils/helper/app_alert.dart';
+import 'package:quran/core/utils/helper/date_labels.dart';
+import 'package:quran/core/utils/helper/time_format.dart';
 import 'package:quran/modules/quran/data/datasources/local/ds_local_quran.dart';
 import 'package:quran/modules/quran/data/models/m_surah.dart';
 import 'package:quran/modules/quran/domain/entities/param_ayah_ref.dart';
@@ -60,6 +62,13 @@ Color bookmarkColorFromHex(String? hex) => _parseHex(hex) ?? _kDefaultBookmarkCo
 /// The translucent tint painted behind a bookmarked ayah in the Mushaf.
 Color bookmarkHighlightFromHex(String? hex) => bookmarkColorFromHex(hex).withValues(alpha: 0.20);
 
+/// The day a bookmark was saved: `اليوم` / `أمس` / `12 أكتوبر`.
+String bookmarkSavedDay(DateTime savedAt) => DateLabels.relativeDay(savedAt.toLocal());
+
+/// The time a bookmark was saved: `05:43 م` / `05:43 PM`.
+String bookmarkSavedTime(DateTime savedAt) =>
+    TimeFormat.hm12(savedAt.toLocal(), arabicMarker: LocalizeAndTranslate.getLanguageCode() == 'ar');
+
 /// What the user chose in the bookmark colour sheet.
 class BookmarkPickerChoice {
   /// Save (or recolour) the bookmark with [hex]. [replaces] is the verse that
@@ -83,6 +92,8 @@ class BookmarkPickerChoice {
 ///
 /// [owners] maps each taken colour to the single verse holding it, so the sheet
 /// can caption every swatch and warn before a colour is reassigned.
+/// [savedAt] maps each bookmarked verse (`surah:ayah`) to when it was saved,
+/// shown under its swatch.
 /// [selectedHex] is the colour the ayah is *currently* bookmarked with — pass
 /// `null` when it isn't bookmarked, and pass [isBookmarked] `true` with a null
 /// hex for a legacy colourless bookmark. Resolves to `null` if the sheet was
@@ -91,6 +102,7 @@ Future<BookmarkPickerChoice?> showBookmarkColorPicker(
   BuildContext context, {
   required ParamAyahRef currentRef,
   required Map<String, ParamAyahRef> owners,
+  Map<String, DateTime> savedAt = const <String, DateTime>{},
   String? selectedHex,
   bool isBookmarked = false,
 }) {
@@ -104,6 +116,7 @@ Future<BookmarkPickerChoice?> showBookmarkColorPicker(
     builder: (_) => WBookmarkColorPicker(
       currentRef: currentRef,
       owners: owners,
+      savedAt: savedAt,
       selectedHex: selectedHex,
       isBookmarked: isBookmarked,
     ),
@@ -138,6 +151,7 @@ Future<bool> toggleAyahBookmark(BuildContext context, ParamAyahRef ref, CBMushaf
     context,
     currentRef: ref,
     owners: bookmarkOwnersOf(cubit),
+    savedAt: cubit.state.bookmarkSavedAt,
     selectedHex: cubit.bookmarkColorOf(ref),
     isBookmarked: wasBookmarked,
   );
@@ -172,6 +186,7 @@ class WBookmarkColorPicker extends StatefulWidget {
     super.key,
     required this.currentRef,
     this.owners = const <String, ParamAyahRef>{},
+    this.savedAt = const <String, DateTime>{},
     this.selectedHex,
     this.isBookmarked = false,
   });
@@ -180,6 +195,9 @@ class WBookmarkColorPicker extends StatefulWidget {
 
   /// Normalised `RRGGBB` → the verse bookmarked with that colour.
   final Map<String, ParamAyahRef> owners;
+
+  /// `surah:ayah` → when that verse was bookmarked.
+  final Map<String, DateTime> savedAt;
 
   final String? selectedHex;
   final bool isBookmarked;
@@ -309,6 +327,7 @@ class _WBookmarkColorPickerState extends State<WBookmarkColorPicker> {
                           selected: _isSelected(s),
                           owner: owner,
                           ownerName: owner == null ? '' : _surahNameOf(owner),
+                          savedAt: owner == null ? null : widget.savedAt[owner.key],
                           onTap: () => _onSwatch(s),
                         ),
                       );
@@ -344,13 +363,14 @@ class _WBookmarkColorPickerState extends State<WBookmarkColorPicker> {
 }
 
 /// One colour choice: the swatch itself plus a caption naming the verse it
-/// holds (an em-dash when the colour is still free).
+/// holds and when it was saved (an em-dash when the colour is still free).
 class _Swatch extends StatelessWidget {
   const _Swatch({
     required this.swatch,
     required this.selected,
     required this.owner,
     required this.ownerName,
+    required this.savedAt,
     required this.onTap,
   });
 
@@ -366,11 +386,15 @@ class _Swatch extends StatelessWidget {
   /// Arabic surah name of [owner]; empty while the surah index is still loading.
   final String ownerName;
 
+  /// When [owner] was bookmarked; `null` for a free colour.
+  final DateTime? savedAt;
+
   final VoidCallback onTap;
 
   @override
   Widget build(BuildContext context) {
     final ref = owner;
+    final saved = savedAt;
     return InkWell(
       onTap: onTap,
       borderRadius: BorderRadius.circular(14.r),
@@ -411,7 +435,57 @@ class _Swatch extends StatelessWidget {
                 textAlign: TextAlign.center,
                 style: AppTextStyles.grey12W400,
               ),
+              if (saved != null) ...[
+                SizedBox(height: 6.h),
+                _SavedAtPill(savedAt: saved, color: swatch.color),
+              ],
             ],
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+/// Compact "saved on" tag under a taken swatch: the day on top, the time with a
+/// clock glyph below, on a faint tint of the swatch colour so it reads as part
+/// of that colour's column.
+class _SavedAtPill extends StatelessWidget {
+  const _SavedAtPill({required this.savedAt, required this.color});
+
+  final DateTime savedAt;
+  final Color color;
+
+  @override
+  Widget build(BuildContext context) {
+    final style = AppTextStyles.grey12W400.copyWith(fontSize: 11.sp, height: 1.3);
+    return Container(
+      width: double.infinity,
+      padding: EdgeInsets.symmetric(horizontal: 4.w, vertical: 4.h),
+      decoration: BoxDecoration(
+        color: color.withValues(alpha: 0.10),
+        borderRadius: BorderRadius.circular(8.r),
+        border: Border.all(color: color.withValues(alpha: 0.22)),
+      ),
+      // Five columns share a phone's width; shrink rather than ellipsize so the
+      // date and time always read in full.
+      child: FittedBox(
+        fit: BoxFit.scaleDown,
+        child: Column(
+          children: [
+            Text(
+              bookmarkSavedDay(savedAt),
+              maxLines: 1,
+              style: style.copyWith(fontWeight: FontWeight.w700, color: context.brand.onSurface),
+            ),
+            Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Icon(Icons.schedule_rounded, size: 11.r, color: color),
+                SizedBox(width: 3.w),
+                Text(bookmarkSavedTime(savedAt), maxLines: 1, style: style),
+              ],
+            ),
           ],
         ),
       ),

@@ -251,7 +251,7 @@ class _BookmarkCard extends StatelessWidget {
                           ),
                           SizedBox(width: 4.w),
                           Text(
-                            _formatDate(bookmark.createdAt),
+                            '${bookmarkSavedDay(bookmark.createdAt)} · ${bookmarkSavedTime(bookmark.createdAt)}',
                             style: AppTextStyles.grey12W400,
                           ),
                         ],
@@ -272,11 +272,6 @@ class _BookmarkCard extends StatelessWidget {
         ),
       ),
     );
-  }
-
-  String _formatDate(DateTime d) {
-    String two(int n) => n.toString().padLeft(2, '0');
-    return '${d.year}/${two(d.month)}/${two(d.day)}';
   }
 }
 
