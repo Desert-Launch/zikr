@@ -1,10 +1,10 @@
 import 'package:quran/core/utils/hive_box_base.dart';
 
-/// Stores downloaded tafsir books as primitive `String` values.
+/// Bookkeeping for downloaded tafsir books, as primitive `String` values. The
+/// books themselves live in per-surah files — see `DSLocalTafsir`.
 ///
 /// Uses a primitive box (no [TypeAdapter]) on purpose — it sidesteps codegen and
-/// survives the broken build_runner. Four kinds of keys live here:
-///   • `book::<bookId>`     → the decompressed JSON blob for one book.
+/// survives the broken build_runner. Three kinds of keys live here:
 ///   • `__downloaded__`     → JSON array of downloaded book ids (the registry).
 ///   • `__default_seeded__` → set once the default book has been fetched.
 ///   • `__selected__`       → id of the book the viewer opens on.
@@ -21,5 +21,7 @@ class BoxTafsir extends HiveBoxBase<String> {
   /// in the library, in which case the default book is opened.
   static const String selectedKey = '__selected__';
 
-  static String bookKey(String bookId) => 'book::$bookId';
+  /// Key prefix of a whole book stored in the box, as older versions did
+  /// (`book::<bookId>`). Only read to migrate such books out to files.
+  static const String legacyBookPrefix = 'book::';
 }
