@@ -37,20 +37,34 @@ private enum Palette {
     }
 }
 
-/// Where a tap goes. The `homeWidget` query flag is what the plugin keys on
-/// to recognise the URL as its own in `application(_:open:options:)`.
-private let launchURL = URL(string: "zikr://prayer?homeWidget")
+/// Where a tap goes — from the Home Screen card and the Lock Screen faces
+/// alike. The `homeWidget` query flag is what the plugin keys on to recognise
+/// the URL as its own in `application(_:open:options:)`.
+let launchURL = URL(string: "zikr://prayer?homeWidget")
 
 // MARK: - Root
 
 /// Picks the layout for the family and wraps it in the card, the layout
-/// direction the app's language wants, and the tap target.
+/// direction the app's language wants, and the tap target. The Lock Screen
+/// families go to `LockScreenPrayerView`, which draws no card.
 struct PrayerWidgetView: View {
     let entry: PrayerEntry
 
     @Environment(\.widgetFamily) private var family
 
     var body: some View {
+        if #available(iOS 16.0, *) {
+            if family.isLockScreen {
+                LockScreenPrayerView(entry: entry)
+            } else {
+                card
+            }
+        } else {
+            card
+        }
+    }
+
+    private var card: some View {
         content
             .padding(14)
             .frame(maxWidth: .infinity, maxHeight: .infinity)

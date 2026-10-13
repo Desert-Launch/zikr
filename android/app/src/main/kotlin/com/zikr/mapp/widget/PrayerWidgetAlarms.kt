@@ -14,13 +14,17 @@ import android.os.Build
  * waking a sleeping device to redraw it. A non-wakeup alarm that comes due
  * while the device sleeps is delivered the moment it wakes — before the
  * launcher has finished drawing — which is exactly when the redraw matters.
+ * The same holds for the lock-screen notification: the wake that shows the
+ * lock screen is the wake that delivers the alarm.
  *
  *  - **Boundary** — the next moment the layout changes on its own: the next
  *    salah (the featured prayer flips) or local midnight (the date row
- *    changes), whichever is sooner.
+ *    changes), whichever is sooner. Armed while a widget instance exists or
+ *    the lock-screen notification ([PrayerLockNotification]) is on.
  *  - **Tick** — once a minute, aligned to the minute, while any widget
  *    instance exists: the countdown text and the progress bar. Re-armed from
- *    every render; cancelled in `onDisabled`.
+ *    every render; cancelled in `onDisabled`. The notification never needs
+ *    it — its countdown is a chronometer.
  *
  * Both are exact when the exact-alarm grant is present — this app already
  * holds it for the adhan (`USE_EXACT_ALARM` on 13+, `SCHEDULE_EXACT_ALARM`
@@ -50,8 +54,17 @@ object PrayerWidgetAlarms {
     }
 
     fun cancelAll(context: Context) {
+        cancelTick(context)
+        cancelBoundary(context)
+    }
+
+    fun cancelTick(context: Context) {
         val am = context.getSystemService(Context.ALARM_SERVICE) as AlarmManager
         am.cancel(pending(context, ACTION_TICK, REQUEST_TICK))
+    }
+
+    fun cancelBoundary(context: Context) {
+        val am = context.getSystemService(Context.ALARM_SERVICE) as AlarmManager
         am.cancel(pending(context, ACTION_BOUNDARY, REQUEST_BOUNDARY))
     }
 

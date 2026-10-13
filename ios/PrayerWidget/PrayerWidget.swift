@@ -73,8 +73,9 @@ struct PrayerProvider: TimelineProvider {
     }
 }
 
-/// The home-screen prayer widget: next prayer, countdown, window progress,
-/// today's dates and the day's other prayer times.
+/// The prayer widget: on the Home Screen, next prayer, countdown, window
+/// progress, today's dates and the day's other prayer times; on the Lock
+/// Screen (iOS 16+), the next prayer and a live countdown.
 struct PrayerWidget: Widget {
 
     /// Must match `DSPrayerWidget.iosKind` in Dart — it is what
@@ -87,10 +88,19 @@ struct PrayerWidget: Widget {
         }
         .configurationDisplayName("مواقيت الصلاة")
         .description("الصلاة القادمة، العدّ التنازلي، ومواقيت اليوم")
-        .supportedFamilies([.systemSmall, .systemMedium])
+        .supportedFamilies(Self.families)
         // The card pads itself (see PrayerWidgetView) so it looks the same on
         // iOS 15–16, where the system adds no margins, and on 17+, where it
         // would otherwise add its own on top.
         .contentMarginsDisabled()
+    }
+
+    /// One kind for both screens, so the app's single `reloadTimelines`
+    /// reaches the Lock Screen faces too. Those exist from iOS 16 only.
+    private static var families: [WidgetFamily] {
+        if #available(iOS 16.0, *) {
+            return [.systemSmall, .systemMedium, .accessoryRectangular, .accessoryCircular, .accessoryInline]
+        }
+        return [.systemSmall, .systemMedium]
     }
 }

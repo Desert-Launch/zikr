@@ -41,6 +41,7 @@ import 'package:quran/modules/khatma/data/models/m_khatma_plan.dart';
 import 'package:quran/modules/khatma/presentation/cubits/cb_khatma.dart';
 import 'package:quran/modules/prayer/data/datasources/local/ds_prayer_widget.dart';
 import 'package:quran/modules/prayer/data/models/m_prayer_settings.dart';
+import 'package:quran/modules/prayer/presentation/cubits/cb_prayer_lock_screen.dart';
 import 'package:quran/modules/quran/data/models/m_bookmark.dart';
 import 'package:quran/modules/quran/data/models/m_last_read.dart';
 import 'package:quran/modules/quran/data/models/m_reciter_pref.dart';
@@ -213,6 +214,9 @@ Future<void> _bootNotifications() async {
   // Home-screen widget: route the tap that may have launched us, and keep
   // routing taps while we run.
   await _bootStep('home widget taps', Modular.get<HomeWidgetRouter>().start);
+  // Prayer times on the lock screen (Android): load the switch, and re-post
+  // the notification a force-stop may have taken down.
+  await _bootStep('lock screen prayer', Modular.get<CBPrayerLockScreen>().load);
   await _bootStep(
     'reminders reschedule',
     Modular.get<CBReminders>().rescheduleAll,

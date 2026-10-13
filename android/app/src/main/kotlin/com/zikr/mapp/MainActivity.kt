@@ -5,6 +5,7 @@ import com.zikr.mapp.adhan.AdhanAlarmPlugin
 import com.zikr.mapp.adhan.AdhanAlarmVolume
 import com.zikr.mapp.maps.MapsSdkPlugin
 import com.zikr.mapp.reminder.ReminderSoundPlugin
+import com.zikr.mapp.widget.PrayerLockScreenPlugin
 import io.flutter.embedding.engine.FlutterEngine
 import io.flutter.plugin.common.MethodChannel
 
@@ -30,5 +31,9 @@ class MainActivity : AudioServiceActivity() {
         // it builds a map — a map without one crashes the app.
         MethodChannel(flutterEngine.dartExecutor.binaryMessenger, MapsSdkPlugin.CHANNEL)
             .setMethodCallHandler(MapsSdkPlugin(applicationContext))
+        // Settings switch for the ongoing prayer-times notification on the lock
+        // screen (see PrayerLockNotification).
+        MethodChannel(flutterEngine.dartExecutor.binaryMessenger, PrayerLockScreenPlugin.CHANNEL)
+            .setMethodCallHandler(PrayerLockScreenPlugin(applicationContext))
     }
 }

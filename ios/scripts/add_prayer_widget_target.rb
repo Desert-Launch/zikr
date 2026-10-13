@@ -31,7 +31,7 @@ TARGET_NAME = 'PrayerWidget'
 BUNDLE_ID = 'com.zikr.mapp.PrayerWidget'
 DEPLOYMENT_TARGET = '15.0'
 TEAM = 'C958H28PV6'
-SOURCES = %w[PrayerWidgetBundle.swift PrayerWidget.swift PrayerWidgetView.swift PrayerSnapshot.swift].freeze
+SOURCES = %w[PrayerWidgetBundle.swift PrayerWidget.swift PrayerWidgetView.swift PrayerLockScreenView.swift PrayerSnapshot.swift].freeze
 
 project = Xcodeproj::Project.open(PROJECT_PATH)
 

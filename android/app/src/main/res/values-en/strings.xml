@@ -1,7 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!-- English copy for the launcher's widget picker (see values/strings.xml). -->
+<!-- English copy for the launcher's widget picker and the lock-screen notification channel (see values/strings.xml). -->
 <resources>
     <string name="prayer_widget_label">Prayer times</string>
     <string name="prayer_widget_description">Next prayer, countdown, and today\'s times</string>
     <string name="prayer_widget_empty">Open the app to set up prayer times</string>
+    <string name="prayer_lock_channel_name">Prayer times on lock screen</string>
+    <string name="prayer_lock_channel_description">A pinned notification with the next prayer and a countdown</string>
 </resources>

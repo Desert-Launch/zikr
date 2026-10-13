@@ -13,6 +13,7 @@
 		3B3967161E833CAA004F5970 /* AppFrameworkInfo.plist in Resources */ = {isa = PBXBuildFile; fileRef = 3B3967151E833CAA004F5970 /* AppFrameworkInfo.plist */; };
 		540ECD1748816F7DBEA8FED1 /* salah_3la_mohamed.caf in Resources */ = {isa = PBXBuildFile; fileRef = A1BB6333A202165E1BB28FB1 /* salah_3la_mohamed.caf */; };
 		5533CDA29582724ABDF83A43 /* PrayerWidgetView.swift in Sources */ = {isa = PBXBuildFile; fileRef = C4FA1F276E64D65A6F7AF372 /* PrayerWidgetView.swift */; };
+		249B5091CB6FCD763DC03455 /* PrayerLockScreenView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0D0A39353EC32D31191921F0 /* PrayerLockScreenView.swift */; };
 		6692252C32346425A9BBE4B9 /* PrayerWidgetBundle.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0CDB4052B330F9FE29CF0328 /* PrayerWidgetBundle.swift */; };
 		74858FAF1ED2DC5600515810 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 74858FAE1ED2DC5600515810 /* AppDelegate.swift */; };
 		76C0D917C67B51D17CA221A5 /* Pods_RunnerTests.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = AAD66BA6D5E8D474D93BB772 /* Pods_RunnerTests.framework */; };
@@ -132,6 +133,7 @@
 		AD4A4E0100000008AD4A4E01 /* Runner.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = Runner.entitlements; sourceTree = "<group>"; };
 		AD4A4E0100000009AD4A4E01 /* AdhanAlarmRequest.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = AdhanAlarmRequest.swift; sourceTree = "<group>"; };
 		C4FA1F276E64D65A6F7AF372 /* PrayerWidgetView.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = PrayerWidgetView.swift; sourceTree = "<group>"; };
+		0D0A39353EC32D31191921F0 /* PrayerLockScreenView.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = PrayerLockScreenView.swift; sourceTree = "<group>"; };
 		C7704FA4138A50FF4EB54359 /* WidgetKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = WidgetKit.framework; path = System/Library/Frameworks/WidgetKit.framework; sourceTree = SDKROOT; };
 		D936E7A085D90CDB44FBB372 /* Pods_Runner.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_Runner.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		F811D79903845A3523EA1251 /* adhan_madinah.caf */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = file; path = adhan_madinah.caf; sourceTree = "<group>"; };
@@ -202,6 +204,7 @@
 				0CDB4052B330F9FE29CF0328 /* PrayerWidgetBundle.swift */,
 				11526F3DDB95C8F61134DC1C /* PrayerWidget.swift */,
 				C4FA1F276E64D65A6F7AF372 /* PrayerWidgetView.swift */,
+				0D0A39353EC32D31191921F0 /* PrayerLockScreenView.swift */,
 				6C19C5710C953527DD9DE185 /* PrayerSnapshot.swift */,
 				42D7705E5981F121D755DE90 /* Assets.xcassets */,
 				5382B8C3F20B75CAD8C44BA0 /* Info.plist */,
@@ -614,6 +617,7 @@
 				6692252C32346425A9BBE4B9 /* PrayerWidgetBundle.swift in Sources */,
 				F27755485454650FB5BDFB7D /* PrayerWidget.swift in Sources */,
 				5533CDA29582724ABDF83A43 /* PrayerWidgetView.swift in Sources */,
+				249B5091CB6FCD763DC03455 /* PrayerLockScreenView.swift in Sources */,
 				ED739DAA3924C40389201141 /* PrayerSnapshot.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;

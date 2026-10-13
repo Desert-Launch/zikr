@@ -14,11 +14,13 @@ import 'package:quran/modules/adhan/presentation/cubits/cb_adhan_settings.dart';
 import 'package:quran/modules/adhan/presentation/cubits/s_adhan_settings.dart';
 import 'package:quran/modules/adhan/presentation/widgets/w_alarm_permission_switch.dart';
 import 'package:quran/modules/adhan/services/adhan_audio_alarms.dart';
+import 'package:quran/modules/prayer/presentation/cubits/cb_prayer_lock_screen.dart';
 import 'package:quran/modules/prayer/services/prayer_widget_publisher.dart';
 import 'package:quran/modules/settings/presentation/widgets/w_app_footer.dart';
 import 'package:quran/modules/settings/presentation/widgets/w_profile_card.dart';
 import 'package:quran/modules/settings/presentation/widgets/w_settings_about_section.dart';
 import 'package:quran/modules/settings/presentation/widgets/w_settings_group.dart';
+import 'package:quran/modules/settings/presentation/widgets/w_settings_lock_screen_row.dart';
 import 'package:quran/modules/settings/presentation/widgets/w_settings_row.dart';
 import 'package:quran/modules/settings/presentation/widgets/w_settings_section_label.dart';
 import 'package:quran/modules/settings/presentation/widgets/w_settings_switch.dart';
@@ -118,6 +120,8 @@ class _SNSettingsState extends State<SNSettings> {
                         subtitle: 'prayer_settings_qibla_hint'.tr(),
                         onTap: () => Modular.to.pushNamed(RoutesNames.qiblaBase),
                       ),
+                      if (Modular.get<CBPrayerLockScreen>().state.available)
+                        const WSettingsLockScreenRow(),
                     ],
                   ),
                   const _AlarmPermissionsSection(),

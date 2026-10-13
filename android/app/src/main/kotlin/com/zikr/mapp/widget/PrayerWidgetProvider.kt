@@ -9,10 +9,11 @@ import android.os.Bundle
 import es.antonborri.home_widget.HomeWidgetProvider
 
 /**
- * The home-screen prayer widget.
+ * The home-screen prayer widget — and the driver of its lock-screen twin,
+ * [PrayerLockNotification], which mirrors the same snapshot.
  *
- * Everything it draws comes from the snapshot Dart publishes through
- * `home_widget` ([PrayerWidgetSnapshot]); everything about *when* it redraws
+ * Everything they draw comes from the snapshot Dart publishes through
+ * `home_widget` ([PrayerWidgetSnapshot]); everything about *when* they redraw
  * is decided here:
  *
  *  - the launcher's own `APPWIDGET_UPDATE` (add, resize, the 30-minute
@@ -20,8 +21,9 @@ import es.antonborri.home_widget.HomeWidgetProvider
  *  - [PrayerWidgetAlarms]' minute tick and prayer/midnight boundary;
  *  - boot, package replacement, and a timezone or clock change.
  *
- * Every path ends in [refresh], which renders all instances and re-arms the
- * alarms from what it just drew. No Flutter engine is involved at any point.
+ * Every path ends in [refresh], which renders all instances, posts the
+ * notification when it is on, and re-arms the alarms from what it just drew.
+ * No Flutter engine is involved at any point.
  */
 class PrayerWidgetProvider : HomeWidgetProvider() {
 
@@ -50,32 +52,55 @@ class PrayerWidgetProvider : HomeWidgetProvider() {
 
     override fun onDisabled(context: Context) {
         // Last instance removed — a phone without the widget must not tick.
-        PrayerWidgetAlarms.cancelAll(context)
+        // The boundary stays only while the lock-screen notification needs it.
+        PrayerWidgetAlarms.cancelTick(context)
+        if (!PrayerLockNotification.isEnabled(context)) PrayerWidgetAlarms.cancelBoundary(context)
     }
 
     override fun onReceive(context: Context, intent: Intent) {
         when (intent.action) {
-            PrayerWidgetAlarms.ACTION_TICK,
+            // The notification's countdown runs on its own; re-posting it
+            // every minute would buy nothing.
+            PrayerWidgetAlarms.ACTION_TICK -> refreshAll(context, repostLockScreen = false)
             PrayerWidgetAlarms.ACTION_BOUNDARY,
             Intent.ACTION_BOOT_COMPLETED,
             Intent.ACTION_MY_PACKAGE_REPLACED,
             Intent.ACTION_TIMEZONE_CHANGED,
             Intent.ACTION_TIME_CHANGED,
             -> refreshAll(context)
+            PrayerLockNotification.ACTION_DISMISSED -> PrayerLockNotification.onDismissed(context)
+            AppWidgetManager.ACTION_APPWIDGET_UPDATE -> {
+                super.onReceive(context, intent)
+                // With no instance placed the framework skips onUpdate, but a
+                // new snapshot still has to reach the lock-screen notification.
+                val ids = intent.getIntArrayExtra(AppWidgetManager.EXTRA_APPWIDGET_IDS)
+                if (ids == null || ids.isEmpty()) refreshAll(context)
+            }
             else -> super.onReceive(context, intent)
         }
     }
 
     companion object {
-        /** Redraws every placed instance (a no-op when there are none). */
-        fun refreshAll(context: Context) {
+        /**
+         * Redraws every placed instance and, unless [repostLockScreen] is
+         * false, brings the lock-screen notification in line. A no-op apart
+         * from cancelling alarms when neither is in use.
+         */
+        fun refreshAll(context: Context, repostLockScreen: Boolean = true) {
             val manager = AppWidgetManager.getInstance(context)
             val ids = manager.getAppWidgetIds(ComponentName(context, PrayerWidgetProvider::class.java))
-            refresh(context, manager, ids)
+            refresh(context, manager, ids, repostLockScreen)
         }
 
-        private fun refresh(context: Context, manager: AppWidgetManager, ids: IntArray) {
-            if (ids.isEmpty()) {
+        private fun refresh(
+            context: Context,
+            manager: AppWidgetManager,
+            ids: IntArray,
+            repostLockScreen: Boolean = true,
+        ) {
+            val lockScreen = PrayerLockNotification.isEnabled(context)
+            if (repostLockScreen && !lockScreen) PrayerLockNotification.cancel(context)
+            if (ids.isEmpty() && !lockScreen) {
                 PrayerWidgetAlarms.cancelAll(context)
                 return
             }
@@ -93,6 +118,9 @@ class PrayerWidgetProvider : HomeWidgetProvider() {
                 )
                 manager.updateAppWidget(id, views)
             }
+            if (repostLockScreen && lockScreen) {
+                PrayerLockNotification.post(context, snapshot, resolution, now)
+            }
 
             if (snapshot == null || resolution == null) {
                 // Nothing to count down to. The app's next publish redraws us.
@@ -103,7 +131,11 @@ class PrayerWidgetProvider : HomeWidgetProvider() {
                 context,
                 minOf(resolution.next.at, snapshot.nextMidnight(now)),
             )
-            PrayerWidgetAlarms.armTick(context, now)
+            if (ids.isNotEmpty()) {
+                PrayerWidgetAlarms.armTick(context, now)
+            } else {
+                PrayerWidgetAlarms.cancelTick(context)
+            }
         }
     }
 }

@@ -25,4 +25,11 @@
     <string name="prayer_widget_label">مواقيت الصلاة</string>
     <string name="prayer_widget_description">الصلاة القادمة، العدّ التنازلي، ومواقيت اليوم</string>
     <string name="prayer_widget_empty">افتح التطبيق لتحديد مواقيت الصلاة</string>
+
+    <!--
+      The lock-screen prayer notification's channel, as listed in the system's
+      notification settings — device locale again, so values-en has the twin.
+    -->
+    <string name="prayer_lock_channel_name">مواقيت الصلاة على شاشة القفل</string>
+    <string name="prayer_lock_channel_description">إشعار ثابت بالصلاة القادمة والوقت المتبقي عليها</string>
 </resources>

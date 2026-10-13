@@ -61,6 +61,7 @@ import 'package:quran/modules/onboarding/onboarding_module.dart';
 import 'package:quran/modules/prayer/data/datasources/local/ds_last_location.dart';
 import 'package:quran/modules/prayer/data/datasources/local/ds_location.dart';
 import 'package:quran/modules/prayer/data/datasources/local/ds_prayer_calendar_cache.dart';
+import 'package:quran/modules/prayer/data/datasources/local/ds_prayer_lock_screen.dart';
 import 'package:quran/modules/prayer/data/datasources/local/ds_prayer_methods_cache.dart';
 import 'package:quran/modules/prayer/data/datasources/local/ds_prayer_widget.dart';
 import 'package:quran/modules/prayer/data/datasources/remote/ds_remote_prayer.dart';
@@ -71,6 +72,7 @@ import 'package:quran/modules/prayer/domain/usecases/uc_get_calculation_methods.
 import 'package:quran/modules/prayer/domain/usecases/uc_get_prayer_calendar.dart';
 import 'package:quran/modules/prayer/domain/usecases/uc_get_prayer_day.dart';
 import 'package:quran/modules/prayer/prayer_module.dart';
+import 'package:quran/modules/prayer/presentation/cubits/cb_prayer_lock_screen.dart';
 import 'package:quran/modules/prayer/presentation/cubits/cb_prayer_times.dart';
 import 'package:quran/modules/prayer/services/prayer_times_service.dart';
 import 'package:quran/modules/qibla/qibla_module.dart';
@@ -254,6 +256,16 @@ class AppModule extends Module {
       () => PrayerWidgetPublisher(widget: i.get<DSPrayerWidget>()),
     );
     i.addSingleton<HomeWidgetRouter>(HomeWidgetRouter.new);
+    // Its lock-screen twin: on Android an ongoing notification drawn natively
+    // from the same snapshot, on iOS the widget's Lock Screen faces. This
+    // pair only carries the Settings row (a switch / a how-to).
+    i.addSingleton<DSPrayerLockScreen>(DSPrayerLockScreen.new);
+    i.addSingleton<CBPrayerLockScreen>(
+      () => CBPrayerLockScreen(
+        lockScreen: i.get<DSPrayerLockScreen>(),
+        notifications: i.get<NotificationsService>(),
+      ),
+    );
 
     // Automatic store review ask, run once per cold start from main.dart.
     i.addSingleton<ReviewPrompter>(ReviewPrompter.new);

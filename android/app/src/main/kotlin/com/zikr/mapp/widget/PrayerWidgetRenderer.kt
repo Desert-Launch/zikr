@@ -37,7 +37,8 @@ object PrayerWidgetRenderer {
         "isha" to 0xFF6C63B5.toInt(),
     )
 
-    private val chipEmoji = mapOf(
+    /** Also drawn by the lock-screen notification's chip row ([PrayerLockNotification]). */
+    internal val chipEmoji = mapOf(
         "fajr" to "🌅",       // 🌅
         "sunrise" to "☀️",     // ☀️
         "dhuhr" to "🌤️", // 🌤️
@@ -164,7 +165,8 @@ object PrayerWidgetRenderer {
         }
     }
 
-    private fun launchIntent(context: Context) =
+    /** Shared with [PrayerLockNotification], so a tap on either lands on the same screen. */
+    internal fun launchIntent(context: Context) =
         HomeWidgetLaunchIntent.getActivity(context, MainActivity::class.java, Uri.parse(LAUNCH_URI))
 
     /** [tint] at [ratio] over [base], as an opaque colour. */

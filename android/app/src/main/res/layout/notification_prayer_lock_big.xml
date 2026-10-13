@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  Lock-screen prayer notification, expanded. lock_head receives the collapsed
+  layout (notification_prayer_lock.xml) and lock_chips one
+  notification_prayer_lock_chip.xml per slot of the display day, the next
+  salah in bold — both added at render time by PrayerLockNotification.
+
+    ┌──────────────────────────────────────────┐
+    │ (collapsed head)                          │
+    │ hijri · gregorian                         │
+    │  🌅     ☀️     🌤️     🌥️     🌇     🌙   │
+    │ fajr  sunrise dhuhr  asr  maghrib  isha   │
+    │ 4:50   6:15   11:48  3:12   5:40   7:00   │
+    └──────────────────────────────────────────┘
+-->
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/lock_big_root"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="vertical">
+
+    <FrameLayout
+        android:id="@+id/lock_head"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content" />
+
+    <TextView
+        android:id="@+id/lock_date"
+        style="@style/TextAppearance.Compat.Notification"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="4dp"
+        android:ellipsize="end"
+        android:gravity="start"
+        android:maxLines="1"
+        android:textSize="12sp" />
+
+    <LinearLayout
+        android:id="@+id/lock_chips"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="10dp"
+        android:layout_marginBottom="4dp"
+        android:orientation="horizontal" />
+</LinearLayout>
