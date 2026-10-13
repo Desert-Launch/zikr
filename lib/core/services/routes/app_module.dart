@@ -76,17 +76,38 @@ import 'package:quran/modules/prayer/services/prayer_times_service.dart';
 import 'package:quran/modules/qibla/qibla_module.dart';
 import 'package:quran/modules/prayer/services/prayer_widget_publisher.dart';
 import 'package:quran/modules/quran/data/datasources/local/ds_local_audio_files.dart';
+import 'package:quran/modules/quran/data/datasources/local/ds_local_playback_prefs.dart';
 import 'package:quran/modules/quran/data/datasources/local/ds_local_quran.dart';
 import 'package:quran/modules/quran/data/datasources/local/ds_local_reciters.dart';
+import 'package:quran/modules/quran/data/datasources/local/ds_local_settings.dart';
 import 'package:quran/modules/quran/data/datasources/local/ds_local_tafsir.dart';
 import 'package:quran/modules/quran/data/datasources/remote/ds_audio_downloader.dart';
 import 'package:quran/modules/quran/data/datasources/remote/ds_remote_audio.dart';
 import 'package:quran/modules/quran/data/datasources/remote/ds_remote_tafsir.dart';
+import 'package:quran/modules/quran/data/repos/r_impl_audio_downloads.dart';
+import 'package:quran/modules/quran/data/repos/r_impl_playback_prefs.dart';
 import 'package:quran/modules/quran/data/repos/r_impl_quran.dart';
+import 'package:quran/modules/quran/data/repos/r_impl_reciter.dart';
 import 'package:quran/modules/quran/data/repos/r_impl_tafsir.dart';
+import 'package:quran/modules/quran/data/sources/local/box_playback_prefs.dart';
+import 'package:quran/modules/quran/data/sources/local/box_reciter_pref.dart';
 import 'package:quran/modules/quran/data/sources/local/box_tafsir.dart';
+import 'package:quran/modules/quran/domain/repos/r_audio_downloads.dart';
+import 'package:quran/modules/quran/domain/repos/r_playback_prefs.dart';
+import 'package:quran/modules/quran/domain/repos/r_quran.dart';
+import 'package:quran/modules/quran/domain/repos/r_reciter.dart';
+import 'package:quran/modules/quran/domain/usecases/uc_download_surah.dart';
+import 'package:quran/modules/quran/domain/usecases/uc_ensure_ayah_downloaded.dart';
 import 'package:quran/modules/quran/domain/usecases/uc_get_daily_verse.dart';
+import 'package:quran/modules/quran/domain/usecases/uc_get_playback_prefs.dart';
+import 'package:quran/modules/quran/domain/usecases/uc_get_reciters.dart';
+import 'package:quran/modules/quran/domain/usecases/uc_get_surah_status.dart';
+import 'package:quran/modules/quran/domain/usecases/uc_resolve_ayah_source.dart';
+import 'package:quran/modules/quran/domain/usecases/uc_save_playback_prefs.dart';
+import 'package:quran/modules/quran/domain/usecases/uc_set_active_reciter.dart';
+import 'package:quran/modules/quran/presentation/cubits/cb_audio_player.dart';
 import 'package:quran/modules/quran/presentation/cubits/cb_daily_verse.dart';
+import 'package:quran/modules/quran/presentation/cubits/cb_reciter.dart';
 import 'package:quran/modules/quran/quran_module.dart';
 import 'package:quran/modules/quran/services/basmalah_bootstrap.dart';
 import 'package:quran/modules/quran/services/tafsir_bootstrap.dart';
@@ -403,6 +424,66 @@ class AppModule extends Module {
     // Live Quran radio player — app-wide so playback survives leaving the radio
     // screen. Lazy so its AudioPlayer is only created on first radio use.
     i.addLazySingleton<CBRadioPlayer>(CBRadioPlayer.new);
+    // Qur'an recitation player — app-wide for the same reason as the radio:
+    // playback, its repeat passes and its sleep timer must outlive the Quran
+    // screens. It used to be a QuranModule singleton, but Modular unloads that
+    // module on pop without closing what it built, so every visit started a
+    // new AudioPlayer and orphaned the previous one, still running. Its data
+    // stack lives here too, so the in-flight surah downloads it shares with
+    // the reciter screens stay one instance. Lazy: nothing is built until the
+    // Quran module first asks for it.
+    i.addLazySingleton<BoxReciterPref>(BoxReciterPref.new);
+    i.addLazySingleton<BoxPlaybackPrefs>(BoxPlaybackPrefs.new);
+    i.addLazySingleton<DSLocalQuran>(DSLocalQuran.new);
+    i.addLazySingleton<DSLocalSettings>(
+      () => DSLocalSettings(i.get<BoxReciterPref>()),
+    );
+    i.addLazySingleton<DSLocalReciters>(DSLocalReciters.new);
+    i.addLazySingleton<DSLocalPlaybackPrefs>(
+      () => DSLocalPlaybackPrefs(i.get<BoxPlaybackPrefs>()),
+    );
+    i.addLazySingleton<DSLocalAudioFiles>(DSLocalAudioFiles.new);
+    i.addLazySingleton<DSRemoteAudio>(DSRemoteAudio.new);
+    i.addLazySingleton<DSAudioDownloader>(DSAudioDownloader.new);
+    i.addLazySingleton<RQuran>(() => RImplQuran(i.get<DSLocalQuran>()));
+    i.addLazySingleton<RReciter>(
+      () => RImplReciter(i.get<DSLocalSettings>(), i.get<DSLocalReciters>()),
+    );
+    i.addLazySingleton<RAudioDownloads>(
+      () => RImplAudioDownloads(
+        files: i.get<DSLocalAudioFiles>(),
+        remote: i.get<DSRemoteAudio>(),
+        downloader: i.get<DSAudioDownloader>(),
+        reciter: i.get<RReciter>(),
+      ),
+    );
+    i.addLazySingleton<RPlaybackPrefs>(
+      () => RImplPlaybackPrefs(i.get<DSLocalPlaybackPrefs>()),
+    );
+    i.addLazySingleton<CBAudioPlayer>(
+      () => CBAudioPlayer(
+        quran: i.get<RQuran>(),
+        reciters: UCGetReciters(i.get<RReciter>()),
+        ensure: UCEnsureAyahDownloaded(i.get<RAudioDownloads>()),
+        resolve: UCResolveAyahSource(i.get<RAudioDownloads>()),
+        surahStatus: UCGetSurahStatus(i.get<RAudioDownloads>()),
+        downloadSurah: UCDownloadSurah(i.get<RAudioDownloads>()),
+        getPrefs: UCGetPlaybackPrefs(i.get<RPlaybackPrefs>()),
+        savePrefs: UCSavePlaybackPrefs(i.get<RPlaybackPrefs>()),
+      ),
+    );
+    // Reciter list + preview player for the picker screens. App-wide with the
+    // player it switches voices on, so it is never rebuilt per visit — each
+    // rebuild left the old one registered with AudioFocus, preview player and
+    // all.
+    i.addLazySingleton<CBReciter>(
+      () => CBReciter(
+        getReciters: UCGetReciters(i.get<RReciter>()),
+        setActive: UCSetActiveReciter(i.get<RReciter>()),
+        remote: i.get<DSRemoteAudio>(),
+        audioPlayer: i.get<CBAudioPlayer>(),
+      ),
+    );
     i.addSingleton<CBReminders>(
       () => CBReminders(
         box: i.get<BoxReminders>(),

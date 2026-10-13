@@ -2,33 +2,23 @@ import 'package:flutter_modular/flutter_modular.dart';
 import 'package:quran/core/services/routes/routes_names.dart';
 import 'package:quran/modules/quran/data/datasources/local/ds_local_audio_files.dart';
 import 'package:quran/modules/quran/data/datasources/local/ds_local_bookmarks.dart';
-import 'package:quran/modules/quran/data/datasources/local/ds_local_playback_prefs.dart';
 import 'package:quran/modules/quran/data/datasources/local/ds_local_quran.dart';
 import 'package:quran/modules/quran/data/datasources/local/ds_local_reader_settings.dart';
-import 'package:quran/modules/quran/data/datasources/local/ds_local_reciters.dart';
-import 'package:quran/modules/quran/data/datasources/local/ds_local_settings.dart';
 import 'package:quran/modules/quran/data/datasources/local/ds_local_tajweed.dart';
 import 'package:quran/modules/quran/data/datasources/local/ds_local_tafsir.dart';
 import 'package:quran/modules/quran/data/datasources/local/ds_qpc_v4_data.dart';
 import 'package:quran/modules/quran/data/datasources/local/ds_qpc_v4_font_loader.dart';
-import 'package:quran/modules/quran/data/datasources/remote/ds_audio_downloader.dart';
 import 'package:quran/modules/quran/data/datasources/remote/ds_remote_audio.dart';
 import 'package:quran/modules/quran/data/datasources/remote/ds_remote_tafsir.dart';
 import 'package:quran/modules/quran/data/repos/r_impl_audio.dart';
-import 'package:quran/modules/quran/data/repos/r_impl_audio_downloads.dart';
 import 'package:quran/modules/quran/data/repos/r_impl_bookmarks.dart';
-import 'package:quran/modules/quran/data/repos/r_impl_playback_prefs.dart';
-import 'package:quran/modules/quran/data/repos/r_impl_quran.dart';
 import 'package:quran/modules/quran/data/repos/r_impl_quran_v4.dart';
 import 'package:quran/modules/quran/data/repos/r_impl_reader_settings.dart';
-import 'package:quran/modules/quran/data/repos/r_impl_reciter.dart';
 import 'package:quran/modules/quran/data/repos/r_impl_tafsir.dart';
 import 'package:quran/modules/quran/data/repos/r_impl_tajweed.dart';
 import 'package:quran/modules/quran/data/sources/local/box_bookmarks.dart';
 import 'package:quran/modules/quran/data/sources/local/box_last_read.dart';
-import 'package:quran/modules/quran/data/sources/local/box_playback_prefs.dart';
 import 'package:quran/modules/quran/data/sources/local/box_reader_settings.dart';
-import 'package:quran/modules/quran/data/sources/local/box_reciter_pref.dart';
 import 'package:quran/modules/quran/data/sources/local/box_tafsir.dart';
 import 'package:quran/modules/quran/domain/repos/r_audio.dart';
 import 'package:quran/modules/quran/domain/repos/r_audio_downloads.dart';
@@ -83,7 +73,6 @@ import 'package:quran/modules/quran/domain/usecases/uc_save_playback_prefs.dart'
 import 'package:quran/modules/quran/domain/usecases/uc_number_lookup.dart';
 import 'package:quran/modules/quran/domain/usecases/uc_search_quran.dart';
 import 'package:quran/modules/quran/domain/usecases/uc_select_tafsir.dart';
-import 'package:quran/modules/quran/domain/usecases/uc_set_active_reciter.dart';
 import 'package:quran/modules/quran/domain/usecases/uc_set_font_bold.dart';
 import 'package:quran/modules/quran/domain/usecases/uc_set_font_mode.dart';
 import 'package:quran/modules/quran/domain/usecases/uc_set_font_scale.dart';
@@ -92,14 +81,12 @@ import 'package:quran/modules/quran/domain/usecases/uc_set_pinch_zoom.dart';
 import 'package:quran/modules/quran/domain/usecases/uc_set_reader_scroll_mode.dart';
 import 'package:quran/modules/quran/domain/usecases/uc_set_reader_theme.dart';
 import 'package:quran/modules/quran/domain/usecases/uc_set_reader_theme_mode.dart';
-import 'package:quran/modules/quran/presentation/cubits/cb_audio_player.dart';
 import 'package:quran/modules/quran/presentation/cubits/cb_ayah_share.dart';
 import 'package:quran/modules/quran/presentation/cubits/cb_bookmarks.dart';
 import 'package:quran/modules/quran/presentation/cubits/cb_mushaf_reader.dart';
 import 'package:quran/modules/quran/presentation/cubits/cb_quran_entry.dart';
 import 'package:quran/modules/quran/presentation/cubits/cb_quran_search.dart';
 import 'package:quran/modules/quran/presentation/cubits/cb_reader_settings.dart';
-import 'package:quran/modules/quran/presentation/cubits/cb_reciter.dart';
 import 'package:quran/modules/quran/presentation/cubits/cb_reciter_downloads.dart';
 import 'package:quran/modules/quran/presentation/cubits/cb_reciter_surahs.dart';
 import 'package:quran/modules/quran/presentation/cubits/cb_surah_list.dart';
@@ -120,112 +107,88 @@ import 'package:quran/modules/quran/presentation/screens/sn_tafsir_library.dart'
 class QuranModule extends Module {
   @override
   void binds(Injector i) {
+    // The recitation player, the reciter picker's cubit and their data stack
+    // (Qur'an text, reciters, audio files and downloads, playback prefs) are
+    // app-wide — see AppModule. This injector only sees its own binds, so
+    // they're reached via Modular.get.
+
     // Hive box wrappers — singletons since they manage open boxes.
     i.addSingleton<BoxBookmarks>(BoxBookmarks.new);
     i.addSingleton<BoxLastRead>(BoxLastRead.new);
-    i.addSingleton<BoxReciterPref>(BoxReciterPref.new);
     i.addSingleton<BoxReaderSettings>(BoxReaderSettings.new);
-    i.addSingleton<BoxPlaybackPrefs>(BoxPlaybackPrefs.new);
     i.addSingleton<BoxTafsir>(BoxTafsir.new);
 
     // Local data sources
-    i.addSingleton<DSLocalQuran>(DSLocalQuran.new);
     i.addSingleton<DSLocalBookmarks>(
       () => DSLocalBookmarks(i.get<BoxBookmarks>(), i.get<BoxLastRead>()),
     );
-    i.addSingleton<DSLocalSettings>(
-      () => DSLocalSettings(i.get<BoxReciterPref>()),
-    );
-    i.addSingleton<DSLocalReciters>(DSLocalReciters.new);
     i.addSingleton<DSLocalReaderSettings>(
       () => DSLocalReaderSettings(i.get<BoxReaderSettings>()),
     );
-    i.addSingleton<DSLocalPlaybackPrefs>(
-      () => DSLocalPlaybackPrefs(i.get<BoxPlaybackPrefs>()),
-    );
-    i.addSingleton<DSLocalAudioFiles>(DSLocalAudioFiles.new);
     i.addSingleton<DSQpcV4Data>(DSQpcV4Data.new);
     i.addSingleton<DSQpcV4FontLoader>(DSQpcV4FontLoader.new);
     i.addSingleton<DSLocalTajweed>(DSLocalTajweed.new);
     i.addSingleton<DSLocalTafsir>(() => DSLocalTafsir(i.get<BoxTafsir>()));
 
     // Remote data sources
-    i.addSingleton<DSRemoteAudio>(DSRemoteAudio.new);
-    i.addSingleton<DSAudioDownloader>(DSAudioDownloader.new);
     i.addSingleton<DSRemoteTafsir>(DSRemoteTafsir.new);
 
     // Repositories (interface → impl)
-    i.addSingleton<RQuran>(() => RImplQuran(i.get<DSLocalQuran>()));
     i.addSingleton<RQuranV4>(
       () => RImplQuranV4(i.get<DSQpcV4Data>(), i.get<DSQpcV4FontLoader>()),
     );
     i.addSingleton<RTajweed>(() => RImplTajweed(i.get<DSLocalTajweed>()));
-    i.addSingleton<RReciter>(
-      () => RImplReciter(i.get<DSLocalSettings>(), i.get<DSLocalReciters>()),
-    );
     i.addSingleton<RAudio>(
       () => RImplAudio(
-        i.get<DSLocalAudioFiles>(),
-        i.get<DSRemoteAudio>(),
-        i.get<RReciter>(),
-      ),
-    );
-    i.addSingleton<RAudioDownloads>(
-      () => RImplAudioDownloads(
-        files: i.get<DSLocalAudioFiles>(),
-        remote: i.get<DSRemoteAudio>(),
-        downloader: i.get<DSAudioDownloader>(),
-        reciter: i.get<RReciter>(),
+        Modular.get<DSLocalAudioFiles>(),
+        Modular.get<DSRemoteAudio>(),
+        Modular.get<RReciter>(),
       ),
     );
     i.addSingleton<RBookmarks>(() => RImplBookmarks(i.get<DSLocalBookmarks>()));
     i.addSingleton<RReaderSettings>(
       () => RImplReaderSettings(i.get<DSLocalReaderSettings>()),
     );
-    i.addSingleton<RPlaybackPrefs>(
-      () => RImplPlaybackPrefs(i.get<DSLocalPlaybackPrefs>()),
-    );
     i.addSingleton<RTafsir>(
       () => RImplTafsir(i.get<DSLocalTafsir>(), i.get<DSRemoteTafsir>()),
     );
 
     // Use cases (factory)
-    i.add<UCGetSurahList>(() => UCGetSurahList(i.get<RQuran>()));
-    i.add<UCGetJuzIndex>(() => UCGetJuzIndex(i.get<RQuran>()));
-    i.add<UCGetPageLayout>(() => UCGetPageLayout(i.get<RQuran>()));
+    i.add<UCGetSurahList>(() => UCGetSurahList(Modular.get<RQuran>()));
+    i.add<UCGetJuzIndex>(() => UCGetJuzIndex(Modular.get<RQuran>()));
+    i.add<UCGetPageLayout>(() => UCGetPageLayout(Modular.get<RQuran>()));
     i.add<UCGetQpcV4Page>(() => UCGetQpcV4Page(i.get<RQuranV4>()));
     i.add<UCGetTajweedTokens>(() => UCGetTajweedTokens(i.get<RTajweed>()));
-    i.add<UCSearchQuran>(() => UCSearchQuran(i.get<RQuran>()));
-    i.add<UCNumberLookup>(() => UCNumberLookup(i.get<RQuran>()));
+    i.add<UCSearchQuran>(() => UCSearchQuran(Modular.get<RQuran>()));
+    i.add<UCNumberLookup>(() => UCNumberLookup(Modular.get<RQuran>()));
     i.add<UCResolveAudioUrl>(() => UCResolveAudioUrl(i.get<RAudio>()));
     i.add<UCPlayAyah>(UCPlayAyah.new);
     i.add<UCPlayRange>(UCPlayRange.new);
     i.add<UCEnsureAyahDownloaded>(
-      () => UCEnsureAyahDownloaded(i.get<RAudioDownloads>()),
+      () => UCEnsureAyahDownloaded(Modular.get<RAudioDownloads>()),
     );
     i.add<UCResolveAyahSource>(
-      () => UCResolveAyahSource(i.get<RAudioDownloads>()),
+      () => UCResolveAyahSource(Modular.get<RAudioDownloads>()),
     );
-    i.add<UCDownloadSurah>(() => UCDownloadSurah(i.get<RAudioDownloads>()));
+    i.add<UCDownloadSurah>(() => UCDownloadSurah(Modular.get<RAudioDownloads>()));
     i.add<UCDownloadAllSurahs>(
-      () => UCDownloadAllSurahs(i.get<RAudioDownloads>()),
+      () => UCDownloadAllSurahs(Modular.get<RAudioDownloads>()),
     );
-    i.add<UCGetSurahStatus>(() => UCGetSurahStatus(i.get<RAudioDownloads>()));
+    i.add<UCGetSurahStatus>(() => UCGetSurahStatus(Modular.get<RAudioDownloads>()));
     i.add<UCGetAllSurahsStatus>(
-      () => UCGetAllSurahsStatus(i.get<RAudioDownloads>()),
+      () => UCGetAllSurahsStatus(Modular.get<RAudioDownloads>()),
     );
-    i.add<UCGetReciterStats>(() => UCGetReciterStats(i.get<RAudioDownloads>()));
+    i.add<UCGetReciterStats>(() => UCGetReciterStats(Modular.get<RAudioDownloads>()));
     i.add<UCDeleteSurahDownload>(
-      () => UCDeleteSurahDownload(i.get<RAudioDownloads>()),
+      () => UCDeleteSurahDownload(Modular.get<RAudioDownloads>()),
     );
     i.add<UCDeleteReciterDownloads>(
-      () => UCDeleteReciterDownloads(i.get<RAudioDownloads>()),
+      () => UCDeleteReciterDownloads(Modular.get<RAudioDownloads>()),
     );
     i.add<UCSaveBookmark>(() => UCSaveBookmark(i.get<RBookmarks>()));
     i.add<UCGetBookmarks>(() => UCGetBookmarks(i.get<RBookmarks>()));
     i.add<UCSaveLastRead>(() => UCSaveLastRead(i.get<RBookmarks>()));
-    i.add<UCGetReciters>(() => UCGetReciters(i.get<RReciter>()));
-    i.add<UCSetActiveReciter>(() => UCSetActiveReciter(i.get<RReciter>()));
+    i.add<UCGetReciters>(() => UCGetReciters(Modular.get<RReciter>()));
     i.add<UCGetFontMode>(() => UCGetFontMode(i.get<RReaderSettings>()));
     i.add<UCSetFontMode>(() => UCSetFontMode(i.get<RReaderSettings>()));
     i.add<UCGetReaderTheme>(() => UCGetReaderTheme(i.get<RReaderSettings>()));
@@ -255,10 +218,10 @@ class QuranModule extends Module {
       () => UCSetReaderScrollMode(i.get<RReaderSettings>()),
     );
     i.add<UCGetPlaybackPrefs>(
-      () => UCGetPlaybackPrefs(i.get<RPlaybackPrefs>()),
+      () => UCGetPlaybackPrefs(Modular.get<RPlaybackPrefs>()),
     );
     i.add<UCSavePlaybackPrefs>(
-      () => UCSavePlaybackPrefs(i.get<RPlaybackPrefs>()),
+      () => UCSavePlaybackPrefs(Modular.get<RPlaybackPrefs>()),
     );
     i.add<UCGetTafsirCatalog>(() => UCGetTafsirCatalog(i.get<RTafsir>()));
     i.add<UCGetDownloadedTafsirs>(
@@ -269,7 +232,7 @@ class QuranModule extends Module {
     i.add<UCGetAyahTafsir>(() => UCGetAyahTafsir(i.get<RTafsir>()));
     i.add<UCBuildAyahShare>(
       () => UCBuildAyahShare(
-        i.get<RQuran>(),
+        Modular.get<RQuran>(),
         i.get<RTafsir>(),
         i.get<RQuranV4>(),
       ),
@@ -277,29 +240,11 @@ class QuranModule extends Module {
     i.add<UCGetSelectedTafsir>(() => UCGetSelectedTafsir(i.get<RTafsir>()));
     i.add<UCSelectTafsir>(() => UCSelectTafsir(i.get<RTafsir>()));
 
-    // App-wide cubits (singletons survive navigation).
-    i.addSingleton<CBAudioPlayer>(
-      () => CBAudioPlayer(
-        quran: i.get<RQuran>(),
-        reciters: i.get<UCGetReciters>(),
-        ensure: i.get<UCEnsureAyahDownloaded>(),
-        resolve: i.get<UCResolveAyahSource>(),
-        surahStatus: i.get<UCGetSurahStatus>(),
-        downloadSurah: i.get<UCDownloadSurah>(),
-        getPrefs: i.get<UCGetPlaybackPrefs>(),
-        savePrefs: i.get<UCSavePlaybackPrefs>(),
-      ),
-    );
-    i.addSingleton<CBReciter>(
-      () => CBReciter(
-        getReciters: i.get<UCGetReciters>(),
-        setActive: i.get<UCSetActiveReciter>(),
-        remote: i.get<DSRemoteAudio>(),
-        audioPlayer: i.get<CBAudioPlayer>(),
-      ),
-    );
     // Reader display settings (font mode) — shared by the reader + settings
-    // screen so a mode change re-renders an open reader instantly.
+    // screen so a mode change re-renders an open reader instantly. Lives and
+    // dies with this module: Modular drops module singletons on unload without
+    // closing them, so the close is wired here — otherwise every visit would
+    // orphan one. The next mount reloads it from Hive.
     i.addSingleton<CBReaderSettings>(
       () => CBReaderSettings(
         i.get<UCGetFontMode>(),
@@ -319,6 +264,7 @@ class QuranModule extends Module {
         i.get<UCGetKeepScreenOn>(),
         i.get<UCSetKeepScreenOn>(),
       ),
+      config: BindConfig(onDispose: (settings) => settings.close()),
     );
 
     // Per-screen cubits (factory).
@@ -336,7 +282,7 @@ class QuranModule extends Module {
         i.get<UCGetQpcV4Page>(),
         i.get<UCSaveLastRead>(),
         i.get<DSQpcV4FontLoader>(),
-        i.get<DSLocalQuran>(),
+        Modular.get<DSLocalQuran>(),
         i.get<RBookmarks>(),
         i.get<CBReaderSettings>(),
       ),
@@ -366,7 +312,7 @@ class QuranModule extends Module {
         downloadAll: i.get<UCDownloadAllSurahs>(),
         deleteSurah: i.get<UCDeleteSurahDownload>(),
         stats: i.get<UCGetReciterStats>(),
-        repo: i.get<RAudioDownloads>(),
+        repo: Modular.get<RAudioDownloads>(),
       ),
     );
     i.add<CBAyahShare>(
