@@ -1,28 +1,25 @@
 # Privacy Policy
 
-At Zikr, your privacy comes first. This policy explains what the app
-collects and how it's used.
+At Zikr, we are committed to protecting your privacy. This policy explains
+what data the app collects and how it is used.
 
-## What we collect
+## What We Collect
 
-- **Location data** (optional): used locally on your device only, to compute
-  prayer times, qibla direction, and nearby mosques. It is never sent to our
-  servers.
-- **Account data**: name, email, and phone number on signup. Stored securely.
-- **Local usage data**: bookmarks, khatma progress, custom reminders. All
-  stored on-device in encrypted Hive boxes — we cannot access them.
+- **Location Data** (Optional): Used locally on your device solely to
+  calculate prayer times, Qibla direction, and display nearby mosques. It is
+  never sent to our servers.
+- **Account Data**: Name, email, and phone number provided upon registration.
+  Securely stored.
+- **Local Usage Data**: Bookmarks, Quran completion progress, and reminders.
+  All remain locally on your device in encrypted Hive storage and are
+  inaccessible to us.
 
-## What we do not collect
+## What We Do Not Collect
 
-- We do not track activity outside the app.
+- We do not track your activity outside the app.
 - We do not sell or share your data with third parties.
-- We do not run tracking-based advertising.
+- We do not use tracking-based ads.
 
-## Audio sources
+## Contact Us
 
-Audio streams come from EveryAyah.com and AlQuran.cloud (public CDNs). Your
-visits to them are governed by their respective privacy policies.
-
-## Contact
-
-Privacy questions: support@Zikrapp.app.
+For any privacy-related inquiries, please contact us at: support@Zikrapp.app
