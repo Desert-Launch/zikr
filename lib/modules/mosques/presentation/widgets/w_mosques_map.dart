@@ -10,8 +10,9 @@ import 'package:quran/core/theme/brand_colors.dart';
 import 'package:quran/modules/mosques/domain/entities/e_mosque.dart';
 import 'package:quran/modules/mosques/presentation/widgets/w_mosque_card.dart';
 
-/// The reader's surroundings on a Google map: a pin per nearby mosque, the
-/// blue my-location dot, and a button that brings both back into view.
+/// The reader's surroundings on a Google map: a pin per nearby mosque, a dot
+/// where the list was searched from, and a button that brings both back into
+/// view.
 ///
 /// Selection lives in the screen's cubit. [selectedId]'s pin turns gold, and
 /// whenever it changes the camera glides to that mosque and opens its label.
@@ -58,7 +59,7 @@ class _WMosquesMapState extends State<WMosquesMap> {
   static const _framed = 5;
 
   GoogleMapController? _controller;
-  ({BitmapDescriptor normal, BitmapDescriptor selected})? _pins;
+  ({BitmapDescriptor normal, BitmapDescriptor selected, BitmapDescriptor me})? _pins;
 
   /// What [_pins] were drawn for, so a theme or density change redraws them.
   (Color, double)? _pinsFor;
@@ -88,6 +89,7 @@ class _WMosquesMapState extends State<WMosquesMap> {
     final pins = (
       normal: await _pinBitmap(color, pixelRatio),
       selected: await _pinBitmap(AppColors.accentGoldAmber, pixelRatio),
+      me: await _meBitmap(pixelRatio),
     );
     if (mounted) setState(() => _pins = pins);
   }
@@ -139,6 +141,14 @@ class _WMosquesMapState extends State<WMosquesMap> {
     final pins = _pins;
     if (pins == null) return const {};
     return {
+      Marker(
+        markerId: const MarkerId('me'),
+        position: LatLng(widget.latitude, widget.longitude),
+        icon: pins.me,
+        anchor: const Offset(0.5, 0.5),
+        zIndexInt: 2,
+        consumeTapEvents: true,
+      ),
       for (final mosque in widget.mosques)
         Marker(
           markerId: _markerId(mosque),
@@ -171,7 +181,11 @@ class _WMosquesMapState extends State<WMosquesMap> {
           layoutDirection: TextDirection.ltr,
           padding: widget.padding,
           markers: _markers(),
-          myLocationEnabled: true,
+          // Not the SDK's live my-location layer: it ran its own high-accuracy
+          // GPS requests every few seconds and kept the map redrawing for as
+          // long as the screen was open. The list is built from one fix
+          // anyway, so a static marker at that fix (above) says the same thing.
+          myLocationEnabled: false,
           myLocationButtonEnabled: false,
           zoomControlsEnabled: false,
           mapToolbarEnabled: false,
@@ -226,6 +240,25 @@ Future<BitmapDescriptor> _pinBitmap(Color fill, double pixelRatio) async {
   )..layout();
   glyph.paint(canvas, Offset((size - glyph.width) / 2, (size - glyph.height) / 2));
   glyph.dispose();
+  final image = await recorder.endRecording().toImage(size.ceil(), size.ceil());
+  final png = await image.toByteData(format: ui.ImageByteFormat.png);
+  image.dispose();
+  if (png == null) return BitmapDescriptor.defaultMarker;
+  return BitmapDescriptor.bytes(png.buffer.asUint8List(), imagePixelRatio: pixelRatio);
+}
+
+/// The "you are here" dot: brand-agnostic location blue with a white ring and
+/// a soft halo, the look people already read as their own position.
+Future<BitmapDescriptor> _meBitmap(double pixelRatio) async {
+  const logicalSize = 22.0;
+  const blue = Color(0xFF1A73E8);
+  final size = logicalSize * pixelRatio;
+  final center = Offset(size / 2, size / 2);
+  final recorder = ui.PictureRecorder();
+  final canvas = Canvas(recorder);
+  canvas.drawCircle(center, size / 2, Paint()..color = blue.withValues(alpha: 0.2));
+  canvas.drawCircle(center, size * 0.3, Paint()..color = Colors.white);
+  canvas.drawCircle(center, size * 0.22, Paint()..color = blue);
   final image = await recorder.endRecording().toImage(size.ceil(), size.ceil());
   final png = await image.toByteData(format: ui.ImageByteFormat.png);
   image.dispose();
