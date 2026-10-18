@@ -4,7 +4,7 @@ import 'package:quran/core/assets/assets.gen.dart';
 import 'package:quran/core/theme/brand_colors.dart';
 import 'package:quran/modules/legal/presentation/widgets/w_markdown_view.dart';
 
-/// Scrollable privacy policy in the language picked on the same screen.
+/// Scrollable privacy policy in the language picked on the step before.
 class WPrivacyPolicyCard extends StatelessWidget {
   const WPrivacyPolicyCard({super.key, required this.languageCode});
   final String languageCode;

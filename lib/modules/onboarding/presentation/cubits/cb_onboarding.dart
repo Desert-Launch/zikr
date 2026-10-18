@@ -7,6 +7,7 @@ import 'package:quran/core/services/notifications/notifications_service.dart';
 import 'package:quran/modules/adhan/services/adhan_scheduler.dart';
 import 'package:quran/modules/onboarding/presentation/cubits/s_onboarding.dart';
 import 'package:quran/modules/prayer/data/datasources/local/ds_location.dart';
+import 'package:quran/modules/prayer/presentation/cubits/cb_prayer_lock_screen.dart';
 import 'package:quran/modules/prayer/services/prayer_widget_publisher.dart';
 
 class CBOnboarding extends Cubit<SOnboarding> {
@@ -16,6 +17,7 @@ class CBOnboarding extends Cubit<SOnboarding> {
     this._scheduler,
     this._location,
     this._widget,
+    this._lockScreen,
   ) : super(const SOnboarding()) {
     final current = _settings.current();
     emit(state.copyWith(
@@ -29,6 +31,7 @@ class CBOnboarding extends Cubit<SOnboarding> {
   final AdhanScheduler _scheduler;
   final DSLocation _location;
   final PrayerWidgetPublisher _widget;
+  final CBPrayerLockScreen _lockScreen;
 
   /// Asks for the OS notification permission so adhan/prayer alerts can fire.
   /// Best-effort — scheduling itself is gated on the result elsewhere.
@@ -74,8 +77,26 @@ class CBOnboarding extends Cubit<SOnboarding> {
   /// install those requests are placed unauthorized. Repeating them here — once
   /// the grant is settled — is what makes the first day of an install actually
   /// deliver anything. Best-effort: the reconcile swallows its own failures.
+  ///
+  /// Also where a fresh install gets its one default that lives outside Hive,
+  /// the lock-screen prayer notification — see [_pinLockScreenByDefault].
   Future<void> markComplete() async {
+    await _pinLockScreenByDefault();
     await _settings.setHasSeenOnboarding(true);
     await _scheduler.reconcileCompanionNotifications();
+  }
+
+  /// Switches the lock-screen prayer notification on (Android), so a new
+  /// install starts with every feature on and the closing onboarding screen
+  /// can say so; Settings switches it off.
+  ///
+  /// Its switch is a native preference whose default has to stay off — an
+  /// upgrade must not start pinning a notification nobody asked for — so the
+  /// fresh-install default is applied here, once, rather than in the default.
+  /// Only with the notification grant already in hand: switching on without it
+  /// would raise the OS prompt a second time, right after the user declined.
+  Future<void> _pinLockScreenByDefault() async {
+    if (!await _notifications.hasPermission()) return;
+    await _lockScreen.setEnabled(true);
   }
 }

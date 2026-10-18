@@ -22,7 +22,7 @@ class MPrayerSettingsAdapter extends TypeAdapter<MPrayerSettings> {
           : (fields[0] as num).toInt(),
       madhabIndex: fields[1] == null ? 0 : (fields[1] as num).toInt(),
       notifyForPrayer: fields[2] == null
-          ? const [true, true, true, true, true, false]
+          ? const [true, true, true, true, true, true]
           : (fields[2] as List).cast<bool>(),
       adhanIdPerPrayer: (fields[3] as Map?)?.cast<String, String>(),
       fajrAdhanId: fields[4] as String?,

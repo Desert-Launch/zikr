@@ -219,18 +219,25 @@ class LegalRoutes {
 class OnboardingRoutes {
   OnboardingRoutes._();
 
-  /// First step: the privacy policy, which must be accepted to go on.
-  static const String privacy = '/';
-  static const String language = '/language';
+  /// First step: the language, so everything after it — the privacy policy
+  /// included — reads in the language the user picked.
+  static const String language = '/';
+
+  /// The privacy policy, which must be accepted to go on.
+  static const String privacy = '/privacy';
   static const String pager = '/pager';
   static const String location = '/location';
 
-  /// Android-only final step: the two OS grants the full-screen adhan needs.
+  /// Android-only step: the two OS grants the full-screen adhan needs.
   static const String alarm = '/alarm';
-  static String fullLanguage() => '${RoutesNames.onboardingBase}language';
+
+  /// Last step: what is switched on by default, and where to change it.
+  static const String defaults = '/defaults';
+  static String fullPrivacy() => '${RoutesNames.onboardingBase}privacy';
   static String fullPager() => '${RoutesNames.onboardingBase}pager';
   static String fullLocation() => '${RoutesNames.onboardingBase}location';
   static String fullAlarm() => '${RoutesNames.onboardingBase}alarm';
+  static String fullDefaults() => '${RoutesNames.onboardingBase}defaults';
 }
 
 class HomeRoutes {

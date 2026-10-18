@@ -11,6 +11,8 @@ import 'package:quran/modules/onboarding/presentation/widgets/w_onboarding_backd
 import 'package:quran/modules/onboarding/presentation/widgets/w_onboarding_continue_button.dart';
 import 'package:quran/modules/onboarding/presentation/widgets/w_onboarding_header.dart';
 
+/// First onboarding step: the language, picked before anything else so the
+/// privacy policy that follows — and the rest of the flow — reads in it.
 class SNLanguageSelection extends StatefulWidget {
   const SNLanguageSelection({super.key});
 
@@ -59,7 +61,7 @@ class _SNLanguageSelectionState extends State<SNLanguageSelection> {
                         ),
                         const Spacer(),
                         WOnboardingContinueButton(
-                          onTap: () => Modular.to.pushNamed(OnboardingRoutes.fullPager()),
+                          onTap: () => Modular.to.pushNamed(OnboardingRoutes.fullPrivacy()),
                         ),
                         SizedBox(height: 24.h),
                       ],

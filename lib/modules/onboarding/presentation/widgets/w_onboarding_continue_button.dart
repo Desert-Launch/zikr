@@ -4,10 +4,13 @@ import 'package:localize_and_translate/localize_and_translate.dart';
 import 'package:quran/core/theme/app_colors.dart';
 
 class WOnboardingContinueButton extends StatelessWidget {
-  const WOnboardingContinueButton({super.key, required this.onTap});
+  const WOnboardingContinueButton({super.key, required this.onTap, this.labelKey = 'common_continue'});
 
   /// Null disables the button.
   final VoidCallback? onTap;
+
+  /// Translation key of the label.
+  final String labelKey;
 
   @override
   Widget build(BuildContext context) {
@@ -25,7 +28,7 @@ class WOnboardingContinueButton extends StatelessWidget {
           ),
         ),
         child: Text(
-          'common_continue'.tr(),
+          labelKey.tr(),
           style: TextStyle(fontSize: 15.sp, fontWeight: FontWeight.w700),
         ),
       ),

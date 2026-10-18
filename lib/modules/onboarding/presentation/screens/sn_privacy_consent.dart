@@ -12,8 +12,9 @@ import 'package:quran/modules/onboarding/presentation/widgets/w_onboarding_heade
 import 'package:quran/modules/onboarding/presentation/widgets/w_privacy_accept_tile.dart';
 import 'package:quran/modules/onboarding/presentation/widgets/w_privacy_policy_card.dart';
 
-/// First onboarding step: the privacy policy on its own, with the consent
-/// checkbox that gates moving on to the language picker.
+/// Second onboarding step, after the language: the privacy policy in the
+/// language just picked, with the consent checkbox that gates moving on to the
+/// feature slides.
 class SNPrivacyConsent extends StatefulWidget {
   const SNPrivacyConsent({super.key});
 
@@ -63,7 +64,7 @@ class _SNPrivacyConsentState extends State<SNPrivacyConsent> {
                           SizedBox(height: 12.h),
                           WOnboardingContinueButton(
                             onTap: accepted
-                                ? () => Modular.to.pushNamed(OnboardingRoutes.fullLanguage())
+                                ? () => Modular.to.pushNamed(OnboardingRoutes.fullPager())
                                 : null,
                           ),
                         ],

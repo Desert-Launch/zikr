@@ -16,7 +16,7 @@ import 'package:quran/modules/onboarding/presentation/widgets/w_allow_button.dar
 import 'package:quran/modules/onboarding/presentation/widgets/w_feature_card.dart';
 import 'package:quran/modules/onboarding/presentation/widgets/w_onboarding_backdrop.dart';
 
-/// Final onboarding step. Tapping allow raises the OS location prompt right
+/// Location onboarding step. Tapping allow raises the OS location prompt right
 /// there — the user just asked for it, so deferring it to the first Prayer
 /// Times run would leave the tap looking like it did nothing. Skipping records
 /// intent only, and Prayer Times still asks when it first needs coordinates.
@@ -55,15 +55,13 @@ class SNLocationPermission extends StatelessWidget {
     await cubit.requestNotificationPermission();
     if (!context.mounted) return;
     // Android gets one more step — the overlay / full-screen grants that decide
-    // whether the adhan can take over the screen. That screen owns
-    // markComplete; iOS has neither grant, so it finishes here.
-    if (Platform.isAndroid) {
-      Modular.to.pushNamed(OnboardingRoutes.fullAlarm());
-      return;
-    }
-    await cubit.markComplete();
-    if (!context.mounted) return;
-    Modular.to.navigate(RoutesNames.homeBase);
+    // whether the adhan can take over the screen. iOS has neither grant, so it
+    // goes straight to the closing defaults screen, which owns markComplete.
+    Modular.to.pushNamed(
+      Platform.isAndroid
+          ? OnboardingRoutes.fullAlarm()
+          : OnboardingRoutes.fullDefaults(),
+    );
   }
 
   @override

@@ -19,7 +19,7 @@ class MPrayerSettings extends HiveObject {
   MPrayerSettings({
     this.calculationMethodIndex = 1,
     this.madhabIndex = 0, // standard (Shafi'i) Asr by default
-    this.notifyForPrayer = const [true, true, true, true, true, false],
+    this.notifyForPrayer = const [true, true, true, true, true, true],
     this.adhanIdPerPrayer,
     this.fajrAdhanId,
     this.preNotifyMinutesPerPrayer,
@@ -62,15 +62,18 @@ class MPrayerSettings extends HiveObject {
 
   /// One bool per alert in fajr/dhuhr/asr/maghrib/isha/**sunrise** order.
   ///
-  /// Sunrise is last rather than in clock order, and off by default, because it
-  /// was added after the five: an install written before it exists holds a
+  /// Sunrise is last rather than in clock order because it was added after
+  /// the five: an install written before it exists holds a
   /// five-element list, and every reader here bounds-checks, so the missing
   /// slot reads as off. Putting it in clock order instead would have silently
   /// re-pointed every stored flag by one on upgrade — dhuhr's setting landing
   /// on asr, and so on down the list.
   ///
-  /// Off by default on purpose: sunrise is not a salah, and an upgrade should
-  /// not start alerting anybody at dawn without being asked.
+  /// On in a fresh record — a new install starts with every alert on, and
+  /// onboarding's closing screen says where to switch it off. An upgrade is
+  /// never touched: `BoxPrayerSettings.current` persists the record on first
+  /// read, so an existing install keeps the list it already has, and a
+  /// pre-sunrise five-element one still reads sunrise as off.
   @HiveField(2)
   List<bool> notifyForPrayer;
 

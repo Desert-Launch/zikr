@@ -5,11 +5,13 @@ import 'package:quran/core/services/routes/routes_names.dart';
 import 'package:quran/modules/adhan/services/adhan_scheduler.dart';
 import 'package:quran/modules/onboarding/presentation/cubits/cb_onboarding.dart';
 import 'package:quran/modules/onboarding/presentation/screens/sn_alarm_permission.dart';
+import 'package:quran/modules/onboarding/presentation/screens/sn_default_settings.dart';
 import 'package:quran/modules/onboarding/presentation/screens/sn_language_selection.dart';
 import 'package:quran/modules/onboarding/presentation/screens/sn_location_permission.dart';
 import 'package:quran/modules/onboarding/presentation/screens/sn_onboarding_pager.dart';
 import 'package:quran/modules/onboarding/presentation/screens/sn_privacy_consent.dart';
 import 'package:quran/modules/prayer/data/datasources/local/ds_location.dart';
+import 'package:quran/modules/prayer/presentation/cubits/cb_prayer_lock_screen.dart';
 import 'package:quran/modules/prayer/services/prayer_widget_publisher.dart';
 
 class OnboardingModule extends Module {
@@ -24,16 +26,18 @@ class OnboardingModule extends Module {
         Modular.get<AdhanScheduler>(),
         Modular.get<DSLocation>(),
         Modular.get<PrayerWidgetPublisher>(),
+        Modular.get<CBPrayerLockScreen>(),
       ),
     );
   }
 
   @override
   void routes(RouteManager r) {
+    r.child(OnboardingRoutes.language, child: (_) => const SNLanguageSelection());
     r.child(OnboardingRoutes.privacy, child: (_) => const SNPrivacyConsent());
     r.child(OnboardingRoutes.pager, child: (_) => const SNOnboardingPager());
-    r.child(OnboardingRoutes.language, child: (_) => const SNLanguageSelection());
     r.child(OnboardingRoutes.location, child: (_) => const SNLocationPermission());
     r.child(OnboardingRoutes.alarm, child: (_) => const SNAlarmPermission());
+    r.child(OnboardingRoutes.defaults, child: (_) => const SNDefaultSettings());
   }
 }

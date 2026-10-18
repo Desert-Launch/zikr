@@ -11,7 +11,6 @@ import 'package:quran/modules/adhan/presentation/cubits/cb_adhan_settings.dart';
 import 'package:quran/modules/adhan/presentation/cubits/s_adhan_settings.dart';
 import 'package:quran/modules/adhan/presentation/widgets/w_alarm_permission_switch.dart';
 import 'package:quran/modules/adhan/services/adhan_audio_alarms.dart';
-import 'package:quran/modules/onboarding/presentation/cubits/cb_onboarding.dart';
 import 'package:quran/modules/onboarding/presentation/widgets/w_onboarding_backdrop.dart';
 
 /// Android-only onboarding step: the two grants that decide whether the adhan
@@ -24,12 +23,6 @@ import 'package:quran/modules/onboarding/presentation/widgets/w_onboarding_backd
 /// available in Settings and in the adhan screen.
 class SNAlarmPermission extends StatelessWidget {
   const SNAlarmPermission({super.key});
-
-  Future<void> _finish(BuildContext context) async {
-    await Modular.get<CBOnboarding>().markComplete();
-    if (!context.mounted) return;
-    Modular.to.navigate(RoutesNames.homeBase);
-  }
 
   @override
   Widget build(BuildContext context) {
@@ -96,7 +89,7 @@ class SNAlarmPermission extends StatelessWidget {
                     SizedBox(
                       width: double.infinity,
                       child: FilledButton(
-                        onPressed: () => _finish(context),
+                        onPressed: () => Modular.to.pushNamed(OnboardingRoutes.fullDefaults()),
                         style: FilledButton.styleFrom(
                           backgroundColor: AppColorsLight.primary,
                           padding: EdgeInsets.symmetric(vertical: 16.h),
