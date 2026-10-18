@@ -141,13 +141,16 @@ object PrayerLockNotification {
         } else {
             labels.caption
         }
+        // The line under the salah; a snapshot without a Hijri date keeps the
+        // caption there rather than leaving the line blank.
+        val subtitle = resolution.today.hijri.ifEmpty { caption }
         val direction = if (snapshot.rtl) View.LAYOUT_DIRECTION_RTL else View.LAYOUT_DIRECTION_LTR
 
         val big = RemoteViews(context.packageName, R.layout.notification_prayer_lock_big)
         big.setInt(R.id.lock_big_root, "setLayoutDirection", direction)
         big.removeAllViews(R.id.lock_head)
-        big.addView(R.id.lock_head, head(context, direction, title, caption, next.at, nowMillis))
-        big.setTextViewText(R.id.lock_date, "${resolution.today.hijri} · ${resolution.today.gregorian}")
+        big.addView(R.id.lock_head, head(context, direction, title, subtitle, next.at, nowMillis))
+        big.setTextViewText(R.id.lock_date, "${resolution.today.gregorian} · $caption")
         big.removeAllViews(R.id.lock_chips)
         for (slot in resolution.chips) {
             val isNext = slot.key == next.key && slot.at == next.at
@@ -162,26 +165,30 @@ object PrayerLockNotification {
             // What a surface that skips custom views shows (a paired watch,
             // an OEM's compact lock-screen style).
             .setContentTitle(title)
-            .setContentText(caption)
+            .setContentText(subtitle)
             .setStyle(NotificationCompat.DecoratedCustomViewStyle())
-            .setCustomContentView(head(context, direction, title, caption, next.at, nowMillis))
+            .setCustomContentView(head(context, direction, title, subtitle, next.at, nowMillis))
             .setCustomBigContentView(big)
             .build()
     }
 
-    /** The collapsed view, which is also the head of the expanded one. */
+    /**
+     * The collapsed view, which is also the head of the expanded one: the next
+     * salah and its time over [subtitle] (today's Hijri date), the countdown
+     * beside them.
+     */
     private fun head(
         context: Context,
         direction: Int,
         title: String,
-        caption: String,
+        subtitle: String,
         nextAt: Long,
         nowMillis: Long,
     ): RemoteViews {
         val views = RemoteViews(context.packageName, R.layout.notification_prayer_lock)
         views.setInt(R.id.lock_root, "setLayoutDirection", direction)
         views.setTextViewText(R.id.lock_next, title)
-        views.setTextViewText(R.id.lock_caption, caption)
+        views.setTextViewText(R.id.lock_hijri, subtitle)
         // A chronometer counts on elapsed-realtime, not the wall clock; a clock
         // or zone change re-posts through the provider's broadcasts.
         val base = SystemClock.elapsedRealtime() + (nextAt - nowMillis)

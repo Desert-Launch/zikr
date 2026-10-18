@@ -3,7 +3,9 @@
   Lock-screen prayer notification, collapsed — also nested as the head of the
   expanded view (notification_prayer_lock_big.xml). Android 12+ leaves a
   decorated custom view about 48 dp of height, so two lines and the countdown
-  beside them is all that fits.
+  beside them is all that fits: the next salah and its time, a size up from
+  the notification title so it reads at a glance, and today's Hijri date
+  under it.
 
   Text takes the notification text appearances, not the widget palette: the
   system draws the card (light, dark, or an OEM's translucent lock-screen
@@ -12,7 +14,7 @@
 
     ┌──────────────────────────────────────────┐
     │ صلاة العصر · 3:12 م               1:23:45 │
-    │ الصلاة القادمة بتوقيت القاهرة              │
+    │ ٢٦ ربيع الآخر ١٤٤٨ هـ                     │
     └──────────────────────────────────────────┘
 -->
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
@@ -36,17 +38,18 @@
             android:ellipsize="end"
             android:gravity="start"
             android:maxLines="1"
+            android:textSize="17sp"
             android:textStyle="bold" />
 
         <TextView
-            android:id="@+id/lock_caption"
+            android:id="@+id/lock_hijri"
             style="@style/TextAppearance.Compat.Notification"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:ellipsize="end"
             android:gravity="start"
             android:maxLines="1"
-            android:textSize="12sp" />
+            android:textSize="13sp" />
     </LinearLayout>
 
     <!-- H:MM:SS reads left-to-right in either language. -->

@@ -3,11 +3,14 @@
   Lock-screen prayer notification, expanded. lock_head receives the collapsed
   layout (notification_prayer_lock.xml) and lock_chips one
   notification_prayer_lock_chip.xml per slot of the display day, the next
-  salah in bold — both added at render time by PrayerLockNotification.
+  salah in bold — both added at render time by PrayerLockNotification. The
+  Hijri date is already in the head, so the line under it carries the
+  Gregorian date and the caption (city, and whether the next salah is
+  tomorrow's).
 
     ┌──────────────────────────────────────────┐
-    │ (collapsed head)                          │
-    │ hijri · gregorian                         │
+    │ (collapsed head: salah · time, hijri)     │
+    │ gregorian · caption                       │
     │  🌅     ☀️     🌤️     🌥️     🌇     🌙   │
     │ fajr  sunrise dhuhr  asr  maghrib  isha   │
     │ 4:50   6:15   11:48  3:12   5:40   7:00   │
