@@ -13,6 +13,7 @@ class WTasbihCounterCard extends StatelessWidget {
     required this.green,
     required this.onTap,
     required this.onReset,
+    this.large = false,
   });
 
   final STasbih state;
@@ -21,13 +22,17 @@ class WTasbihCounterCard extends StatelessWidget {
   final VoidCallback onTap;
   final VoidCallback onReset;
 
+  /// A size up — phrase, ring and padding — for a screen that has the one
+  /// card as its centrepiece (salawat).
+  final bool large;
+
   @override
   Widget build(BuildContext context) {
     return InkWell(
       borderRadius: BorderRadius.circular(16.r),
       onTap: onTap,
       child: Container(
-        padding: EdgeInsets.all(20.r),
+        padding: EdgeInsets.all(large ? 24.r : 20.r),
         decoration: BoxDecoration(
           color: Colors.white,
           borderRadius: BorderRadius.circular(16.r),
@@ -35,11 +40,18 @@ class WTasbihCounterCard extends StatelessWidget {
         ),
         child: Column(
           children: [
-            Text(state.zekrAr, style: AppTextStyles.ink22W700.copyWith(color: Color(0xFF0D7E5E))),
-            SizedBox(height: 28.h),
+            Text(
+              state.zekrAr,
+              textAlign: TextAlign.center,
+              style: AppTextStyles.ink22W700.copyWith(
+                color: Color(0xFF0D7E5E),
+                fontSize: large ? 27.sp : null,
+              ),
+            ),
+            SizedBox(height: large ? 32.h : 28.h),
             Container(
-              width: 146.r,
-              height: 146.r,
+              width: large ? 172.r : 146.r,
+              height: large ? 172.r : 146.r,
               decoration: BoxDecoration(
                 shape: BoxShape.circle,
                 border: Border.all(color: green, width: 6),
@@ -50,7 +62,7 @@ class WTasbihCounterCard extends StatelessWidget {
                 children: [
                   FittedBox(
                     fit: BoxFit.scaleDown,
-                    child: Text('${state.count}', style: AppTextStyles.ink24W500.copyWith(fontSize: 35.sp)),
+                    child: Text('${state.count}', style: AppTextStyles.ink24W500.copyWith(fontSize: large ? 42.sp : 35.sp)),
                   ),
                   Text(
                     '${'tasbih_of'.tr()} ${state.target}',
