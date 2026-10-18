@@ -5,12 +5,18 @@ import 'package:quran/core/theme/app_text_styles.dart';
 import 'package:quran/modules/khatma/presentation/cubits/s_khatma.dart';
 import 'package:quran/modules/khatma/presentation/widgets/w_khatma_range_row.dart';
 
-/// Card showing the current wird's from/to range on the tracker screen.
+/// Card showing where the current wird starts and ends on the tracker screen.
 class WKhatmaCurrentWirdCard extends StatelessWidget {
   const WKhatmaCurrentWirdCard({super.key, required this.state});
 
   final SKhatma state;
   static const _border = Color(0xFFDDE6E0);
+
+  /// `سورة البقرة · الآية 141`.
+  static String _surahAyah(String surah, int ayah) => 'khatma_surah_ayah'
+      .tr()
+      .replaceFirst('{{surah}}', surah)
+      .replaceFirst('{{ayah}}', '$ayah');
 
   @override
   Widget build(BuildContext context) {
@@ -49,7 +55,8 @@ class WKhatmaCurrentWirdCard extends StatelessWidget {
               Padding(
                 padding: EdgeInsets.symmetric(horizontal: 24.w),
                 child: WKhatmaRangeRow(
-                  title: '${'khatma_from'.tr()} $startSurah',
+                  isEnd: false,
+                  title: _surahAyah(startSurah, wird.startAyahNumber),
                   subtitle: wird.startAyahText,
                   pageNumber: wird.startPageNumber,
                   surahNumber: wird.startSurahNumber,
@@ -61,7 +68,8 @@ class WKhatmaCurrentWirdCard extends StatelessWidget {
               Padding(
                 padding: EdgeInsets.symmetric(horizontal: 24.w),
                 child: WKhatmaRangeRow(
-                  title: '${'khatma_to'.tr()} $endSurah: ${wird.endAyahNumber}',
+                  isEnd: true,
+                  title: _surahAyah(endSurah, wird.endAyahNumber),
                   subtitle: wird.endAyahText,
                   pageNumber: wird.endPageNumber,
                   surahNumber: wird.endSurahNumber,
