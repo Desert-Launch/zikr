@@ -23,6 +23,16 @@ class EPrayerAdjustments extends Equatable {
   /// The default: no correction anywhere.
   static const EPrayerAdjustments none = EPrayerAdjustments();
 
+  /// Fixed delay the app adds to every Maghrib — the API says 18:30, the app
+  /// shows and calls the adhan at 18:32.
+  ///
+  /// Applied client-side to both the Aladhan response and the on-device
+  /// fallback, on top of any user [maghrib] tune. It is never sent as `tune`,
+  /// so an untouched install's request is unchanged; it is part of
+  /// `EPrayerSettings.cacheSignature` instead, so months cached under another
+  /// value are refetched rather than read back.
+  static const int maghribDelayMinutes = 2;
+
   /// How many values [toList]/[fromList] carry — Aladhan's `tune` takes
   /// exactly this many, in this order.
   static const int slotCount = 9;

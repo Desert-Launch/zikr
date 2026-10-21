@@ -48,10 +48,14 @@ class EPrayerSettings extends Equatable {
   /// It is part of every cache key, so flipping the school, pinning a method,
   /// choosing a high-latitude rule or tuning a minute lands on a different
   /// entry instead of reading back times computed under the old settings.
+  /// The fixed Maghrib delay is in it too, since cached days store Maghrib
+  /// with the delay already applied.
   String get cacheSignature {
     final method = effectiveMethodId?.toString() ?? 'auto';
     final tune = adjustments.isZero ? '0' : adjustments.tuneParam;
-    return 'm$method-s${asrSchool.name}-h${highLatitudeRule.name}-t$tune';
+    const delay = EPrayerAdjustments.maghribDelayMinutes;
+    return 'm$method-s${asrSchool.name}-h${highLatitudeRule.name}-t$tune'
+        '-md$delay';
   }
 
   EPrayerSettings copyWith({

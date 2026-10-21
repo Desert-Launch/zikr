@@ -3,6 +3,7 @@ import 'package:quran/core/services/time/app_timezone.dart';
 import 'package:quran/modules/prayer/data/datasources/remote/aladhan_query_builder.dart';
 import 'package:quran/modules/prayer/domain/entities/e_daily_prayer_times.dart';
 import 'package:quran/modules/prayer/domain/entities/e_high_latitude_rule.dart';
+import 'package:quran/modules/prayer/domain/entities/e_prayer_adjustments.dart';
 import 'package:quran/modules/prayer/domain/entities/e_prayer_settings.dart';
 import 'package:timezone/timezone.dart' as tz;
 
@@ -64,7 +65,10 @@ class DSPrayerCalc {
       sunrise: at(times.sunrise, tune.sunrise),
       dhuhr: at(times.dhuhr, tune.dhuhr),
       asr: at(times.asr, tune.asr),
-      maghrib: at(times.maghrib, tune.maghrib),
+      maghrib: at(
+        times.maghrib,
+        tune.maghrib + EPrayerAdjustments.maghribDelayMinutes,
+      ),
       isha: at(times.isha, tune.isha),
       sunset: at(times.maghrib, tune.sunset),
       timezone: timezone ?? '',

@@ -1,5 +1,6 @@
 import 'package:quran/core/services/time/app_timezone.dart';
 import 'package:quran/modules/prayer/domain/entities/e_daily_prayer_times.dart';
+import 'package:quran/modules/prayer/domain/entities/e_prayer_adjustments.dart';
 import 'package:timezone/timezone.dart' as tz;
 
 /// The raw shape of one day in an Aladhan `/timings` or `/calendar` response,
@@ -103,7 +104,11 @@ class MAladhanDay {
     final dhuhr = next('Dhuhr');
     final asr = next('Asr');
     final sunset = next('Sunset');
-    final maghrib = next('Maghrib');
+    // Added after `next` places the clock, so Isha's roll-over check still
+    // compares against the API's own Maghrib.
+    final maghrib = next('Maghrib')?.add(
+      const Duration(minutes: EPrayerAdjustments.maghribDelayMinutes),
+    );
     final isha = next('Isha');
     final firstThird = next('Firstthird');
     final midnight = next('Midnight');

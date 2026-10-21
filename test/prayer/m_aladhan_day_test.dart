@@ -2,6 +2,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:quran/core/services/time/app_timezone.dart';
 import 'package:quran/modules/prayer/data/models/m_aladhan_day.dart';
 import 'package:quran/modules/prayer/domain/entities/e_daily_prayer_times.dart';
+import 'package:quran/modules/prayer/domain/entities/e_prayer_adjustments.dart';
 
 /// Parsing tests built from real `/v1/timings` and `/v1/calendar` payloads.
 void main() {
@@ -58,6 +59,15 @@ void main() {
       expect(day?.date, DateTime(2026, 9, 5));
       // Cairo is UTC+3 in September 2026 (DST).
       expect(day?.fajr.timeZoneOffset, const Duration(hours: 3));
+    });
+
+    test('delays Maghrib by the fixed offset and leaves Sunset alone', () {
+      final day = require(payload());
+
+      // The API says 19:13 for both.
+      expect(day.maghrib.hour, 19);
+      expect(day.maghrib.minute, 13 + EPrayerAdjustments.maghribDelayMinutes);
+      expect(day.sunset?.minute, 13);
     });
 
     test('parses the timezone and the resolved method', () {
