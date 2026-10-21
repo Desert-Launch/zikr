@@ -131,6 +131,10 @@ class CBAudioPlayer extends Cubit<SAudioPlayer> {
   /// has just left behind.
   int? _trackIndex;
 
+  /// The ayah [stop] left on. Stopping clears it from state, but the full
+  /// player can still be open, and its play button starts again from here.
+  ParamAyahRef? _stoppedAt;
+
 
   /// Last seen processing state, to log only on transitions.
   ProcessingState? _lastProcessingState;
@@ -172,8 +176,9 @@ class CBAudioPlayer extends Cubit<SAudioPlayer> {
   void _wireStreams() {
     _stateSub = _player.playerStateStream.listen((ps) {
       _syncPositionTicker(ps);
+      final entered = ps.processingState != _lastProcessingState;
       // Trace processing-state transitions to diagnose auto-advance issues.
-      if (ps.processingState != _lastProcessingState) {
+      if (entered) {
         _lastProcessingState = ps.processingState;
         AppLogger.info(
           'state=${ps.processingState.name} playing=${ps.playing} '
@@ -182,9 +187,11 @@ class CBAudioPlayer extends Cubit<SAudioPlayer> {
         );
       }
       // The platform advances between ayat by itself, so `completed` now marks
-      // the end of the whole playlist rather than of one ayah.
+      // the end of the whole playlist rather than of one ayah. Handled once, on
+      // arrival: the state re-emits while it stays completed (a pause before a
+      // relayout), and each pass would finish the unit again.
       if (ps.processingState == ProcessingState.completed) {
-        _onPlaylistCompleted();
+        if (entered) _onPlaylistCompleted();
         return;
       }
       final PlayerStatus next;
@@ -485,6 +492,9 @@ class CBAudioPlayer extends Cubit<SAudioPlayer> {
       // (radio/adhan/preview) before claiming it.
       await AudioFocus.instance.take(this);
       if (token != _playToken) return;
+      // A playlist that ran out still reads as playing, and just_audio starts
+      // whatever is loaded while it does — so a paused relayout pauses first.
+      if (!autoPlay && _player.playing) await _player.pause();
       await _player.setLoopMode(
         repeating && target == 0 ? LoopMode.all : LoopMode.off,
       );
@@ -1037,9 +1047,28 @@ class CBAudioPlayer extends Cubit<SAudioPlayer> {
   }
 
   Future<void> pause() => _player.pause();
-  Future<void> resume() => _player.play();
+
+  /// Resumes the loaded unit — unless it has run out or been stopped. Its
+  /// playlist was laid out under the options it started with: after a stop
+  /// just_audio would reload it as it was, and after the end `play()` does
+  /// nothing at all. So it is started again under the current options instead:
+  /// a finished unit from its first ayah, a stopped one from where it stood.
+  Future<void> resume() async {
+    final finished =
+        state.status == PlayerStatus.completed ||
+        _player.processingState == ProcessingState.completed;
+    if (_tracks.isNotEmpty && !finished) return _player.play();
+    final queue = state.queue;
+    final from = _tracks.isEmpty
+        ? _stoppedAt
+        : (queue.isEmpty ? state.currentAyah : queue.first);
+    if (from == null) return;
+    await playFrom(from);
+  }
+
   Future<void> stop() async {
     _playToken++; // invalidate any in-flight ensure/advance
+    _stoppedAt = state.currentAyah ?? _stoppedAt;
     _tracks = const [];
     _trackIndex = null;
     _sleepTimer?.cancel();
@@ -1124,8 +1153,10 @@ class CBAudioPlayer extends Cubit<SAudioPlayer> {
     await _player.setSpeed(speed);
   }
 
-  /// Switches repeat mode. If something is playing, the unit is rebuilt around
-  /// the current ayah and restarted so the new mode takes effect immediately.
+  /// Switches repeat mode. A loaded unit is rebuilt for the new mode around the
+  /// current ayah, so the change is what plays next: at once while playing, on
+  /// resume while paused. A unit that already ran out is rebuilt from its
+  /// start, ready for the next play.
   Future<void> setRepeatMode(RepeatMode mode) async {
     emit(state.copyWith(options: state.options.copyWith(repeatMode: mode)));
     _persistOptions();
@@ -1134,10 +1165,20 @@ class CBAudioPlayer extends Cubit<SAudioPlayer> {
     final surahRes = await _quran.getSurah(ref.surah);
     final surah = surahRes.fold<MSurah?>((_) => null, (s) => s);
     final queue = _buildUnit(ref, surah);
+    final at = queue.indexOf(ref);
+    const sounding = <PlayerStatus>{
+      PlayerStatus.playing,
+      PlayerStatus.loading,
+      PlayerStatus.buffering,
+    };
     await _startQueue(
       queue,
       surah,
       _activeReciterId ?? await _resolveReciterId(),
+      startQueueIndex: state.status == PlayerStatus.completed || at < 0
+          ? 0
+          : at,
+      autoPlay: sounding.contains(state.status),
     );
   }
 

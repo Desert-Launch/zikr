@@ -57,8 +57,16 @@ class WFullPlayer extends StatelessWidget {
                 SizedBox(height: 14.h),
                 const _ArtworkBlock(),
                 SizedBox(height: 14.h),
-                const _Scrubber(),
-                const _Transport(),
+                // Media controls stay left-to-right in Arabic too, as in the
+                // mini player. The transport icons are not mirrored, so an RTL
+                // row turned every one of them to face the play button.
+                const Directionality(
+                  textDirection: TextDirection.ltr,
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [_Scrubber(), _Transport()],
+                  ),
+                ),
                 SizedBox(height: 16.h),
                 // Secondary controls grouped as compact chips.
                 const _ReciterChip(),
